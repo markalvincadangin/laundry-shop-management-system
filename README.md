@@ -119,7 +119,7 @@ docker-compose down -v
 The backend handles all business logic, API endpoints, and database interactions.
 
 1. Open the `backend/` folder in your IDE (IntelliJ IDEA recommended).
-2. Ensure the Docker container is running (`docker-compose up -d`).
+2. Ensure the Docker container is running (`docker compose -f docker/docker-compose.yml up -d` from repo root).
 3. Run the application via `LaundrySystemApplication.java` or use Maven:
 
 ```powershell
@@ -206,7 +206,7 @@ For detailed data model and relationships, see `docs/11. ERD.pdf`.
 ### Local Development Setup
 1. Clone the repository
 2. Create `.env` file from `.env.example`
-3. Start Docker containers: `docker-compose up -d`
+3. Start Docker containers: `docker compose -f docker/docker-compose.yml up -d`
 4. Start backend: `cd backend && .\mvnw.cmd spring-boot:run`
 5. Start frontend: `cd frontend && npm run dev`
 6. Access the application at `http://localhost:3000`
@@ -227,16 +227,16 @@ For detailed data model and relationships, see `docs/11. ERD.pdf`.
 ## 🔧 Troubleshooting
 
 ### Database Connection Issues
-- **Verify Docker is running:** `docker-compose ps`
-- **Check credentials:** Ensure root `.env` (`../.env`) has correct `DB_USER` and `DB_PASSWORD`
+- **Verify Docker is running:** `docker compose -f docker/docker-compose.yml ps`
+- **Check credentials:** Ensure root `.env` has correct `DB_USER` and `DB_PASSWORD`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
-- **Restart container:** `docker-compose down && docker-compose up -d`
+- **Restart container:** `docker compose -f docker/docker-compose.yml down && docker compose -f docker/docker-compose.yml up -d`
 
 ### Flyway Migrations Fail
 - **Check migration format:** Files should follow `V{version}__{description}.sql` (e.g., `V1__init.sql`)
 - **Verify file encoding:** Ensure all migration files are in UTF-8 format
 - **Review logs:** Check application console output for detailed migration error messages
-- **Reset database:** `docker-compose down -v && docker-compose up -d`
+- **Reset database:** `docker compose -f docker/docker-compose.yml down -v && docker compose -f docker/docker-compose.yml up -d`
 
 ### Backend Startup Issues
 - **Check Java version:** `java -version` (should be 21 or higher)
