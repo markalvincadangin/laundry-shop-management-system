@@ -119,7 +119,7 @@ docker-compose down -v
 The backend handles all business logic, API endpoints, and database interactions.
 
 1. Open the `backend/` folder in your IDE (IntelliJ IDEA recommended).
-2. Ensure the Docker container is running (`docker compose -f docker/docker-compose.yml up -d` from repo root).
+2. Ensure the Docker container is running (run `docker compose -f docker/docker-compose.yml up -d` from the repository root).
 3. Run the application via `LaundrySystemApplication.java` or use Maven:
 
 ```powershell
