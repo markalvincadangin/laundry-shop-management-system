@@ -228,7 +228,7 @@ For detailed data model and relationships, see `docs/11. ERD.pdf`.
 
 ### Database Connection Issues
 - **Verify Docker is running:** `docker compose -f docker/docker-compose.yml ps`
-- **Check credentials:** Ensure root `.env` has correct `DB_USER` and `DB_PASSWORD`
+- **Check credentials:** Ensure `.env` in the repository root has correct `DB_USER` and `DB_PASSWORD`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
 - **Restart container:** `docker compose -f docker/docker-compose.yml down && docker compose -f docker/docker-compose.yml up -d`
 
