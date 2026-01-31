@@ -1,10 +1,10 @@
-package com.highvoltage.laundry_system;
+package com.highvoltage.laundryms;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class LaundrySystemApplicationTests {
+class LaundrymsApplicationTests {
 
 	@Test
 	void contextLoads() {

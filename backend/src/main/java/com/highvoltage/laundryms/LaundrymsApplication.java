@@ -1,13 +1,13 @@
-package com.highvoltage.laundry_system;
+package com.highvoltage.laundryms;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LaundrySystemApplication {
+public class LaundrymsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LaundrySystemApplication.class, args);
+		SpringApplication.run(LaundrymsApplication.class, args);
 	}
 
 }
