@@ -44,7 +44,7 @@ jobs:
       - name: Wait for Postgres to be ready
         run: |
           for i in {1..30}; do
-            docker exec laundry-postgres pg_isready -U laundry_user -d laundry_db && exit 0
+            docker exec laundry-postgres pg_isready -U "${{ secrets.DB_USER }}" -d "${{ secrets.DB_NAME }}" && exit 0
             sleep 2
           done
           echo "Postgres not ready" && docker logs laundry-postgres && exit 1
