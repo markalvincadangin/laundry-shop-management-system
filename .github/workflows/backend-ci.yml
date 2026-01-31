@@ -29,8 +29,18 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Create .env file for Docker
+        run: |
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+          echo "SPRING_PORT=8080" >> .env
+          # Move .env to root so both Docker and Maven can find it if needed
+          cat .env
+
       - name: Start Postgres via docker compose
-        run: docker compose -f docker/docker-compose.yml up -d
+        run: docker compose -f docker/docker-compose.yml --env-file .env up -d
 
       - name: Wait for Postgres to be ready
         run: |
@@ -44,10 +54,10 @@ jobs:
         working-directory: backend
         env:
           DB_HOST: localhost
-          DB_PORT: 5433
-          DB_NAME: laundry_db
-          DB_USER: laundry_user
-          DB_PASSWORD: laundry_password
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
           SPRING_PORT: 8080
         run: mvn -B -ntp clean test
 
@@ -57,4 +67,4 @@ jobs:
 
       - name: Shutdown containers
         if: always()
-        run: docker compose -f docker/docker-compose.yml down -v
+        run: docker compose -f docker/docker-compose.yml --env-file .env down -v
