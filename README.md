@@ -101,8 +101,8 @@ docker-compose ps
 **Database Configuration:**
 - **Port:** 5433 (mapped to 5432 internally)
 - **Database:** laundry_db
-- **Username:** `${DB_USER}` (from `docker/.env`)
-- **Password:** `${DB_PASSWORD}` (from `docker/.env`)
+- **Username:** `${DB_USER}` (from `.env` in the repository root)
+- **Password:** `${DB_PASSWORD}` (from `.env` in the repository root)
 
 To stop the database:
 ```powershell
