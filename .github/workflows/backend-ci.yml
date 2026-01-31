@@ -36,8 +36,7 @@ jobs:
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
           echo "SPRING_PORT=8080" >> .env
-          # Move .env to root so both Docker and Maven can find it if needed
-          cat .env
+          # .env is created in the workspace root for use by Docker and Maven
 
       - name: Start Postgres via docker compose
         run: docker compose -f docker/docker-compose.yml --env-file .env up -d
