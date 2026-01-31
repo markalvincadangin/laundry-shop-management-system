@@ -5,20 +5,18 @@ on:
     branches: [ "develop", "main" ]
     paths:
       - "backend/**"
+      - "docker/**"
       - ".github/workflows/backend-ci.yml"
   pull_request:
     branches: [ "develop", "main" ]
     paths:
       - "backend/**"
+      - "docker/**"
       - ".github/workflows/backend-ci.yml"
 
 jobs:
   build-test:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: backend
 
     steps:
       - name: Checkout
@@ -31,8 +29,32 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Validate build + run tests
+      - name: Start Postgres via docker compose
+        run: docker compose -f docker/docker-compose.yml up -d
+
+      - name: Wait for Postgres to be ready
+        run: |
+          for i in {1..30}; do
+            docker exec laundry-postgres pg_isready -U laundry_user -d laundry_db && exit 0
+            sleep 2
+          done
+          echo "Postgres not ready" && docker logs laundry-postgres && exit 1
+
+      - name: Run backend tests
+        working-directory: backend
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5433
+          DB_NAME: laundry_db
+          DB_USER: laundry_user
+          DB_PASSWORD: macmac15
+          SPRING_PORT: 8080
         run: mvn -B -ntp clean test
 
       - name: Package
+        working-directory: backend
         run: mvn -B -ntp package -DskipTests
+
+      - name: Shutdown containers
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down -v
