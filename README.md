@@ -87,6 +87,8 @@ We use Docker to run a consistent PostgreSQL instance without requiring local in
 
 ```powershell
 # From the repository root
+Copy-Item docker\.env.example docker\.env.docker
+
 cd docker
 
 # Start the PostgreSQL container
@@ -99,8 +101,8 @@ docker-compose ps
 **Database Configuration:**
 - **Port:** 5433 (mapped to 5432 internally)
 - **Database:** laundry_db
-- **Username:** `${DB_USER}` (from `.env`)
-- **Password:** `${DB_PASSWORD}` (from `.env`)
+- **Username:** `${DB_USER}` (from `docker/.env.docker`)
+- **Password:** `${DB_PASSWORD}` (from `docker/.env.docker`)
 
 To stop the database:
 ```powershell
@@ -154,6 +156,28 @@ npm start
 
 ## ⚙️ Configuration
 
+### Docker Environment Variables
+Create a `docker/.env.docker` file based on `docker/.env.example`:
+
+```powershell
+Copy-Item docker\.env.example docker\.env.docker
+```
+
+Then update the values as needed:
+
+```env
+# Database Configuration (Docker)
+DB_USER=laundry_user
+DB_PASSWORD=<your_secure_password>
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=laundry_db
+```
+
+**Important:**
+- Never commit `docker/.env.docker` to version control. It should be ignored by `.gitignore`.
+- Commit `docker/.env.example` so new developers can bootstrap quickly.
+
 ### Environment Variables
 Create a `.env` file in the root directory based on `.env.example`:
 
@@ -204,10 +228,11 @@ For detailed data model and relationships, see `docs/11. ERD.pdf`.
 ### Local Development Setup
 1. Clone the repository
 2. Create `.env` file from `.env.example`
-3. Start Docker containers: `docker-compose up -d`
-4. Start backend: `cd backend && .\mvnw.cmd spring-boot:run`
-5. Start frontend: `cd frontend && npm run dev`
-6. Access the application at `http://localhost:3000`
+3. Create `docker/.env.docker` from `docker/.env.example`
+4. Start Docker containers: `docker-compose up -d`
+5. Start backend: `cd backend && .\mvnw.cmd spring-boot:run`
+6. Start frontend: `cd frontend && npm run dev`
+7. Access the application at `http://localhost:3000`
 
 ### Git Workflow
 - Create feature branches: `git checkout -b feature/your-feature-name`
@@ -226,7 +251,7 @@ For detailed data model and relationships, see `docs/11. ERD.pdf`.
 
 ### Database Connection Issues
 - **Verify Docker is running:** `docker-compose ps`
-- **Check credentials:** Ensure `.env` file has correct `DB_USER` and `DB_PASSWORD`
+- **Check credentials:** Ensure `docker/.env.docker` has correct `DB_USER` and `DB_PASSWORD`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
 - **Restart container:** `docker-compose down && docker-compose up -d`
 

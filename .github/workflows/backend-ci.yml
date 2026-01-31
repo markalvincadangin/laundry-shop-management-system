@@ -47,7 +47,7 @@ jobs:
           DB_PORT: 5433
           DB_NAME: laundry_db
           DB_USER: laundry_user
-          DB_PASSWORD: macmac15
+          DB_PASSWORD: laundry_password
           SPRING_PORT: 8080
         run: mvn -B -ntp clean test
 
