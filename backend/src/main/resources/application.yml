@@ -7,6 +7,7 @@ spring:
 
   datasource:
     # Syntax: ${VAR_NAME:default_value}
+    # WARNING: DB_PASSWORD default is for development only - MUST be set via environment variable in production
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:laundry_db}
     username: ${DB_USER:laundry_user}
     password: ${DB_PASSWORD:CHANGE_ME}
