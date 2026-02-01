@@ -1,0 +1,598 @@
+openapi: 3.1.0
+info:
+  title: Laundry Shop Management System API
+  version: 0.1.0
+  description: |
+    MVP API contract for Laundry Shop Management System.
+    Roles:
+      - STAFF: operational endpoints (orders, status, payments, release)
+      - OWNER: reporting endpoints (reports)
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: Auth
+  - name: Orders
+  - name: Payments
+  - name: Reports
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+
+  responses:
+    ErrorResponse:
+      description: Standard error response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, message, timestamp]
+      properties:
+        code:
+          type: string
+          examples: ["VALIDATION_ERROR", "UNAUTHORIZED", "FORBIDDEN", "NOT_FOUND", "CONFLICT"]
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: string
+          format: date-time
+
+    Role:
+      type: string
+      enum: [OWNER, STAFF]
+
+    OrderStatus:
+      type: string
+      enum: [RECEIVED, PROCESSING, READY, RELEASED]
+
+    PaymentStatus:
+      type: string
+      enum: [UNPAID, PAID]
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+        password:
+          type: string
+          minLength: 6
+          maxLength: 100
+
+    LoginResponse:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: "#/components/schemas/UserSummary"
+
+    UserSummary:
+      type: object
+      required: [id, username, role]
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+
+    CustomerCreate:
+      type: object
+      required: [name, contactNumber]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        contactNumber:
+          type: string
+          minLength: 7
+          maxLength: 30
+
+    OrderCreateRequest:
+      type: object
+      required: [customer, serviceType, weightKg]
+      properties:
+        customer:
+          $ref: "#/components/schemas/CustomerCreate"
+        serviceType:
+          type: string
+          description: e.g., Wash/Dry/Fold
+          minLength: 2
+          maxLength: 60
+        weightKg:
+          type: number
+          format: double
+          minimum: 0.1
+        specialInstructions:
+          type: string
+          maxLength: 300
+        specialItems:
+          type: array
+          items:
+            type: string
+            maxLength: 80
+
+    OrderResponse:
+      type: object
+      required: [id, referenceNumber, customerName, serviceType, weightKg, status, paymentStatus, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        referenceNumber:
+          type: string
+          description: Claim stub reference number
+        customerName:
+          type: string
+        customerContactNumber:
+          type: string
+        serviceType:
+          type: string
+        weightKg:
+          type: number
+          format: double
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+        paymentStatus:
+          $ref: "#/components/schemas/PaymentStatus"
+        totalAmount:
+          type: number
+          format: double
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    OrderSearchResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+
+    OrderStatusUpdateRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+
+    PaymentCreateRequest:
+      type: object
+      required: [orderId, amount, paidAt]
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+          minimum: 0.01
+        paidAt:
+          type: string
+          format: date-time
+        method:
+          type: string
+          description: Cash, GCash, etc.
+          maxLength: 30
+          nullable: true
+
+    PaymentResponse:
+      type: object
+      required: [id, orderId, amount, paidAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        orderId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+        paidAt:
+          type: string
+          format: date-time
+        method:
+          type: string
+          nullable: true
+
+    ReleaseRequest:
+      type: object
+      required: [releasedAt]
+      properties:
+        releasedAt:
+          type: string
+          format: date-time
+
+    ReportDailyResponse:
+      type: object
+      required: [date, totalSales, transactions]
+      properties:
+        date:
+          type: string
+          format: date
+        totalSales:
+          type: number
+          format: double
+        transactions:
+          type: integer
+          format: int32
+
+    ReportMonthlyResponse:
+      type: object
+      required: [year, month, totalSales, transactions]
+      properties:
+        year:
+          type: integer
+          format: int32
+        month:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 12
+        totalSales:
+          type: number
+          format: double
+        transactions:
+          type: integer
+          format: int32
+
+    PendingOrdersResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and obtain JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in successfully. Sets HttpOnly cookie.
+          headers:
+            Set-Cookie:
+              description: >
+                Sets the access_token cookie (HttpOnly).
+                Example: access_token=JWT; HttpOnly; Secure; Path=/; SameSite=Lax
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current authenticated user
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSummary"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (clears auth cookie)
+      security:
+        - cookieAuth: []
+      responses:
+        "204":
+          description: Logged out. Clears auth cookie.
+          headers:
+            Set-Cookie:
+              description: Clears the access_token cookie.
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/orders:
+    post:
+      tags: [Orders]
+      summary: Create a new laundry order (STAFF)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreateRequest"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+
+    get:
+      tags: [Orders]
+      summary: Search orders by reference number or customer name (STAFF)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderSearchResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Get order details by id (STAFF)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/orders/{orderId}/status:
+    patch:
+      tags: [Orders]
+      summary: Update order status (STAFF)
+      description: |
+        Allowed transitions (MVP):
+          RECEIVED -> PROCESSING -> READY -> RELEASED
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderStatusUpdateRequest"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+        "409":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/payments:
+    post:
+      tags: [Payments]
+      summary: Record a payment for an order (STAFF)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentCreateRequest"
+      responses:
+        "201":
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+        "409":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/orders/{orderId}/release:
+    post:
+      tags: [Orders]
+      summary: Release an order to customer (STAFF)
+      description: |
+        Business rule (MVP):
+          - Only allowed if status == READY AND paymentStatus == PAID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReleaseRequest"
+      responses:
+        "200":
+          description: Released order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+        "409":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/reports/daily:
+    get:
+      tags: [Reports]
+      summary: Daily sales report (OWNER)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Daily report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportDailyResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/reports/monthly:
+    get:
+      tags: [Reports]
+      summary: Monthly income report (OWNER)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 12
+      responses:
+        "200":
+          description: Monthly report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportMonthlyResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
+
+  /api/reports/pending:
+    get:
+      tags: [Reports]
+      summary: Pending orders report (OWNER)
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Pending orders
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PendingOrdersResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "403":
+          $ref: "#/components/responses/ErrorResponse"
