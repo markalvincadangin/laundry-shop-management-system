@@ -29,7 +29,7 @@ jobs:
           java-version: "21"
           cache: maven
 
-      # Tests use in-memory H2; no need to start Postgres via Docker in CI
+      # Testcontainers will automatically start PostgreSQL in Docker
       - name: Run backend tests
         working-directory: backend
         run: mvn -B -ntp clean test
