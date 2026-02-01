@@ -30,5 +30,5 @@ FROM (
         '$2a$10$KQzQdfRL/sVB9G2d4eg8AuYE32zcFZghR2OOZXG.ibjOkyLuAMwJC' AS password_hash,
         'Staff' AS role
 ) AS dev_seed_users
-WHERE '${spring_profiles_active}' = 'dev'
+WHERE '${seed_environment}' = 'dev'
 ON CONFLICT (username) DO NOTHING;
