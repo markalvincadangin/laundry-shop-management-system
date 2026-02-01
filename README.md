@@ -87,7 +87,7 @@ We use Docker to run a consistent PostgreSQL instance without requiring local in
 
 ```powershell
 # From the repository root
-Copy-Item docker\.env.example docker\.env
+Copy-Item .env.example .env
 
 # Start the PostgreSQL container
 docker compose -f docker/docker-compose.yml up -d
