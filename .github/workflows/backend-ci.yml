@@ -29,41 +29,11 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Create .env file for Docker
-        run: |
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-          echo "SPRING_PORT=8080" >> .env
-          # .env is created in the workspace root for use by Docker and Maven
-
-      - name: Start Postgres via docker compose
-        run: docker compose -f docker/docker-compose.yml --env-file .env up -d
-
-      - name: Wait for Postgres to be ready
-        run: |
-          for i in {1..30}; do
-            docker exec laundry-postgres pg_isready -U "${{ secrets.DB_USER }}" -d "${{ secrets.DB_NAME }}" && exit 0
-            sleep 2
-          done
-          echo "Postgres not ready" && docker logs laundry-postgres && exit 1
-
+      # Tests use in-memory H2; no need to start Postgres via Docker in CI
       - name: Run backend tests
         working-directory: backend
-        env:
-          DB_HOST: localhost
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          SPRING_PORT: 8080
         run: mvn -B -ntp clean test
 
       - name: Package
         working-directory: backend
         run: mvn -B -ntp package -DskipTests
-
-      - name: Shutdown containers
-        if: always()
-        run: docker compose -f docker/docker-compose.yml --env-file .env down -v
