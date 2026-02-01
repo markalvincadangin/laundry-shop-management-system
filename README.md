@@ -89,13 +89,11 @@ We use Docker to run a consistent PostgreSQL instance without requiring local in
 # From the repository root
 Copy-Item docker\.env.example docker\.env
 
-cd docker
-
 # Start the PostgreSQL container
-docker-compose up -d
+docker compose -f docker/docker-compose.yml up -d
 
 # Verify the container is running
-docker-compose ps
+docker compose -f docker/docker-compose.yml ps
 ```
 
 **Database Configuration:**
@@ -106,12 +104,12 @@ docker-compose ps
 
 To stop the database:
 ```powershell
-docker-compose down
+docker compose -f docker/docker-compose.yml down
 ```
 
 To reset the database (delete all data and start fresh):
 ```powershell
-docker-compose down -v
+docker compose -f docker/docker-compose.yml down -v
 ```
 
 ### 2. Backend Setup (Spring Boot)
