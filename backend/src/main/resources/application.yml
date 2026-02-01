@@ -18,8 +18,8 @@ spring:
     baseline-on-migrate: true
     placeholder-replacement: true
     placeholders:
-      # Use 'dev' profile to enable seed users, otherwise they won't be created
-      spring_profiles_active: ${SPRING_PROFILES_ACTIVE:}
+      # Default to 'production' to prevent seed users if env var not set
+      spring_profiles_active: ${SPRING_PROFILES_ACTIVE:production}
 
   jpa:
     hibernate:
