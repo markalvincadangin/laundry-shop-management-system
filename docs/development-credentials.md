@@ -46,12 +46,14 @@ If you need to change the default development passwords:
 
 1. Generate new BCrypt password hashes using an online tool or:
    ```bash
-   # Using htpasswd (if available)
+   # Using htpasswd (if available) - cost factor 10 is used for faster development iterations
    htpasswd -bnBC 10 "" your_password | tr -d ':\n'
    
    # Or using Python
    python3 -c "import bcrypt; print(bcrypt.hashpw(b'your_password', bcrypt.gensalt(10)).decode())"
    ```
+
+   > **Note**: We use BCrypt cost factor 10 for development to speed up test execution and development workflows. Production deployments should use higher cost factors (12-14) for better security.
 
 2. Update the password hashes in `backend/src/main/resources/db/migration/V2__seed_users.sql`
 3. Update this documentation with the new passwords
