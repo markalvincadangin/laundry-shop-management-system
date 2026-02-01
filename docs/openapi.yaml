@@ -1,12 +1,23 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: Laundry Shop Management System API
   version: 0.1.0
   description: |
     MVP API contract for Laundry Shop Management System.
+
     Roles:
       - STAFF: operational endpoints (orders, status, payments, release)
       - OWNER: reporting endpoints (reports)
+
+    Role-based access control (RBAC) contract:
+      - Endpoints with the "Orders" or "Payments" tag are accessible to the STAFF role.
+      - Endpoints with the "Reports" tag are accessible to the OWNER role.
+      - If an operation summary includes "(STAFF)", it is restricted to the STAFF role.
+      - If an operation summary includes "(OWNER)", it is restricted to the OWNER role.
+      - Unless otherwise documented on a specific operation, access is determined by these tag/summary rules.
+
+    Frontend and backend implementations MUST treat this mapping as the source of truth for which roles
+    are allowed to call which endpoints.
 servers:
   - url: http://localhost:8080
 tags:
@@ -70,7 +81,7 @@ components:
         password:
           type: string
           minLength: 6
-          maxLength: 100
+          maxLength: 72
 
     LoginResponse:
       type: object
@@ -103,6 +114,7 @@ components:
           type: string
           minLength: 7
           maxLength: 30
+          pattern: "^[0-9+()\\s-]+$"
 
     OrderCreateRequest:
       type: object
@@ -127,6 +139,10 @@ components:
           items:
             type: string
             maxLength: 80
+      description: >
+        Pricing is calculated server-side based on serviceType and weightKg.
+        The client does not provide a total amount in this request. The calculated
+        totalAmount will be returned in the OrderResponse after creation.
 
     OrderResponse:
       type: object
@@ -155,6 +171,12 @@ components:
           type: number
           format: double
           nullable: true
+          description: >-
+            Total monetary amount for this order. This value may be null when
+            the system has not yet determined the final price (for example,
+            immediately after the order is created or while pricing is still
+            being calculated) or when no charge applies. Clients MUST handle
+            both null and non-null values for this field.
         createdAt:
           type: string
           format: date-time
@@ -193,6 +215,10 @@ components:
         paidAt:
           type: string
           format: date-time
+          description: >
+            Client-provided payment timestamp. Server-side validation SHOULD
+            ensure this timestamp is not in the future and is within a reasonable
+            range (e.g., not more than 24 hours in the past).
         method:
           type: string
           description: Cash, GCash, etc.
@@ -226,6 +252,10 @@ components:
         releasedAt:
           type: string
           format: date-time
+          description: >
+            Client-provided release timestamp. Server-side validation SHOULD
+            ensure this timestamp is not in the future and is within a reasonable
+            range to prevent recording releases with arbitrary timestamps.
 
     ReportDailyResponse:
       type: object
@@ -288,6 +318,8 @@ paths:
               description: >
                 Sets the access_token cookie (HttpOnly).
                 Example: access_token=JWT; HttpOnly; Secure; Path=/; SameSite=Lax
+                Note: The Secure flag should only be used in production environments with HTTPS.
+                For local development (http://localhost:8080), the Secure flag should be omitted.
               schema:
                 type: string
           content:
@@ -322,13 +354,18 @@ paths:
       security:
         - cookieAuth: []
       responses:
-        "204":
+        "200":
           description: Logged out. Clears auth cookie.
           headers:
             Set-Cookie:
               description: Clears the access_token cookie.
               schema:
                 type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Empty response body indicating successful logout.
         "401":
           $ref: "#/components/responses/ErrorResponse"
 
@@ -377,6 +414,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrderSearchResponse"
+              examples:
+                noResults:
+                  summary: No orders match the search query
+                  value:
+                    items: []
         "400":
           $ref: "#/components/responses/ErrorResponse"
         "401":
@@ -416,8 +458,12 @@ paths:
       tags: [Orders]
       summary: Update order status (STAFF)
       description: |
-        Allowed transitions (MVP):
-          RECEIVED -> PROCESSING -> READY -> RELEASED
+        Allowed transitions (MVP) via this endpoint:
+          RECEIVED -> PROCESSING -> READY
+
+        The transition from READY to RELEASED is performed via
+        POST /api/orders/{orderId}/release, which will set the
+        order status to RELEASED.
       security:
         - cookieAuth: []
       parameters:
@@ -455,6 +501,11 @@ paths:
     post:
       tags: [Payments]
       summary: Record a payment for an order (STAFF)
+      description: |
+        Records a payment for an order. Expected error scenarios:
+          - 400: Payment amount exceeds order total or validation fails
+          - 404: Order does not exist
+          - 409: Order is already fully paid
       security:
         - cookieAuth: []
       requestBody:
@@ -471,15 +522,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/PaymentResponse"
         "400":
-          $ref: "#/components/responses/ErrorResponse"
+          description: Validation error (e.g., payment amount exceeds order total)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           $ref: "#/components/responses/ErrorResponse"
         "403":
           $ref: "#/components/responses/ErrorResponse"
         "404":
-          $ref: "#/components/responses/ErrorResponse"
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "409":
-          $ref: "#/components/responses/ErrorResponse"
+          description: Conflict (e.g., order already fully paid)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /api/orders/{orderId}/release:
     post:
@@ -583,6 +646,10 @@ paths:
     get:
       tags: [Reports]
       summary: Pending orders report (OWNER)
+      description: >
+        Returns a list of pending orders (not yet released) for reporting and oversight purposes.
+        This endpoint is restricted to OWNER role for business oversight.
+        STAFF should use GET /api/orders with query parameter to search for specific orders.
       security:
         - cookieAuth: []
       responses:
