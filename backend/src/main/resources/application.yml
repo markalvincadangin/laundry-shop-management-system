@@ -16,6 +16,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    placeholder-replacement: true
+    placeholders:
+      # Controls whether seed users are created in migrations
+      # Set to 'dev' to enable seed users, defaults to 'production' (no seed users)
+      seed_environment: ${SPRING_PROFILES_ACTIVE:production}
 
   jpa:
     hibernate:
