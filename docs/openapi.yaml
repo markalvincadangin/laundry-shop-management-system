@@ -48,7 +48,8 @@ components:
       properties:
         code:
           type: string
-          examples: ["VALIDATION_ERROR", "UNAUTHORIZED", "FORBIDDEN", "NOT_FOUND", "CONFLICT"]
+          enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT]
+          example: "VALIDATION_ERROR"
         message:
           type: string
         details:
@@ -354,7 +355,7 @@ paths:
       security:
         - cookieAuth: []
       responses:
-        "200":
+        "204":
           description: Logged out. Clears auth cookie.
           headers:
             Set-Cookie:

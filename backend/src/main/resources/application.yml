@@ -36,3 +36,9 @@ logging:
     org:
       hibernate:
         SQL: debug
+
+app:
+  security:
+    cookie-name: access_token
+    allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
+    jwt-secret: ${JWT_SECRET:dev-only-change-me}
