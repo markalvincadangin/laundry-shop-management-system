@@ -14,7 +14,7 @@ class UserRepositoryIT extends AbstractPostgresIT {
 
     @Test
     void saves_and_finds_by_username() {
-        User u = new User(null, "Mark", "Alvin", "staff1", "hash", "STAFF");
+        User u = new User(null, "Mark", "Alvin", "staff1", "hash", Role.STAFF);
         userRepository.save(u);
 
         var found = userRepository.findByUsername("staff1");
@@ -25,15 +25,15 @@ class UserRepositoryIT extends AbstractPostgresIT {
         assertThat(savedUser.getFirstName()).isEqualTo("Mark");
         assertThat(savedUser.getLastName()).isEqualTo("Alvin");
         assertThat(savedUser.getPasswordHash()).isEqualTo("hash");
-        assertThat(savedUser.getRole()).isEqualTo("STAFF");
+        assertThat(savedUser.getRole()).isEqualTo(Role.STAFF);
     }
 
     @Test
     void username_must_be_unique() {
-        userRepository.save(new User(null, "A", "B", "dup", "hash1", "STAFF"));
+        userRepository.save(new User(null, "A", "B", "dup", "hash1", Role.STAFF));
 
         assertThatThrownBy(() ->
-                userRepository.saveAndFlush(new User(null, "C", "D", "dup", "hash2", "STAFF"))
+                userRepository.saveAndFlush(new User(null, "C", "D", "dup", "hash2", Role.STAFF))
         ).isInstanceOf(Exception.class); // keep generic; provider exception differs
     }
 }

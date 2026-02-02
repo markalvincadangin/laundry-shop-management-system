@@ -5,6 +5,7 @@ import com.highvoltage.laundryms.customers.CustomerRepository;
 import com.highvoltage.laundryms.payments.Payment;
 import com.highvoltage.laundryms.payments.PaymentRepository;
 import com.highvoltage.laundryms.support.AbstractPostgresIT;
+import com.highvoltage.laundryms.users.Role;
 import com.highvoltage.laundryms.users.User;
 import com.highvoltage.laundryms.users.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class OrderPaymentMappingIT extends AbstractPostgresIT {
     @Test
     void can_persist_order_and_payment_and_enforce_one_payment_per_order() {
         Customer c = customerRepository.save(new Customer(null, "Juan", "Dela Cruz", "09171234567"));
-        User staff = userRepository.save(new User(null, "Staff", "One", "staff_one", "hash", "STAFF"));
+        User staff = userRepository.save(new User(null, "Staff", "One", "staff_one", "hash", Role.STAFF));
 
         LaundryOrder order = new LaundryOrder();
         order.setCustomer(c);
@@ -37,8 +38,8 @@ class OrderPaymentMappingIT extends AbstractPostgresIT {
         order.setWeight(new BigDecimal("3.50"));
         order.setSpecialItems("none");
         order.setTotalAmount(new BigDecimal("150.00"));
-        order.setOrderStatus("RECEIVED");
-        order.setPaymentStatus("UNPAID");
+        order.setOrderStatus(OrderStatus.RECEIVED);
+        order.setPaymentStatus(PaymentStatus.UNPAID);
         order.setDateReceived(LocalDateTime.now());
 
         order = orderRepository.save(order);
@@ -71,7 +72,7 @@ class OrderPaymentMappingIT extends AbstractPostgresIT {
     @Test
     void order_reference_number_must_be_unique() {
         Customer c = customerRepository.save(new Customer(null, "Ana", "Reyes", "09170000000"));
-        User staff = userRepository.save(new User(null, "Staff", "Two", "staff_two", "hash", "STAFF"));
+        User staff = userRepository.save(new User(null, "Staff", "Two", "staff_two", "hash", Role.STAFF));
 
         LaundryOrder o1 = new LaundryOrder();
         o1.setCustomer(c);
@@ -80,8 +81,8 @@ class OrderPaymentMappingIT extends AbstractPostgresIT {
         o1.setServiceType("WASH");
         o1.setWeight(new BigDecimal("1.00"));
         o1.setTotalAmount(new BigDecimal("50.00"));
-        o1.setOrderStatus("RECEIVED");
-        o1.setPaymentStatus("UNPAID");
+        o1.setOrderStatus(OrderStatus.RECEIVED);
+        o1.setPaymentStatus(PaymentStatus.UNPAID);
         o1.setDateReceived(LocalDateTime.now());
         orderRepository.saveAndFlush(o1);
 
@@ -92,8 +93,8 @@ class OrderPaymentMappingIT extends AbstractPostgresIT {
         o2.setServiceType("WASH");
         o2.setWeight(new BigDecimal("2.00"));
         o2.setTotalAmount(new BigDecimal("100.00"));
-        o2.setOrderStatus("RECEIVED");
-        o2.setPaymentStatus("UNPAID");
+        o2.setOrderStatus(OrderStatus.RECEIVED);
+        o2.setPaymentStatus(PaymentStatus.UNPAID);
         o2.setDateReceived(LocalDateTime.now());
 
         assertThatThrownBy(() -> orderRepository.saveAndFlush(o2))
