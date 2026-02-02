@@ -52,9 +52,11 @@ class OrderPaymentMappingIT extends AbstractPostgresIT {
 
         var foundPayment = paymentRepository.findByOrderId(order.getId());
         assertThat(foundPayment).isPresent();
-        assertThat(foundPayment.get().getAmountPaid()).isEqualByComparingTo(new BigDecimal("150.00"));
-        assertThat(foundPayment.get().getOrder().getId()).isEqualTo(order.getId());
-        assertThat(foundPayment.get().getReceivedBy().getId()).isEqualTo(staff.getId());
+        
+        Payment savedPayment = foundPayment.get();
+        assertThat(savedPayment.getAmountPaid()).isEqualByComparingTo(new BigDecimal("150.00"));
+        assertThat(savedPayment.getOrder().getId()).isEqualTo(order.getId());
+        assertThat(savedPayment.getReceivedBy().getId()).isEqualTo(staff.getId());
 
         Payment p2 = new Payment();
         p2.setOrder(order);
