@@ -21,14 +21,14 @@ FROM (
         'Owner'  AS last_name,
         'owner'  AS username,
         '$2a$10$Jtoor/.1MMlnC4XOp73PHeuRpostP0y020g1uHx2z529cYzYoGyWa' AS password_hash,
-        'Owner' AS role
+        'OWNER' AS role
     UNION ALL
     SELECT
         'System' AS first_name,
         'Staff'  AS last_name,
         'staff'  AS username,
         '$2a$10$KQzQdfRL/sVB9G2d4eg8AuYE32zcFZghR2OOZXG.ibjOkyLuAMwJC' AS password_hash,
-        'Staff' AS role
+        'STAFF' AS role
 ) AS dev_seed_users
 WHERE '${seed_environment}' = 'dev'
 ON CONFLICT (username) DO NOTHING;

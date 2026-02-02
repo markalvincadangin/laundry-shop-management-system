@@ -55,11 +55,13 @@ public class LaundryOrder {
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 20)
-    private String orderStatus;
+    private OrderStatus orderStatus;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 20)
-    private String paymentStatus;
+    private PaymentStatus paymentStatus;
 
     @Column(name = "date_received", nullable = false)
     private LocalDateTime dateReceived;

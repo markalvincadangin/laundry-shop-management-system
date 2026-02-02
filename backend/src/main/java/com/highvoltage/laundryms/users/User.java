@@ -34,9 +34,9 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    // NOTE: SQL defines VARCHAR(20) NOT NULL but not the allowed values.
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 20)
-    private String role;
+    private Role role;
 
     @Override
     public boolean equals(Object object) {
