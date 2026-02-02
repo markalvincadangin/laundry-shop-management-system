@@ -17,7 +17,15 @@ class UserRepositoryIT extends AbstractPostgresIT {
         User u = new User(null, "Mark", "Alvin", "staff1", "hash", "STAFF");
         userRepository.save(u);
 
-        assertThat(userRepository.findByUsername("staff1")).isPresent();
+        var found = userRepository.findByUsername("staff1");
+        assertThat(found).isPresent();
+        
+        User savedUser = found.get();
+        assertThat(savedUser.getUsername()).isEqualTo("staff1");
+        assertThat(savedUser.getFirstName()).isEqualTo("Mark");
+        assertThat(savedUser.getLastName()).isEqualTo("Alvin");
+        assertThat(savedUser.getPasswordHash()).isEqualTo("hash");
+        assertThat(savedUser.getRole()).isEqualTo("STAFF");
     }
 
     @Test
