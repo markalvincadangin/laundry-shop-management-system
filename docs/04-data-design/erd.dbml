@@ -99,7 +99,7 @@ Table orders {
 
   // Financials
   base_amount decimal(10,2) [not null, note: 'loads * base_price']
-  extra_minutes_amount decimal(10,2) [not null, note: 'minutes * price_per_minute']
+  extra_minutes_amount decimal(10,2) [not null, note: 'minutes * price_per_extra_minute']
   addons_total_amount decimal(10,2) [not null, default: 0, note: 'Sum of order_add_ons']
   grand_total decimal(10,2) [not null]
 
