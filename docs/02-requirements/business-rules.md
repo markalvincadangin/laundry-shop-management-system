@@ -112,10 +112,11 @@
 ---
 
 ### BR-PAY-03 – Payment Amount Validation
-**Rule:** Recorded payment amount should match the computed total amount for the order.  
+**Rule:** Recorded payment amount must exactly match the computed total amount for the order.  
 **Applies To:** Payment creation  
 **Enforcement:** Backend service  
-**Error/Handling:** Reject mismatched payment OR require override permission (owner-only).
+**Error/Handling:** Reject any payment where the amount does not exactly match the order total.  
+**MVP Scope:** Strict matching only; partial payments, overpayments, and owner override capabilities are post-MVP features (see US-06).
 
 ---
 
@@ -167,10 +168,10 @@
 For MVP implementation, enforce at least:
 - BR-PR-01, BR-PR-02, BR-PR-03
 - BR-OL-01, BR-OL-02, BR-OL-03, BR-OL-05
-- BR-PAY-02, BR-PAY-04
+- BR-PAY-02, BR-PAY-03, BR-PAY-04
 - BR-NOTIF-02 (tracking by reference)
 
 Recommended next:
 - BR-OL-04 (status transitions)
-- BR-PAY-03 (strict payment matching / owner override)
+- BR-PAY-03 owner override feature (post-MVP enhancement)
 - BR-NOTIF-01 (ready notifications)
