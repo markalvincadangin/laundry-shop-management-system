@@ -97,10 +97,10 @@
 
 **Acceptance Criteria**
 - Payment is linked to exactly one order
-- Payment amount must match the computed total
+- For MVP, only full payments are supported; payment amount must exactly match the computed total for the order
+- Partial payments, overpayments, and change/refunds are not supported in MVP
 - Payment date is automatically recorded
-- Order payment status is updated (Paid / Unpaid)
-
+- Order payment status is updated (Paid / Unpaid) based on whether full payment has been received
 ---
 
 ### US-07 – View Payment History
