@@ -106,7 +106,7 @@ Table orders {
   base_amount decimal(10,2) [not null, note: 'total_loads * base_price_per_load']
   extra_minutes_amount decimal(10,2) [not null, note: 'extra_minutes * price_per_extra_minute']
   addons_total_amount decimal(10,2) [not null, default: 0, note: 'Sum of order_add_ons']
-  grand_total decimal(10,2) [not null]
+  grand_total decimal(10,2) [not null, note: 'Order total = base_amount + extra_minutes_amount + addons_total_amount']
 
   // Status
   current_status order_status [not null, default: 'RECEIVED', note: 'Ref BR-OL-02']
