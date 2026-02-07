@@ -42,7 +42,7 @@ Do not suggest:
 - Pricing:
     - ₱120 per load up to 8kg
     - total_loads = ceil(weight_kg / kg_limit_per_load)
-    - extra_minutes charged at ₱1 per minute
+    - first 45 minutes per load are included; extra_minutes = max(0, minutes_per_load - 45) charged at ₱1 per extra minute
     - add-ons are flexible line items
 - Payments:
     - exactly one payment per order
