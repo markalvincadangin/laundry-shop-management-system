@@ -49,6 +49,16 @@ public class Order {
     @Column(name = "total_loads", nullable = false)
     private Integer totalLoads;
 
+    // Snapshot of pricing rules at order creation (from erd.dbml and V1__init.sql)
+    @Column(name = "base_price_per_load", nullable = false, precision = 10, scale = 2)
+    private BigDecimal basePricePerLoad;
+
+    @Column(name = "kg_limit_per_load", nullable = false, precision = 5, scale = 2)
+    private BigDecimal kgLimitPerLoad;
+
+    @Column(name = "price_per_extra_minute", nullable = false, precision = 10, scale = 2)
+    private BigDecimal pricePerExtraMinute;
+
     @Column(name = "extra_minutes", nullable = false)
     private Integer extraMinutes;
 

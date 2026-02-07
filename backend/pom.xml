@@ -66,6 +66,12 @@
 		<artifactId>spring-dotenv</artifactId>
 		<version>4.0.0</version>
 	</dependency>
+	<!-- dotenv-java for loading .env files (main app and tests) -->
+	<dependency>
+		<groupId>io.github.cdimascio</groupId>
+		<artifactId>dotenv-java</artifactId>
+		<version>3.0.0</version>
+	</dependency>
 	<dependency>
 		<groupId>org.projectlombok</groupId>
 		<artifactId>lombok</artifactId>
@@ -121,6 +127,18 @@
 							<version>${org.mapstruct.version}</version>
 						</path>
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<!-- Maven Surefire Plugin for test execution -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- Ensure tests use UTF-8 encoding -->
+					<argLine>-Dfile.encoding=UTF-8</argLine>
+					<!-- Test isolation: each test class gets a new JVM (optional, can be removed for faster builds) -->
+					<forkCount>1</forkCount>
+					<reuseForks>true</reuseForks>
 				</configuration>
 			</plugin>
 			<plugin>
