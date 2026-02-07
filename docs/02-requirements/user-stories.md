@@ -35,7 +35,10 @@
 - Total number of loads is computed as `total_loads = ceil(weight_kg / 8)`
 - For exact multiples of 8 kg (e.g., 8 kg, 16 kg), `total_loads = weight_kg / 8` (no extra load is added)
 - Example: 8.1 kg = 2 loads; 16.1 kg = 3 loads
-- Extra washing time is charged at **₱1 per minute**
+- Each load includes up to **45 minutes** of standard washing time in the base price
+- Extra washing time is any washing duration **beyond 45 minutes per load**, recorded in whole minutes
+- Extra washing time is charged at **₱1 per recorded extra minute**
+- Staff record the number of extra washing minutes for the order before the system computes the price
 - Computed total amount is displayed before saving the order
 
 ---
