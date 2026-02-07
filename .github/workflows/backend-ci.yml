@@ -33,6 +33,10 @@ jobs:
           cache: maven
 
       # Testcontainers will automatically start PostgreSQL in Docker
+      - name: Make mvnw executable
+        working-directory: backend
+        run: chmod +x ./mvnw
+
       - name: Verify (tests + package)
         working-directory: backend
         run: ./mvnw -B -ntp verify
