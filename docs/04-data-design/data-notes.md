@@ -10,16 +10,16 @@ This ERD supports order tracking, pricing computation, payment recording, report
 - Payments are recorded for reporting and history.
 
 ## MVP vs Future
-**MVP**
-- Orders lifecycle: RECEIVED → WASHING → DRYING → FOLDING → READY_FOR_PICKUP → RELEASED
-- Payment method: CASH
-- Payment status: PAID / UNPAID
+**MVP (application usage)**
+- Orders lifecycle (MVP-used subset of `order_status` enum): RECEIVED → WASHING → DRYING → FOLDING → READY_FOR_PICKUP → RELEASED
+- Payment method (MVP-used subset of `payment_method` enum): CASH
+- Payment status (MVP-used subset of `payment_status` enum): PAID / UNPAID
 
-**Future (MVP+)**
-- CANCELLED status
-- PARTIAL payments
-- Digital payment methods (GCASH, bank transfer)
-- Notification sending retries/providers
+**Future (MVP+ application behavior; already supported by schema enums)**
+- Additional order statuses already present in `order_status` enum (e.g., CANCELLED)
+- Additional payment statuses already present in `payment_status` enum (e.g., PARTIAL)
+- Additional digital payment methods already present in `payment_method` enum (e.g., GCASH, bank_transfer)
+- Operational features not modeled in the current ERD, such as notification sending retries/providers
 
 ## Technical Notes
 - PostgreSQL: `gen_random_uuid()` requires `pgcrypto` extension.
