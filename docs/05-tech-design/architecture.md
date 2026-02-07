@@ -121,7 +121,7 @@ Recommended package/module boundaries:
     - `base_amount = total_loads * base_price_per_load`
     - `extra_minutes_amount = extra_minutes * price_per_extra_minute`
     - `addons_total_amount = sum(add-ons)`
-    - `grand_total = base + extra + addons`
+    - `grand_total = base_amount + extra_minutes_amount + addons_total_amount`
 5. Backend generates unique `reference_number`
 6. Backend stores order with `current_status = RECEIVED`, `payment_status = UNPAID`
 
