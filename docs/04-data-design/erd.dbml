@@ -1,0 +1,164 @@
+Project Faith_Laundry_Shop_System {
+  database_type: 'PostgreSQL'
+  Note: 'Enhanced ERD for Faith Laundry Shop. Includes dynamic pricing, split names, and audit trails. Requires pgcrypto extension for UUIDs.'
+}
+
+// --- ENUMS --- //
+
+Enum user_role {
+  OWNER
+  STAFF
+}
+
+Enum order_status {
+  RECEIVED
+  WASHING
+  DRYING
+  FOLDING
+  READY_FOR_PICKUP
+  RELEASED
+  CANCELLED
+}
+
+Enum payment_status {
+  UNPAID
+  PAID
+  PARTIAL
+}
+
+Enum payment_method {
+  CASH
+  GCASH
+  BANK_TRANSFER
+}
+
+Enum notification_status {
+  PENDING
+  SENT
+  FAILED
+}
+
+// --- CONFIGURATION --- //
+
+Table service_rates {
+  id int [pk, increment]
+  service_name varchar [default: 'Standard Wash', note: 'Standard Wash-Dry-Fold']
+  base_price_per_load decimal(10,2) [default: 120.00, note: 'Ref BR-PR-01: 120 PHP base']
+  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'Ref BR-PR-01: 8kg limit']
+  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'Ref BR-PR-03: 1 PHP/min']
+  is_active boolean [default: true]
+
+  Note: 'Stores pricing rules so the Owner can update prices later without coding.'
+}
+
+// --- USERS & CUSTOMERS --- //
+
+Table users {
+  id uuid [pk, default: `gen_random_uuid()`]
+  username varchar [unique, not null]
+  password_hash varchar [not null]
+  role user_role [not null, default: 'STAFF', note: 'Ref US-11']
+  first_name varchar [not null]
+  last_name varchar [not null]
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Note: 'System users (Owner + Staff). Owner views reports, both record orders.'
+}
+
+Table customers {
+  id bigserial [pk]
+  first_name varchar [not null]
+  last_name varchar [not null]
+  contact_number varchar [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Note: 'Ref US-01: Minimal customer details required.'
+  Indexes {
+    (last_name, first_name, contact_number) [unique]
+  }
+}
+
+// --- ORDER MANAGEMENT --- //
+
+Table orders {
+  id bigserial [pk]
+  reference_number varchar [unique, not null, note: 'Ref US-04: Unique tracking #']
+  customer_id bigint [ref: > customers.id, not null]
+  created_by_user_id uuid [ref: > users.id, not null, note: 'Staff who created the order']
+
+  // Load & Weight Logic
+  service_rate_id int [ref: > service_rates.id, not null, note: 'Snapshots price rules at time of order']
+  weight_kg decimal(10,2) [not null, note: 'Ref BR-PR-01']
+  total_loads int [not null, note: 'Ref BR-PR-02: Derived (ceil(weight/8))']
+
+  // Extra Charges
+  extra_minutes int [not null, default: 0, note: 'Ref BR-PR-03: Extended washing time']
+
+  // Financials
+  base_amount decimal(10,2) [not null, note: 'loads * base_price']
+  extra_minutes_amount decimal(10,2) [not null, note: 'minutes * price_per_minute']
+  addons_total_amount decimal(10,2) [not null, default: 0, note: 'Sum of order_add_ons']
+  grand_total decimal(10,2) [not null]
+
+  // Status
+  current_status order_status [not null, default: 'RECEIVED', note: 'Ref BR-OL-02']
+  payment_status payment_status [not null, default: 'UNPAID', note: 'Ref BR-PAY-04']
+
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Note: 'Central transaction table. Replaces physical tags.'
+}
+
+Table order_add_ons {
+  id bigserial [pk]
+  order_id bigint [ref: > orders.id, not null]
+  name varchar [not null, note: 'e.g., Extra Fabric Conditioner']
+  price decimal(10,2) [not null]
+  quantity int [not null, default: 1]
+
+  Note: 'Ref BR-PR-04: Handles variable extra requests.'
+}
+
+Table order_status_logs {
+  id bigserial [pk]
+  order_id bigint [ref: > orders.id, not null]
+  previous_status order_status
+  new_status order_status [not null]
+  changed_by_user_id uuid [ref: > users.id, not null]
+  changed_at timestamp [default: `now()`]
+  notes text
+
+  Note: 'Ref US-03: Audit trail replacing the physical logbook.'
+}
+
+// --- PAYMENTS --- //
+
+Table payments {
+  id bigserial [pk]
+  order_id bigint [ref: - orders.id, unique, not null, note: 'One-to-One: One payment per order']
+  amount_paid decimal(10,2) [not null, note: 'Ref BR-PAY-03: Must match Order Total']
+  payment_method payment_method [default: 'CASH']
+  received_by_user_id uuid [ref: > users.id, not null]
+  payment_date timestamp [default: `now()`]
+  remarks text
+
+  Note: 'Ref US-06: Records revenue for Reporting.'
+}
+
+// --- NOTIFICATIONS --- //
+
+Table notifications {
+  id bigserial [pk]
+  order_id bigint [ref: > orders.id, not null]
+  customer_id bigint [ref: > customers.id, not null]
+  message text [not null]
+  created_at timestamp [default: `now()`]
+  sent_at timestamp
+  status notification_status [not null, default: 'PENDING']
+
+  Note: 'Ref US-10: Notify customer when READY_FOR_PICKUP.'
+}
