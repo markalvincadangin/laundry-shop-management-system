@@ -166,7 +166,7 @@
 ## MVP Enforcement Checklist
 For MVP implementation, enforce at least:
 - BR-PR-01, BR-PR-02, BR-PR-03
-- BR-OL-01, BR-OL-02, BR-OL-03
+- BR-OL-01, BR-OL-02, BR-OL-03, BR-OL-05
 - BR-PAY-02, BR-PAY-04
 - BR-NOTIF-02 (tracking by reference)
 
