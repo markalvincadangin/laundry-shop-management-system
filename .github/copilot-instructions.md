@@ -48,7 +48,8 @@ Do not suggest:
     - exactly one payment per order
     - payment amount must match order.grand_total (unless owner override is added)
 - Order lifecycle:
-    - RECEIVED → WASHING → DRYING → FOLDING → READY_FOR_PICKUP → RELEASED
+    - Normal flow: RECEIVED → WASHING → DRYING → FOLDING → READY_FOR_PICKUP → RELEASED
+    - Cancellation: orders may transition to CANCELLED from any non-terminal status before RELEASED (e.g., RECEIVED, WASHING, DRYING, FOLDING, READY_FOR_PICKUP)
 
 ---
 
