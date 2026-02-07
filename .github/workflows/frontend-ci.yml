@@ -12,6 +12,9 @@ on:
       - "frontend/**"
       - ".github/workflows/frontend-ci.yml"
 
+permissions:
+  contents: read
+
 jobs:
   lint-build:
     runs-on: ubuntu-latest
@@ -47,6 +50,12 @@ jobs:
         if: steps.check-frontend.outputs.exists == 'true'
         working-directory: frontend
         run: npm run lint
+
+      # Optional but strongly recommended for TS projects:
+      - name: Typecheck
+        if: steps.check-frontend.outputs.exists == 'true'
+        working-directory: frontend
+        run: npm run typecheck
 
       - name: Build
         if: steps.check-frontend.outputs.exists == 'true'

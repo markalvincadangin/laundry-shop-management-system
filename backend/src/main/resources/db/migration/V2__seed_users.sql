@@ -13,22 +13,24 @@
 --
 -- Idempotent: re-running won't duplicate (uses ON CONFLICT).
 
-INSERT INTO users (first_name, last_name, username, password_hash, role)
-SELECT first_name, last_name, username, password_hash, role
+INSERT INTO users (first_name, last_name, username, password_hash, role, is_active)
+SELECT first_name, last_name, username, password_hash, role, is_active
 FROM (
     SELECT
         'System' AS first_name,
         'Owner'  AS last_name,
         'owner'  AS username,
         '$2a$10$Jtoor/.1MMlnC4XOp73PHeuRpostP0y020g1uHx2z529cYzYoGyWa' AS password_hash,
-        'OWNER' AS role
+        'OWNER'::user_role AS role,
+        TRUE AS is_active
     UNION ALL
     SELECT
         'System' AS first_name,
         'Staff'  AS last_name,
         'staff'  AS username,
         '$2a$10$KQzQdfRL/sVB9G2d4eg8AuYE32zcFZghR2OOZXG.ibjOkyLuAMwJC' AS password_hash,
-        'STAFF' AS role
+        'STAFF'::user_role AS role,
+        TRUE AS is_active
 ) AS dev_seed_users
 WHERE '${seed_environment}' = 'dev'
 ON CONFLICT (username) DO NOTHING;
