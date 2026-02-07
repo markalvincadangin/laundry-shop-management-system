@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: laundryms-backend-test
+
+  # IMPORTANT:
+  # Datasource is intentionally NOT defined here.
+  # Testcontainers will inject it dynamically.
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    placeholder-replacement: true
+    placeholders:
+      seed_environment: production
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org:
+      springframework:
+        test:
+          context:
+            cache: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.flywaydb: DEBUG

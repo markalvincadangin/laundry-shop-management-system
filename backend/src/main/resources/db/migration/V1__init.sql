@@ -1,48 +1,125 @@
--- USERS
-CREATE TABLE users (
-                       id BIGSERIAL PRIMARY KEY,
-                       first_name VARCHAR(50),
-                       last_name VARCHAR(50),
-                       username VARCHAR(50) NOT NULL UNIQUE,
-                       password_hash VARCHAR(255) NOT NULL,
-                       role VARCHAR(20) NOT NULL
+-- Enable UUID generation
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Enums
+DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+            CREATE TYPE user_role AS ENUM ('OWNER', 'STAFF');
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'order_status') THEN
+            CREATE TYPE order_status AS ENUM ('RECEIVED', 'WASHING', 'DRYING', 'FOLDING', 'READY_FOR_PICKUP', 'RELEASED', 'CANCELLED');
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
+            CREATE TYPE payment_status AS ENUM ('UNPAID', 'PAID', 'PARTIAL');
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_method') THEN
+            CREATE TYPE payment_method AS ENUM ('CASH', 'GCASH', 'BANK_TRANSFER');
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notification_status') THEN
+            CREATE TYPE notification_status AS ENUM ('PENDING', 'SENT', 'FAILED');
+        END IF;
+    END$$;
+
+-- Tables
+CREATE TABLE IF NOT EXISTS service_rates (
+                                             id                  SERIAL PRIMARY KEY,
+                                             service_name        VARCHAR DEFAULT 'Standard Wash',
+                                             base_price_per_load DECIMAL(10,2) NOT NULL DEFAULT 120.00,
+                                             kg_limit_per_load   DECIMAL(5,2)  NOT NULL DEFAULT 8.00,
+                                             price_per_extra_minute DECIMAL(10,2) NOT NULL DEFAULT 1.00,
+                                             is_active           BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- CUSTOMERS
-CREATE TABLE customers (
-                           id BIGSERIAL PRIMARY KEY,
-                           first_name VARCHAR(50) NOT NULL,
-                           last_name VARCHAR(50) NOT NULL,
-                           contact_number VARCHAR(20) NOT NULL
+CREATE TABLE IF NOT EXISTS users (
+                                     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                     username      VARCHAR NOT NULL UNIQUE,
+                                     password_hash VARCHAR NOT NULL,
+                                     role          user_role NOT NULL DEFAULT 'STAFF',
+                                     first_name    VARCHAR NOT NULL,
+                                     last_name     VARCHAR NOT NULL,
+                                     is_active     BOOLEAN NOT NULL DEFAULT TRUE,
+                                     created_at    TIMESTAMP NOT NULL DEFAULT now(),
+                                     updated_at    TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- LAUNDRY ORDERS
-CREATE TABLE laundry_orders (
-                                id BIGSERIAL PRIMARY KEY,
-                                customer_id BIGINT NOT NULL,
-                                created_by BIGINT NOT NULL,
-                                order_reference_number VARCHAR(30) NOT NULL UNIQUE,
-                                service_type VARCHAR(20) NOT NULL,
-                                weight NUMERIC(5,2) NOT NULL,
-                                special_items VARCHAR(255),
-                                total_amount NUMERIC(10,2) NOT NULL,
-                                order_status VARCHAR(20) NOT NULL,
-                                payment_status VARCHAR(20) NOT NULL,
-                                date_received TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                date_released TIMESTAMP,
-
-                                CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES customers(id),
-                                CONSTRAINT fk_order_user FOREIGN KEY (created_by) REFERENCES users(id)
+CREATE TABLE IF NOT EXISTS customers (
+                                         id             BIGSERIAL PRIMARY KEY,
+                                         first_name     VARCHAR NOT NULL,
+                                         last_name      VARCHAR NOT NULL,
+                                         contact_number VARCHAR NOT NULL,
+                                         created_at     TIMESTAMP NOT NULL DEFAULT now(),
+                                         updated_at     TIMESTAMP NOT NULL DEFAULT now(),
+                                         CONSTRAINT uq_customers_identity UNIQUE (last_name, first_name, contact_number)
 );
 
--- PAYMENTS (1 payment per order)
-CREATE TABLE payments (
-                          id BIGSERIAL PRIMARY KEY,
-                          order_id BIGINT NOT NULL UNIQUE,
-                          received_by BIGINT NOT NULL,
-                          amount_paid NUMERIC(10,2) NOT NULL,
-                          payment_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE IF NOT EXISTS orders (
+                                      id                 BIGSERIAL PRIMARY KEY,
+                                      reference_number   VARCHAR NOT NULL UNIQUE,
+                                      customer_id        BIGINT NOT NULL REFERENCES customers(id),
+                                      created_by_user_id UUID NOT NULL REFERENCES users(id),
 
-                          CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES laundry_orders(id),
-                          CONSTRAINT fk_payment_user FOREIGN KEY (received_by) REFERENCES users(id)
+                                      service_rate_id    INT NOT NULL REFERENCES service_rates(id),
+                                      weight_kg          DECIMAL(10,2) NOT NULL,
+                                      total_loads        INT NOT NULL,
+
+                                      extra_minutes      INT NOT NULL DEFAULT 0,
+
+                                      base_amount           DECIMAL(10,2) NOT NULL,
+                                      extra_minutes_amount  DECIMAL(10,2) NOT NULL,
+                                      addons_total_amount   DECIMAL(10,2) NOT NULL DEFAULT 0,
+                                      grand_total           DECIMAL(10,2) NOT NULL,
+
+                                      current_status     order_status NOT NULL DEFAULT 'RECEIVED',
+                                      payment_status     payment_status NOT NULL DEFAULT 'UNPAID',
+
+                                      created_at         TIMESTAMP NOT NULL DEFAULT now(),
+                                      updated_at         TIMESTAMP NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS order_add_ons (
+                                             id       BIGSERIAL PRIMARY KEY,
+                                             order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                                             name     VARCHAR NOT NULL,
+                                             price    DECIMAL(10,2) NOT NULL,
+                                             quantity INT NOT NULL DEFAULT 1
+);
+
+CREATE TABLE IF NOT EXISTS order_status_logs (
+                                                 id                 BIGSERIAL PRIMARY KEY,
+                                                 order_id            BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                                                 previous_status     order_status,
+                                                 new_status          order_status NOT NULL,
+                                                 changed_by_user_id  UUID NOT NULL REFERENCES users(id),
+                                                 changed_at          TIMESTAMP NOT NULL DEFAULT now(),
+                                                 notes               TEXT
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+                                        id                 BIGSERIAL PRIMARY KEY,
+                                        order_id           BIGINT NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
+                                        amount_paid        DECIMAL(10,2) NOT NULL,
+                                        payment_method     payment_method NOT NULL DEFAULT 'CASH',
+                                        received_by_user_id UUID NOT NULL REFERENCES users(id),
+                                        payment_date       TIMESTAMP NOT NULL DEFAULT now(),
+                                        remarks            TEXT
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+                                             id          BIGSERIAL PRIMARY KEY,
+                                             order_id     BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                                             customer_id  BIGINT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+                                             message      TEXT NOT NULL,
+                                             created_at   TIMESTAMP NOT NULL DEFAULT now(),
+                                             sent_at      TIMESTAMP,
+                                             status       notification_status NOT NULL DEFAULT 'PENDING'
+);
+
+-- Minimal seed data: 1 active rate
+INSERT INTO service_rates (service_name, base_price_per_load, kg_limit_per_load, price_per_extra_minute, is_active)
+VALUES ('Standard Wash', 120.00, 8.00, 1.00, TRUE)
+ON CONFLICT DO NOTHING;

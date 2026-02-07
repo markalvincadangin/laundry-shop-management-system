@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: laundry-system
+    name: laundryms-backend
 
   datasource:
     # Syntax: ${VAR_NAME:default_value}
@@ -16,6 +16,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    placeholder-replacement: true
+    placeholders:
+      # Controls whether seed users are created in migrations
+      # Set to 'dev' to enable seed users, defaults to 'production' (no seed users)
+      seed_environment: ${SPRING_PROFILES_ACTIVE:production}
 
   jpa:
     hibernate:
@@ -31,3 +36,9 @@ logging:
     org:
       hibernate:
         SQL: debug
+
+app:
+  security:
+    cookie-name: access_token
+    allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
+    jwt-secret: ${JWT_SECRET:dev-only-change-me}
