@@ -4,8 +4,8 @@
 This ERD supports order tracking, pricing computation, payment recording, reporting, and customer notifications.
 
 ## Key Business Rules Supported
-- ₱120 per load up to 8kg; weight above 8kg adds another load.
-- Extra washing time is ₱1 per minute when recorded.
+- Pricing is based on configurable rates (base_price_per_load, kg_limit_per_load) that are snapshotted at order creation; weight above the kg limit adds another load.
+- Extra washing time is charged at the snapshotted price_per_extra_minute rate when recorded.
 - Orders are tracked by a unique reference number.
 - Payments are recorded for reporting and history.
 
@@ -23,7 +23,8 @@ This ERD supports order tracking, pricing computation, payment recording, report
 
 ## Technical Notes
 - PostgreSQL: `gen_random_uuid()` requires `pgcrypto` extension.
-- Store both inputs (weight_kg, extra_minutes, add-ons) and computed totals (base_amount, extra_minutes_amount, addons_total_amount, grand_total) to preserve historical accuracy when rates change.
+- **Pricing Snapshot**: The `orders` table stores snapshot values (base_price_per_load, kg_limit_per_load, price_per_extra_minute) copied from `service_rates` at order creation time. This ensures historical accuracy even when the owner updates pricing rules later. The `service_rate_id` foreign key indicates which service was used but is not relied upon for pricing calculations.
+- Store both inputs (weight_kg, extra_minutes, add-ons) and computed totals (base_amount, extra_minutes_amount, addons_total_amount, grand_total) to preserve complete order history.
 
 ## Integrity Constraints
 - `orders.reference_number` must be UNIQUE
