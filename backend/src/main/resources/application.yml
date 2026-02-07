@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: laundry-system
+    name: laundryms-backend
 
   datasource:
     # Syntax: ${VAR_NAME:default_value}
