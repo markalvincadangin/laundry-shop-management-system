@@ -4,8 +4,8 @@
 This ERD supports order tracking, pricing computation, payment recording, reporting, and customer notifications.
 
 ## Key Business Rules Supported
-- ₱120 per load up to 8kg; weight above 8kg adds another load.
-- Extra washing time is ₱1 per minute when recorded.
+- Pricing is based on configurable rates (base_price_per_load, kg_limit_per_load) that are snapshotted at order creation; weight above the kg limit adds another load.
+- Extra washing time is charged at the snapshotted price_per_extra_minute rate when recorded.
 - Orders are tracked by a unique reference number.
 - Payments are recorded for reporting and history.
 
