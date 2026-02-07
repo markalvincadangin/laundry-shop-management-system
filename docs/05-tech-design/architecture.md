@@ -133,10 +133,11 @@ Recommended package/module boundaries:
 
 ### 5.3 Payment Recording
 1. Staff records payment upon pickup
-2. Backend validates:
-    - payment does not already exist for order (1:1)
+2. Backend validates (per BR-PAY-03/04, MVP is **full-payment-only**):
+    - payment does not already exist for order (1:1 relationship: 1 order → 1 payment)
     - amount matches `orders.grand_total` (or owner override later)
 3. Backend inserts payment and updates `orders.payment_status = PAID`
+4. **MVP constraint:** Partial payments are **not** supported. If the API schema includes `PaymentStatus = PARTIAL`, it is reserved for post-MVP and must not be used in MVP business logic or UI flows.
 
 ### 5.4 Reporting
 1. Owner requests daily/monthly/yearly report
