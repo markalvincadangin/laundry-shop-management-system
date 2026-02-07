@@ -23,7 +23,8 @@ This ERD supports order tracking, pricing computation, payment recording, report
 
 ## Technical Notes
 - PostgreSQL: `gen_random_uuid()` requires `pgcrypto` extension.
-- Store both inputs (weight_kg, extra_minutes, add-ons) and computed totals (base_amount, extra_minutes_amount, addons_total_amount, grand_total) to preserve historical accuracy when rates change.
+- **Pricing Snapshot**: The `orders` table stores snapshot values (base_price_per_load, kg_limit_per_load, price_per_extra_minute) copied from `service_rates` at order creation time. This ensures historical accuracy even when the owner updates pricing rules later. The `service_rate_id` foreign key indicates which service was used but is not relied upon for pricing calculations.
+- Store both inputs (weight_kg, extra_minutes, add-ons) and computed totals (base_amount, extra_minutes_amount, addons_total_amount, grand_total) to preserve complete order history.
 
 ## Integrity Constraints
 - `orders.reference_number` must be UNIQUE

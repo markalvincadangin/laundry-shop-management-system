@@ -90,15 +90,20 @@ Table orders {
   created_by_user_id uuid [ref: > users.id, not null, note: 'Staff who created the order']
 
   // Load & Weight Logic
-  service_rate_id int [ref: > service_rates.id, not null, note: 'Snapshots price rules at time of order']
+  service_rate_id int [ref: > service_rates.id, not null, note: 'Which service was used (informational)']
   weight_kg decimal(10,2) [not null, note: 'Ref BR-PR-01']
   total_loads int [not null, note: 'Ref BR-PR-02: Derived (ceil(weight/8))']
+
+  // Snapshot of pricing rules at order creation
+  base_price_per_load decimal(10,2) [not null, note: 'Price per load at order time']
+  kg_limit_per_load decimal(5,2) [not null, note: 'KG limit per load at order time']
+  price_per_extra_minute decimal(10,2) [not null, note: 'Price per extra minute at order time']
 
   // Extra Charges
   extra_minutes int [not null, default: 0, note: 'Ref BR-PR-03: Extended washing time']
 
-  // Financials
-  base_amount decimal(10,2) [not null, note: 'loads * base_price']
+  // Financials (computed from snapshot values)
+  base_amount decimal(10,2) [not null, note: 'loads * base_price_per_load']
   extra_minutes_amount decimal(10,2) [not null, note: 'minutes * price_per_extra_minute']
   addons_total_amount decimal(10,2) [not null, default: 0, note: 'Sum of order_add_ons']
   grand_total decimal(10,2) [not null]
