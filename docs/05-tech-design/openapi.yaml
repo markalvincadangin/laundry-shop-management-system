@@ -1,0 +1,682 @@
+openapi: 3.0.3
+info:
+  title: Faith Laundry Shop Management System API
+  version: 1.0.0
+  description: >
+    REST API contract for the Laundry Shop Management System.
+    Derived from user stories, business rules, and ERD.
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Customers
+  - name: ServiceRates
+  - name: Orders
+  - name: Payments
+  - name: Reports
+  - name: Notifications
+
+paths:
+  /api/v1/health:
+    get:
+      summary: Health check
+      tags: [Reports]
+      responses:
+        "200":
+          description: OK
+
+  # -------------------------
+  # AUTH (placeholder)
+  # -------------------------
+  /api/v1/auth/login:
+    post:
+      summary: Login (placeholder)
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # -------------------------
+  # CUSTOMERS
+  # -------------------------
+  /api/v1/customers:
+    post:
+      summary: Create customer
+      tags: [Customers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerRequest"
+      responses:
+        "201":
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      summary: Search customers
+      tags: [Customers]
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Free-text search by name/contact (optional)
+      responses:
+        "200":
+          description: Customers list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerResponse"
+
+  /api/v1/customers/{customerId}:
+    get:
+      summary: Get customer by ID
+      tags: [Customers]
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        "200":
+          description: Customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # -------------------------
+  # SERVICE RATES (dynamic pricing)
+  # -------------------------
+  /api/v1/service-rates:
+    get:
+      summary: List service rates
+      tags: [ServiceRates]
+      parameters:
+        - in: query
+          name: activeOnly
+          schema: { type: boolean, default: true }
+      responses:
+        "200":
+          description: Service rates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceRateResponse"
+
+  /api/v1/service-rates/active:
+    get:
+      summary: Get the active service rate (default pricing)
+      tags: [ServiceRates]
+      responses:
+        "200":
+          description: Active rate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRateResponse"
+        "404":
+          description: No active rate configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # -------------------------
+  # ORDERS
+  # -------------------------
+  /api/v1/orders:
+    post:
+      summary: Create laundry order (records intake + computes totals)
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Validation or business rule error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      summary: List/search orders
+      tags: [Orders]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/OrderStatus"
+        - in: query
+          name: paymentStatus
+          schema:
+            $ref: "#/components/schemas/PaymentStatus"
+        - in: query
+          name: customerId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Orders list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderResponse"
+
+  /api/v1/orders/{orderId}:
+    get:
+      summary: Get order by ID
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/orders/reference/{referenceNumber}:
+    get:
+      summary: Track order by reference number (customer tracking)
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: referenceNumber
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Order tracking view
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderTrackingResponse"
+        "404":
+          description: Reference not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/orders/{orderId}/status:
+    patch:
+      summary: Update order status (creates status log entry)
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderStatusRequest"
+      responses:
+        "200":
+          description: Updated order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Invalid transition or validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/orders/{orderId}/add-ons:
+    post:
+      summary: Add an add-on charge to an order
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddOrderAddOnRequest"
+      responses:
+        "200":
+          description: Updated order (totals recalculated)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # -------------------------
+  # PAYMENTS
+  # -------------------------
+  /api/v1/payments:
+    post:
+      summary: Record payment for an order (one payment per order)
+      tags: [Payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentRequest"
+      responses:
+        "201":
+          description: Payment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "400":
+          description: Validation or mismatch error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/payments/{paymentId}:
+    get:
+      summary: Get payment by ID
+      tags: [Payments]
+      parameters:
+        - in: path
+          name: paymentId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        "200":
+          description: Payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # -------------------------
+  # REPORTS
+  # -------------------------
+  /api/v1/reports/sales/daily:
+    get:
+      summary: Daily sales report (based on payments)
+      tags: [Reports]
+      parameters:
+        - in: query
+          name: date
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Daily sales
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySalesReportResponse"
+
+  /api/v1/reports/sales/monthly:
+    get:
+      summary: Monthly sales report (based on payments)
+      tags: [Reports]
+      parameters:
+        - in: query
+          name: year
+          required: true
+          schema: { type: integer, example: 2026 }
+        - in: query
+          name: month
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 12, example: 2 }
+      responses:
+        "200":
+          description: Monthly sales
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PeriodSalesReportResponse"
+
+  /api/v1/reports/sales/yearly:
+    get:
+      summary: Yearly sales report (based on payments)
+      tags: [Reports]
+      parameters:
+        - in: query
+          name: year
+          required: true
+          schema: { type: integer, example: 2026 }
+      responses:
+        "200":
+          description: Yearly sales
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PeriodSalesReportResponse"
+
+components:
+  schemas:
+    # -------------------------
+    # COMMON
+    # -------------------------
+    ErrorResponse:
+      type: object
+      properties:
+        code: { type: string, example: "VALIDATION_ERROR" }
+        message: { type: string, example: "weight_kg must be greater than 0" }
+        details:
+          type: array
+          items: { type: string }
+      required: [code, message]
+
+    # -------------------------
+    # AUTH
+    # -------------------------
+    LoginRequest:
+      type: object
+      properties:
+        username: { type: string }
+        password: { type: string }
+      required: [username, password]
+
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string, description: "JWT token (placeholder)" }
+        role:
+          $ref: "#/components/schemas/UserRole"
+      required: [token, role]
+
+    # -------------------------
+    # ENUMS
+    # -------------------------
+    UserRole:
+      type: string
+      enum: [OWNER, STAFF]
+
+    OrderStatus:
+      type: string
+      enum: [RECEIVED, WASHING, DRYING, FOLDING, READY_FOR_PICKUP, RELEASED, CANCELLED]
+
+    PaymentStatus:
+      type: string
+      enum: [UNPAID, PAID, PARTIAL]
+
+    PaymentMethod:
+      type: string
+      enum: [CASH, GCASH, BANK_TRANSFER]
+
+    NotificationStatus:
+      type: string
+      enum: [PENDING, SENT, FAILED]
+
+    # -------------------------
+    # CUSTOMERS
+    # -------------------------
+    CreateCustomerRequest:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        contactNumber: { type: string }
+      required: [firstName, lastName, contactNumber]
+
+    CustomerResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        firstName: { type: string }
+        lastName: { type: string }
+        contactNumber: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, firstName, lastName, contactNumber]
+
+    # -------------------------
+    # SERVICE RATES
+    # -------------------------
+    ServiceRateResponse:
+      type: object
+      properties:
+        id: { type: integer }
+        serviceName: { type: string }
+        basePricePerLoad: { type: number, format: double }
+        kgLimitPerLoad: { type: number, format: double }
+        pricePerExtraMinute: { type: number, format: double }
+        isActive: { type: boolean }
+      required: [id, serviceName, basePricePerLoad, kgLimitPerLoad, pricePerExtraMinute, isActive]
+
+    # -------------------------
+    # ORDERS
+    # -------------------------
+    CreateOrderRequest:
+      type: object
+      properties:
+        customerId:
+          type: integer
+          format: int64
+          description: "Existing customer id"
+        customer:
+          $ref: "#/components/schemas/CreateCustomerRequest"
+        serviceRateId:
+          type: integer
+          description: "Rate to apply; if omitted, uses active rate"
+        weightKg:
+          type: number
+          format: double
+        extraMinutes:
+          type: integer
+          default: 0
+        initialAddOns:
+          type: array
+          items:
+            $ref: "#/components/schemas/AddOnInput"
+      required: [weightKg]
+
+      description: >
+        Provide either customerId OR customer (to create customer on the fly).
+        For MVP, you may require customer object if you don't implement customer search yet.
+
+    AddOnInput:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: number, format: double }
+        quantity: { type: integer, default: 1 }
+      required: [name, price]
+
+    UpdateOrderStatusRequest:
+      type: object
+      properties:
+        newStatus:
+          $ref: "#/components/schemas/OrderStatus"
+        notes:
+          type: string
+      required: [newStatus]
+
+    AddOrderAddOnRequest:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: number, format: double }
+        quantity: { type: integer, default: 1 }
+      required: [name, price]
+
+    OrderResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        referenceNumber: { type: string }
+        customerId: { type: integer, format: int64 }
+        createdByUserId: { type: string, format: uuid }
+        serviceRateId: { type: integer }
+        weightKg: { type: number, format: double }
+        totalLoads: { type: integer }
+        extraMinutes: { type: integer }
+        baseAmount: { type: number, format: double }
+        extraMinutesAmount: { type: number, format: double }
+        addonsTotalAmount: { type: number, format: double }
+        grandTotal: { type: number, format: double }
+        currentStatus:
+          $ref: "#/components/schemas/OrderStatus"
+        paymentStatus:
+          $ref: "#/components/schemas/PaymentStatus"
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required:
+        - id
+        - referenceNumber
+        - customerId
+        - serviceRateId
+        - weightKg
+        - totalLoads
+        - baseAmount
+        - extraMinutesAmount
+        - addonsTotalAmount
+        - grandTotal
+        - currentStatus
+        - paymentStatus
+
+    OrderTrackingResponse:
+      type: object
+      properties:
+        referenceNumber: { type: string }
+        currentStatus:
+          $ref: "#/components/schemas/OrderStatus"
+        customerName: { type: string }
+        contactNumber: { type: string }
+        createdAt: { type: string, format: date-time }
+        grandTotal: { type: number, format: double }
+        paymentStatus:
+          $ref: "#/components/schemas/PaymentStatus"
+      required: [referenceNumber, currentStatus, customerName, createdAt, paymentStatus]
+
+    # -------------------------
+    # PAYMENTS
+    # -------------------------
+    CreatePaymentRequest:
+      type: object
+      properties:
+        orderId: { type: integer, format: int64 }
+        amountPaid: { type: number, format: double }
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
+      required: [orderId, amountPaid]
+
+    PaymentResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        orderId: { type: integer, format: int64 }
+        amountPaid: { type: number, format: double }
+        paymentMethod:
+          $ref: "#/components/schemas/PaymentMethod"
+        receivedByUserId: { type: string, format: uuid }
+        paymentDate: { type: string, format: date-time }
+        remarks: { type: string }
+      required: [id, orderId, amountPaid, paymentMethod, paymentDate]
+
+    # -------------------------
+    # REPORTS
+    # -------------------------
+    DailySalesReportResponse:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        totalIncome: { type: number, format: double }
+        paidOrdersCount: { type: integer }
+      required: [date, totalIncome, paidOrdersCount]
+
+    PeriodSalesReportResponse:
+      type: object
+      properties:
+        period:
+          type: string
+          example: "2026-02"
+        totalIncome: { type: number, format: double }
+        paidOrdersCount: { type: integer }
+      required: [period, totalIncome, paidOrdersCount]
