@@ -141,7 +141,7 @@ Table payments {
   id bigserial [pk]
   order_id bigint [ref: - orders.id, unique, not null, note: 'One-to-One: One payment per order']
   amount_paid decimal(10,2) [not null, note: 'Ref BR-PAY-03: Must match Order Total']
-  payment_method payment_method [default: 'CASH']
+  payment_method payment_method [not null, default: 'CASH']
   received_by_user_id uuid [ref: > users.id, not null]
   payment_date timestamp [default: `now()`]
   remarks text
