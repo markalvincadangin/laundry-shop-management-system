@@ -152,9 +152,9 @@ Recommended package/module boundaries:
 - Role-based access:
     - **Owner:** reports, rates management
     - **Staff:** orders, status updates, payments, customers
-- Public tracking endpoint should return limited data:
-    - status, created date, reference number
-    - do NOT expose internal IDs or staff info
+- Public tracking endpoint must return only a limited subset of order data as defined in the OpenAPI contract:
+    - e.g. status, created date, reference number, and basic customer/payment summary fields (no full customer profile)
+    - do NOT expose internal IDs, staff info, or other internal implementation details
 
 ---
 
