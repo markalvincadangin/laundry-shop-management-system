@@ -103,8 +103,8 @@ Table orders {
   extra_minutes int [not null, default: 0, note: 'Ref BR-PR-03: Extended washing time']
 
   // Financials (computed from snapshot values)
-  base_amount decimal(10,2) [not null, note: 'loads * base_price_per_load']
-  extra_minutes_amount decimal(10,2) [not null, note: 'minutes * price_per_extra_minute']
+  base_amount decimal(10,2) [not null, note: 'total_loads * base_price_per_load']
+  extra_minutes_amount decimal(10,2) [not null, note: 'extra_minutes * price_per_extra_minute']
   addons_total_amount decimal(10,2) [not null, default: 0, note: 'Sum of order_add_ons']
   grand_total decimal(10,2) [not null]
 
