@@ -221,7 +221,7 @@ To understand the current operational process, identify existing problems, and g
 
 ---
 
-## Interviewer Summary
+## Interviewers Summary
 
 ### Key Problems Identified
 - Reliance on manual record keeping
