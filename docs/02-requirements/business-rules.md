@@ -26,10 +26,10 @@
 ---
 
 ### BR-PR-03 – Extra Washing Time Charge
-**Rule:** When laundry requires extended washing time due to excessive dirt, an additional charge of **₱1 per extra minute** of machine use is added.  
+**Rule:** When laundry requires washing time beyond the **included 45 minutes per load** (e.g., due to excessive dirt), an additional charge of **₱1 per extra minute** of machine use is added.  
 **Applies To:** Order creation / price computation (when extra minutes are recorded)  
 **Enforcement:** Backend service  
-**Notes:** Extra minutes may be optional; if not provided, charge is 0.
+**Notes:** The base price (see BR-PR-01 / US-02) includes up to 45 minutes of washing time per load. Extra minutes are only those beyond 45 minutes; this field is optional, and if not provided, the extra-minutes charge is 0.
 
 ---
 
