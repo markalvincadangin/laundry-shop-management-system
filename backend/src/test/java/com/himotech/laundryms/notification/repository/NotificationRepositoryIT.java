@@ -30,9 +30,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * <ul>
  *   <li>Foreign key constraint: order_id → orders.id (NOT NULL, CASCADE DELETE)</li>
  *   <li>Foreign key constraint: customer_id → customers.id (NOT NULL, CASCADE DELETE)</li>
- *   <li>NOT NULL constraint on message field</li>
- *   <li>Enum constraint: status must be valid notification_status</li>
  * </ul>
+ *
+ * <p><b>Database Schema (from V1__init.sql):</b>
  *
  * <p><b>Database Schema (from V1__init.sql):</b>
  * <pre>
