@@ -69,6 +69,18 @@ public abstract class AbstractIntegrationTest {
     }
 
     /**
+     * Returns the shared PostgreSQL container instance.
+     *
+     * This method allows other test configurations (e.g., PostgresTestContainerConfig)
+     * to reuse the same container instead of starting multiple containers.
+     *
+     * @return the shared PostgreSQL container
+     */
+    public static PostgreSQLContainer<?> getPostgresContainer() {
+        return POSTGRES_CONTAINER;
+    }
+
+    /**
      * Appends {@code ?stringtype=unspecified} to the JDBC URL.
      *
      * <p>This parameter forces the PostgreSQL driver to send string parameters as
