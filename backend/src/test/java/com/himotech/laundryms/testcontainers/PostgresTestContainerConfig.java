@@ -67,19 +67,24 @@ public class PostgresTestContainerConfig {
      * Without this parameter, PostgreSQL rejects enum values sent as VARCHAR, causing:
      * "ERROR: column 'role' is of type user_role but expression is of type character varying"
      *
-     * The ?stringtype=unspecified parameter forces the PostgreSQL driver to send strings
+     * The stringtype=unspecified parameter forces the PostgreSQL driver to send strings
      * as unspecified type, allowing PostgreSQL to automatically cast them to the correct
      * enum type.
      */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        // Override the JDBC URL to append ?stringtype=unspecified
-        registry.add("spring.datasource.url",
-                () -> postgres.getJdbcUrl() + "?stringtype=unspecified");
+        // Append &stringtype=unspecified for PostgreSQL enum compatibility
+        // Use & if URL already contains query parameters, otherwise use ?
+        String jdbcUrl = postgres.getJdbcUrl();
+        String jdbcUrlWithEnumFix = jdbcUrl.contains("?")
+            ? jdbcUrl + "&stringtype=unspecified"
+            : jdbcUrl + "?stringtype=unspecified";
+
+        registry.add("spring.datasource.url", () -> jdbcUrlWithEnumFix);
 
         System.out.println("=== @DynamicPropertySource: Enum Fix Applied ===");
-        System.out.println("Original URL: " + postgres.getJdbcUrl());
-        System.out.println("Modified URL: " + postgres.getJdbcUrl() + "?stringtype=unspecified");
+        System.out.println("Original URL: " + jdbcUrl);
+        System.out.println("Modified URL: " + jdbcUrlWithEnumFix);
         System.out.println("================================================");
     }
 
