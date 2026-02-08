@@ -291,7 +291,8 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             paymentRepository.save(payment);
             entityManager.flush();
         })
-                .isInstanceOf(Exception.class);
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("violates foreign key constraint");
     }
 }
 
