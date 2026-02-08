@@ -31,19 +31,9 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class PostgresTestContainerConfig {
 
-    private static PostgreSQLContainer<?> postgres;
+    private static final PostgreSQLContainer<?> postgres;
 
-    /**
-     * Creates and configures a PostgreSQL container with credentials matching the application.
-     *
-     * The @ServiceConnection annotation (Spring Boot 3.1+) automatically configures Spring Boot's
-     * DataSource properties based on the container's connection details.
-     *
-     * @return configured PostgreSQL container
-     */
-    @Bean
-    @ServiceConnection
-    PostgreSQLContainer<?> postgresContainer() {
+    static {
         postgres = new PostgreSQLContainer<>(
                 DockerImageName.parse("postgres:16-alpine")
         )
@@ -55,8 +45,28 @@ public class PostgresTestContainerConfig {
         // Start container and log connection details
         postgres.start();
 
-        logContainerInfo(postgres);
+        System.out.println("=== PostgreSQL Testcontainer Started (@ServiceConnection) ===");
+        System.out.println("JDBC URL: " + postgres.getJdbcUrl());
+        System.out.println("Username: " + postgres.getUsername());
+        System.out.println("Password: " + postgres.getPassword());
+        System.out.println("Database: " + postgres.getDatabaseName());
+        System.out.println("Container ID: " + postgres.getContainerId());
+        System.out.println("Driver: " + postgres.getDriverClassName());
+        System.out.println("Note: stringtype=unspecified will be appended by @DynamicPropertySource");
+        System.out.println("============================================================");
+    }
 
+    /**
+     * Returns the shared PostgreSQL container instance.
+     *
+     * The @ServiceConnection annotation (Spring Boot 3.1+) automatically configures Spring Boot's
+     * DataSource properties based on the container's connection details.
+     *
+     * @return configured PostgreSQL container
+     */
+    @Bean
+    @ServiceConnection
+    PostgreSQLContainer<?> postgresContainer() {
         return postgres;
     }
 
@@ -73,28 +83,18 @@ public class PostgresTestContainerConfig {
      */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        // Override the JDBC URL to append ?stringtype=unspecified
-        registry.add("spring.datasource.url",
-                () -> postgres.getJdbcUrl() + "?stringtype=unspecified");
+        // Override the JDBC URL to append stringtype=unspecified
+        // Use & because Testcontainers URL already has ?loggerLevel=OFF
+        String jdbcUrl = postgres.getJdbcUrl();
+        String jdbcUrlWithEnumFix = jdbcUrl.contains("?")
+            ? jdbcUrl + "&stringtype=unspecified"
+            : jdbcUrl + "?stringtype=unspecified";
+
+        registry.add("spring.datasource.url", () -> jdbcUrlWithEnumFix);
 
         System.out.println("=== @DynamicPropertySource: Enum Fix Applied ===");
-        System.out.println("Original URL: " + postgres.getJdbcUrl());
-        System.out.println("Modified URL: " + postgres.getJdbcUrl() + "?stringtype=unspecified");
+        System.out.println("Original URL: " + jdbcUrl);
+        System.out.println("Modified URL: " + jdbcUrlWithEnumFix);
         System.out.println("================================================");
-    }
-
-    /**
-     * Logs container connection information for debugging.
-     */
-    private void logContainerInfo(PostgreSQLContainer<?> container) {
-        System.out.println("=== PostgreSQL Testcontainer Started (@ServiceConnection) ===");
-        System.out.println("JDBC URL: " + container.getJdbcUrl());
-        System.out.println("Username: " + container.getUsername());
-        System.out.println("Password: " + container.getPassword());
-        System.out.println("Database: " + container.getDatabaseName());
-        System.out.println("Container ID: " + container.getContainerId());
-        System.out.println("Driver: " + container.getDriverClassName());
-        System.out.println("Note: stringtype=unspecified will be appended by @DynamicPropertySource");
-        System.out.println("============================================================");
     }
 }
