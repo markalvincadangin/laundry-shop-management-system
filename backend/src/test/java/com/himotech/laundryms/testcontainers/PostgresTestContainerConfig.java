@@ -48,7 +48,6 @@ public class PostgresTestContainerConfig {
         System.out.println("=== PostgreSQL Testcontainer Started (@ServiceConnection) ===");
         System.out.println("JDBC URL: " + postgres.getJdbcUrl());
         System.out.println("Username: " + postgres.getUsername());
-        System.out.println("Password: " + postgres.getPassword());
         System.out.println("Database: " + postgres.getDatabaseName());
         System.out.println("Container ID: " + postgres.getContainerId());
         System.out.println("Driver: " + postgres.getDriverClassName());
