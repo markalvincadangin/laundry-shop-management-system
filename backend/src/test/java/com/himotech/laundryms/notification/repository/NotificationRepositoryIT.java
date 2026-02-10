@@ -34,7 +34,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * <p><b>Database Schema (from V1__init.sql):</b>
  *
- * <p><b>Database Schema (from V1__init.sql):</b>
  * <pre>
  * CREATE TABLE IF NOT EXISTS notifications (
  *     id          BIGSERIAL PRIMARY KEY,
