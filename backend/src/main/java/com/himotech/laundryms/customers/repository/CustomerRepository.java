@@ -31,8 +31,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             String contactNumber
     );
 
-    List<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrContactNumberContaining(String firstName, String lastName, String contactNumber);
-
     @Query("SELECT c FROM Customer c WHERE LOWER(c.firstName) LIKE LOWER(CONCAT('%', :q, '%')) " +
             "OR LOWER(c.lastName) LIKE LOWER(CONCAT('%', :q, '%')) " +
             "OR c.contactNumber LIKE CONCAT('%', :q, '%')")
