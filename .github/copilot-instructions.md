@@ -21,14 +21,36 @@ Faith Laundry Shop is a small-scale laundry service business established in 2022
 
 ## Primary Source of Truth (Must Follow)
 
-**Documentation Hierarchy:**
-1. `/docs/00-context/case-study.md` - Client background and problem statement
-2. `/docs/02-requirements/user-stories.md` - Functional requirements (US-01 to US-11)
-3. `/docs/02-requirements/business-rules.md` - Enforceable business rules (BR-*)
-4. `/docs/04-data-design/erd.dbml` - Database schema and relationships
-5. `/docs/05-tech-design/openapi.yaml` - API contract definitions
-6. `/docs/05-tech-design/architecture.md` - System architecture and data flows
-7. `/docs/06-implementation/implementation-plan.md` - Phase-by-phase development roadmap
+**Documentation Index (All `/docs/**` files):**
+
+| Category | Document | Purpose |
+|----------|----------|---------|
+| **Context** | [docs/00-context/case-study.md](../docs/00-context/case-study.md) | Client background and problem statement |
+| **Context** | [docs/00-context/client-interview.md](../docs/00-context/client-interview.md) | Interview notes and requirements discovery |
+| **Scope** | [docs/01-scope/project-scope.md](../docs/01-scope/project-scope.md) | MVP boundaries and deliverables |
+| **Requirements** | [docs/02-requirements/user-stories.md](../docs/02-requirements/user-stories.md) | Functional requirements (US-01 to US-11) |
+| **Requirements** | [docs/02-requirements/business-rules.md](../docs/02-requirements/business-rules.md) | Enforceable business rules (BR-*) |
+| **Process** | [docs/03-process/to-be-flow.md](../docs/03-process/to-be-flow.md) | To-be process flow |
+| **Data Design** | [docs/04-data-design/erd.dbml](../docs/04-data-design/erd.dbml) | Database schema (source of truth) |
+| **Data Design** | [docs/04-data-design/erd.svg](../docs/04-data-design/erd.svg) | Visual ERD diagram |
+| **Data Design** | [docs/04-data-design/data-notes.md](../docs/04-data-design/data-notes.md) | Data design notes |
+| **Tech Design** | [docs/05-tech-design/openapi.yaml](../docs/05-tech-design/openapi.yaml) | API contract definitions |
+| **Tech Design** | [docs/05-tech-design/architecture.md](../docs/05-tech-design/architecture.md) | System architecture and data flows |
+| **Implementation** | [docs/06-implementation/implementation-plan.md](../docs/06-implementation/implementation-plan.md) | Phase-by-phase development roadmap |
+| **Setup** | [docs/development-credentials.md](../docs/development-credentials.md) | Development credentials (local only) |
+| **Setup** | [docs/GETTING_STARTED.md](../docs/GETTING_STARTED.md) | Getting started guide |
+| **Setup** | [docs/README.md](../docs/README.md) | Documentation overview |
+| **Standards** | [docs/STYLE_GUIDE.md](../docs/STYLE_GUIDE.md) | Code style and conventions |
+| **Standards** | [docs/STAGE1_INVENTORY_AND_TERMINOLOGY.md](../docs/STAGE1_INVENTORY_AND_TERMINOLOGY.md) | Inventory and terminology reference |
+
+**Documentation Hierarchy (Primary References):**
+1. [docs/00-context/case-study.md](../docs/00-context/case-study.md) - Client background and problem statement
+2. [docs/02-requirements/user-stories.md](../docs/02-requirements/user-stories.md) - Functional requirements (US-01 to US-11)
+3. [docs/02-requirements/business-rules.md](../docs/02-requirements/business-rules.md) - Enforceable business rules (BR-*)
+4. [docs/04-data-design/erd.dbml](../docs/04-data-design/erd.dbml) - Database schema and relationships
+5. [docs/05-tech-design/openapi.yaml](../docs/05-tech-design/openapi.yaml) - API contract definitions
+6. [docs/05-tech-design/architecture.md](../docs/05-tech-design/architecture.md) - System architecture and data flows
+7. [docs/06-implementation/implementation-plan.md](../docs/06-implementation/implementation-plan.md) - Phase-by-phase development roadmap
 
 **Conflict Resolution:**
 If any suggestion conflicts with these documents:
