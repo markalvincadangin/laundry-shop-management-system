@@ -1,4 +1,23 @@
 # Development Credentials
+## Faith Laundry Shop Management System
+
+> **Client:** Faith Laundry Shop  
+> **Prepared By:** HIMÓTECH  
+> **Document ID:** CRED-001  
+> **Version:** 1.0  
+> **Date:** 2026-02-13  
+> **Status:** Living Document
+
+---
+
+## Document Control
+- **Document Type:** Development Credentials
+- **Related Documents:** [Implementation Plan](06-implementation/implementation-plan.md), Phase 9 (Authentication & RBAC)
+- **Confidentiality:** **INTERNAL ONLY** — Development/Testing Only
+
+---
+
+## Overview
 
 This document lists the default credentials created for **development and testing environments only**.
 

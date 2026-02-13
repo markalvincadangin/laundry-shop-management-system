@@ -1,6 +1,6 @@
 Project Faith_Laundry_Shop_System {
   database_type: 'PostgreSQL'
-  Note: 'Enhanced ERD for Faith Laundry Shop. Includes dynamic pricing, split names, and audit trails. Requires pgcrypto extension for UUIDs.'
+  Note: 'ERD for Faith Laundry Shop. Supports dynamic pricing, order lifecycle, payment recording, and reporting. Requires pgcrypto extension for UUIDs.'
 }
 
 // --- ENUMS --- //
@@ -43,12 +43,12 @@ Enum notification_status {
 Table service_rates {
   id int [pk, increment]
   service_name varchar [default: 'Standard Wash', note: 'Standard Wash-Dry-Fold']
-  base_price_per_load decimal(10,2) [default: 120.00, note: 'Ref BR-PR-01: 120 PHP base']
-  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'Ref BR-PR-01: 8kg limit']
-  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'Ref BR-PR-03: 1 PHP/min']
+  base_price_per_load decimal(10,2) [default: 120.00, note: 'BR-PR-01: ₱120 per load']
+  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: 8 kg limit per load']
+  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: ₱1 per extra minute']
   is_active boolean [default: true]
 
-  Note: 'Stores pricing rules so the Owner can update prices later without coding.'
+  Note: 'Stores pricing rules. Owner can update without code changes. Snapshot copied to orders at creation.'
 }
 
 // --- USERS & CUSTOMERS --- //
@@ -57,14 +57,14 @@ Table users {
   id uuid [pk, default: `gen_random_uuid()`]
   username varchar [unique, not null]
   password_hash varchar [not null]
-  role user_role [not null, default: 'STAFF', note: 'Ref US-11']
+  role user_role [not null, default: 'STAFF', note: 'US-11: Owner / Staff']
   first_name varchar [not null]
   last_name varchar [not null]
   is_active boolean [default: true]
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
 
-  Note: 'System users (Owner + Staff). Owner views reports, both record orders.'
+  Note: 'System users. Owner: reports, rates. Staff: orders, payments. Both record orders.'
 }
 
 Table customers {
@@ -75,7 +75,7 @@ Table customers {
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
 
-  Note: 'Ref US-01: Minimal customer details required.'
+  Note: 'US-01: Customer details. BR-REC-01: name and contact required.'
   Indexes {
     (last_name, first_name, contact_number) [unique]
   }
@@ -85,37 +85,37 @@ Table customers {
 
 Table orders {
   id bigserial [pk]
-  reference_number varchar [unique, not null, note: 'Ref US-04: Unique tracking #']
+  reference_number varchar [unique, not null, note: 'BR-OL-01: Unique tracking identifier']
   customer_id bigint [ref: > customers.id, not null]
-  created_by_user_id uuid [ref: > users.id, not null, note: 'Staff who created the order']
+  created_by_user_id uuid [ref: > users.id, not null]
 
-  // Load & Weight Logic
-  service_rate_id int [ref: > service_rates.id, not null, note: 'Which service was used (informational)']
-  weight_kg decimal(10,2) [not null, note: 'Ref BR-PR-01']
-  total_loads int [not null, note: 'Ref BR-PR-02: Derived (ceil(weight_kg / kg_limit_per_load))']
+  // Load & Weight
+  service_rate_id int [ref: > service_rates.id, not null, note: 'Informational; snapshot used for pricing']
+  weight_kg decimal(10,2) [not null, note: 'BR-PR-01']
+  total_loads int [not null, note: 'BR-PR-02: ceil(weight_kg / kg_limit_per_load)']
 
-  // Snapshot of pricing rules at order creation
-  base_price_per_load decimal(10,2) [not null, note: 'Price per load at order time']
-  kg_limit_per_load decimal(5,2) [not null, note: 'KG limit per load at order time']
-  price_per_extra_minute decimal(10,2) [not null, note: 'Price per extra minute at order time']
+  // Pricing snapshot (copied from service_rates at creation)
+  base_price_per_load decimal(10,2) [not null, note: 'BR-PR-01 snapshot']
+  kg_limit_per_load decimal(5,2) [not null, note: 'BR-PR-02 snapshot']
+  price_per_extra_minute decimal(10,2) [not null, note: 'BR-PR-03 snapshot']
 
-  // Extra Charges
-  extra_minutes int [not null, default: 0, note: 'Ref BR-PR-03: Extended washing time']
+  // Extra charges
+  extra_minutes int [not null, default: 0, note: 'BR-PR-03: Beyond 45 min per load']
 
-  // Financials (computed from snapshot values)
+  // Computed amounts
   base_amount decimal(10,2) [not null, note: 'total_loads * base_price_per_load']
   extra_minutes_amount decimal(10,2) [not null, note: 'extra_minutes * price_per_extra_minute']
-  addons_total_amount decimal(10,2) [not null, default: 0, note: 'Sum of order_add_ons']
-  grand_total decimal(10,2) [not null, note: 'Order total = base_amount + extra_minutes_amount + addons_total_amount']
+  addons_total_amount decimal(10,2) [not null, default: 0, note: 'BR-PR-04']
+  grand_total decimal(10,2) [not null, note: 'base + extra_minutes + addons']
 
   // Status
-  current_status order_status [not null, default: 'RECEIVED', note: 'Ref BR-OL-02']
-  payment_status payment_status [not null, default: 'UNPAID', note: 'Ref BR-PAY-04']
+  current_status order_status [not null, default: 'RECEIVED', note: 'BR-OL-02: Initial; BR-OL-03: Allowed values']
+  payment_status payment_status [not null, default: 'UNPAID', note: 'BR-PAY-04']
 
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`]
 
-  Note: 'Central transaction table. Replaces physical tags.'
+  Note: 'Central transaction table. BR-OL-01 (reference), BR-OL-02 (initial status), BR-OL-05 (release precondition).'
 }
 
 Table order_add_ons {
@@ -125,7 +125,7 @@ Table order_add_ons {
   price decimal(10,2) [not null]
   quantity int [not null, default: 1]
 
-  Note: 'Ref BR-PR-04: Handles variable extra requests.'
+  Note: 'BR-PR-04: Optional add-ons.'
 }
 
 Table order_status_logs {
@@ -137,21 +137,21 @@ Table order_status_logs {
   changed_at timestamp [default: `now()`]
   notes text
 
-  Note: 'Ref US-03: Audit trail replacing the physical logbook.'
+  Note: 'US-03: Audit trail for status changes. BR-OL-03, BR-OL-04.'
 }
 
 // --- PAYMENTS --- //
 
 Table payments {
   id bigserial [pk]
-  order_id bigint [ref: - orders.id, unique, not null, note: 'One-to-One: One payment per order']
-  amount_paid decimal(10,2) [not null, note: 'Ref BR-PAY-03: Must match Order Total']
+  order_id bigint [ref: - orders.id, unique, not null, note: 'BR-PAY-02: One payment per order']
+  amount_paid decimal(10,2) [not null, note: 'BR-PAY-03: Must match orders.grand_total']
   payment_method payment_method [not null, default: 'CASH']
   received_by_user_id uuid [ref: > users.id, not null]
   payment_date timestamp [default: `now()`]
   remarks text
 
-  Note: 'Ref US-06: Records revenue for Reporting.'
+  Note: 'US-06. BR-PAY-02 (1:1), BR-PAY-03 (amount validation in service layer), BR-PAY-04.'
 }
 
 // --- NOTIFICATIONS --- //
@@ -165,5 +165,5 @@ Table notifications {
   sent_at timestamp
   status notification_status [not null, default: 'PENDING']
 
-  Note: 'Ref US-10: Notify customer when READY_FOR_PICKUP.'
+  Note: 'US-10, BR-NOTIF-01: Notify when READY_FOR_PICKUP.'
 }
