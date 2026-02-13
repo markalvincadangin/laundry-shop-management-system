@@ -1,4 +1,8 @@
--- Enable UUID generation
+-- V1__init.sql — Faith Laundry Shop Database Schema
+-- Source: docs/04-data-design/erd.dbml
+-- BR-OL-01: Unique reference_number | BR-PAY-02: One payment per order (unique order_id)
+
+-- Enable UUID generation (required for users.id)
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Enums (Idempotent Creation)
@@ -28,7 +32,7 @@ DO $$
 -- Tables
 
 -- 1. Configuration: Service Rates
-CREATE TABLE service_rates (
+CREATE TABLE IF NOT EXISTS service_rates (
                                id SERIAL PRIMARY KEY,
                                service_name VARCHAR NOT NULL,
                                base_price_per_load DECIMAL(10,2) NOT NULL,
@@ -62,7 +66,7 @@ CREATE TABLE IF NOT EXISTS customers (
                                          CONSTRAINT uq_customers_identity UNIQUE (last_name, first_name, contact_number)
 );
 
--- 4. Orders (The Core Transaction Table)
+-- 4. Orders (The Core Transaction Table) — BR-OL-01: reference_number UNIQUE
 CREATE TABLE IF NOT EXISTS orders (
                                       id                 BIGSERIAL PRIMARY KEY,
                                       reference_number   VARCHAR NOT NULL UNIQUE,
@@ -94,7 +98,7 @@ CREATE TABLE IF NOT EXISTS orders (
                                       updated_at         TIMESTAMP NOT NULL DEFAULT now()
 );
 
--- 5. Order Add-ons
+-- 5. Order Add-ons — BR-PR-04
 CREATE TABLE IF NOT EXISTS order_add_ons (
                                              id       BIGSERIAL PRIMARY KEY,
                                              order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
@@ -114,7 +118,7 @@ CREATE TABLE IF NOT EXISTS order_status_logs (
                                                  notes              TEXT
 );
 
--- 7. Payments
+-- 7. Payments — BR-PAY-02: One payment per order (order_id UNIQUE)
 CREATE TABLE IF NOT EXISTS payments (
                                         id                  BIGSERIAL PRIMARY KEY,
                                         order_id            BIGINT NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
