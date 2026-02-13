@@ -19,9 +19,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class OrderStatusService {
-    private OrderRepository orderRepository;
-    private UserRepository userRepository;
-    private OrderStatusLogRepository orderStatusLogRepository;
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final OrderStatusLogRepository orderStatusLogRepository;
 
     @Transactional
     public Order updateStatus(Long orderId, OrderStatus newStatus, UUID changedByUserId, String notes) {
