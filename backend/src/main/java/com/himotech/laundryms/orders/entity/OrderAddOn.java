@@ -29,6 +29,7 @@ public class OrderAddOn {
     private BigDecimal price;
 
     @Column(nullable = false)
-    private Integer quantity;
+    @Builder.Default
+    private Integer quantity = 1;
 }
 

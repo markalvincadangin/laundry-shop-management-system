@@ -198,7 +198,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         entityManager.clear();
 
         // When
-        boolean exists = paymentRepository.existsByOrderId(testOrder.getId());
+        boolean exists = paymentRepository.existsByOrder_Id(testOrder.getId());
 
         // Then
         assertThat(exists).isTrue();
@@ -210,7 +210,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         // Given - No payment for the order (setUp created unpaid order)
 
         // When
-        boolean exists = paymentRepository.existsByOrderId(testOrder.getId());
+        boolean exists = paymentRepository.existsByOrder_Id(testOrder.getId());
 
         // Then
         assertThat(exists).isFalse();

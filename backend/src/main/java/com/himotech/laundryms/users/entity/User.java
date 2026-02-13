@@ -21,6 +21,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid DEFAULT gen_random_uuid()")
     @EqualsAndHashCode.Include
     private UUID id;
 

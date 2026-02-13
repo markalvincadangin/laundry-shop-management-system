@@ -18,9 +18,9 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * Must be called before creating a new payment to prevent
      * duplicate payments for the same order.
      *
-     * @param orderId the order ID to check
+     * @param orderId the order ID to check (maps to order.id)
      * @return true if a payment exists for this order, false otherwise
      */
-    boolean existsByOrderId(Long orderId);
+    boolean existsByOrder_Id(Long orderId);
 }
 
