@@ -52,7 +52,7 @@ public class OrderStatusService {
         log.info("Order status updated: Reference={}, {} → {}, ChangedBy={}", 
                 order.getReferenceNumber(), previousStatus, newStatus, changedBy.getUsername());
 
-        OrderStatusLog log = OrderStatusLog.builder()
+        OrderStatusLog statusLog = OrderStatusLog.builder()
                 .order(order)
                 .previousStatus(previousStatus)
                 .newStatus(newStatus)
@@ -60,7 +60,7 @@ public class OrderStatusService {
                 .changedAt(LocalDateTime.now())
                 .notes(notes)
                 .build();
-        orderStatusLogRepository.save(log);
+        orderStatusLogRepository.save(statusLog);
 
         return order;
     }
