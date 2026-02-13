@@ -31,14 +31,20 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Optional<Customer> findById(Long id){
         return customerRepository.findById(id);
     }
 
-    @Transactional
+    /**
+     * Searches customers by query; returns an empty list if blank
+     */
+    @Transactional(readOnly = true)
     public List<Customer> search(String query) {
-        return customerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrContactNumberContaining(query, query, query);
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        return customerRepository.search(query.trim());
     }
 
 }
