@@ -10,11 +10,13 @@ import com.himotech.laundryms.payments.repository.PaymentRepository;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -50,6 +52,13 @@ public class PaymentService {
                 .paymentDate(LocalDateTime.now())
                 .remarks(command.remarks())
                 .build();
-        return paymentRepository.save(payment);
+        payment = paymentRepository.save(payment);
+
+        log.info("Payment recorded successfully: OrderRef={}, Amount=₱{}, Method={}", 
+                order.getReferenceNumber(), 
+                payment.getAmountPaid(), 
+                payment.getPaymentMethod());
+
+        return payment;
     }
 }

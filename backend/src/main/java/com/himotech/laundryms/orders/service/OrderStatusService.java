@@ -9,13 +9,14 @@ import com.himotech.laundryms.orders.repository.OrderStatusLogRepository;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderStatusService {
@@ -30,7 +31,7 @@ public class OrderStatusService {
         User changedBy = userRepository.findById(changedByUserId)
                 .orElseThrow(() -> new NotFoundException("User not found: " + changedByUserId));
 
-        if (newStatus == null || !Arrays.asList(OrderStatus.values()).contains(newStatus)) {
+        if (newStatus == null) {
             throw new IllegalArgumentException("Invalid order status: " + newStatus);
         }
 
@@ -47,6 +48,9 @@ public class OrderStatusService {
         OrderStatus previousStatus = order.getCurrentStatus();
         order.setCurrentStatus(newStatus);
         orderRepository.save(order);
+
+        log.info("Order status updated: Reference={}, {} → {}, ChangedBy={}", 
+                order.getReferenceNumber(), previousStatus, newStatus, changedBy.getUsername());
 
         OrderStatusLog log = OrderStatusLog.builder()
                 .order(order)
