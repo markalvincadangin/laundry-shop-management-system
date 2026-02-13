@@ -4,6 +4,7 @@ import com.himotech.laundryms.customers.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -27,5 +28,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             String firstName,
             String contactNumber
     );
+
+    List<Customer> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrContactNumberContaining(String firstName, String lastName, String contactNumber);
 }
 
