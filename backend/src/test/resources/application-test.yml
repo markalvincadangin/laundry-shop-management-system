@@ -1,13 +1,17 @@
+# Test profile for integration tests
+# Datasource: Injected by Testcontainers via PostgresTestContainerConfig
+# PostgreSQL 16 container started automatically when tests run
+
 spring:
   application:
     name: laundryms-backend-test
 
-  # IMPORTANT:
-  # Datasource is intentionally NOT defined here.
-  # Testcontainers will inject it dynamically.
+  # Datasource: Testcontainers PostgreSQL 16 injects URL, username, password
+  # See PostgresTestContainerConfig and AbstractIntegrationTest
 
   flyway:
     enabled: true
+    locations: classpath:db/migration
     baseline-on-migrate: true
     placeholder-replacement: true
     placeholders:
