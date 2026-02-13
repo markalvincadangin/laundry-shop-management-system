@@ -22,5 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return an Optional containing the order if found, empty otherwise
      */
     Optional<Order> findByReferenceNumber(String referenceNumber);
+
+    boolean existsByReferenceNumber(String referenceNumber);
 }
 
