@@ -312,12 +312,20 @@ cd laundry-shop-management-system
 
 The application requires environment variables for database credentials and configuration.
 
-#### 2.1 Create the `.env` file
+#### 2.1 Create the `.env` files
 
 ```powershell
-# Copy the example file to create your local .env
+# Root .env — for Docker Compose (database credentials)
 Copy-Item .env.example .env
+
+# Backend .env — for Spring Boot when running from backend/
+Copy-Item backend\.env.example backend\.env
+
+# Frontend .env.local — for Next.js when running from frontend/
+Copy-Item frontend\.env.example frontend\.env.local
 ```
+
+> **Note:** The root `.env` is used by Docker Compose. The backend and frontend each have their own env files for when running those components.
 
 #### 2.2 Configure Required Variables
 
