@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ServiceRateService {
     private final ServiceRateRepository serviceRateRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ServiceRate getActiveRate() {
         return serviceRateRepository.findFirstByIsActiveTrueOrderByIdDesc()
                 .orElseThrow(() -> new NotFoundException("No active service rate found."));
