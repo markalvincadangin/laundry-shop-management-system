@@ -15,6 +15,7 @@ import com.himotech.laundryms.rates.service.ServiceRateService;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -115,6 +117,12 @@ public class OrderService {
         }
 
         order = orderRepository.save(order);
+
+        log.info("Order created successfully: Reference={}, Customer={} {}, Total=₱{}", 
+                order.getReferenceNumber(), 
+                customer.getFirstName(), 
+                customer.getLastName(), 
+                order.getGrandTotal());
 
         OrderStatusLog initialLog = OrderStatusLog.builder()
                 .order(order)
