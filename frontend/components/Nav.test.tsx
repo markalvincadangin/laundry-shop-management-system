@@ -80,7 +80,7 @@ describe("Nav", () => {
     expect(mockLogout).toHaveBeenCalled();
   });
 
-  it("shows Orders, New Order, Track for authenticated user", () => {
+  it("shows Orders, New Order, Notifications, Track for authenticated user", () => {
     mockUseAuth.mockReturnValue({
       user: { userId: "1", username: "staff", role: "STAFF" },
       loading: false,
@@ -90,6 +90,10 @@ describe("Nav", () => {
     render(<Nav />);
     expect(screen.getByRole("link", { name: /orders/i })).toHaveAttribute("href", "/orders");
     expect(screen.getByRole("link", { name: /new order/i })).toHaveAttribute("href", "/orders/new");
+    expect(screen.getByRole("link", { name: /notifications/i })).toHaveAttribute(
+      "href",
+      "/notifications"
+    );
     expect(screen.getByRole("link", { name: /track/i })).toHaveAttribute("href", "/track");
   });
 });

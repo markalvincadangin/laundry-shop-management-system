@@ -661,6 +661,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List notifications
+         * @description Returns all notifications (staff view).
+         *     Supports: US-10. Enforces: BR-NOTIF-01.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Notifications list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["NotificationResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/sales/daily": {
         parameters: {
             query?: never;
@@ -970,6 +1010,23 @@ export interface components {
             /** Format: date-time */
             paymentDate: string;
             remarks?: string;
+        };
+        NotificationResponse: {
+            /** Format: int64 */
+            id: number;
+            /** Format: int64 */
+            orderId: number;
+            referenceNumber?: string;
+            /** Format: int64 */
+            customerId: number;
+            customerName?: string;
+            contactNumber?: string;
+            message: string;
+            status: components["schemas"]["NotificationStatus"];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            sentAt?: string;
         };
         DailySalesReportResponse: {
             /** Format: date */

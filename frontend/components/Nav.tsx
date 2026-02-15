@@ -10,6 +10,7 @@ export function Nav() {
     { href: "/", label: "Home" },
     { href: "/orders", label: "Orders" },
     { href: "/orders/new", label: "New Order" },
+    { href: "/notifications", label: "Notifications" },
     { href: "/track", label: "Track" },
     ...(user?.role === "OWNER" ? [{ href: "/reports", label: "Daily Report" }] : []),
   ].filter(Boolean) as { href: string; label: string }[];

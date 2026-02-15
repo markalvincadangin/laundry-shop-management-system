@@ -2,6 +2,7 @@ package com.himotech.laundryms.orders.service;
 
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.notification.NotificationService;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +47,8 @@ class OrderStatusServiceTest {
     private UserRepository userRepository;
     @Mock
     private OrderStatusLogRepository orderStatusLogRepository;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private OrderStatusService orderStatusService;
@@ -113,6 +117,19 @@ class OrderStatusServiceTest {
             ArgumentCaptor<OrderStatusLog> logCaptor = ArgumentCaptor.forClass(OrderStatusLog.class);
             verify(orderStatusLogRepository).save(logCaptor.capture());
             assertThat(logCaptor.getValue().getNotes()).isEqualTo("Started washing");
+        }
+
+        @Test
+        @DisplayName("Should create notification when status -> READY_FOR_PICKUP (BR-NOTIF-01)")
+        void updateStatus_ShouldCreateNotification_WhenReadyForPickup() {
+            // Given - order is FOLDING
+            order.setCurrentStatus(OrderStatus.FOLDING);
+
+            // When
+            orderStatusService.updateStatus(ORDER_ID, OrderStatus.READY_FOR_PICKUP, USER_ID, null);
+
+            // Then
+            verify(notificationService).createForReadyForPickup(eq(order));
         }
     }
 

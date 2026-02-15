@@ -431,6 +431,26 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   # -------------------------
+  # NOTIFICATIONS
+  # -------------------------
+  /api/v1/notifications:
+    get:
+      summary: List notifications
+      description: |
+        Returns all notifications (staff view).
+        Supports: US-10. Enforces: BR-NOTIF-01.
+      tags: [Notifications]
+      responses:
+        "200":
+          description: Notifications list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationResponse"
+
+  # -------------------------
   # REPORTS
   # -------------------------
   /api/v1/reports/sales/daily:
@@ -731,6 +751,25 @@ components:
         paymentDate: { type: string, format: date-time }
         remarks: { type: string }
       required: [id, orderId, amountPaid, paymentMethod, paymentDate]
+
+    # -------------------------
+    # NOTIFICATIONS
+    # -------------------------
+    NotificationResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        orderId: { type: integer, format: int64 }
+        referenceNumber: { type: string }
+        customerId: { type: integer, format: int64 }
+        customerName: { type: string }
+        contactNumber: { type: string }
+        message: { type: string }
+        status:
+          $ref: "#/components/schemas/NotificationStatus"
+        createdAt: { type: string, format: date-time }
+        sentAt: { type: string, format: date-time }
+      required: [id, orderId, customerId, message, status]
 
     # -------------------------
     # REPORTS
