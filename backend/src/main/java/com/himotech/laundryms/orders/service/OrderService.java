@@ -1,9 +1,11 @@
 package com.himotech.laundryms.orders.service;
 
+import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.repository.CustomerRepository;
+import com.himotech.laundryms.customers.service.CustomerService;
 import com.himotech.laundryms.exception.NotFoundException;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.entity.OrderAddOn;
@@ -26,12 +28,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
     private final UserRepository userRepository;
     private final ServiceRateService serviceRateService;
     private final OrderRepository orderRepository;
@@ -50,6 +54,79 @@ public class OrderService {
             }
         }
         throw new IllegalStateException("Could not generate unique reference number after " + MAX_REFERENCE_ATTEMPTS + " attempts");
+    }
+
+    /**
+     * Creates an order from a CreateOrderRequest DTO.
+     * Handles customer resolution (existing or new) and add-on normalization.
+     * 
+     * @param request the order creation request
+     * @return the created order
+     */
+    @Transactional
+    public Order createFromRequest(CreateOrderRequest request) {
+        // Resolve customer ID
+        Long customerId = resolveCustomerId(request);
+        
+        // Normalize add-ons
+        List<CreateOrderCommand.AddOnItem> addOns = normalizeAddOns(request);
+        
+        // Build command
+        CreateOrderCommand command = new CreateOrderCommand(
+                customerId,
+                request.getCreatedByUserId(),
+                request.getWeightKg(),
+                request.getExtraMinutes() != null ? request.getExtraMinutes() : 0,
+                addOns
+        );
+        
+        return create(command);
+    }
+
+    /**
+     * Resolves the customer ID from the request.
+     * Either uses the provided customerId or creates a new customer.
+     * 
+     * @param request the order creation request
+     * @return the customer ID
+     * @throws IllegalArgumentException if neither customerId nor customer is provided
+     */
+    private Long resolveCustomerId(CreateOrderRequest request) {
+        if (request.getCustomerId() != null) {
+            return request.getCustomerId();
+        }
+        
+        if (request.getCustomer() != null) {
+            Customer customer = customerService.create(
+                    request.getCustomer().getFirstName(),
+                    request.getCustomer().getLastName(),
+                    request.getCustomer().getContactNumber()
+            );
+            return customer.getId();
+        }
+        
+        throw new IllegalArgumentException("Either customerId or customer is required");
+    }
+
+    /**
+     * Normalizes add-ons from the request.
+     * Sets quantity to 1 if not provided or zero.
+     * 
+     * @param request the order creation request
+     * @return normalized list of add-on items
+     */
+    private List<CreateOrderCommand.AddOnItem> normalizeAddOns(CreateOrderRequest request) {
+        if (request.getInitialAddOns() == null) {
+            return List.of();
+        }
+        
+        return request.getInitialAddOns().stream()
+                .map(a -> new CreateOrderCommand.AddOnItem(
+                        a.getName(),
+                        a.getPrice(),
+                        a.getQuantity() > 0 ? a.getQuantity() : 1
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional

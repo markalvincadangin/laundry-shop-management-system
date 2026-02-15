@@ -75,7 +75,7 @@ class ServiceRatesControllerTest {
                     .pricePerExtraMinute(1.0)
                     .isActive(true)
                     .build();
-            when(serviceRateRepository.findAll()).thenReturn(List.of(rate));
+            when(serviceRateService.findAll(true)).thenReturn(List.of(rate));
             when(serviceRateMapper.toResponse(rate)).thenReturn(resp);
 
             mockMvc.perform(get("/api/v1/service-rates").param("activeOnly", "true"))
@@ -89,7 +89,7 @@ class ServiceRatesControllerTest {
                     .andExpect(jsonPath("$[0].pricePerExtraMinute").value(1.0))
                     .andExpect(jsonPath("$[0].isActive").value(true));
 
-            verify(serviceRateRepository).findAll();
+            verify(serviceRateService).findAll(true);
         }
 
         @Test
