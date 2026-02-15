@@ -21,16 +21,18 @@ describe("paymentsApi", () => {
     const mockFetch = vi.mocked(fetch);
     const body = {
       orderId: 1,
-      amount: 150,
-      paymentMethod: "CASH",
+      amountPaid: 150,
+      paymentMethod: "CASH" as const,
+      receivedByUserId: "staff-1",
     };
     mockFetch.mockResolvedValue(
       new Response(
         JSON.stringify({
           id: 1,
           orderId: 1,
-          amount: 150,
+          amountPaid: 150,
           paymentMethod: "CASH",
+          paymentDate: "2025-02-15T10:00:00Z",
         }),
         { status: 201, headers: { "Content-Type": "application/json" } }
       )
@@ -45,7 +47,7 @@ describe("paymentsApi", () => {
         body: JSON.stringify(body),
       })
     );
-    expect(result.amount).toBe(150);
+    expect(result.amountPaid).toBe(150);
   });
 
   it("getById calls GET /v1/payments/:id", async () => {
@@ -55,8 +57,9 @@ describe("paymentsApi", () => {
         JSON.stringify({
           id: 1,
           orderId: 1,
-          amount: 150,
+          amountPaid: 150,
           paymentMethod: "CASH",
+          paymentDate: "2025-02-15T10:00:00Z",
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )

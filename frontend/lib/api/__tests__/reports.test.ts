@@ -23,9 +23,8 @@ describe("reportsApi", () => {
       new Response(
         JSON.stringify({
           date: "2025-02-15",
-          totalSales: 1500,
-          orderCount: 5,
-          orders: [],
+          totalIncome: 1500,
+          paidOrdersCount: 5,
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       )
@@ -38,6 +37,6 @@ describe("reportsApi", () => {
       expect.objectContaining({ method: "GET" })
     );
     expect(result.date).toBe("2025-02-15");
-    expect(result.totalSales).toBe(1500);
+    expect(result.totalIncome).toBe(1500);
   });
 });

@@ -124,13 +124,19 @@ describe("ordersApi", () => {
       )
     );
 
-    await ordersApi.updateStatus(1, { newStatus: "WASHING" });
+    await ordersApi.updateStatus(1, {
+      newStatus: "WASHING",
+      changedByUserId: "staff-1",
+    });
 
     expect(mockFetch).toHaveBeenCalledWith(
       `${BASE_URL}/v1/orders/1/status`,
       expect.objectContaining({
         method: "PATCH",
-        body: JSON.stringify({ newStatus: "WASHING" }),
+        body: JSON.stringify({
+          newStatus: "WASHING",
+          changedByUserId: "staff-1",
+        }),
       })
     );
   });

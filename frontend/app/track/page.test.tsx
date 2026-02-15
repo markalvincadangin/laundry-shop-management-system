@@ -3,7 +3,7 @@
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { ordersApi } from "@/lib/api/orders";
 import TrackPage from "./page";
@@ -29,9 +29,11 @@ describe("TrackPage", () => {
   it("submits reference and displays order on success", async () => {
     const mockOrder = {
       referenceNumber: "ORD-001",
-      currentStatus: "WASHING",
+      currentStatus: "WASHING" as const,
       customerName: "Juan",
       grandTotal: 150,
+      createdAt: "2025-02-15T10:00:00Z",
+      paymentStatus: "UNPAID" as const,
     };
     vi.mocked(ordersApi.trackByReference).mockResolvedValue(mockOrder);
 

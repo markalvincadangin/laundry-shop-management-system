@@ -4,7 +4,7 @@
 
 import { render, screen, waitFor } from "@testing-library/react";
 import { fireEvent } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getDefaultStaffUserId } from "@/lib/api/dev";
 import { ordersApi } from "@/lib/api/orders";
 import { paymentsApi } from "@/lib/api/payments";
@@ -63,7 +63,12 @@ describe("PayOrderPage", () => {
       expect(screen.getByRole("button", { name: /record payment/i })).toBeEnabled();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /record payment/i }));
+    const form = screen.getByRole("button", { name: /record payment/i }).closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    } else {
+      fireEvent.click(screen.getByRole("button", { name: /record payment/i }));
+    }
 
     await waitFor(() => {
       expect(paymentsApi.create).toHaveBeenCalledWith(
