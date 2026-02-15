@@ -324,25 +324,34 @@ export interface paths {
         };
         /**
          * List or search orders
-         * @description Returns all orders. Filter parameters (status, paymentStatus, customerId, date range) are OUT OF SCOPE FOR MVP.
+         * @description Returns orders with pagination and optional filters.
          *     Supports: US-01, US-03, US-07.
          */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    status?: components["schemas"]["OrderStatus"];
+                    paymentStatus?: components["schemas"]["PaymentStatus"];
+                    /** @description Start date (inclusive) */
+                    from?: string;
+                    /** @description End date (inclusive) */
+                    to?: string;
+                    page?: number;
+                    size?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Orders list */
+                /** @description Paginated orders list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["OrderResponse"][];
+                        "application/json": components["schemas"]["OrderPageResponse"];
                     };
                 };
             };
@@ -565,7 +574,39 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List payments
+         * @description Returns payments with pagination and optional filters.
+         *     Supports: US-07.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    orderId?: number;
+                    /** @description Start date (inclusive) */
+                    from?: string;
+                    /** @description End date (inclusive) */
+                    to?: string;
+                    page?: number;
+                    size?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Paginated payments list */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PaymentPageResponse"];
+                    };
+                };
+            };
+        };
         put?: never;
         /**
          * Record payment for order
@@ -970,6 +1011,24 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        OrderPageResponse: {
+            content: components["schemas"]["OrderResponse"][];
+            page: number;
+            size: number;
+            totalElements: number;
+            totalPages: number;
+            first: boolean;
+            last: boolean;
+        };
+        PaymentPageResponse: {
+            content: components["schemas"]["PaymentResponse"][];
+            page: number;
+            size: number;
+            totalElements: number;
+            totalPages: number;
+            first: boolean;
+            last: boolean;
         };
         OrderTrackingResponse: {
             referenceNumber: string;

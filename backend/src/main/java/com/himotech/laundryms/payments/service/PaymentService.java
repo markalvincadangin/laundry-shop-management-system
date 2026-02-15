@@ -14,6 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -66,6 +70,13 @@ public class PaymentService {
     public Payment findById(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Payment not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, Pageable pageable) {
+        LocalDateTime fromTs = from != null ? from.atStartOfDay() : null;
+        LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : null;
+        return paymentRepository.findAllFiltered(orderId, fromTs, toTs, pageable);
     }
 
 }

@@ -4,17 +4,24 @@ import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
 import com.himotech.laundryms.api.dto.request.UpdateOrderStatusRequest;
 import com.himotech.laundryms.api.dto.response.OrderResponse;
 import com.himotech.laundryms.api.dto.response.OrderTrackingResponse;
+import com.himotech.laundryms.api.dto.response.PageResponse;
 import com.himotech.laundryms.api.mapper.OrderMapper;
 import com.himotech.laundryms.common.enums.OrderStatus;
+import com.himotech.laundryms.common.enums.PaymentStatus;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.service.OrderService;
 import com.himotech.laundryms.orders.service.OrderStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -39,9 +46,27 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> list() {
-        List<Order> orders = orderService.findAll();
-        return ResponseEntity.ok(orders.stream().map(orderMapper::toResponse).toList());
+    public ResponseEntity<PageResponse<OrderResponse>> list(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) PaymentStatus paymentStatus,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, Math.min(Math.max(size, 1), 100));
+        Page<Order> ordersPage = orderService.findAll(status, paymentStatus, from, to, pageable);
+        List<OrderResponse> content = ordersPage.getContent().stream()
+                .map(orderMapper::toResponse)
+                .toList();
+        return ResponseEntity.ok(PageResponse.<OrderResponse>builder()
+                .content(content)
+                .page(ordersPage.getNumber())
+                .size(ordersPage.getSize())
+                .totalElements(ordersPage.getTotalElements())
+                .totalPages(ordersPage.getTotalPages())
+                .first(ordersPage.isFirst())
+                .last(ordersPage.isLast())
+                .build());
     }
 
     @GetMapping("/{orderId}")

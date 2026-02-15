@@ -215,37 +215,39 @@ paths:
     get:
       summary: List or search orders
       description: |
-        Returns all orders. Filter parameters (status, paymentStatus, customerId, date range) are OUT OF SCOPE FOR MVP.
+        Returns orders with pagination and optional filters.
         Supports: US-01, US-03, US-07.
       tags: [Orders]
-      # OUT OF SCOPE FOR MVP - Query filters
-      # parameters:
-      #   - in: query
-      #     name: status
-      #     schema:
-      #       $ref: "#/components/schemas/OrderStatus"
-      #   - in: query
-      #     name: paymentStatus
-      #     schema:
-      #       $ref: "#/components/schemas/PaymentStatus"
-      #   - in: query
-      #     name: customerId
-      #     schema: { type: integer, format: int64 }
-      #   - in: query
-      #     name: from
-      #     schema: { type: string, format: date-time }
-      #   - in: query
-      #     name: to
-      #     schema: { type: string, format: date-time }
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/OrderStatus"
+        - in: query
+          name: paymentStatus
+          schema:
+            $ref: "#/components/schemas/PaymentStatus"
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+          description: Start date (inclusive)
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+          description: End date (inclusive)
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
       responses:
         "200":
-          description: Orders list
+          description: Paginated orders list
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OrderResponse"
+                $ref: "#/components/schemas/OrderPageResponse"
 
   /api/v1/orders/{orderId}:
     get:
@@ -379,6 +381,37 @@ paths:
   # PAYMENTS
   # -------------------------
   /api/v1/payments:
+    get:
+      summary: List payments
+      description: |
+        Returns payments with pagination and optional filters.
+        Supports: US-07.
+      tags: [Payments]
+      parameters:
+        - in: query
+          name: orderId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+          description: Start date (inclusive)
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+          description: End date (inclusive)
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated payments list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPageResponse"
     post:
       summary: Record payment for order
       description: |
@@ -708,6 +741,36 @@ components:
         - grandTotal
         - currentStatus
         - paymentStatus
+
+    OrderPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
+
+    PaymentPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
 
     OrderTrackingResponse:
       type: object

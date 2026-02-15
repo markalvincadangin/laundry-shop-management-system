@@ -1,28 +1,57 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "@/lib/api/client";
-import { ordersApi, type OrderResponse } from "@/lib/api/orders";
+import {
+  ordersApi,
+  type OrderResponse,
+  type OrderListParams,
+} from "@/lib/api/orders";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
+  const [page, setPage] = useState(0);
+  const [size] = useState(20);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [filters, setFilters] = useState<OrderListParams>({});
+  const [appliedFilters, setAppliedFilters] = useState<OrderListParams>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchOrders = useCallback(() => {
+    setLoading(true);
+    setError(null);
     ordersApi
-      .list()
-      .then(setOrders)
+      .list({ ...appliedFilters, page, size })
+      .then((res) => {
+        setOrders(res.content);
+        setTotalPages(res.totalPages);
+        setTotalElements(res.totalElements);
+      })
       .catch((err) => {
         setError(
           err instanceof ApiError ? err.message : "Failed to load orders"
         );
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [page, size, appliedFilters]);
 
-  if (loading) {
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  const handleFilterChange = (key: keyof OrderListParams, value: unknown) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters(filters);
+    setPage(0);
+  };
+
+  if (loading && orders.length === 0) {
     return (
       <div className="text-slate-600">Loading orders…</div>
     );
@@ -47,6 +76,75 @@ export default function OrdersPage() {
           New Order
         </Link>
       </div>
+
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-600">
+            Status
+          </label>
+          <select
+            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            value={filters.status ?? ""}
+            onChange={(e) =>
+              handleFilterChange("status", e.target.value || undefined)
+            }
+          >
+            <option value="">All</option>
+            <option value="RECEIVED">Received</option>
+            <option value="WASHING">Washing</option>
+            <option value="DRYING">Drying</option>
+            <option value="READY">Ready</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-600">
+            Payment
+          </label>
+          <select
+            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            value={filters.paymentStatus ?? ""}
+            onChange={(e) =>
+              handleFilterChange("paymentStatus", e.target.value || undefined)
+            }
+          >
+            <option value="">All</option>
+            <option value="UNPAID">Unpaid</option>
+            <option value="PAID">Paid</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-600">
+            From
+          </label>
+          <input
+            type="date"
+            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            value={filters.from ?? ""}
+            onChange={(e) => handleFilterChange("from", e.target.value || undefined)}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-600">
+            To
+          </label>
+          <input
+            type="date"
+            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            value={filters.to ?? ""}
+            onChange={(e) => handleFilterChange("to", e.target.value || undefined)}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={applyFilters}
+          className="rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
+        >
+          Apply
+        </button>
+      </div>
+
       {orders.length === 0 ? (
         <p className="text-slate-600">No orders yet.</p>
       ) : (
@@ -98,6 +196,33 @@ export default function OrdersPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-slate-600">
+            Showing {page * size + 1}–{Math.min((page + 1) * size, totalElements)}{" "}
+            of {totalElements}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0 || loading}
+              className="rounded border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1 || loading}
+              className="rounded border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

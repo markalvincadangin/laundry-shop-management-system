@@ -3,6 +3,8 @@ package com.himotech.laundryms.orders.service;
 import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.repository.CustomerRepository;
 import com.himotech.laundryms.customers.service.CustomerService;
@@ -228,6 +230,18 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<Order> findAll() {
         return orderRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Order> findAll(
+            OrderStatus status,
+            PaymentStatus paymentStatus,
+            java.time.LocalDate from,
+            java.time.LocalDate to,
+            Pageable pageable) {
+        java.time.LocalDateTime fromTs = from != null ? from.atStartOfDay() : null;
+        java.time.LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : null;
+        return orderRepository.findAllFiltered(status, paymentStatus, fromTs, toTs, pageable);
     }
 
 }
