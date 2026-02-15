@@ -215,7 +215,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Order findById(Long id) {
-        return orderRepository.findById(id)
+        return orderRepository.findByIdWithStatusLogs(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
     }
 

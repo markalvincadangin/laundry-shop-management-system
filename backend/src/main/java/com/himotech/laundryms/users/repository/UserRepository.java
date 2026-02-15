@@ -1,5 +1,6 @@
 package com.himotech.laundryms.users.repository;
 
+import com.himotech.laundryms.common.enums.UserRole;
 import com.himotech.laundryms.users.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -22,5 +23,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * @return an Optional containing the user if found, empty otherwise
      */
     Optional<User> findByUsername(String username);
+
+    /**
+     * Finds the first user with the given role (for dev/default user selection).
+     *
+     * @param role the user role
+     * @return an Optional containing the user if found, empty otherwise
+     */
+    Optional<User> findFirstByRole(UserRole role);
 }
 
