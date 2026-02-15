@@ -57,42 +57,47 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+const fetchOptions = (init?: RequestInit): RequestInit => ({
+  ...init,
+  credentials: "include",
+});
+
 export const apiClient = {
   async get<T>(path: string): Promise<T> {
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
-    const response = await fetch(url, {
+    const response = await fetch(url, fetchOptions({
       method: "GET",
       headers: { Accept: "application/json" },
-    });
+    }));
     return handleResponse<T>(response);
   },
 
   async post<T>(path: string, body: unknown): Promise<T> {
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
-    const response = await fetch(url, {
+    const response = await fetch(url, fetchOptions({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
       body: JSON.stringify(body),
-    });
+    }));
     return handleResponse<T>(response);
   },
 
   async patch<T>(path: string, body: unknown): Promise<T> {
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
-    const response = await fetch(url, {
+    const response = await fetch(url, fetchOptions({
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
       body: JSON.stringify(body),
-    });
+    }));
     return handleResponse<T>(response);
   },
 };

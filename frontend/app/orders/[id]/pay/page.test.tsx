@@ -1,11 +1,10 @@
 /**
- * Phase 8 — Pay order page tests.
+ * Phase 8 & 9 — Pay order page tests.
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
 import { fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getDefaultStaffUserId } from "@/lib/api/dev";
 import { ordersApi } from "@/lib/api/orders";
 import { paymentsApi } from "@/lib/api/payments";
 import PayOrderPage from "./page";
@@ -16,8 +15,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, back: vi.fn() }),
 }));
 
-vi.mock("@/lib/api/dev", () => ({
-  getDefaultStaffUserId: vi.fn(),
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { userId: "staff-1", username: "staff", role: "STAFF" } }),
 }));
 
 vi.mock("@/lib/api/orders", () => ({
@@ -30,7 +29,6 @@ vi.mock("@/lib/api/payments", () => ({
 
 describe("PayOrderPage", () => {
   beforeEach(() => {
-    vi.mocked(getDefaultStaffUserId).mockResolvedValue("staff-1");
     vi.mocked(ordersApi.getById).mockResolvedValue({
       id: 1,
       grandTotal: 150,

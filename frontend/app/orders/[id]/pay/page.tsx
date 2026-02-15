@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
-import { getDefaultStaffUserId } from "@/lib/api/dev";
 import { ordersApi } from "@/lib/api/orders";
 import { paymentsApi } from "@/lib/api/payments";
 
@@ -16,7 +16,8 @@ export default function PayOrderPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [staffUserId, setStaffUserId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const staffUserId = user?.userId ?? null;
   const [amountPaid, setAmountPaid] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<
     "CASH" | "GCASH" | "BANK_TRANSFER"
@@ -36,7 +37,6 @@ export default function PayOrderPage() {
 
   useEffect(() => {
     fetchOrder();
-    getDefaultStaffUserId().then(setStaffUserId);
   }, [fetchOrder]);
 
   useEffect(() => {
