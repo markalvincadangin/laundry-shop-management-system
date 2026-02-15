@@ -62,10 +62,25 @@ const fetchOptions = (init?: RequestInit): RequestInit => ({
   credentials: "include",
 });
 
+function buildUrl(path: string, params?: Record<string, unknown>): string {
+  const base = getBaseUrl();
+  let url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  if (params && Object.keys(params).length > 0) {
+    const search = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null && v !== "") {
+        search.set(k, String(v));
+      }
+    }
+    const qs = search.toString();
+    if (qs) url += `?${qs}`;
+  }
+  return url;
+}
+
 export const apiClient = {
-  async get<T>(path: string): Promise<T> {
-    const base = getBaseUrl();
-    const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  async get<T>(path: string, options?: { params?: Record<string, unknown> }): Promise<T> {
+    const url = buildUrl(path, options?.params);
     const response = await fetch(url, fetchOptions({
       method: "GET",
       headers: { Accept: "application/json" },

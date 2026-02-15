@@ -23,8 +23,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -70,6 +76,32 @@ class PaymentControllerTest {
                 .receivedBy(u)
                 .paymentDate(LocalDateTime.now())
                 .build();
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/payments")
+    class ListPayments {
+
+        @Test
+        @DisplayName("Should return 200 and paginated payments")
+        void list_ShouldReturn200_WithPayments() throws Exception {
+            Payment payment = samplePayment();
+            PaymentResponse paymentResp = PaymentResponse.builder().id(1L).orderId(1L).amountPaid(240.0).build();
+            Page<Payment> page = new PageImpl<>(List.of(payment), PageRequest.of(0, 20), 1);
+            when(paymentService.findAll(any(), any(), any(), any(Pageable.class))).thenReturn(page);
+            when(paymentMapper.toResponse(payment)).thenReturn(paymentResp);
+
+            mockMvc.perform(get("/api/v1/payments"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.page").value(0))
+                    .andExpect(jsonPath("$.size").value(20))
+                    .andExpect(jsonPath("$.totalElements").value(1));
+
+            verify(paymentService).findAll(any(), any(), any(), any(Pageable.class));
+        }
     }
 
     @Nested

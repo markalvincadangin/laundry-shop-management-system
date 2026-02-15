@@ -130,6 +130,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- JSON structured logging for production -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>8.0</version>
+        </dependency>
     </dependencies>
 
 	<build>
@@ -156,12 +162,82 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!-- Ensure tests use UTF-8 encoding -->
-					<argLine>-Dfile.encoding=UTF-8</argLine>
-					<!-- Use a single forked JVM reused for all test classes (adjust forkCount/reuseForks if stronger isolation is needed) -->
+					<!-- JaCoCo agent for coverage; argLine set by jacoco-maven-plugin -->
+					<argLine>@{argLine} -Dfile.encoding=UTF-8</argLine>
 					<forkCount>1</forkCount>
 					<reuseForks>true</reuseForks>
 				</configuration>
+			</plugin>
+			<!-- JaCoCo for test coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.11</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<!-- Target 0.80; set to current baseline. Increase as tests are added. -->
+											<minimum>0.45</minimum>
+										</limit>
+									</limits>
+									<excludes>
+										<exclude>com.himotech.laundryms.LaundrySystemApplication</exclude>
+										<exclude>com.himotech.laundryms.*.entity.*</exclude>
+										<exclude>com.himotech.laundryms.api.dto.*</exclude>
+										<exclude>com.himotech.laundryms.api.mapper.*</exclude>
+										<exclude>com.himotech.laundryms.config.*</exclude>
+										<exclude>com.himotech.laundryms.security.*</exclude>
+									</excludes>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Checkstyle for code quality -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<configLocation>checkstyle.xml</configLocation>
+							<consoleOutput>true</consoleOutput>
+							<failsOnError>true</failsOnError>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

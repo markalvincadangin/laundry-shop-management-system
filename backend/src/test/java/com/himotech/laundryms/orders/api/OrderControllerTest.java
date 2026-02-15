@@ -29,6 +29,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -212,21 +217,26 @@ class OrderControllerTest {
     class ListOrders {
 
         @Test
-        @DisplayName("Should return 200 and array of orders")
+        @DisplayName("Should return 200 and paginated orders")
         void list_ShouldReturn200_WithOrders() throws Exception {
             Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
-            when(orderService.findAll()).thenReturn(List.of(order));
+            Page<Order> page = new PageImpl<>(List.of(order), PageRequest.of(0, 20), 1);
+            when(orderService.findAll(any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
             mockMvc.perform(get("/api/v1/orders"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].referenceNumber").value("LDR-20260213-1234"));
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].referenceNumber").value("LDR-20260213-1234"))
+                    .andExpect(jsonPath("$.page").value(0))
+                    .andExpect(jsonPath("$.size").value(20))
+                    .andExpect(jsonPath("$.totalElements").value(1))
+                    .andExpect(jsonPath("$.totalPages").value(1));
 
-            verify(orderService).findAll();
+            verify(orderService).findAll(any(), any(), any(), any(), any(Pageable.class));
         }
     }
 

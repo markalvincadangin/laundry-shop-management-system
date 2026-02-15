@@ -1,6 +1,8 @@
 package com.himotech.laundryms.payments.repository;
 
 import com.himotech.laundryms.payments.entity.Payment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,5 +35,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query("SELECT COUNT(p) FROM Payment p WHERE p.paymentDate >= :from AND p.paymentDate < :to")
     long countByPaymentDateBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    @Query("SELECT p FROM Payment p WHERE " +
+            "(:orderId IS NULL OR p.order.id = :orderId) AND " +
+            "(:fromTs IS NULL OR p.paymentDate >= :fromTs) AND " +
+            "(:toTs IS NULL OR p.paymentDate < :toTs)")
+    Page<Payment> findAllFiltered(
+            @Param("orderId") Long orderId,
+            @Param("fromTs") LocalDateTime fromTs,
+            @Param("toTs") LocalDateTime toTs,
+            Pageable pageable);
 }
 
