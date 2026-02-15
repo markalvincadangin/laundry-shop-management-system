@@ -29,6 +29,7 @@ frontend/.env.local
 **/node_modules/
 **/dist/
 **/build/
+**/.next/
 
 # Docker volumes (local)
 **/postgres_data/
