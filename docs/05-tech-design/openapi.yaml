@@ -597,6 +597,10 @@ components:
           type: integer
           format: int64
           description: "Existing customer ID"
+        createdByUserId:
+          type: string
+          format: uuid
+          description: "User creating the order. Required until auth (Phase 9)."
         customer:
           $ref: "#/components/schemas/CreateCustomerRequest"
         serviceRateId:
@@ -703,7 +707,11 @@ components:
         amountPaid: { type: number, format: double, description: "Must equal order grand total (BR-PAY-03)" }
         paymentMethod:
           $ref: "#/components/schemas/PaymentMethod"
-      required: [orderId, amountPaid]
+        receivedByUserId:
+          type: string
+          format: uuid
+          description: "User recording the payment. Required until auth (Phase 9)."
+      required: [orderId, amountPaid, receivedByUserId]
 
     PaymentResponse:
       type: object

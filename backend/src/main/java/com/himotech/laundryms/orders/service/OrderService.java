@@ -136,5 +136,22 @@ public class OrderService {
         return order;
     }
 
+    @Transactional(readOnly = true)
+    public Order findById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public Order findByReferenceNumber(String referenceNumber) {
+        return orderRepository.findByReferenceNumber(referenceNumber)
+                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + referenceNumber));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
+
 }
 

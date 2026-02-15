@@ -1,6 +1,6 @@
 package com.himotech.laundryms.exception;
 
-import com.himotech.laundryms.api.error.ApiError;
+import com.himotech.laundryms.api.error.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, Object> details = new HashMap<>();
         Map<String, String> fieldErrors = new HashMap<>();
 
@@ -25,37 +25,44 @@ public class GlobalExceptionHandler {
         }
 
         details.put("fieldErrors", fieldErrors);
-        ApiError apiError = ApiError.of("VALIDATION_ERROR", "Validation failed", details);
+        ErrorResponse errorResponse = ErrorResponse.of("VALIDATION_ERROR", "Validation failed", details);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex) {
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiError.of("VALIDATION_ERROR", ex.getMessage()));
+                .body(ErrorResponse.of("VALIDATION_ERROR", ex.getMessage()));
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(NotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ApiError.of("NOT_FOUND", ex.getMessage()));
+                .body(ErrorResponse.of("NOT_FOUND", ex.getMessage()));
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiError> handleConflict(ConflictException ex) {
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(ApiError.of("CONFLICT", ex.getMessage()));
+                .body(ErrorResponse.of("CONFLICT", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("BAD_REQUEST", ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGeneric(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiError.of("INTERNAL_SERVER_ERROR", "An unexpected error occurred"));
+                .body(ErrorResponse.of("INTERNAL_SERVER_ERROR", "An unexpected error occurred"));
     }
 
 }

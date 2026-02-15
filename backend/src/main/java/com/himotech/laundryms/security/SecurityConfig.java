@@ -28,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/api/test/public").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/api/v1/**").permitAll() // TODO[SEC]: Temporary Phase 6 testing workaround. Restrict /api/v1/** with authentication and role-based access control before production deployment.
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtCookieAuthFilter(props),
