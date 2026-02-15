@@ -2,6 +2,7 @@ package com.himotech.laundryms.orders.service;
 
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.notification.NotificationService;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
@@ -23,6 +24,7 @@ public class OrderStatusService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final OrderStatusLogRepository orderStatusLogRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public Order updateStatus(Long orderId, OrderStatus newStatus, UUID changedByUserId, String notes) {
@@ -61,6 +63,11 @@ public class OrderStatusService {
                 .notes(notes)
                 .build();
         orderStatusLogRepository.save(statusLog);
+
+        // BR-NOTIF-01: Create notification when status → READY_FOR_PICKUP
+        if (newStatus == OrderStatus.READY_FOR_PICKUP) {
+            notificationService.createForReadyForPickup(order);
+        }
 
         return order;
     }
