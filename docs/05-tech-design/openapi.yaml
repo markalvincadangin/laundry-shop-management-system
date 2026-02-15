@@ -215,27 +215,28 @@ paths:
     get:
       summary: List or search orders
       description: |
-        Returns orders with optional filters (status, paymentStatus, customerId, date range).
+        Returns all orders. Filter parameters (status, paymentStatus, customerId, date range) are OUT OF SCOPE FOR MVP.
         Supports: US-01, US-03, US-07.
       tags: [Orders]
-      parameters:
-        - in: query
-          name: status
-          schema:
-            $ref: "#/components/schemas/OrderStatus"
-        - in: query
-          name: paymentStatus
-          schema:
-            $ref: "#/components/schemas/PaymentStatus"
-        - in: query
-          name: customerId
-          schema: { type: integer, format: int64 }
-        - in: query
-          name: from
-          schema: { type: string, format: date-time }
-        - in: query
-          name: to
-          schema: { type: string, format: date-time }
+      # OUT OF SCOPE FOR MVP - Query filters
+      # parameters:
+      #   - in: query
+      #     name: status
+      #     schema:
+      #       $ref: "#/components/schemas/OrderStatus"
+      #   - in: query
+      #     name: paymentStatus
+      #     schema:
+      #       $ref: "#/components/schemas/PaymentStatus"
+      #   - in: query
+      #     name: customerId
+      #     schema: { type: integer, format: int64 }
+      #   - in: query
+      #     name: from
+      #     schema: { type: string, format: date-time }
+      #   - in: query
+      #     name: to
+      #     schema: { type: string, format: date-time }
       responses:
         "200":
           description: Orders list
@@ -335,43 +336,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /api/v1/orders/{orderId}/add-ons:
-    post:
-      summary: Add add-on charge to order
-      description: |
-        Adds optional add-on (e.g., fabric conditioner). Recalculates grand total.
-        Supports: US-02. Enforces: BR-PR-04.
-      tags: [Orders]
-      parameters:
-        - in: path
-          name: orderId
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AddOrderAddOnRequest"
-      responses:
-        "200":
-          description: Updated order (totals recalculated)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderResponse"
-        "400":
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Order not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+  # OUT OF SCOPE FOR MVP - Dynamic add-ons after order creation
+  # /api/v1/orders/{orderId}/add-ons:
+  #   post:
+  #     summary: Add add-on charge to order
+  #     description: |
+  #       Adds optional add-on (e.g., fabric conditioner). Recalculates grand total.
+  #       Supports: US-02. Enforces: BR-PR-04.
+  #     tags: [Orders]
+  #     parameters:
+  #       - in: path
+  #         name: orderId
+  #         required: true
+  #         schema: { type: integer, format: int64 }
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "#/components/schemas/AddOrderAddOnRequest"
+  #     responses:
+  #       "200":
+  #         description: Updated order (totals recalculated)
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/OrderResponse"
+  #       "400":
+  #         description: Validation error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/ErrorResponse"
+  #       "404":
+  #         description: Order not found
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/ErrorResponse"
 
   # -------------------------
   # PAYMENTS
@@ -597,11 +599,15 @@ components:
           type: integer
           format: int64
           description: "Existing customer ID"
+        createdByUserId:
+          type: string
+          format: uuid
+          description: "User creating the order. Required until auth (Phase 9)."
         customer:
           $ref: "#/components/schemas/CreateCustomerRequest"
-        serviceRateId:
-          type: integer
-          description: "Rate to apply; if omitted, uses active rate"
+        # serviceRateId:
+        #   type: integer
+        #   description: "Rate to apply; if omitted, uses active rate (OUT OF SCOPE FOR MVP)"
         weightKg:
           type: number
           format: double
@@ -634,7 +640,11 @@ components:
           $ref: "#/components/schemas/OrderStatus"
         notes:
           type: string
-      required: [newStatus]
+        changedByUserId:
+          type: string
+          format: uuid
+          description: "User who initiated the status change (required until Phase 9 authentication)"
+      required: [newStatus, changedByUserId]
 
     AddOrderAddOnRequest:
       type: object
@@ -651,7 +661,7 @@ components:
         referenceNumber: { type: string, description: "Unique tracking identifier" }
         customerId: { type: integer, format: int64 }
         createdByUserId: { type: string, format: uuid }
-        serviceRateId: { type: integer }
+        # serviceRateId: { type: integer } # OUT OF SCOPE FOR MVP
         weightKg: { type: number, format: double }
         totalLoads: { type: integer, description: "ceil(weight_kg / kg_limit_per_load)" }
         extraMinutes: { type: integer }
@@ -703,7 +713,11 @@ components:
         amountPaid: { type: number, format: double, description: "Must equal order grand total (BR-PAY-03)" }
         paymentMethod:
           $ref: "#/components/schemas/PaymentMethod"
-      required: [orderId, amountPaid]
+        receivedByUserId:
+          type: string
+          format: uuid
+          description: "User recording the payment. Required until auth (Phase 9)."
+      required: [orderId, amountPaid, receivedByUserId]
 
     PaymentResponse:
       type: object

@@ -61,4 +61,11 @@ public class PaymentService {
 
         return payment;
     }
+
+    @Transactional(readOnly = true)
+    public Payment findById(Long id) {
+        return paymentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Payment not found: " + id));
+    }
+
 }

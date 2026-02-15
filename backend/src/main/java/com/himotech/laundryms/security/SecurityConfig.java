@@ -25,9 +25,14 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/orders/reference/**").permitAll() // Public order tracking
                         .requestMatchers("/api/test/public").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        // All other /api/v1/** endpoints require authentication
+                        // TODO[PHASE-9]: Replace with proper role-based access control
+                        .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtCookieAuthFilter(props),

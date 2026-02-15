@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ServiceRateService {
@@ -16,5 +18,13 @@ public class ServiceRateService {
     public ServiceRate getActiveRate() {
         return serviceRateRepository.findFirstByIsActiveTrueOrderByIdDesc()
                 .orElseThrow(() -> new NotFoundException("No active service rate found."));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ServiceRate> findAll(boolean activeOnly) {
+        if (activeOnly) {
+            return serviceRateRepository.findByIsActiveTrue();
+        }
+        return serviceRateRepository.findAll();
     }
 }

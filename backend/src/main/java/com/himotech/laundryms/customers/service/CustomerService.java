@@ -15,7 +15,7 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
 
     @Transactional
-    public void create(String firstName, String lastName, String contactNumber) {
+    public Customer create(String firstName, String lastName, String contactNumber) {
         // Check if a customer with the same identity already exists
         if (customerRepository.findByLastNameAndFirstNameAndContactNumber(lastName, firstName, contactNumber).isPresent()) {
             throw new IllegalArgumentException("Customer with the same identity already exists");
@@ -28,7 +28,7 @@ public class CustomerService {
                 .contactNumber(contactNumber)
                 .build();
 
-        customerRepository.save(customer);
+        return customerRepository.save(customer);
     }
 
     @Transactional(readOnly = true)

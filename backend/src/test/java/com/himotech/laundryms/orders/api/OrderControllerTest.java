@@ -1,0 +1,373 @@
+package com.himotech.laundryms.orders.api;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.himotech.laundryms.api.dto.request.AddOnInput;
+import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
+import com.himotech.laundryms.api.dto.request.UpdateOrderStatusRequest;
+import com.himotech.laundryms.common.enums.OrderStatus;
+import com.himotech.laundryms.common.enums.PaymentStatus;
+import com.himotech.laundryms.customers.entity.Customer;
+import com.himotech.laundryms.customers.service.CustomerService;
+import com.himotech.laundryms.exception.GlobalExceptionHandler;
+import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.orders.entity.Order;
+import com.himotech.laundryms.api.dto.response.OrderResponse;
+import com.himotech.laundryms.api.dto.response.OrderTrackingResponse;
+import com.himotech.laundryms.api.mapper.OrderMapper;
+import com.himotech.laundryms.orders.service.OrderService;
+import com.himotech.laundryms.orders.service.OrderStatusService;
+import com.himotech.laundryms.rates.entity.ServiceRate;
+import com.himotech.laundryms.users.entity.User;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * API tests for OrderController.
+ * Validates: OpenAPI contract, request validation, response structure, HTTP status codes.
+ */
+@WebMvcTest(controllers = OrderController.class)
+@Import(GlobalExceptionHandler.class)
+@WithMockUser
+@DisplayName("OrderController API Tests")
+class OrderControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private OrderService orderService;
+
+    @MockitoBean
+    private OrderStatusService orderStatusService;
+
+    @MockitoBean
+    private CustomerService customerService;
+
+    @MockitoBean
+    private OrderMapper orderMapper;
+
+    private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+
+    private Order sampleOrder() {
+        Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+        User u = User.builder().id(USER_ID).username("staff").build();
+        ServiceRate r = ServiceRate.builder().id(1).basePricePerLoad(BigDecimal.valueOf(120)).kgLimitPerLoad(BigDecimal.valueOf(8)).pricePerExtraMinute(BigDecimal.ONE).isActive(true).build();
+        return Order.builder()
+                .id(1L)
+                .referenceNumber("LDR-20260213-1234")
+                .customer(c)
+                .createdBy(u)
+                .serviceRate(r)
+                .weightKg(new BigDecimal("10.00"))
+                .totalLoads(2)
+                .basePricePerLoad(new BigDecimal("120.00"))
+                .kgLimitPerLoad(new BigDecimal("8.00"))
+                .pricePerExtraMinute(new BigDecimal("1.00"))
+                .extraMinutes(0)
+                .baseAmount(new BigDecimal("240.00"))
+                .extraMinutesAmount(BigDecimal.ZERO)
+                .addonsTotalAmount(BigDecimal.ZERO)
+                .grandTotal(new BigDecimal("240.00"))
+                .currentStatus(OrderStatus.RECEIVED)
+                .paymentStatus(PaymentStatus.UNPAID)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    @Nested
+    @DisplayName("POST /api/v1/orders")
+    class CreateOrder {
+
+        @Test
+        @DisplayName("Should return 201 and OrderResponse when valid request")
+        void create_ShouldReturn201_WhenValidRequest() throws Exception {
+            CreateOrderRequest request = new CreateOrderRequest();
+            request.setCustomerId(1L);
+            request.setCreatedByUserId(USER_ID);
+            request.setWeightKg(new BigDecimal("10.00"));
+            request.setExtraMinutes(0);
+
+            Order order = sampleOrder();
+            OrderResponse orderResp = OrderResponse.builder()
+                    .id(1L)
+                    .referenceNumber("LDR-20260213-1234")
+                    .customerId(1L)
+                    .weightKg(10.0)
+                    .totalLoads(2)
+                    .grandTotal(240.0)
+                    .currentStatus("RECEIVED")
+                    .paymentStatus("UNPAID")
+                    .build();
+            when(orderService.createFromRequest(any())).thenReturn(order);
+            when(orderMapper.toResponse(order)).thenReturn(orderResp);
+
+            mockMvc.perform(post("/api/v1/orders")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"))
+                    .andExpect(jsonPath("$.customerId").value(1))
+                    .andExpect(jsonPath("$.weightKg").value(10.0))
+                    .andExpect(jsonPath("$.totalLoads").value(2))
+                    .andExpect(jsonPath("$.grandTotal").value(240.0))
+                    .andExpect(jsonPath("$.currentStatus").value("RECEIVED"))
+                    .andExpect(jsonPath("$.paymentStatus").value("UNPAID"));
+
+            verify(orderService).createFromRequest(any());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when weightKg is null")
+        void create_ShouldReturn400_WhenWeightNull() throws Exception {
+            CreateOrderRequest request = new CreateOrderRequest();
+            request.setCustomerId(1L);
+            request.setCreatedByUserId(USER_ID);
+
+            mockMvc.perform(post("/api/v1/orders")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+        }
+
+        @Test
+        @DisplayName("Should return 400 when weightKg is zero")
+        void create_ShouldReturn400_WhenWeightZero() throws Exception {
+            CreateOrderRequest request = new CreateOrderRequest();
+            request.setCustomerId(1L);
+            request.setCreatedByUserId(USER_ID);
+            request.setWeightKg(BigDecimal.ZERO);
+
+            mockMvc.perform(post("/api/v1/orders")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when createdByUserId is null")
+        void create_ShouldReturn400_WhenCreatedByUserIdNull() throws Exception {
+            CreateOrderRequest request = new CreateOrderRequest();
+            request.setCustomerId(1L);
+            request.setWeightKg(new BigDecimal("10.00"));
+
+            mockMvc.perform(post("/api/v1/orders")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 404 when customer not found")
+        void create_ShouldReturn404_WhenCustomerNotFound() throws Exception {
+            CreateOrderRequest request = new CreateOrderRequest();
+            request.setCustomerId(999L);
+            request.setCreatedByUserId(USER_ID);
+            request.setWeightKg(new BigDecimal("10.00"));
+
+            when(orderService.createFromRequest(any())).thenThrow(new NotFoundException("Customer not found: 999"));
+
+            mockMvc.perform(post("/api/v1/orders")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/orders")
+    class ListOrders {
+
+        @Test
+        @DisplayName("Should return 200 and array of orders")
+        void list_ShouldReturn200_WithOrders() throws Exception {
+            Order order = sampleOrder();
+            OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
+            when(orderService.findAll()).thenReturn(List.of(order));
+            when(orderMapper.toResponse(order)).thenReturn(orderResp);
+
+            mockMvc.perform(get("/api/v1/orders"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$[0].id").value(1))
+                    .andExpect(jsonPath("$[0].referenceNumber").value("LDR-20260213-1234"));
+
+            verify(orderService).findAll();
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/orders/{orderId}")
+    class GetById {
+
+        @Test
+        @DisplayName("Should return 200 and OrderResponse when found")
+        void getById_ShouldReturn200_WhenFound() throws Exception {
+            Order order = sampleOrder();
+            OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
+            when(orderService.findById(1L)).thenReturn(order);
+            when(orderMapper.toResponse(order)).thenReturn(orderResp);
+
+            mockMvc.perform(get("/api/v1/orders/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"));
+
+            verify(orderService).findById(1L);
+        }
+
+        @Test
+        @DisplayName("Should return 404 when not found")
+        void getById_ShouldReturn404_WhenNotFound() throws Exception {
+            when(orderService.findById(999L)).thenThrow(new NotFoundException("Order not found: 999"));
+
+            mockMvc.perform(get("/api/v1/orders/999"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/orders/reference/{referenceNumber}")
+    class TrackByReference {
+
+        @Test
+        @DisplayName("Should return 200 and OrderTrackingResponse when found")
+        void trackByReference_ShouldReturn200_WhenFound() throws Exception {
+            Order order = sampleOrder();
+            OrderTrackingResponse trackResp = OrderTrackingResponse.builder()
+                    .referenceNumber("LDR-20260213-1234")
+                    .currentStatus("RECEIVED")
+                    .customerName("Juan Dela Cruz")
+                    .paymentStatus("UNPAID")
+                    .build();
+            when(orderService.findByReferenceNumber("LDR-20260213-1234")).thenReturn(order);
+            when(orderMapper.toTrackingResponse(order)).thenReturn(trackResp);
+
+            mockMvc.perform(get("/api/v1/orders/reference/LDR-20260213-1234"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"))
+                    .andExpect(jsonPath("$.currentStatus").value("RECEIVED"))
+                    .andExpect(jsonPath("$.customerName").exists())
+                    .andExpect(jsonPath("$.paymentStatus").value("UNPAID"));
+
+            verify(orderService).findByReferenceNumber("LDR-20260213-1234");
+        }
+
+        @Test
+        @DisplayName("Should return 404 when reference not found")
+        void trackByReference_ShouldReturn404_WhenNotFound() throws Exception {
+            when(orderService.findByReferenceNumber("INVALID")).thenThrow(new NotFoundException("Order not found for reference: INVALID"));
+
+            mockMvc.perform(get("/api/v1/orders/reference/INVALID"))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /api/v1/orders/{orderId}/status")
+    class UpdateStatus {
+
+        @Test
+        @DisplayName("Should return 200 and OrderResponse when valid transition")
+        void updateStatus_ShouldReturn200_WhenValidTransition() throws Exception {
+            UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
+            request.setNewStatus("WASHING");
+            request.setChangedByUserId(USER_ID);
+
+            Order order = sampleOrder();
+            order.setCurrentStatus(OrderStatus.WASHING);
+            OrderResponse orderResp = OrderResponse.builder().id(1L).currentStatus("WASHING").build();
+            when(orderStatusService.updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any())).thenReturn(order);
+            when(orderMapper.toResponse(order)).thenReturn(orderResp);
+
+            mockMvc.perform(patch("/api/v1/orders/1/status")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.currentStatus").value("WASHING"));
+
+            verify(orderStatusService).updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when newStatus is blank")
+        void updateStatus_ShouldReturn400_WhenNewStatusBlank() throws Exception {
+            UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
+            request.setNewStatus("  ");
+            request.setChangedByUserId(USER_ID);
+
+            mockMvc.perform(patch("/api/v1/orders/1/status")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when changedByUserId is null")
+        void updateStatus_ShouldReturn400_WhenChangedByUserIdNull() throws Exception {
+            UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
+            request.setNewStatus("WASHING");
+
+            mockMvc.perform(patch("/api/v1/orders/1/status")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 404 when order not found")
+        void updateStatus_ShouldReturn404_WhenOrderNotFound() throws Exception {
+            UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
+            request.setNewStatus("WASHING");
+            request.setChangedByUserId(USER_ID);
+
+            when(orderStatusService.updateStatus(eq(999L), any(), any(), any()))
+                    .thenThrow(new NotFoundException("Order not found: 999"));
+
+            mockMvc.perform(patch("/api/v1/orders/999/status")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isNotFound());
+        }
+    }
+}
