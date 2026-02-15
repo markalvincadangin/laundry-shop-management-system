@@ -7,6 +7,8 @@ import {
   notificationsApi,
   type NotificationResponse,
 } from "@/lib/api/notifications";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-amber-100 text-amber-800",
@@ -34,7 +36,14 @@ export default function NotificationsPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-slate-600">Loading notifications…</div>;
+    return (
+      <div>
+        <h1 className="mb-6 text-2xl font-bold text-slate-800">
+          Notifications
+        </h1>
+        <TableSkeleton rows={5} cols={6} />
+      </div>
+    );
   }
 
   if (error) {
@@ -59,7 +68,10 @@ export default function NotificationsPage() {
       </p>
 
       {notifications.length === 0 ? (
-        <p className="text-slate-600">No notifications yet.</p>
+        <EmptyState
+          title="No notifications yet"
+          description="Notifications appear when orders reach Ready for Pickup."
+        />
       ) : (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-slate-200">

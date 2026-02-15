@@ -7,10 +7,20 @@ import type { components } from "@/types/api.generated";
 
 export type DailySalesReportResponse =
   components["schemas"]["DailySalesReportResponse"];
+export type PeriodSalesReportResponse =
+  components["schemas"]["PeriodSalesReportResponse"];
 
 export const reportsApi = {
   getDailySales: (date: string) =>
     apiClient.get<DailySalesReportResponse>(
       `/v1/reports/sales/daily?date=${encodeURIComponent(date)}`
+    ),
+  getMonthlySales: (year: number, month: number) =>
+    apiClient.get<PeriodSalesReportResponse>(
+      `/v1/reports/sales/monthly?year=${year}&month=${month}`
+    ),
+  getYearlySales: (year: number) =>
+    apiClient.get<PeriodSalesReportResponse>(
+      `/v1/reports/sales/yearly?year=${year}`
     ),
 };

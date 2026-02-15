@@ -8,6 +8,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import { authApi, type CurrentUserResponse } from "@/lib/api/auth";
 
@@ -69,11 +70,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         await authApi.login({ username, password });
         await refresh();
+        toast.success("Signed in successfully");
         router.push("/");
       } catch (err) {
         const message =
           err instanceof ApiError ? err.message : "Login failed";
         setState((s) => ({ ...s, error: message }));
+        toast.error(message);
         throw err;
       }
     },
@@ -83,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
+      toast.success("Signed out successfully");
     } catch {
       // ignore
     }
