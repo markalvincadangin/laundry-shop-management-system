@@ -82,7 +82,7 @@ class PaymentControllerTest {
             CreatePaymentRequest request = new CreatePaymentRequest();
             request.setOrderId(1L);
             request.setAmountPaid(new BigDecimal("240.00"));
-            request.setPaymentMethod("CASH");
+            request.setPaymentMethod(PaymentMethod.CASH);
             request.setReceivedByUserId(USER_ID);
 
             Payment payment = samplePayment();

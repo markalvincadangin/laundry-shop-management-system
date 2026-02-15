@@ -18,7 +18,6 @@ public class CreateOrderRequest {
     @NotNull(message = "createdByUserId is required")
 
     private UUID createdByUserId;
-    private Integer serviceRateId;
 
     @NotNull(message = "weightKg is required")
     @DecimalMin(value = "0.01", message = "weightKg must be greater than 0")

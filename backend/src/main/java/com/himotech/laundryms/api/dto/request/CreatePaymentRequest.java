@@ -1,5 +1,6 @@
 package com.himotech.laundryms.api.dto.request;
 
+import com.himotech.laundryms.common.enums.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -16,7 +17,8 @@ public class CreatePaymentRequest {
     @DecimalMin(value = "0", inclusive = false, message = "amountPaid must be greater than 0")
     private BigDecimal amountPaid;
 
-    private String paymentMethod = "CASH";
+    @NotNull(message = "paymentMethod is required")
+    private PaymentMethod paymentMethod = PaymentMethod.CASH;
 
     @NotNull(message = "receivedByUserId is required")
     private UUID receivedByUserId;

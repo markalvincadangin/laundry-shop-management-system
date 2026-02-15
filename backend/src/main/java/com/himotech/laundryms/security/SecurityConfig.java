@@ -25,10 +25,14 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/orders/reference/**").permitAll() // Public order tracking
                         .requestMatchers("/api/test/public").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/v1/**").permitAll() // TODO[SEC]: Temporary Phase 6 testing workaround. Restrict /api/v1/** with authentication and role-based access control before production deployment.
+                        // All other /api/v1/** endpoints require authentication
+                        // TODO[PHASE-9]: Replace with proper role-based access control
+                        .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtCookieAuthFilter(props),

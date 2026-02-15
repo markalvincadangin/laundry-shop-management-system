@@ -3,9 +3,12 @@ package com.himotech.laundryms.reports.api;
 import com.himotech.laundryms.api.dto.response.DailySalesReportResponse;
 import com.himotech.laundryms.api.dto.response.PeriodSalesReportResponse;
 import com.himotech.laundryms.reports.service.ReportService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -13,6 +16,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/v1/reports/sales")
 @RequiredArgsConstructor
+@Validated
 public class ReportsController {
 
     private final ReportService reportService;
@@ -25,13 +29,13 @@ public class ReportsController {
 
     @GetMapping("/monthly")
     public ResponseEntity<PeriodSalesReportResponse> getMonthly(
-            @RequestParam int year,
-            @RequestParam int month) {
+            @RequestParam @Min(1) int year,
+            @RequestParam @Min(1) @Max(12) int month) {
         return ResponseEntity.ok(reportService.getMonthlySales(year, month));
     }
 
     @GetMapping("/yearly")
-    public ResponseEntity<PeriodSalesReportResponse> getYearly(@RequestParam int year) {
+    public ResponseEntity<PeriodSalesReportResponse> getYearly(@RequestParam @Min(1) int year) {
         return ResponseEntity.ok(reportService.getYearlySales(year));
     }
 }

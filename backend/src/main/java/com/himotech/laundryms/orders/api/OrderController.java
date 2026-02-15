@@ -6,10 +6,7 @@ import com.himotech.laundryms.api.dto.response.OrderResponse;
 import com.himotech.laundryms.api.dto.response.OrderTrackingResponse;
 import com.himotech.laundryms.api.mapper.OrderMapper;
 import com.himotech.laundryms.common.enums.OrderStatus;
-import com.himotech.laundryms.customers.entity.Customer;
-import com.himotech.laundryms.customers.service.CustomerService;
 import com.himotech.laundryms.orders.entity.Order;
-import com.himotech.laundryms.orders.service.CreateOrderCommand;
 import com.himotech.laundryms.orders.service.OrderService;
 import com.himotech.laundryms.orders.service.OrderStatusService;
 import jakarta.validation.Valid;
@@ -27,39 +24,12 @@ public class OrderController {
 
     private final OrderService orderService;
     private final OrderStatusService orderStatusService;
-    private final CustomerService customerService;
     private final OrderMapper orderMapper;
 
     @PostMapping
     public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
-        Long customerId = resolveCustomerId(request);
-        List<CreateOrderCommand.AddOnItem> addOns = request.getInitialAddOns() == null ? List.of()
-                : request.getInitialAddOns().stream()
-                .map(a -> new CreateOrderCommand.AddOnItem(a.getName(), a.getPrice(), a.getQuantity() > 0 ? a.getQuantity() : 1))
-                .toList();
-
-        CreateOrderCommand command = new CreateOrderCommand(
-                customerId,
-                request.getCreatedByUserId(),
-                request.getWeightKg(),
-                request.getExtraMinutes() != null ? request.getExtraMinutes() : 0,
-                addOns
-        );
-        Order order = orderService.create(command);
+        Order order = orderService.createFromRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toResponse(order));
-    }
-
-    private Long resolveCustomerId(CreateOrderRequest request) {
-        if (request.getCustomerId() != null) return request.getCustomerId();
-        if (request.getCustomer() != null) {
-            Customer c = customerService.create(
-                    request.getCustomer().getFirstName(),
-                    request.getCustomer().getLastName(),
-                    request.getCustomer().getContactNumber()
-            );
-            return c.getId();
-        }
-        throw new IllegalArgumentException("Either customerId or customer is required");
     }
 
     @GetMapping("/reference/{referenceNumber}")

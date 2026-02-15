@@ -9,22 +9,20 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        Map<String, Object> details = new HashMap<>();
-        Map<String, String> fieldErrors = new HashMap<>();
+        List<String> details = new ArrayList<>();
 
         for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            details.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
         }
 
-        details.put("fieldErrors", fieldErrors);
         ErrorResponse errorResponse = ErrorResponse.of("VALIDATION_ERROR", "Validation failed", details);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);

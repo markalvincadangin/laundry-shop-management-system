@@ -26,7 +26,7 @@ public class PaymentController {
         RecordPaymentCommand cmd = new RecordPaymentCommand(
                 request.getOrderId(),
                 request.getAmountPaid(),
-                request.getPaymentMethod() != null ? PaymentMethod.valueOf(request.getPaymentMethod()) : PaymentMethod.CASH,
+                request.getPaymentMethod(),
                 request.getReceivedByUserId(),
                 null
         );

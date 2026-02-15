@@ -123,7 +123,7 @@ class OrderControllerTest {
                     .currentStatus("RECEIVED")
                     .paymentStatus("UNPAID")
                     .build();
-            when(orderService.create(any())).thenReturn(order);
+            when(orderService.createFromRequest(any())).thenReturn(order);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
             mockMvc.perform(post("/api/v1/orders")
@@ -141,7 +141,7 @@ class OrderControllerTest {
                     .andExpect(jsonPath("$.currentStatus").value("RECEIVED"))
                     .andExpect(jsonPath("$.paymentStatus").value("UNPAID"));
 
-            verify(orderService).create(any());
+            verify(orderService).createFromRequest(any());
         }
 
         @Test
@@ -196,7 +196,7 @@ class OrderControllerTest {
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(new BigDecimal("10.00"));
 
-            when(orderService.create(any())).thenThrow(new NotFoundException("Customer not found: 999"));
+            when(orderService.createFromRequest(any())).thenThrow(new NotFoundException("Customer not found: 999"));
 
             mockMvc.perform(post("/api/v1/orders")
                             .with(csrf())
