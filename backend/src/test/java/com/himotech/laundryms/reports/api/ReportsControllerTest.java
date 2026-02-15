@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @WebMvcTest(controllers = ReportsController.class)
 @Import(GlobalExceptionHandler.class)
-@WithMockUser
+@WithMockUser(roles = "OWNER")
 @DisplayName("ReportsController API Tests")
 class ReportsControllerTest {
 

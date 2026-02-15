@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
 import { customersApi, type CustomerResponse } from "@/lib/api/customers";
-import { getDefaultStaffUserId } from "@/lib/api/dev";
 import { ordersApi } from "@/lib/api/orders";
 import type { components } from "@/types/api.generated";
 
@@ -12,7 +12,8 @@ type AddOnInput = components["schemas"]["AddOnInput"];
 
 export default function NewOrderPage() {
   const router = useRouter();
-  const [staffUserId, setStaffUserId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const staffUserId = user?.userId ?? null;
   const [customers, setCustomers] = useState<CustomerResponse[]>([]);
   const [search, setSearch] = useState("");
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
@@ -38,10 +39,6 @@ export default function NewOrderPage() {
     newCustomer.contactNumber.trim() !== "";
 
   useEffect(() => {
-    getDefaultStaffUserId().then(setStaffUserId);
-  }, []);
-
-  useEffect(() => {
     if (search.length >= 2 && !showNewCustomer) {
       customersApi
         .list(search)
@@ -57,7 +54,7 @@ export default function NewOrderPage() {
       e.preventDefault();
       setError(null);
       if (!staffUserId) {
-        setError("Staff user not available. Is the backend running with dev profile?");
+        setError("Please sign in to create orders.");
         return;
       }
       const weight = parseFloat(weightKg);
@@ -146,8 +143,7 @@ export default function NewOrderPage() {
 
       {!staffUserId && (
         <div className="mb-4 rounded-lg bg-amber-50 p-4 text-amber-800">
-          Loading staff user… Make sure the backend runs with{" "}
-          <code className="rounded bg-amber-100 px-1">SPRING_PROFILES_ACTIVE=dev</code>
+          Please sign in to create orders.
         </div>
       )}
 

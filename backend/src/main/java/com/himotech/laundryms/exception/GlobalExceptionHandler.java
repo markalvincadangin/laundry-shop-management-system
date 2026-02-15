@@ -1,6 +1,7 @@
 package com.himotech.laundryms.exception;
 
 import com.himotech.laundryms.api.error.ErrorResponse;
+import com.himotech.laundryms.auth.InvalidCredentialsException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +55,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of("BAD_REQUEST", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of("INVALID_CREDENTIALS", "Invalid username or password"));
     }
 
     @ExceptionHandler(Exception.class)
