@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -28,4 +29,6 @@ public class OrderResponse {
     private String paymentStatus;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
+    /** Status timeline from order_status_logs (chronological). */
+    private List<OrderStatusLogResponse> statusLogs;
 }

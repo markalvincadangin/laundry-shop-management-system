@@ -1,10 +1,16 @@
 package com.himotech.laundryms.api.mapper;
 
 import com.himotech.laundryms.api.dto.response.OrderResponse;
+import com.himotech.laundryms.api.dto.response.OrderStatusLogResponse;
 import com.himotech.laundryms.api.dto.response.OrderTrackingResponse;
 import com.himotech.laundryms.orders.entity.Order;
+import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
@@ -21,7 +27,23 @@ public interface OrderMapper {
     @Mapping(target = "paymentStatus", expression = "java(order.getPaymentStatus() != null ? order.getPaymentStatus().name() : null)")
     @Mapping(target = "createdAt", expression = "java(order.getCreatedAt() != null ? order.getCreatedAt().atOffset(java.time.ZoneOffset.UTC) : null)")
     @Mapping(target = "updatedAt", expression = "java(order.getUpdatedAt() != null ? order.getUpdatedAt().atOffset(java.time.ZoneOffset.UTC) : null)")
+    @Mapping(target = "statusLogs", expression = "java(mapStatusLogs(order.getStatusLogs()))")
     OrderResponse toResponse(Order order);
+
+    default List<OrderStatusLogResponse> mapStatusLogs(List<OrderStatusLog> logs) {
+        if (logs == null || logs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return logs.stream()
+                .sorted((a, b) -> a.getChangedAt().compareTo(b.getChangedAt()))
+                .map(log -> OrderStatusLogResponse.builder()
+                        .previousStatus(log.getPreviousStatus() != null ? log.getPreviousStatus().name() : null)
+                        .newStatus(log.getNewStatus() != null ? log.getNewStatus().name() : null)
+                        .changedAt(log.getChangedAt() != null ? log.getChangedAt().atOffset(java.time.ZoneOffset.UTC) : null)
+                        .notes(log.getNotes())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     @Mapping(target = "referenceNumber", source = "referenceNumber")
     @Mapping(target = "currentStatus", expression = "java(order.getCurrentStatus() != null ? order.getCurrentStatus().name() : null)")
