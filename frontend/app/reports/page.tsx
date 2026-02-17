@@ -54,19 +54,19 @@ export default function ReportsPage() {
   const fetchChartData = useCallback(async () => {
     setChartLoading(true);
     const now = new Date();
-    const points: ChartPoint[] = [];
     try {
-      for (let i = 6; i >= 0; i--) {
+      // Fetch all 7 days in parallel for better performance
+      const promises = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(now);
-        d.setDate(d.getDate() - i);
+        d.setDate(d.getDate() - (6 - i));
         const dateStr = formatDate(d);
-        const res = await reportsApi.getDailySales(dateStr);
-        points.push({
+        return reportsApi.getDailySales(dateStr).then((res) => ({
           period: dateStr,
           income: res.totalIncome,
           orders: res.paidOrdersCount,
-        });
-      }
+        }));
+      });
+      const points = await Promise.all(promises);
       setChartData(points);
     } catch {
       setChartData([]);

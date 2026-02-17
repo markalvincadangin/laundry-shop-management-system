@@ -38,4 +38,27 @@ describe("EmptyState", () => {
     const heading = screen.getByRole("heading", { level: 3, name: "No results" });
     expect(heading).toBeInTheDocument();
   });
+
+  it("marks icon as decorative when no aria-label provided", () => {
+    const { container } = render(
+      <EmptyState
+        title="Empty"
+        icon={<span data-testid="decorative-icon">📦</span>}
+      />
+    );
+    const iconWrapper = container.querySelector('[aria-hidden="true"]');
+    expect(iconWrapper).toBeInTheDocument();
+  });
+
+  it("exposes icon to screen readers when iconAriaLabel provided", () => {
+    const { container } = render(
+      <EmptyState
+        title="Empty"
+        icon={<span data-testid="semantic-icon">⚠️</span>}
+        iconAriaLabel="Warning icon"
+      />
+    );
+    const iconWrapper = container.querySelector('[role="img"][aria-label="Warning icon"]');
+    expect(iconWrapper).toBeInTheDocument();
+  });
 });

@@ -15,10 +15,12 @@ export const reportsApi = {
     apiClient.get<DailySalesReportResponse>(
       `/v1/reports/sales/daily?date=${encodeURIComponent(date)}`
     ),
+  // Future implementation: Monthly sales report (US-09)
   getMonthlySales: (year: number, month: number) =>
     apiClient.get<PeriodSalesReportResponse>(
       `/v1/reports/sales/monthly?year=${year}&month=${month}`
     ),
+  // Future implementation: Yearly sales report (US-09)
   getYearlySales: (year: number) =>
     apiClient.get<PeriodSalesReportResponse>(
       `/v1/reports/sales/yearly?year=${year}`
