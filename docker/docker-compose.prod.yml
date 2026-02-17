@@ -1,6 +1,8 @@
 # Faith Laundry Shop — Production Stack
 # Run: docker compose -f docker/docker-compose.prod.yml up -d
-# Production: Set DB_PASSWORD, JWT_SECRET (≥32 chars), ALLOWED_ORIGIN, NEXT_PUBLIC_API_URL in .env
+# Production: Set DB_PASSWORD, JWT_SECRET (≥32 chars recommended), ALLOWED_ORIGIN, NEXT_PUBLIC_API_URL in .env
+# Note: JWT_SECRET length validation (≥32 chars) is enforced at backend startup.
+# SSL: Generate certificates before starting: sh docker/nginx/generate-ssl.sh
 # Defaults below allow local testing; override for production.
 #
 # Access via Nginx: http://localhost (or your domain)
@@ -44,7 +46,7 @@ services:
       DB_NAME: ${DB_NAME:-laundry_db}
       DB_USER: ${DB_USER:-laundry_user}
       DB_PASSWORD: ${DB_PASSWORD:?Error: DB_PASSWORD must be set in .env for production}
-      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET must be set in .env (minimum 32 characters)}
+      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET must be set in .env for production}
       ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost}
     networks:
       - laundry-net

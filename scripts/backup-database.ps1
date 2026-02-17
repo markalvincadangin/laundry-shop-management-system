@@ -43,16 +43,32 @@ elseif ($Containers -contains "laundry-postgres") { $Container = "laundry-postgr
 
 if ($Container) {
     try {
-        # Capture stderr to detect pg_dump failures
-        $dumpOutput = docker exec $Container pg_dump -U $DbUser -d $DbName --no-owner --no-acl 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Error: pg_dump failed (exit code: $LASTEXITCODE)"
-            Write-Host $dumpOutput
+        # Redirect stdout to temp file, stderr separately to check for errors
+        $stderrFile = Join-Path $BackupDir "stderr_$Timestamp.tmp"
+        
+        # Execute pg_dump: stdout to temp file, stderr to separate file
+        $process = Start-Process -FilePath "docker" `
+            -ArgumentList "exec", $Container, "pg_dump", "-U", $DbUser, "-d", $DbName, "--no-owner", "--no-acl" `
+            -RedirectStandardOutput $TempFile `
+            -RedirectStandardError $stderrFile `
+            -NoNewWindow -Wait -PassThru
+        
+        if ($process.ExitCode -ne 0) {
+            $errorMsg = ""
+            if (Test-Path $stderrFile) {
+                $errorMsg = Get-Content $stderrFile -Raw
+            }
+            Write-Host "Error: pg_dump failed (exit code: $($process.ExitCode))"
+            if ($errorMsg) { Write-Host $errorMsg }
+            Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
             exit 1
         }
         
-        # Stream compression using chunked writes to avoid loading entire dump into memory
-        $inputStream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($dumpOutput -join "`n"))
+        # Clean up stderr file (successful dump may have warnings, but we have exit code 0)
+        Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
+        
+        # Stream compression from temp file to avoid loading entire dump into memory
+        $inputStream = [System.IO.File]::OpenRead($TempFile)
         $outputStream = [System.IO.File]::Create($OutputFile)
         $gzipStream = [System.IO.Compression.GZipStream]::new($outputStream, [System.IO.Compression.CompressionMode]::Compress)
         
@@ -65,12 +81,16 @@ if ($Container) {
         $outputStream.Close()
         $inputStream.Close()
         
+        # Clean up temp file
+        Remove-Item $TempFile -Force
+        
         Write-Host "Backup created: $OutputFile"
         exit 0
     }
     catch {
         Write-Host "Error during Docker backup: $_"
         if (Test-Path $OutputFile) { Remove-Item $OutputFile -Force }
+        if (Test-Path $TempFile) { Remove-Item $TempFile -Force }
         exit 1
     }
 }
@@ -80,18 +100,33 @@ $PgDump = Get-Command pg_dump -ErrorAction SilentlyContinue
 if ($PgDump) {
     try {
         $env:PGPASSWORD = $DbPassword
+        $stderrFile = Join-Path $BackupDir "stderr_$Timestamp.tmp"
         
-        # Capture stderr to detect pg_dump failures
-        $dumpOutput = & pg_dump -h $DbHost -p $DbPort -U $DbUser -d $DbName --no-owner --no-acl 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            $env:PGPASSWORD = $null
-            Write-Host "Error: pg_dump failed (exit code: $LASTEXITCODE)"
-            Write-Host $dumpOutput
+        # Execute pg_dump: stdout to temp file, stderr separately
+        $process = Start-Process -FilePath "pg_dump" `
+            -ArgumentList "-h", $DbHost, "-p", $DbPort, "-U", $DbUser, "-d", $DbName, "--no-owner", "--no-acl" `
+            -RedirectStandardOutput $TempFile `
+            -RedirectStandardError $stderrFile `
+            -NoNewWindow -Wait -PassThru
+        
+        $env:PGPASSWORD = $null
+        
+        if ($process.ExitCode -ne 0) {
+            $errorMsg = ""
+            if (Test-Path $stderrFile) {
+                $errorMsg = Get-Content $stderrFile -Raw
+            }
+            Write-Host "Error: pg_dump failed (exit code: $($process.ExitCode))"
+            if ($errorMsg) { Write-Host $errorMsg }
+            Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
             exit 1
         }
         
-        # Stream compression using chunked writes
-        $inputStream = [System.IO.MemoryStream]::new([System.Text.Encoding]::UTF8.GetBytes($dumpOutput -join "`n"))
+        # Clean up stderr file
+        Remove-Item $stderrFile -Force -ErrorAction SilentlyContinue
+        
+        # Stream compression from temp file
+        $inputStream = [System.IO.File]::OpenRead($TempFile)
         $outputStream = [System.IO.File]::Create($OutputFile)
         $gzipStream = [System.IO.Compression.GZipStream]::new($outputStream, [System.IO.Compression.CompressionMode]::Compress)
         
@@ -104,7 +139,9 @@ if ($PgDump) {
         $outputStream.Close()
         $inputStream.Close()
         
-        $env:PGPASSWORD = $null
+        # Clean up temp file
+        Remove-Item $TempFile -Force
+        
         Write-Host "Backup created: $OutputFile"
         exit 0
     }
@@ -112,6 +149,7 @@ if ($PgDump) {
         $env:PGPASSWORD = $null
         Write-Host "Error during local backup: $_"
         if (Test-Path $OutputFile) { Remove-Item $OutputFile -Force }
+        if (Test-Path $TempFile) { Remove-Item $TempFile -Force }
         exit 1
     }
 }
