@@ -23,8 +23,8 @@ export default function RootLayout({
           <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
             <AuthGuard>{children}</AuthGuard>
           </main>
-          <Toaster position="top-right" richColors closeButton />
         </AuthProvider>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );
