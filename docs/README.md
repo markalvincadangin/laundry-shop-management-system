@@ -58,6 +58,9 @@
 | Document                                                           | Description                                                             |
 |--------------------------------------------------------------------|-------------------------------------------------------------------------|
 | [implementation-plan.md](06-implementation/implementation-plan.md) | Phase-by-phase development roadmap with task breakdowns and guardrails. |
+| [pre-production-checklist.md](06-implementation/pre-production-checklist.md) | Pre-production verification checklist (Phase 13). |
+| [deployment-guide.md](06-implementation/deployment-guide.md)       | Deployment instructions and environment configuration.                  |
+| [release-notes-mvp-v1.md](06-implementation/release-notes-mvp-v1.md) | MVP v1.0 release notes and known limitations.                           |
 
 ### Root-Level Guides
 | Document                                                 | Description                                                                       |

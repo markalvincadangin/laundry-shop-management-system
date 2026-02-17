@@ -13,6 +13,7 @@ import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.entity.OrderAddOn;
 import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
+import com.himotech.laundryms.orders.repository.OrderSpecification;
 import com.himotech.laundryms.orders.repository.OrderStatusLogRepository;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.service.ServiceRateService;
@@ -241,7 +242,8 @@ public class OrderService {
             Pageable pageable) {
         java.time.LocalDateTime fromTs = from != null ? from.atStartOfDay() : null;
         java.time.LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : null;
-        return orderRepository.findAllFiltered(status, paymentStatus, fromTs, toTs, pageable);
+        var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs);
+        return orderRepository.findAll(spec, pageable);
     }
 
 }

@@ -61,11 +61,6 @@ public abstract class AbstractIntegrationTest {
                 .withReuse(true);  // Reuse container across test classes
 
         POSTGRES_CONTAINER.start();
-
-        System.out.println("=== AbstractIntegrationTest: PostgreSQL Container Started ===");
-        System.out.println("JDBC URL: " + POSTGRES_CONTAINER.getJdbcUrl());
-        System.out.println("Container ID: " + POSTGRES_CONTAINER.getContainerId());
-        System.out.println("============================================================");
     }
 
     /**
@@ -110,11 +105,6 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.url", () -> jdbcUrlWithEnumFix);
         registry.add("spring.datasource.username", POSTGRES_CONTAINER::getUsername);
         registry.add("spring.datasource.password", POSTGRES_CONTAINER::getPassword);
-
-        System.out.println("=== @DynamicPropertySource: Enum Fix Applied ===");
-        System.out.println("Original URL: " + jdbcUrl);
-        System.out.println("Modified URL: " + jdbcUrlWithEnumFix);
-        System.out.println("================================================");
     }
 }
 

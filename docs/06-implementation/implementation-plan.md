@@ -430,7 +430,7 @@ test: add controller integration tests
 
 **Source of Truth:** [architecture.md §3](../05-tech-design/architecture.md#3-technology-stack), [openapi.yaml](../05-tech-design/openapi.yaml) for types
 
-**See also:** [phase7-frontend-skeleton-guide.md](phase7-frontend-skeleton-guide.md) for step-by-step implementation
+**See also:** [frontend.instructions.md](../../.github/instructions/frontend.instructions.md) for App Router structure and implementation patterns
 
 **Deliverables**
 - Next.js 14 project with App Router (per [frontend.instructions.md](../../.github/instructions/frontend.instructions.md))
@@ -716,7 +716,7 @@ fix: address layout shifts during data loading
 **Inputs/Dependencies:** Phase 12 merged (or Phase 11 if Phase 12 skipped)
 
 **Deliverables**
-- **Pre-production checklist** — Documented and executed
+- **Pre-production checklist** — Documented and executed ([pre-production-checklist.md](pre-production-checklist.md))
 - **Fixes** — All critical and high-priority issues resolved
 - **Documentation sync** — Docs match implementation
 
