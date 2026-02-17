@@ -28,15 +28,18 @@ export default function Home() {
   const fetchChart = useCallback(async () => {
     setLoading(true);
     const now = new Date();
-    const points: ChartPoint[] = [];
     try {
-      for (let i = 6; i >= 0; i--) {
+      // Fetch all 7 days in parallel for better performance
+      const promises = Array.from({ length: 7 }, (_, i) => {
         const d = new Date(now);
-        d.setDate(d.getDate() - i);
+        d.setDate(d.getDate() - (6 - i));
         const dateStr = formatDate(d);
-        const res = await reportsApi.getDailySales(dateStr);
-        points.push({ period: dateStr, income: res.totalIncome });
-      }
+        return reportsApi.getDailySales(dateStr).then((res) => ({
+          period: dateStr,
+          income: res.totalIncome,
+        }));
+      });
+      const points = await Promise.all(promises);
       setChartData(points);
     } catch {
       setChartData([]);
