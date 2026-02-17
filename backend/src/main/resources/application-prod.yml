@@ -1,0 +1,11 @@
+# Production profile: no SQL logging, minimal verbosity
+# Activate with: SPRING_PROFILES_ACTIVE=prod
+spring:
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: warn
