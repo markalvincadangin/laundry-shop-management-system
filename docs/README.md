@@ -58,8 +58,9 @@
 | Document                                                           | Description                                                             |
 |--------------------------------------------------------------------|-------------------------------------------------------------------------|
 | [implementation-plan.md](06-implementation/implementation-plan.md) | Phase-by-phase development roadmap with task breakdowns and guardrails. |
-| [pre-production-checklist.md](06-implementation/pre-production-checklist.md) | Pre-production verification checklist (Phase 13). |
 | [deployment-guide.md](06-implementation/deployment-guide.md)       | Deployment instructions and environment configuration.                  |
+| [user-manual.md](06-implementation/user-manual.md)                 | End-user guide for Owner and Staff (Phase 14). |
+| [handover-checklist.md](06-implementation/handover-checklist.md)   | Handover session agenda and sign-off (Phase 14). |
 | [release-notes-mvp-v1.md](06-implementation/release-notes-mvp-v1.md) | MVP v1.0 release notes and known limitations.                           |
 
 ### Root-Level Guides

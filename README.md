@@ -643,6 +643,31 @@ After completing all steps, verify the entire system is running:
 | **API Docs**    | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | Swagger UI loads    |
 | **Frontend**    | [http://localhost:3000](http://localhost:3000)                                 | Application loads   |
 
+### Production Deployment (Phase 14)
+
+For deploying to the shop's hardware (production):
+
+```powershell
+# 1. Configure .env for production
+#    - DB_PASSWORD (strong password)
+#    - JWT_SECRET (≥32 characters)
+#    - ALLOWED_ORIGIN (e.g., http://192.168.1.100)
+#    - NEXT_PUBLIC_API_URL (e.g., http://192.168.1.100/api)
+
+# 2. Start production stack (Nginx + Backend + Frontend + PostgreSQL)
+docker compose -f docker/docker-compose.prod.yml up -d --build
+
+# 3. Access via http://localhost or your server IP
+```
+
+**Optional:** Enable HTTPS with self-signed cert: `sh docker/nginx/generate-ssl.sh` then `cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf` and restart nginx.
+
+**Backup:** Run `./scripts/backup-database.sh` (or `.\scripts\backup-database.ps1` on Windows) for database backups.
+
+See [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) and [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) for full details.
+
+---
+
 ### Quick Start Summary
 
 For experienced developers, here's the condensed version:

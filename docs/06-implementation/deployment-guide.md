@@ -98,7 +98,74 @@ npm start
 
 ---
 
-## 6. Production Checklist
+## 6. Production Deployment (Phase 14)
+
+### 6.1 Production Docker Compose
+
+Deploy the full stack with Nginx reverse proxy:
+
+```bash
+# From project root
+# 1. Configure .env for production (see 6.2)
+# 2. Build and start
+docker compose -f docker/docker-compose.prod.yml up -d --build
+
+# View logs
+docker compose -f docker/docker-compose.prod.yml logs -f
+
+# Stop
+docker compose -f docker/docker-compose.prod.yml down
+```
+
+**Access:** http://localhost (or your server IP/domain) — Nginx proxies to backend and frontend.
+
+### 6.2 Production Environment Variables
+
+| Variable | Required | Description |
+|---------|----------|-------------|
+| `DB_PASSWORD` | Yes | Strong PostgreSQL password |
+| `JWT_SECRET` | Yes | At least 32 characters |
+| `ALLOWED_ORIGIN` | Yes | Full frontend URL (e.g., `http://192.168.1.100` or `https://laundry.example.com`) |
+| `NEXT_PUBLIC_API_URL` | Yes | Full API URL (e.g., `http://192.168.1.100/api` or `https://laundry.example.com/api`) |
+
+**Important:** `NEXT_PUBLIC_API_URL` is baked into the frontend at build time. Rebuild the frontend container if you change it.
+
+### 6.3 Enable HTTPS (Self-Signed)
+
+```bash
+# Generate self-signed certificate
+sh docker/nginx/generate-ssl.sh
+
+# Use SSL config
+cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf
+
+# Restart Nginx
+docker compose -f docker/docker-compose.prod.yml restart nginx
+```
+
+Access via https://localhost (browsers will show a warning for self-signed certs; accept for local use).
+
+### 6.4 Database Backup
+
+Run the backup script manually or schedule it (e.g., nightly via cron or Task Scheduler):
+
+```bash
+# Linux/macOS
+./scripts/backup-database.sh /path/to/backups
+
+# Windows PowerShell
+.\scripts\backup-database.ps1 -BackupDir C:\Backups\laundry
+```
+
+Backups are saved as `laundry_db_YYYYMMDD_HHMMSS.sql.gz`.
+
+### 6.5 User Manual
+
+See [docs/06-implementation/user-manual.md](user-manual.md) for the Owner and Staff guide. Export to PDF if needed (e.g., `pandoc user-manual.md -o user-manual.pdf`).
+
+---
+
+## 7. Production Checklist
 
 - [ ] Set `SPRING_PROFILES_ACTIVE=prod` for JSON structured logging
 - [ ] Use a strong `JWT_SECRET` (≥32 characters)
@@ -110,7 +177,7 @@ npm start
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
