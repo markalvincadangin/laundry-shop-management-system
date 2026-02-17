@@ -14,6 +14,8 @@ import java.time.OffsetDateTime;
 public class PaymentResponse {
     private Long id;
     private Long orderId;
+    private String orderReferenceNumber;
+    private String customerName;
     private Double amountPaid;
     private String paymentMethod;
     private String receivedByUserId;

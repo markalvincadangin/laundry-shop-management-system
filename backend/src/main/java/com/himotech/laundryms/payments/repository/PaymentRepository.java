@@ -36,10 +36,13 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT COUNT(p) FROM Payment p WHERE p.paymentDate >= :from AND p.paymentDate < :to")
     long countByPaymentDateBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
-    @Query("SELECT p FROM Payment p WHERE " +
+    @Query(value = "SELECT p FROM Payment p " +
+            "LEFT JOIN FETCH p.order o LEFT JOIN FETCH o.customer " +
+            "WHERE (:orderId IS NULL OR p.order.id = :orderId) AND " +
+            "p.paymentDate >= :fromTs AND p.paymentDate < :toTs",
+            countQuery = "SELECT COUNT(p) FROM Payment p WHERE " +
             "(:orderId IS NULL OR p.order.id = :orderId) AND " +
-            "(:fromTs IS NULL OR p.paymentDate >= :fromTs) AND " +
-            "(:toTs IS NULL OR p.paymentDate < :toTs)")
+            "p.paymentDate >= :fromTs AND p.paymentDate < :toTs")
     Page<Payment> findAllFiltered(
             @Param("orderId") Long orderId,
             @Param("fromTs") LocalDateTime fromTs,

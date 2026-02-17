@@ -10,17 +10,14 @@ import {
   ordersApi,
   type OrderResponse,
   type OrderStatusLogResponse,
+  type UpdateOrderRequest,
 } from "@/lib/api/orders";
+import type { components } from "@/types/api.generated";
+import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
 
-const STATUS_LABELS: Record<string, string> = {
-  RECEIVED: "Received",
-  WASHING: "Washing",
-  DRYING: "Drying",
-  FOLDING: "Folding",
-  READY_FOR_PICKUP: "Ready for Pickup",
-  RELEASED: "Released",
-  CANCELLED: "Cancelled",
-};
+type AddOnInput = components["schemas"]["AddOnInput"];
 
 const NEXT_STATUS: Record<string, string[]> = {
   RECEIVED: ["WASHING", "CANCELLED"],
@@ -32,35 +29,166 @@ const NEXT_STATUS: Record<string, string[]> = {
   CANCELLED: [],
 };
 
-function StatusTimeline({ logs }: { logs: OrderStatusLogResponse[] }) {
-  if (!logs || logs.length === 0) {
-    return <p className="text-sm text-slate-500">No status history yet.</p>;
-  }
+const NEXT_STATUS_LABELS: Record<string, string> = {
+  WASHING: "Move to Washing",
+  DRYING: "Move to Drying",
+  FOLDING: "Move to Folding",
+  READY_FOR_PICKUP: "Move to Ready for Pickup",
+  RELEASED: "Release Order",
+  CANCELLED: "Cancel Order",
+};
+
+function OrderEditForm({
+  order,
+  onSaved,
+  onError,
+}: {
+  order: OrderResponse;
+  onSaved: () => void;
+  onError: (msg: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [extraMinutes, setExtraMinutes] = useState(order.extraMinutes ?? 0);
+  const [addOns, setAddOns] = useState<AddOnInput[]>(
+    (order.addOns ?? []).map((a) => ({
+      name: a.name,
+      price: typeof a.price === "number" ? a.price : Number(a.price),
+      quantity: a.quantity ?? 1,
+    }))
+  );
+  const [newAddOn, setNewAddOn] = useState({ name: "", price: "" });
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const body: UpdateOrderRequest = {
+        extraMinutes,
+        addOns: addOns.length > 0 ? addOns : undefined,
+      };
+      await ordersApi.update(order.id!, body);
+      toast.success("Order updated successfully");
+      onSaved();
+      setExpanded(false);
+    } catch (err) {
+      onError(
+        err instanceof ApiError ? (err as ApiError).message : "Failed to update order"
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addAddOn = () => {
+    const price = parseFloat(newAddOn.price);
+    if (!newAddOn.name.trim() || isNaN(price) || price <= 0) return;
+    setAddOns((prev) => [
+      ...prev,
+      { name: newAddOn.name.trim(), price, quantity: 1 },
+    ]);
+    setNewAddOn({ name: "", price: "" });
+  };
+
+  const removeAddOn = (idx: number) => {
+    setAddOns((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   return (
-    <div className="space-y-3">
-      {logs.map((log, i) => (
-        <div
-          key={i}
-          className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
-        >
-          <div className="flex-1">
-            <span className="font-medium text-slate-800">
-              {log.previousStatus
-                ? `${STATUS_LABELS[log.previousStatus] ?? log.previousStatus} → `
-                : ""}
-              {STATUS_LABELS[log.newStatus] ?? log.newStatus}
-            </span>
-            {log.changedAt && (
-              <p className="mt-1 text-xs text-slate-500">
-                {new Date(log.changedAt).toLocaleString()}
-              </p>
-            )}
-            {log.notes && (
-              <p className="mt-1 text-sm text-slate-600">{log.notes}</p>
-            )}
+    <div className="rounded-lg border border-neutral-border bg-white p-6 shadow-sm no-print">
+      <button
+        type="button"
+        onClick={() => setExpanded((e) => !e)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <h2 className="text-lg font-semibold text-neutral-text-primary">
+          Edit Order
+        </h2>
+        <span className="text-neutral-text-secondary">
+          {expanded ? "Collapse" : "Expand"}
+        </span>
+      </button>
+      {expanded && (
+        <form onSubmit={handleSave} className="mt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-text-secondary mb-1">
+              Extra minutes (e.g. extended washing)
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={extraMinutes}
+              onChange={(e) => setExtraMinutes(parseInt(e.target.value, 10) || 0)}
+              className="w-full rounded-lg border border-neutral-border px-3 py-2 text-neutral-text-primary focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+            />
           </div>
-        </div>
-      ))}
+          <div>
+            <label className="block text-sm font-medium text-neutral-text-secondary mb-2">
+              Add-ons
+            </label>
+            {addOns.map((a, i) => (
+              <div
+                key={i}
+                className="mb-2 flex items-center gap-2 rounded border border-neutral-border bg-slate-50 px-3 py-2"
+              >
+                <span className="flex-1 text-sm">
+                  {a.name} - PHP {a.price.toFixed(2)}
+                  {a.quantity > 1 ? ` x ${a.quantity}` : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => removeAddOn(i)}
+                  className="text-sm text-danger-600 hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Add-on name"
+                value={newAddOn.name}
+                onChange={(e) => setNewAddOn((n) => ({ ...n, name: e.target.value }))}
+                className="flex-1 rounded-lg border border-neutral-border px-3 py-2 text-sm"
+              />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="Price"
+                value={newAddOn.price}
+                onChange={(e) => setNewAddOn((n) => ({ ...n, price: e.target.value }))}
+                className="w-24 rounded-lg border border-neutral-border px-3 py-2 text-sm"
+              />
+              <button
+                type="button"
+                onClick={addAddOn}
+                className="rounded-lg border border-neutral-border bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600 disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              disabled={saving}
+              className="rounded-lg border border-neutral-border bg-white px-4 py-2 font-medium text-neutral-text-primary hover:bg-slate-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }
@@ -91,7 +219,18 @@ export default function OrderDetailPage() {
     fetchOrder();
   }, [fetchOrder]);
 
+  const [showReleaseModal, setShowReleaseModal] = useState(false);
+
   const updateStatus = async (newStatus: string) => {
+    if (!staffUserId) return;
+    if (newStatus === "RELEASED") {
+      setShowReleaseModal(true);
+      return;
+    }
+    await doUpdateStatus(newStatus);
+  };
+
+  const doUpdateStatus = async (newStatus: string) => {
     if (!staffUserId) return;
     setUpdating(true);
     try {
@@ -100,6 +239,7 @@ export default function OrderDetailPage() {
         changedByUserId: staffUserId,
       });
       toast.success("Status updated successfully");
+      setShowReleaseModal(false);
       fetchOrder();
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Failed to update status";
@@ -111,7 +251,7 @@ export default function OrderDetailPage() {
   };
 
   if (loading) {
-    return <div className="text-slate-600">Loading order…</div>;
+    return <CardSkeleton />;
   }
 
   if (error || !order) {
@@ -122,113 +262,205 @@ export default function OrderDetailPage() {
     );
   }
 
+  // BR-PAY-01 / To-Be Flow: Cannot release until payment is recorded
+  const allowedNextStatuses = (NEXT_STATUS[order.currentStatus!] ?? []).filter(
+    (s) => s !== "RELEASED" || order.paymentStatus === "PAID"
+  );
+
   const canUpdateStatus =
     order.currentStatus &&
-    NEXT_STATUS[order.currentStatus]?.length > 0 &&
+    allowedNextStatuses.length > 0 &&
+    order.currentStatus !== "RELEASED" &&
+    order.currentStatus !== "CANCELLED";
+
+  const showReleaseHint =
+    order.currentStatus === "READY_FOR_PICKUP" &&
+    order.paymentStatus !== "PAID";
+
+  const canEditOrder =
+    order.paymentStatus !== "PAID" &&
     order.currentStatus !== "RELEASED" &&
     order.currentStatus !== "CANCELLED";
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between no-print">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between no-print">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/orders"
+            className="text-slate-500 hover:text-slate-700"
+            aria-label="Back to orders"
+          >
+            ← Back
+          </Link>
+          <h1 className="text-2xl font-bold text-neutral-text-primary font-mono">
             Order {order.referenceNumber}
           </h1>
-          <p className="mt-1 text-slate-600">
-            Status: {STATUS_LABELS[order.currentStatus ?? ""] ?? order.currentStatus} • Payment:{" "}
-            {order.paymentStatus}
-          </p>
+          <OrderStatusBadge status={order.currentStatus ?? ""} />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {order.paymentStatus !== "PAID" && (
             <Link
               href={`/orders/${order.id}/pay`}
-              className="rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700"
+              className="rounded-lg bg-success-600 px-4 py-2 font-medium text-white hover:bg-success-600/90 min-h-[44px] flex items-center"
             >
               Record Payment
             </Link>
           )}
           <Link
             href="/orders"
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-lg border border-neutral-border bg-white px-4 py-2 font-medium text-neutral-text-primary hover:bg-slate-50 min-h-[44px] flex items-center"
           >
             Back to Orders
           </Link>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="print-receipt rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-3 text-center">
-            <p className="font-bold text-slate-800">Faith Laundry Shop</p>
-            <p className="text-sm font-mono text-slate-600">
-              {order.referenceNumber}
-            </p>
-          </div>
-          <h2 className="mb-3 font-semibold text-slate-800">Order Details</h2>
-          <dl className="grid gap-2 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-slate-500">Customer ID</dt>
-              <dd className="font-medium">{order.customerId}</dd>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
+          <div className="print-receipt rounded-lg border border-neutral-border bg-white p-6 shadow-sm">
+            <div className="mb-4 text-center">
+              <p className="font-bold text-neutral-text-primary">Faith Laundry Shop</p>
+              <p className="text-sm font-mono text-neutral-text-secondary">
+                {order.referenceNumber}
+              </p>
             </div>
-            <div>
-              <dt className="text-sm text-slate-500">Weight</dt>
-              <dd className="font-medium">{order.weightKg} kg</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-slate-500">Loads</dt>
-              <dd className="font-medium">{order.totalLoads}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-slate-500">Extra minutes</dt>
-              <dd className="font-medium">{order.extraMinutes ?? 0}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-slate-500">Base amount</dt>
-              <dd className="font-medium">₱{order.baseAmount?.toFixed(2)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-slate-500">Extra minutes</dt>
-              <dd className="font-medium">₱{order.extraMinutesAmount?.toFixed(2)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-slate-500">Add-ons</dt>
-              <dd className="font-medium">₱{order.addonsTotalAmount?.toFixed(2)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-slate-500">Grand total</dt>
-              <dd className="text-lg font-bold text-slate-800">
-                ₱{order.grandTotal?.toFixed(2)}
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm no-print">
-          <h2 className="mb-3 font-semibold text-slate-800">Status Timeline</h2>
-          <StatusTimeline logs={order.statusLogs ?? []} />
-        </div>
-
-        {canUpdateStatus && staffUserId && (
-          <div className="no-print rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 font-semibold text-slate-800">
-              Update Status
+            <h2 className="mb-4 text-lg font-semibold text-neutral-text-primary">
+              Order Summary
             </h2>
-            <div className="flex flex-wrap gap-2">
-              {NEXT_STATUS[order.currentStatus!]?.map((status) => (
-                <button
-                  key={status}
-                  onClick={() => updateStatus(status)}
-                  disabled={updating}
-                  className="min-h-[44px] min-w-[44px] touch-manipulation rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 sm:min-h-0 sm:min-w-0"
-                >
-                  → {STATUS_LABELS[status] ?? status}
-                </button>
-              ))}
-            </div>
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <dt className="text-sm text-neutral-text-secondary">Weight</dt>
+                <dd className="font-medium">{order.weightKg} kg ({order.totalLoads} loads)</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-neutral-text-secondary">Extra minutes</dt>
+                <dd className="font-medium">{order.extraMinutes ?? 0} min</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-neutral-text-secondary">Base amount</dt>
+                <dd className="font-medium">₱{order.baseAmount?.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-neutral-text-secondary">Extra minutes</dt>
+                <dd className="font-medium">₱{order.extraMinutesAmount?.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-neutral-text-secondary">Add-ons</dt>
+                <dd className="font-medium">₱{order.addonsTotalAmount?.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-neutral-text-secondary">Grand total</dt>
+                <dd className="text-lg font-bold text-primary-600">
+                  ₱{order.grandTotal?.toFixed(2)}
+                </dd>
+              </div>
+            </dl>
           </div>
-        )}
+
+          {canEditOrder && (
+            <OrderEditForm
+              order={order}
+              onSaved={fetchOrder}
+              onError={(msg) => {
+                setError(msg);
+                toast.error(msg);
+              }}
+            />
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-lg border border-neutral-border bg-white p-6 shadow-sm no-print">
+            <h2 className="mb-4 text-lg font-semibold text-neutral-text-primary">
+              Status Timeline
+            </h2>
+            <OrderStatusTimeline
+              currentStatus={order.currentStatus ?? ""}
+              statusLogs={order.statusLogs ?? []}
+            />
+          </div>
+
+          {(canUpdateStatus || showReleaseHint) && staffUserId && (
+            <div className="no-print rounded-lg border border-neutral-border bg-white p-6 shadow-sm">
+              {showReleaseHint && (
+                <p className="mb-3 text-sm text-warning-600">
+                  Record payment before releasing this order.
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {allowedNextStatuses.map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => updateStatus(status)}
+                    disabled={updating}
+                    aria-label={NEXT_STATUS_LABELS[status] ?? `Update to ${status}`}
+                    className={`min-h-[44px] touch-manipulation rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50 ${
+                      status === "CANCELLED"
+                        ? "border border-danger-600 text-danger-600 hover:bg-red-50"
+                        : "bg-primary-500 text-white hover:bg-primary-600"
+                    }`}
+                  >
+                    {updating ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Updating…
+                      </span>
+                    ) : (
+                      NEXT_STATUS_LABELS[status] ?? `→ ${status}`
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showReleaseModal && order && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="release-modal-title"
+            >
+              <div className="max-w-md rounded-lg border border-neutral-border bg-white p-6 shadow-lg">
+                <h2 id="release-modal-title" className="text-lg font-semibold text-neutral-text-primary">
+                  Confirm Release
+                </h2>
+                <p className="mt-2 text-sm text-neutral-text-secondary">
+                  Release this order to the customer? This action cannot be undone.
+                </p>
+                <dl className="mt-4 space-y-2 rounded bg-slate-50 p-4">
+                  <div>
+                    <dt className="text-xs text-neutral-text-secondary">Reference</dt>
+                    <dd className="font-mono font-medium">{order.referenceNumber}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-neutral-text-secondary">Grand Total</dt>
+                    <dd className="font-medium">₱{order.grandTotal?.toFixed(2)}</dd>
+                  </div>
+                </dl>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => doUpdateStatus("RELEASED")}
+                    disabled={updating}
+                    className="flex-1 rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600 disabled:opacity-50"
+                  >
+                    {updating ? "Releasing…" : "Confirm Release"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowReleaseModal(false)}
+                    disabled={updating}
+                    className="rounded-lg border border-neutral-border bg-white px-4 py-2 font-medium text-neutral-text-primary hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

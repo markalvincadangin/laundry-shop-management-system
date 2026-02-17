@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -31,4 +32,6 @@ public class OrderResponse {
     private OffsetDateTime updatedAt;
     /** Status timeline from order_status_logs (chronological). */
     private List<OrderStatusLogResponse> statusLogs;
+    /** Order add-ons (for edit form). */
+    private List<AddOnResponse> addOns;
 }

@@ -19,8 +19,12 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/components/HealthCheckButton", () => ({
-  HealthCheckButton: () => <div data-testid="health-check" />,
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({
+    user: { userId: "owner-1", username: "owner", role: "OWNER" },
+    loading: false,
+    logout: vi.fn(),
+  }),
 }));
 
 describe("Home", () => {
@@ -33,11 +37,11 @@ describe("Home", () => {
 
     render(<Home />);
 
-    expect(screen.getByText(/faith laundry shop/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /new order/i })).toHaveAttribute("href", "/orders/new");
     expect(screen.getByRole("link", { name: /view orders/i })).toHaveAttribute("href", "/orders");
     expect(screen.getByRole("link", { name: /track order/i })).toHaveAttribute("href", "/track");
-    expect(screen.getByRole("link", { name: /daily report/i })).toHaveAttribute("href", "/reports");
+    expect(screen.getByRole("link", { name: /reports/i })).toHaveAttribute("href", "/reports");
   });
 
   it("shows ChartSkeleton while loading (Phase 12)", () => {

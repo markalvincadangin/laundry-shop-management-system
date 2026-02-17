@@ -13,6 +13,11 @@ vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}));
+
 describe("Nav", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -38,7 +43,7 @@ describe("Nav", () => {
 
     render(<Nav />);
     expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/login");
-    expect(screen.queryByRole("link", { name: /daily report/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /reports/i })).not.toBeInTheDocument();
   });
 
   it("shows Daily Report link when user is Owner", () => {
@@ -49,8 +54,8 @@ describe("Nav", () => {
     } as never);
 
     render(<Nav />);
-    expect(screen.getByRole("link", { name: /daily report/i })).toHaveAttribute("href", "/reports");
-    expect(screen.getByText(/owner \(OWNER\)/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /reports/i })).toHaveAttribute("href", "/reports");
+    expect(screen.getByRole("link", { name: /payments/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
   });
 
@@ -62,8 +67,8 @@ describe("Nav", () => {
     } as never);
 
     render(<Nav />);
-    expect(screen.queryByRole("link", { name: /daily report/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/staff \(STAFF\)/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /reports/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /payments/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /logout/i })).toBeInTheDocument();
   });
 

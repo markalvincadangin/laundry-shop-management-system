@@ -1,5 +1,6 @@
 package com.himotech.laundryms.rates.service;
 
+import com.himotech.laundryms.api.dto.request.UpdateServiceRateRequest;
 import com.himotech.laundryms.exception.NotFoundException;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.repository.ServiceRateRepository;
@@ -21,10 +22,37 @@ public class ServiceRateService {
     }
 
     @Transactional(readOnly = true)
+    public ServiceRate findById(Integer id) {
+        return serviceRateRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Service rate not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
     public List<ServiceRate> findAll(boolean activeOnly) {
         if (activeOnly) {
             return serviceRateRepository.findByIsActiveTrue();
         }
         return serviceRateRepository.findAll();
+    }
+
+    @Transactional
+    public ServiceRate update(Integer id, UpdateServiceRateRequest request) {
+        ServiceRate rate = findById(id);
+        if (request.getServiceName() != null) {
+            rate.setServiceName(request.getServiceName());
+        }
+        if (request.getBasePricePerLoad() != null) {
+            rate.setBasePricePerLoad(request.getBasePricePerLoad());
+        }
+        if (request.getKgLimitPerLoad() != null) {
+            rate.setKgLimitPerLoad(request.getKgLimitPerLoad());
+        }
+        if (request.getPricePerExtraMinute() != null) {
+            rate.setPricePerExtraMinute(request.getPricePerExtraMinute());
+        }
+        if (request.getIsActive() != null) {
+            rate.setIsActive(request.getIsActive());
+        }
+        return serviceRateRepository.save(rate);
     }
 }
