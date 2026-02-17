@@ -1,80 +1,118 @@
 # Business Rules Catalog
-## Laundry Shop Management System
+## Faith Laundry Shop Management System
 
-> **Source:** Client Interview & Case Study (Faith Laundry Shop)  
+> **Client:** Faith Laundry Shop  
+> **Prepared By:** HIMÓTECH  
+> **Document ID:** BR-CATALOG (BR-PR-*, BR-OL-*, BR-PAY-*, BR-REC-*, BR-NOTIF-*)  
+> **Version:** 1.0  
+> **Date:** 2026-02-13  
+> **Source:** Client Interview & Case Study  
 > **Purpose:** Define enforceable rules that drive backend logic, validation, and computations  
 > **Status:** Baseline (MVP)
+
+---
+
+## Document Control
+- **Document Type:** Requirements — Business Rules
+- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](user-stories.md), [ERD](../04-data-design/erd.dbml), [Architecture](../05-tech-design/architecture.md), [OpenAPI Spec](../05-tech-design/openapi.yaml)
+- **Confidentiality:** Internal / Academic Use
 
 ---
 
 ## 1. Pricing Rules
 
 ### BR-PR-01 – Base Load Pricing
-**Rule:** One (1) laundry load costs **₱120** and covers up to **8 kg**.  
+
+**Rule:** One (1) load costs **₱120** and covers up to **8 kg**.  
+**Condition:** Order creation or price computation.  
+**System Behavior:** Apply base price per load.  
+**Constraint:** Reject order if weight is missing or invalid.  
 **Applies To:** Order creation / price computation  
-**Enforcement:** Backend service (server-side)  
-**Error/Handling:** If weight is missing/invalid, reject order.
+**Enforcement:** Backend service  
+**Supports User Stories:** [US-01](user-stories.md#us-01--record-laundry-order), [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
 
 ---
 
 ### BR-PR-02 – Additional Load for Excess Weight
-**Rule:** If the laundry weight exceeds **8 kg**, the excess must be charged as an additional load.  
+
+**Rule:** If laundry weight exceeds **8 kg**, the excess MUST be charged as an additional load.  
+**Condition:** Weight exceeds 8 kg per load.  
+**System Behavior:** Compute total loads as `ceil(weight_kg / kg_limit_per_load)`.  
+**Constraint:** Each load covers at most 8 kg.  
 **Applies To:** Order creation / price computation  
 **Enforcement:** Backend service  
-**Notes:** The total number of loads must be derived from weight (e.g., weight ÷ 8kg, rounded up).
+**Supports User Stories:** [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
 
 ---
 
 ### BR-PR-03 – Extra Washing Time Charge
-**Rule:** When laundry requires washing time beyond the **included 45 minutes per load** (e.g., due to excessive dirt), an additional charge of **₱1 per extra minute** of machine use is added.  
-**Applies To:** Order creation / price computation (when extra minutes are recorded)  
+
+**Rule:** Washing time beyond the **included 45 minutes per load** is charged at **₱1 per extra minute**.  
+**Condition:** Extra minutes are recorded.  
+**System Behavior:** Apply `extra_minutes × price_per_extra_minute`.  
+**Constraint:** Base price includes up to 45 minutes per load; if extra minutes are not provided, the charge is 0.  
+**Applies To:** Order creation / price computation  
 **Enforcement:** Backend service  
-**Notes:** The base price (see BR-PR-01 / US-02) includes up to 45 minutes of washing time per load. Extra minutes are only those beyond 45 minutes; this field is optional, and if not provided, the extra-minutes charge is 0.
+**Supports User Stories:** [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
 
 ---
 
 ### BR-PR-04 – Optional Add-ons (e.g., Fabric Conditioner)
-**Rule:** Additional charges may be applied when the customer requests extra fabric conditioner.  
+
+**Rule:** Additional charges may apply when the customer requests extra fabric conditioner or similar add-ons.  
+**Condition:** Add-on requested.  
+**System Behavior:** Add add-on amount to grand total.  
+**Constraint:** Add-on pricing is configurable or recorded as a manual amount.  
 **Applies To:** Order creation / add-on handling  
 **Enforcement:** Backend service  
-**Notes:** The exact add-on pricing is not fixed in the interview; implement as configurable or record as a manual add-on amount.
+**Supports User Stories:** [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
 
 ---
 
 ## 2. Order Lifecycle Rules
 
 ### BR-OL-01 – Order Must Have a Unique Reference Number
-**Rule:** Every order must have a unique **order reference number** used for tracking.  
+
+**Rule:** Every order MUST have a unique **reference number** used for tracking.  
+**Condition:** Order creation or tracking lookup.  
+**System Behavior:** Generate unique reference; enforce uniqueness.  
+**Constraint:** Reject creation if reference exists (or regenerate).  
 **Applies To:** Order creation, tracking portal  
 **Enforcement:** Backend service + database unique constraint  
-**Error/Handling:** Reject creation if reference already exists (or regenerate).
+**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order), [US-04](user-stories.md#us-04-track-laundry-order-by-reference-number)
 
 ---
 
 ### BR-OL-02 – Initial Order Status
-**Rule:** A newly created order must start with status **Received**.  
+
+**Rule:** A newly created order MUST start with status **Received**.  
+**Condition:** Order creation.  
+**System Behavior:** Set `current_status = RECEIVED`.  
+**Constraint:** No other initial status is allowed.  
 **Applies To:** Order creation  
-**Enforcement:** Backend service
+**Enforcement:** Backend service  
+**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order)
 
 ---
 
 ### BR-OL-03 – Allowed Order Status Values
-**Rule:** Order status must be one of the defined states:
-- Received
-- Washing
-- Drying
-- Folding
-- Ready for Pickup
-- Released
 
+**Rule:** Order status MUST be one of: Received, Washing, Drying, Folding, Ready for Pickup, Released, Cancelled.  
+**Condition:** Status update requested.  
+**System Behavior:** Validate status; update if valid.  
+**Constraint:** Reject invalid status values.  
 **Applies To:** Status updates  
 **Enforcement:** Backend service validation  
-**Error/Handling:** Reject invalid status values.
+**Supports User Stories:** [US-03](user-stories.md#us-03-update-laundry-order-status), [US-05](user-stories.md#us-05-verify-laundry-before-release), [US-10](user-stories.md#us-10-notify-customer-when-laundry-is-ready)
 
 ---
 
 ### BR-OL-04 – Status Transition Control (Recommended)
-**Rule:** Orders should follow a logical sequence of stages (no skipping backwards unless corrected by staff/owner).  
+
+**Rule:** Orders SHOULD follow a logical sequence of stages (no skipping backwards unless corrected by staff/owner).  
+**Condition:** Status update requested.  
+**System Behavior:** Validate transition against allowed sequence.  
+**Constraint:** Recommended for MVP+; not mandatory for MVP.  
 **Applies To:** Status updates  
 **Enforcement:** Backend service (recommended for MVP+)
 
@@ -84,94 +122,135 @@
 - Drying → Folding
 - Folding → Ready for Pickup
 - Ready for Pickup → Released
+- Any non-terminal status → Cancelled
+- Cancelled → (terminal; no further transitions)
+
+**Supports User Stories:** [US-03](user-stories.md#us-03-update-laundry-order-status)
 
 ---
 
 ### BR-OL-05 – Release Preconditions
+
 **Rule:** An order can only be released if its status is **Ready for Pickup**.  
+**Condition:** Release action requested.  
+**System Behavior:** Validate status; allow release only if Ready for Pickup.  
+**Constraint:** Reject release if not ready.  
 **Applies To:** Release action  
 **Enforcement:** Backend service  
-**Error/Handling:** Reject release if not ready.
+**Supports User Stories:** [US-05](user-stories.md#us-05-verify-laundry-before-release)
 
 ---
 
 ## 3. Payment Rules
 
 ### BR-PAY-01 – Payment Timing
+
 **Rule:** Payment is typically collected **upon pickup** (not drop-off).  
+**Condition:** Payment recording workflow.  
+**System Behavior:** Process rule (UI/flow).  
+**Constraint:** Not a strict validation rule.  
 **Applies To:** Payment recording workflow  
-**Enforcement:** Process rule (UI/flow), not a strict validation rule
+**Enforcement:** Process rule (UI/flow)  
+**Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order)
 
 ---
 
 ### BR-PAY-02 – Payment Must Be Linked to an Order
-**Rule:** Each payment record must be associated with exactly one order.  
+
+**Rule:** Each payment MUST be associated with exactly one order.  
+**Condition:** Payment creation.  
+**System Behavior:** Enforce one-to-one relationship.  
+**Constraint:** Database foreign key + backend validation.  
 **Applies To:** Payment creation  
-**Enforcement:** Database foreign key + backend validation
+**Enforcement:** Database foreign key + backend validation  
+**Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order), [US-07](user-stories.md#us-07-view-payment-history)
 
 ---
 
 ### BR-PAY-03 – Payment Amount Validation
-**Rule:** Recorded payment amount must exactly match the computed total amount for the order.  
+
+**Rule:** Recorded payment amount MUST exactly match the order grand total.  
+**Condition:** Payment creation.  
+**System Behavior:** Validate amount; reject if mismatched.  
+**Constraint:** MVP: strict matching only; partial payments, overpayments, owner override are post-MVP (see [US-06](user-stories.md#us-06-record-payment-for-laundry-order)).  
 **Applies To:** Payment creation  
 **Enforcement:** Backend service  
-**Error/Handling:** Reject any payment where the amount does not exactly match the order total.  
-**MVP Scope:** Strict matching only; partial payments, overpayments, and owner override capabilities are post-MVP features (see US-06).
+**Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order)
 
 ---
 
 ### BR-PAY-04 – Payment Status
-**Rule:** Payment status must be recorded as **Paid** or **Unpaid** (or derived from presence of payment).  
+
+**Rule:** Payment status MUST be recorded as **Paid** or **Unpaid** (or derived from presence of payment).  
+**Condition:** Order/payment view or reporting.  
+**System Behavior:** Update or derive status from payment record.  
+**Constraint:** MVP uses Paid and Unpaid only.  
 **Applies To:** Order/payment view and reporting  
-**Enforcement:** Backend service
+**Enforcement:** Backend service  
+**Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order), [US-08](user-stories.md#us-08-view-daily-sales-report), [US-09](user-stories.md#us-09-view-monthly-and-yearly-income-reports)
 
 ---
 
 ## 4. Records & Retention Rules
 
 ### BR-REC-01 – Core Data to Record
-**Rule:** The system must store at minimum:
-- Customer name and contact number
-- Laundry order details
-- Payment records
-- Daily sales totals (derivable from payments)
 
+**Rule:** The system MUST store at minimum: customer name and contact number, laundry order details, payment records, daily sales totals (derivable from payments).  
+**Condition:** Data model, forms, reporting.  
+**System Behavior:** Persist required data.  
+**Constraint:** Data design requirement.  
 **Applies To:** Data model, forms, reporting  
-**Enforcement:** Data design requirement
+**Enforcement:** Data design requirement  
+**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order), [US-07](user-stories.md#us-07-view-payment-history), [US-08](user-stories.md#us-08-view-daily-sales-report), [US-09](user-stories.md#us-09-view-monthly-and-yearly-income-reports)
 
 ---
 
 ### BR-REC-02 – Retention Reference (Optional for MVP)
+
 **Rule:** Current manual practice keeps active records for about **one (1) month** before archiving.  
+**Condition:** Records management feature.  
+**System Behavior:** Optional for MVP.  
+**Constraint:** Implement later as archiving/filtering.  
 **Applies To:** Records management feature  
-**Enforcement:** Optional for MVP; can be implemented later as archiving/filtering.
+**Enforcement:** Optional for MVP  
+**Supports User Stories:** None (optional for MVP)
 
 ---
 
 ## 5. Notifications & Tracking Rules
 
 ### BR-NOTIF-01 – Customer Ready Notification Trigger
-**Rule:** The system should notify the customer when an order status becomes **Ready for Pickup**.  
+
+**Rule:** The system SHOULD notify the customer when order status becomes **Ready for Pickup**.  
+**Condition:** Status update to Ready for Pickup.  
+**System Behavior:** Trigger notification; record notification.  
+**Constraint:** MVP optional.  
 **Applies To:** Status updates  
-**Enforcement:** Backend event/trigger + notification service (MVP optional)
+**Enforcement:** Backend event/trigger + notification service (MVP optional)  
+**Supports User Stories:** [US-10](user-stories.md#us-10-notify-customer-when-laundry-is-ready)
 
 ---
 
 ### BR-NOTIF-02 – Tracking by Reference Number
-**Rule:** Customers must be able to track laundry status using the order reference number.  
+
+**Rule:** Customers MUST be able to track laundry status using the order reference number.  
+**Condition:** Customer requests tracking.  
+**System Behavior:** Lookup by unique reference; return allowed fields only.  
+**Constraint:** No sensitive or internal data exposed.  
 **Applies To:** Tracking page/API  
-**Enforcement:** Backend endpoint + lookup by unique reference
+**Enforcement:** Backend endpoint + lookup by unique reference  
+**Supports User Stories:** [US-04](user-stories.md#us-04-track-laundry-order-by-reference-number)
 
 ---
 
-## MVP Enforcement Checklist
-For MVP implementation, enforce at least:
+## 6. MVP Enforcement Checklist
+
+**Required for MVP:**
 - BR-PR-01, BR-PR-02, BR-PR-03
 - BR-OL-01, BR-OL-02, BR-OL-03, BR-OL-05
 - BR-PAY-02, BR-PAY-03, BR-PAY-04
 - BR-NOTIF-02 (tracking by reference)
 
-Recommended next:
+**Recommended next:**
 - BR-OL-04 (status transitions)
-- BR-PAY-03 owner override feature (post-MVP enhancement)
 - BR-NOTIF-01 (ready notifications)

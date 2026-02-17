@@ -3,13 +3,14 @@ info:
   title: Faith Laundry Shop Management System API
   version: 1.0.0
   description: >
-    REST API contract for the Laundry Shop Management System.
-    Derived from user stories, business rules, and ERD.
+    REST API contract for the Faith Laundry Shop Management System.
+    Aligned to user stories (US-xx), business rules (BR-xx), and ERD.
 
 servers:
   - url: http://localhost:8080
 
 tags:
+  - name: System
   - name: Auth
   - name: Users
   - name: Customers
@@ -23,17 +24,21 @@ paths:
   /api/v1/health:
     get:
       summary: Health check
-      tags: [Reports]
+      description: Liveness probe for API availability.
+      tags: [System]
       responses:
         "200":
           description: OK
 
   # -------------------------
-  # AUTH (placeholder)
+  # AUTH
   # -------------------------
   /api/v1/auth/login:
     post:
-      summary: Login (placeholder)
+      summary: Login
+      description: |
+        User authentication for role-based access (Owner / Staff).
+        Supports: US-11.
       tags: [Auth]
       requestBody:
         required: true
@@ -61,6 +66,9 @@ paths:
   /api/v1/customers:
     post:
       summary: Create customer
+      description: |
+        Creates a customer with first name, last name, contact number.
+        Supports: US-01. Enforces: BR-REC-01.
       tags: [Customers]
       requestBody:
         required: true
@@ -84,12 +92,15 @@ paths:
 
     get:
       summary: Search customers
+      description: |
+        Search customers by name or contact number.
+        Supports: US-01 (customer selection for order intake).
       tags: [Customers]
       parameters:
         - in: query
           name: q
           schema: { type: string }
-          description: Free-text search by name/contact (optional)
+          description: Free-text search by name or contact (optional)
       responses:
         "200":
           description: Customers list
@@ -103,6 +114,8 @@ paths:
   /api/v1/customers/{customerId}:
     get:
       summary: Get customer by ID
+      description: |
+        Supports: US-01.
       tags: [Customers]
       parameters:
         - in: path
@@ -129,6 +142,9 @@ paths:
   /api/v1/service-rates:
     get:
       summary: List service rates
+      description: |
+        Returns pricing rules (load, 8 kg limit, extra minute rate).
+        Supports: US-02 (order intake form).
       tags: [ServiceRates]
       parameters:
         - in: query
@@ -146,7 +162,10 @@ paths:
 
   /api/v1/service-rates/active:
     get:
-      summary: Get the active service rate (default pricing)
+      summary: Get active service rate
+      description: |
+        Returns the active rate used for order pricing (default).
+        Supports: US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03.
       tags: [ServiceRates]
       responses:
         "200":
@@ -167,7 +186,11 @@ paths:
   # -------------------------
   /api/v1/orders:
     post:
-      summary: Create laundry order (records intake + computes totals)
+      summary: Create laundry order
+      description: |
+        Creates order with automatic pricing (loads, extra minutes, add-ons).
+        Generates unique reference number. Sets initial status RECEIVED.
+        Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
       tags: [Orders]
       requestBody:
         required: true
@@ -190,7 +213,10 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
     get:
-      summary: List/search orders
+      summary: List or search orders
+      description: |
+        Returns orders with pagination and optional filters.
+        Supports: US-01, US-03, US-07.
       tags: [Orders]
       parameters:
         - in: query
@@ -202,27 +228,32 @@ paths:
           schema:
             $ref: "#/components/schemas/PaymentStatus"
         - in: query
-          name: customerId
-          schema: { type: integer, format: int64 }
-        - in: query
           name: from
-          schema: { type: string, format: date-time }
+          schema: { type: string, format: date }
+          description: Start date (inclusive)
         - in: query
           name: to
-          schema: { type: string, format: date-time }
+          schema: { type: string, format: date }
+          description: End date (inclusive)
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
       responses:
         "200":
-          description: Orders list
+          description: Paginated orders list
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OrderResponse"
+                $ref: "#/components/schemas/OrderPageResponse"
 
   /api/v1/orders/{orderId}:
     get:
       summary: Get order by ID
+      description: | 
+        Supports: US-03, US-05, US-06.
       tags: [Orders]
       parameters:
         - in: path
@@ -245,7 +276,10 @@ paths:
 
   /api/v1/orders/reference/{referenceNumber}:
     get:
-      summary: Track order by reference number (customer tracking)
+      summary: Track order by reference number
+      description: |
+        Public endpoint for customer tracking. Returns limited data (no internal IDs).
+        Supports: US-04. Enforces: BR-NOTIF-02, BR-OL-01.
       tags: [Orders]
       parameters:
         - in: path
@@ -268,7 +302,10 @@ paths:
 
   /api/v1/orders/{orderId}/status:
     patch:
-      summary: Update order status (creates status log entry)
+      summary: Update order status
+      description: |
+        Updates status and records change in order_status_logs.
+        Supports: US-03, US-05. Enforces: BR-OL-03, BR-OL-04, BR-OL-05.
       tags: [Orders]
       parameters:
         - in: path
@@ -301,41 +338,85 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /api/v1/orders/{orderId}/add-ons:
-    post:
-      summary: Add an add-on charge to an order
-      tags: [Orders]
-      parameters:
-        - in: path
-          name: orderId
-          required: true
-          schema: { type: integer, format: int64 }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AddOrderAddOnRequest"
-      responses:
-        "200":
-          description: Updated order (totals recalculated)
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderResponse"
-        "400":
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+  # OUT OF SCOPE FOR MVP - Dynamic add-ons after order creation
+  # /api/v1/orders/{orderId}/add-ons:
+  #   post:
+  #     summary: Add add-on charge to order
+  #     description: |
+  #       Adds optional add-on (e.g., fabric conditioner). Recalculates grand total.
+  #       Supports: US-02. Enforces: BR-PR-04.
+  #     tags: [Orders]
+  #     parameters:
+  #       - in: path
+  #         name: orderId
+  #         required: true
+  #         schema: { type: integer, format: int64 }
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "#/components/schemas/AddOrderAddOnRequest"
+  #     responses:
+  #       "200":
+  #         description: Updated order (totals recalculated)
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/OrderResponse"
+  #       "400":
+  #         description: Validation error
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/ErrorResponse"
+  #       "404":
+  #         description: Order not found
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/ErrorResponse"
 
   # -------------------------
   # PAYMENTS
   # -------------------------
   /api/v1/payments:
+    get:
+      summary: List payments
+      description: |
+        Returns payments with pagination and optional filters.
+        Supports: US-07.
+      tags: [Payments]
+      parameters:
+        - in: query
+          name: orderId
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+          description: Start date (inclusive)
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+          description: End date (inclusive)
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Paginated payments list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentPageResponse"
     post:
-      summary: Record payment for an order (one payment per order)
+      summary: Record payment for order
+      description: |
+        Records payment. One payment per order. MVP: amount must equal order grand total.
+        Supports: US-06. Enforces: BR-PAY-02, BR-PAY-03, BR-PAY-04.
       tags: [Payments]
       requestBody:
         required: true
@@ -351,7 +432,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PaymentResponse"
         "400":
-          description: Validation or mismatch error
+          description: Validation or amount mismatch
           content:
             application/json:
               schema:
@@ -360,6 +441,8 @@ paths:
   /api/v1/payments/{paymentId}:
     get:
       summary: Get payment by ID
+      description: | 
+        Supports: US-07.
       tags: [Payments]
       parameters:
         - in: path
@@ -381,11 +464,34 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   # -------------------------
+  # NOTIFICATIONS
+  # -------------------------
+  /api/v1/notifications:
+    get:
+      summary: List notifications
+      description: |
+        Returns all notifications (staff view).
+        Supports: US-10. Enforces: BR-NOTIF-01.
+      tags: [Notifications]
+      responses:
+        "200":
+          description: Notifications list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationResponse"
+
+  # -------------------------
   # REPORTS
   # -------------------------
   /api/v1/reports/sales/daily:
     get:
-      summary: Daily sales report (based on payments)
+      summary: Daily sales report
+      description: |
+        Aggregates income from payments for the given date.
+        Supports: US-08. Enforces: BR-REC-01, BR-PAY-04.
       tags: [Reports]
       parameters:
         - in: query
@@ -402,7 +508,10 @@ paths:
 
   /api/v1/reports/sales/monthly:
     get:
-      summary: Monthly sales report (based on payments)
+      summary: Monthly sales report
+      description: |
+        Aggregates income from payments for the given month.
+        Supports: US-09. Enforces: BR-REC-01, BR-PAY-04.
       tags: [Reports]
       parameters:
         - in: query
@@ -423,7 +532,10 @@ paths:
 
   /api/v1/reports/sales/yearly:
     get:
-      summary: Yearly sales report (based on payments)
+      summary: Yearly sales report
+      description: |
+        Aggregates income from payments for the given year.
+        Supports: US-09. Enforces: BR-REC-01, BR-PAY-04.
       tags: [Reports]
       parameters:
         - in: query
@@ -466,13 +578,13 @@ components:
     LoginResponse:
       type: object
       properties:
-        token: { type: string, description: "JWT token (placeholder)" }
+        token: { type: string, description: "JWT token" }
         role:
           $ref: "#/components/schemas/UserRole"
       required: [token, role]
 
     # -------------------------
-    # ENUMS
+    # ENUMS (canonical lifecycle values)
     # -------------------------
     UserRole:
       type: string
@@ -524,9 +636,9 @@ components:
       properties:
         id: { type: integer }
         serviceName: { type: string }
-        basePricePerLoad: { type: number, format: double }
-        kgLimitPerLoad: { type: number, format: double }
-        pricePerExtraMinute: { type: number, format: double }
+        basePricePerLoad: { type: number, format: double, description: "₱120 per load (BR-PR-01)" }
+        kgLimitPerLoad: { type: number, format: double, description: "8 kg per load (BR-PR-01)" }
+        pricePerExtraMinute: { type: number, format: double, description: "₱1 per extra minute (BR-PR-03)" }
         isActive: { type: boolean }
       required: [id, serviceName, basePricePerLoad, kgLimitPerLoad, pricePerExtraMinute, isActive]
 
@@ -539,27 +651,32 @@ components:
         customerId:
           type: integer
           format: int64
-          description: "Existing customer id"
+          description: "Existing customer ID"
+        createdByUserId:
+          type: string
+          format: uuid
+          description: "User creating the order. Required until auth (Phase 9)."
         customer:
           $ref: "#/components/schemas/CreateCustomerRequest"
-        serviceRateId:
-          type: integer
-          description: "Rate to apply; if omitted, uses active rate"
+        # serviceRateId:
+        #   type: integer
+        #   description: "Rate to apply; if omitted, uses active rate (OUT OF SCOPE FOR MVP)"
         weightKg:
           type: number
           format: double
+          description: "Laundry weight in kg"
         extraMinutes:
           type: integer
           default: 0
+          description: "Extra washing minutes beyond 45 min per load"
         initialAddOns:
           type: array
           items:
             $ref: "#/components/schemas/AddOnInput"
       required: [weightKg]
-
       description: >
-        Provide either customerId OR customer (to create customer on the fly).
-        For MVP, you may require customer object if you don't implement customer search yet.
+        Provide either customerId OR customer (create on the fly).
+        weightKg required. extraMinutes and initialAddOns optional.
 
     AddOnInput:
       type: object
@@ -576,7 +693,11 @@ components:
           $ref: "#/components/schemas/OrderStatus"
         notes:
           type: string
-      required: [newStatus]
+        changedByUserId:
+          type: string
+          format: uuid
+          description: "User who initiated the status change (required until Phase 9 authentication)"
+      required: [newStatus, changedByUserId]
 
     AddOrderAddOnRequest:
       type: object
@@ -590,12 +711,12 @@ components:
       type: object
       properties:
         id: { type: integer, format: int64 }
-        referenceNumber: { type: string }
+        referenceNumber: { type: string, description: "Unique tracking identifier" }
         customerId: { type: integer, format: int64 }
         createdByUserId: { type: string, format: uuid }
-        serviceRateId: { type: integer }
+        # serviceRateId: { type: integer } # OUT OF SCOPE FOR MVP
         weightKg: { type: number, format: double }
-        totalLoads: { type: integer }
+        totalLoads: { type: integer, description: "ceil(weight_kg / kg_limit_per_load)" }
         extraMinutes: { type: integer }
         baseAmount: { type: number, format: double }
         extraMinutesAmount: { type: number, format: double }
@@ -621,6 +742,36 @@ components:
         - currentStatus
         - paymentStatus
 
+    OrderPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
+
+    PaymentPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
+
     OrderTrackingResponse:
       type: object
       properties:
@@ -642,10 +793,14 @@ components:
       type: object
       properties:
         orderId: { type: integer, format: int64 }
-        amountPaid: { type: number, format: double }
+        amountPaid: { type: number, format: double, description: "Must equal order grand total (BR-PAY-03)" }
         paymentMethod:
           $ref: "#/components/schemas/PaymentMethod"
-      required: [orderId, amountPaid]
+        receivedByUserId:
+          type: string
+          format: uuid
+          description: "User recording the payment. Required until auth (Phase 9)."
+      required: [orderId, amountPaid, receivedByUserId]
 
     PaymentResponse:
       type: object
@@ -659,6 +814,25 @@ components:
         paymentDate: { type: string, format: date-time }
         remarks: { type: string }
       required: [id, orderId, amountPaid, paymentMethod, paymentDate]
+
+    # -------------------------
+    # NOTIFICATIONS
+    # -------------------------
+    NotificationResponse:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        orderId: { type: integer, format: int64 }
+        referenceNumber: { type: string }
+        customerId: { type: integer, format: int64 }
+        customerName: { type: string }
+        contactNumber: { type: string }
+        message: { type: string }
+        status:
+          $ref: "#/components/schemas/NotificationStatus"
+        createdAt: { type: string, format: date-time }
+        sentAt: { type: string, format: date-time }
+      required: [id, orderId, customerId, message, status]
 
     # -------------------------
     # REPORTS

@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Print styles for order receipt (Ctrl+P on Order Detail page) */
+@media print {
+  nav,
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  .print-receipt {
+    max-width: 80mm !important;
+    padding: 0.5rem !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+
+  .print-receipt h2 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #000;
+    padding-bottom: 0.25rem;
+  }
+
+  .print-receipt dl {
+    font-size: 0.75rem;
+  }
+
+  .print-receipt dt {
+    display: inline;
+  }
+
+  .print-receipt dd {
+    display: inline;
+    margin-left: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  main {
+    max-width: 80mm !important;
+    padding: 0.5rem !important;
+  }
+}

@@ -1,24 +1,34 @@
 package com.himotech.laundryms.security;
 
+import com.himotech.laundryms.auth.JwtService;
+import com.himotech.laundryms.common.enums.UserRole;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JwtCookieAuthFilter extends OncePerRequestFilter {
 
     private final SecurityProperties props;
+    private final JwtService jwtService;
 
-    public JwtCookieAuthFilter(SecurityProperties props) {
+    public JwtCookieAuthFilter(SecurityProperties props, JwtService jwtService) {
         this.props = props;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -28,7 +38,6 @@ public class JwtCookieAuthFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // 1) Find cookie
         String cookieName = props.getCookieName() != null ? props.getCookieName() : "access_token";
         Optional<Cookie> tokenCookie = Optional.empty();
 
@@ -38,13 +47,22 @@ public class JwtCookieAuthFilter extends OncePerRequestFilter {
                     .findFirst();
         }
 
-        // 2) If present, we will validate JWT later.
-        // For now: if cookie exists, set a placeholder auth to prove pipeline works.
-        // NOTE: We'll replace this with real JWT validation in the Auth phase.
         tokenCookie.ifPresent(c -> {
-            // Placeholder principal; will be replaced by JWT claims parsing
-            var auth = new UsernamePasswordAuthenticationToken("cookie-user", null, null);
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            Claims claims = jwtService.validateAndGetClaims(c.getValue());
+            if (claims != null) {
+                UUID userId = jwtService.getUserIdFromClaims(claims);
+                UserRole role = jwtService.getRoleFromClaims(claims);
+                String username = claims.getSubject();
+
+                var authorities = role != null
+                        ? Stream.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                                .collect(Collectors.toList())
+                        : Collections.<SimpleGrantedAuthority>emptyList();
+
+                var principal = new JwtPrincipal(userId, username, role);
+                var auth = new UsernamePasswordAuthenticationToken(principal, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
         });
 
         filterChain.doFilter(request, response);

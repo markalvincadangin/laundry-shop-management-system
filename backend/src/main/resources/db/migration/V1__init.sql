@@ -1,7 +1,11 @@
--- Enable UUID generation
+-- V1__init.sql — Faith Laundry Shop Database Schema
+-- Source: docs/04-data-design/erd.dbml
+-- BR-OL-01: Unique reference_number | BR-PAY-02: One payment per order (unique order_id)
+
+-- Enable UUID generation (required for users.id)
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Enums
+-- Enums (Idempotent Creation)
 DO $$
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
@@ -26,15 +30,19 @@ DO $$
     END$$;
 
 -- Tables
+
+-- 1. Configuration: Service Rates
 CREATE TABLE IF NOT EXISTS service_rates (
-                                             id                  SERIAL PRIMARY KEY,
-                                             service_name        VARCHAR DEFAULT 'Standard Wash',
-                                             base_price_per_load DECIMAL(10,2) NOT NULL DEFAULT 120.00,
-                                             kg_limit_per_load   DECIMAL(5,2)  NOT NULL DEFAULT 8.00,
-                                             price_per_extra_minute DECIMAL(10,2) NOT NULL DEFAULT 1.00,
-                                             is_active           BOOLEAN NOT NULL DEFAULT TRUE
+                               id SERIAL PRIMARY KEY,
+                               service_name VARCHAR NOT NULL,
+                               base_price_per_load DECIMAL(10,2) NOT NULL,
+                               kg_limit_per_load DECIMAL(5,2) NOT NULL,
+                               price_per_extra_minute DECIMAL(10,2) NOT NULL,
+                               is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                               CONSTRAINT uq_service_rates_service_name UNIQUE (service_name)
 );
 
+-- 2. Users
 CREATE TABLE IF NOT EXISTS users (
                                      id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                                      username      VARCHAR NOT NULL UNIQUE,
@@ -47,6 +55,7 @@ CREATE TABLE IF NOT EXISTS users (
                                      updated_at    TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- 3. Customers
 CREATE TABLE IF NOT EXISTS customers (
                                          id             BIGSERIAL PRIMARY KEY,
                                          first_name     VARCHAR NOT NULL,
@@ -57,23 +66,31 @@ CREATE TABLE IF NOT EXISTS customers (
                                          CONSTRAINT uq_customers_identity UNIQUE (last_name, first_name, contact_number)
 );
 
+-- 4. Orders (The Core Transaction Table) — BR-OL-01: reference_number UNIQUE
 CREATE TABLE IF NOT EXISTS orders (
                                       id                 BIGSERIAL PRIMARY KEY,
                                       reference_number   VARCHAR NOT NULL UNIQUE,
                                       customer_id        BIGINT NOT NULL REFERENCES customers(id),
                                       created_by_user_id UUID NOT NULL REFERENCES users(id),
 
+    -- Service Link & Weight
                                       service_rate_id    INT NOT NULL REFERENCES service_rates(id),
                                       weight_kg          DECIMAL(10,2) NOT NULL,
                                       total_loads        INT NOT NULL,
 
-                                      extra_minutes      INT NOT NULL DEFAULT 0,
+    -- PRICING SNAPSHOTS (Critical for History)
+                                      base_price_per_load    DECIMAL(10,2) NOT NULL,
+                                      kg_limit_per_load      DECIMAL(5,2)  NOT NULL,
+                                      price_per_extra_minute DECIMAL(10,2) NOT NULL,
 
+    -- Extras & Computations
+                                      extra_minutes         INT NOT NULL DEFAULT 0,
                                       base_amount           DECIMAL(10,2) NOT NULL,
                                       extra_minutes_amount  DECIMAL(10,2) NOT NULL,
                                       addons_total_amount   DECIMAL(10,2) NOT NULL DEFAULT 0,
                                       grand_total           DECIMAL(10,2) NOT NULL,
 
+    -- Status & Workflow
                                       current_status     order_status NOT NULL DEFAULT 'RECEIVED',
                                       payment_status     payment_status NOT NULL DEFAULT 'UNPAID',
 
@@ -81,6 +98,7 @@ CREATE TABLE IF NOT EXISTS orders (
                                       updated_at         TIMESTAMP NOT NULL DEFAULT now()
 );
 
+-- 5. Order Add-ons — BR-PR-04
 CREATE TABLE IF NOT EXISTS order_add_ons (
                                              id       BIGSERIAL PRIMARY KEY,
                                              order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
@@ -89,37 +107,51 @@ CREATE TABLE IF NOT EXISTS order_add_ons (
                                              quantity INT NOT NULL DEFAULT 1
 );
 
+-- 6. Order Status History (Audit Trail)
 CREATE TABLE IF NOT EXISTS order_status_logs (
                                                  id                 BIGSERIAL PRIMARY KEY,
-                                                 order_id            BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-                                                 previous_status     order_status,
-                                                 new_status          order_status NOT NULL,
-                                                 changed_by_user_id  UUID NOT NULL REFERENCES users(id),
-                                                 changed_at          TIMESTAMP NOT NULL DEFAULT now(),
-                                                 notes               TEXT
+                                                 order_id           BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                                                 previous_status    order_status,
+                                                 new_status         order_status NOT NULL,
+                                                 changed_by_user_id UUID NOT NULL REFERENCES users(id),
+                                                 changed_at         TIMESTAMP NOT NULL DEFAULT now(),
+                                                 notes              TEXT
 );
 
+-- 7. Payments — BR-PAY-02: One payment per order (order_id UNIQUE)
 CREATE TABLE IF NOT EXISTS payments (
-                                        id                 BIGSERIAL PRIMARY KEY,
-                                        order_id           BIGINT NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
-                                        amount_paid        DECIMAL(10,2) NOT NULL,
-                                        payment_method     payment_method NOT NULL DEFAULT 'CASH',
+                                        id                  BIGSERIAL PRIMARY KEY,
+                                        order_id            BIGINT NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
+                                        amount_paid         DECIMAL(10,2) NOT NULL,
+                                        payment_method      payment_method NOT NULL DEFAULT 'CASH',
                                         received_by_user_id UUID NOT NULL REFERENCES users(id),
-                                        payment_date       TIMESTAMP NOT NULL DEFAULT now(),
-                                        remarks            TEXT
+                                        payment_date        TIMESTAMP NOT NULL DEFAULT now(),
+                                        remarks             TEXT
 );
 
+-- 8. Notifications (Optional MVP Feature)
 CREATE TABLE IF NOT EXISTS notifications (
                                              id          BIGSERIAL PRIMARY KEY,
-                                             order_id     BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-                                             customer_id  BIGINT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-                                             message      TEXT NOT NULL,
-                                             created_at   TIMESTAMP NOT NULL DEFAULT now(),
-                                             sent_at      TIMESTAMP,
-                                             status       notification_status NOT NULL DEFAULT 'PENDING'
+                                             order_id    BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+                                             customer_id BIGINT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+                                             message     TEXT NOT NULL,
+                                             created_at  TIMESTAMP NOT NULL DEFAULT now(),
+                                             sent_at     TIMESTAMP,
+                                             status      notification_status NOT NULL DEFAULT 'PENDING'
 );
 
--- Minimal seed data: 1 active rate
-INSERT INTO service_rates (service_name, base_price_per_load, kg_limit_per_load, price_per_extra_minute, is_active)
-VALUES ('Standard Wash', 120.00, 8.00, 1.00, TRUE)
-ON CONFLICT DO NOTHING;
+-- Seed Data: Default Active Service Rate
+INSERT INTO service_rates (
+    service_name,
+    base_price_per_load,
+    kg_limit_per_load,
+    price_per_extra_minute,
+    is_active
+) VALUES (
+             'Standard Wash',
+             120.00,
+             8.00,
+             1.00,
+             TRUE
+         )
+ON CONFLICT (service_name) DO NOTHING;

@@ -1,0 +1,9 @@
+# Development profile: request/response logging, verbose logs
+spring:
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com.himotech.laundryms.config.RequestResponseLoggingFilter: DEBUG
+    com.himotech: DEBUG
