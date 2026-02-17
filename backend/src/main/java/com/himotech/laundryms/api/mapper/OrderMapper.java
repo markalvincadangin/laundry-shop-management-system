@@ -1,12 +1,16 @@
 package com.himotech.laundryms.api.mapper;
 
+import com.himotech.laundryms.api.dto.response.AddOnResponse;
 import com.himotech.laundryms.api.dto.response.OrderResponse;
 import com.himotech.laundryms.api.dto.response.OrderStatusLogResponse;
 import com.himotech.laundryms.api.dto.response.OrderTrackingResponse;
 import com.himotech.laundryms.orders.entity.Order;
+import com.himotech.laundryms.orders.entity.OrderAddOn;
 import com.himotech.laundryms.orders.entity.OrderStatusLog;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +33,24 @@ public interface OrderMapper {
     @Mapping(target = "updatedAt", expression = "java(order.getUpdatedAt() != null ? order.getUpdatedAt().atOffset(java.time.ZoneOffset.UTC) : null)")
     @Mapping(target = "statusLogs", expression = "java(mapStatusLogs(order.getStatusLogs()))")
     OrderResponse toResponse(Order order);
+
+    @AfterMapping
+    default void setAddOns(Order order, @MappingTarget OrderResponse response) {
+        response.setAddOns(mapAddOns(order.getAddOns()));
+    }
+
+    default List<AddOnResponse> mapAddOns(List<OrderAddOn> addOns) {
+        if (addOns == null || addOns.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return addOns.stream()
+                .map(a -> AddOnResponse.builder()
+                        .name(a.getName())
+                        .price(a.getPrice())
+                        .quantity(a.getQuantity())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     default List<OrderStatusLogResponse> mapStatusLogs(List<OrderStatusLog> logs) {
         if (logs == null || logs.isEmpty()) {

@@ -315,7 +315,125 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/service-rates/{rateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update service rate (Owner only)
+         * @description Updates pricing rules. Owner controls pricing without code changes.
+         *     Supports: ERD note "Owner can update without code changes".
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    rateId: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateServiceRateRequest"];
+                };
+            };
+            responses: {
+                /** @description Updated rate */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ServiceRateResponse"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Rate not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/v1/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create laundry order
+         * @description Creates order with automatic pricing (loads, extra minutes, add-ons).
+         *     Generates unique reference number. Sets initial status RECEIVED.
+         *     Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateOrderRequest"];
+                };
+            };
+            responses: {
+                /** @description Order created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderResponse"];
+                    };
+                };
+                /** @description Validation or business rule error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/preview": {
         parameters: {
             query?: never;
             header?: never;
@@ -358,10 +476,10 @@ export interface paths {
         };
         put?: never;
         /**
-         * Create laundry order
-         * @description Creates order with automatic pricing (loads, extra minutes, add-ons).
-         *     Generates unique reference number. Sets initial status RECEIVED.
-         *     Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
+         * Preview order pricing
+         * @description Computes order totals (loads, base amount, extra minutes, add-ons, grand total)
+         *     without creating an order. Uses active service rate. Supports live price preview.
+         *     Supports: US-02.
          */
         post: {
             parameters: {
@@ -372,20 +490,20 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["CreateOrderRequest"];
+                    "application/json": components["schemas"]["OrderPreviewRequest"];
                 };
             };
             responses: {
-                /** @description Order created */
-                201: {
+                /** @description Price preview */
+                200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["OrderResponse"];
+                        "application/json": components["schemas"]["OrderPreviewResponse"];
                     };
                 };
-                /** @description Validation or business rule error */
+                /** @description Validation error */
                 400: {
                     headers: {
                         [name: string]: unknown;
@@ -396,6 +514,49 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard order stats
+         * @description Returns counts for staff dashboard: today's orders, in progress, ready for pickup, unpaid.
+         *     Supports: UI/UX improvement plan.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Date for today (default: current date) */
+                    date?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Order stats */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderStatsResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -449,7 +610,56 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /**
+         * Update order details (extra minutes, add-ons)
+         * @description Updates extra minutes and/or add-ons, recalculates totals.
+         *     Allowed only when order is unpaid and not released.
+         *     Client interview: "extended washing time due to excessive dirt — ₱1 per extra minute".
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    orderId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateOrderRequest"];
+                };
+            };
+            responses: {
+                /** @description Updated order */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderResponse"];
+                    };
+                };
+                /** @description Validation or business rule error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/v1/orders/reference/{referenceNumber}": {
@@ -935,6 +1145,16 @@ export interface components {
             pricePerExtraMinute: number;
             isActive: boolean;
         };
+        UpdateServiceRateRequest: {
+            serviceName?: string;
+            /** Format: double */
+            basePricePerLoad?: number;
+            /** Format: double */
+            kgLimitPerLoad?: number;
+            /** Format: double */
+            pricePerExtraMinute?: number;
+            isActive?: boolean;
+        };
         /** @description Provide either customerId OR customer (create on the fly). weightKg required. extraMinutes and initialAddOns optional. */
         CreateOrderRequest: {
             /**
@@ -966,6 +1186,40 @@ export interface components {
             price: number;
             /** @default 1 */
             quantity: number;
+        };
+        OrderPreviewRequest: {
+            /**
+             * Format: double
+             * @description Laundry weight in kg
+             */
+            weightKg: number;
+            /**
+             * @description Extra washing minutes beyond 45 min per load
+             * @default 0
+             */
+            extraMinutes: number;
+            initialAddOns?: components["schemas"]["AddOnInput"][];
+        };
+        OrderPreviewResponse: {
+            totalLoads: number;
+            /** Format: double */
+            baseAmount: number;
+            /** Format: double */
+            extraMinutesAmount: number;
+            /** Format: double */
+            addonsTotalAmount: number;
+            /** Format: double */
+            grandTotal: number;
+        };
+        OrderStatsResponse: {
+            todaysOrders: number;
+            inProgress: number;
+            readyForPickup: number;
+            unpaidOrders: number;
+        };
+        UpdateOrderRequest: {
+            extraMinutes?: number;
+            addOns?: components["schemas"]["AddOnInput"][];
         };
         UpdateOrderStatusRequest: {
             newStatus: components["schemas"]["OrderStatus"];
@@ -1005,6 +1259,8 @@ export interface components {
             addonsTotalAmount: number;
             /** Format: double */
             grandTotal: number;
+            /** @description Order add-ons (for edit form) */
+            addOns?: components["schemas"]["AddOnInput"][];
             currentStatus: components["schemas"]["OrderStatus"];
             paymentStatus: components["schemas"]["PaymentStatus"];
             /** Format: date-time */
@@ -1061,6 +1317,10 @@ export interface components {
             id: number;
             /** Format: int64 */
             orderId: number;
+            /** @description Order reference for display (US-07) */
+            orderReferenceNumber?: string;
+            /** @description Customer name for display (US-07) */
+            customerName?: string;
             /** Format: double */
             amountPaid: number;
             paymentMethod: components["schemas"]["PaymentMethod"];

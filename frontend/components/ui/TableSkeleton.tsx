@@ -18,7 +18,7 @@ export function TableSkeleton({
             {Array.from({ length: cols }).map((_, i) => (
               <th
                 key={i}
-                className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600"
+                className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary"
               />
             ))}
           </tr>

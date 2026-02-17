@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * JPA Specifications for Order filtering.
@@ -41,6 +42,15 @@ public final class OrderSpecification {
                 predicates.add(cb.lessThan(root.get("createdAt"), toTs));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
+
+    public static Specification<Order> filterByStatusIn(Set<OrderStatus> statuses) {
+        return (root, query, cb) -> {
+            if (statuses == null || statuses.isEmpty()) {
+                return cb.conjunction();
+            }
+            return root.get("currentStatus").in(statuses);
         };
     }
 }

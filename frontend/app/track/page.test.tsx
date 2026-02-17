@@ -21,9 +21,10 @@ describe("TrackPage", () => {
 
   it("renders heading and form", () => {
     render(<TrackPage />);
-    expect(screen.getByRole("heading", { name: /track your order/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /faith laundry shop/i })).toBeInTheDocument();
+    expect(screen.getByText(/track your laundry/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/reference number/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /track/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /track order/i })).toBeInTheDocument();
   });
 
   it("submits reference and displays order on success", async () => {
@@ -47,9 +48,9 @@ describe("TrackPage", () => {
       expect(ordersApi.trackByReference).toHaveBeenCalledWith("ORD-001");
     });
     await waitFor(() => {
-      expect(screen.getByText(/order ord-001/i)).toBeInTheDocument();
-      expect(screen.getByText(/washing/i)).toBeInTheDocument();
-      expect(screen.getByText(/juan/i)).toBeInTheDocument();
+      expect(screen.getByText("ORD-001")).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: /washing/i })).toBeInTheDocument();
+      expect(screen.getByText(/₱150/)).toBeInTheDocument();
     });
   });
 
@@ -65,7 +66,7 @@ describe("TrackPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /track/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/reference number not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/couldn't find that order|reference number not found/i)).toBeInTheDocument();
     });
   });
 

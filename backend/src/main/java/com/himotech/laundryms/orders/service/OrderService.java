@@ -1,8 +1,13 @@
 package com.himotech.laundryms.orders.service;
 
 import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
+import com.himotech.laundryms.api.dto.request.OrderPreviewRequest;
+import com.himotech.laundryms.api.dto.request.UpdateOrderRequest;
+import com.himotech.laundryms.api.dto.response.OrderPreviewResponse;
+import com.himotech.laundryms.api.dto.response.OrderStatsResponse;
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
+import com.himotech.laundryms.orders.entity.OrderAddOn;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import com.himotech.laundryms.customers.entity.Customer;
@@ -10,7 +15,6 @@ import com.himotech.laundryms.customers.repository.CustomerRepository;
 import com.himotech.laundryms.customers.service.CustomerService;
 import com.himotech.laundryms.exception.NotFoundException;
 import com.himotech.laundryms.orders.entity.Order;
-import com.himotech.laundryms.orders.entity.OrderAddOn;
 import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.orders.repository.OrderSpecification;
@@ -28,6 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Random;
@@ -216,10 +221,155 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Computes order pricing without creating an order.
+     * Used for live price preview on the order creation form.
+     *
+     * @param request the preview request (weight, extra minutes, add-ons)
+     * @return computed totals
+     */
+    @Transactional(readOnly = true)
+    public OrderPreviewResponse preview(OrderPreviewRequest request) {
+        ServiceRate rate = serviceRateService.getActiveRate();
+
+        if (request.getWeightKg() == null || request.getWeightKg().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Weight must be greater than 0");
+        }
+        int extraMins = request.getExtraMinutes() != null ? request.getExtraMinutes() : 0;
+        if (extraMins < 0) {
+            throw new IllegalArgumentException("Extra minutes cannot be negative");
+        }
+
+        int totalLoads = request.getWeightKg()
+                .divide(rate.getKgLimitPerLoad(), 10, RoundingMode.HALF_UP)
+                .setScale(0, RoundingMode.CEILING)
+                .intValue();
+
+        BigDecimal baseAmount = rate.getBasePricePerLoad()
+                .multiply(BigDecimal.valueOf(totalLoads))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal extraMinutesAmount = rate.getPricePerExtraMinute()
+                .multiply(BigDecimal.valueOf(extraMins))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        List<CreateOrderCommand.AddOnItem> addOnList = request.getInitialAddOns() != null
+                ? request.getInitialAddOns().stream()
+                        .map(a -> new CreateOrderCommand.AddOnItem(
+                                a.getName(),
+                                a.getPrice(),
+                                a.getQuantity() > 0 ? a.getQuantity() : 1))
+                        .collect(Collectors.toList())
+                : List.of();
+
+        BigDecimal addonsTotalAmount = addOnList.stream()
+                .map(addOnItem -> addOnItem.price().multiply(BigDecimal.valueOf(addOnItem.quantity())).setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal grandTotal = baseAmount.add(extraMinutesAmount).add(addonsTotalAmount);
+
+        return OrderPreviewResponse.builder()
+                .totalLoads(totalLoads)
+                .baseAmount(baseAmount.doubleValue())
+                .extraMinutesAmount(extraMinutesAmount.doubleValue())
+                .addonsTotalAmount(addonsTotalAmount.doubleValue())
+                .grandTotal(grandTotal.doubleValue())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderStatsResponse getStats(LocalDate date) {
+        LocalDateTime from = date.atStartOfDay();
+        LocalDateTime to = date.plusDays(1).atStartOfDay();
+
+        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to));
+        long inProgress = orderRepository.count(OrderSpecification.filterByStatusIn(
+                Set.of(OrderStatus.WASHING, OrderStatus.DRYING, OrderStatus.FOLDING)));
+        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null));
+        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null));
+
+        return OrderStatsResponse.builder()
+                .todaysOrders((int) todaysOrders)
+                .inProgress((int) inProgress)
+                .readyForPickup((int) readyForPickup)
+                .unpaidOrders((int) unpaidOrders)
+                .build();
+    }
+
     @Transactional(readOnly = true)
     public Order findById(Long id) {
         return orderRepository.findByIdWithStatusLogs(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
+    }
+
+    /**
+     * Updates extra minutes and/or add-ons for an order.
+     * Allowed only when order is unpaid and not released.
+     * Recalculates extraMinutesAmount, addonsTotalAmount, grandTotal using order's snapshot pricing.
+     *
+     * @param orderId the order ID
+     * @param request update request (extraMinutes, addOns)
+     * @return the updated order
+     */
+    @Transactional
+    public Order update(Long orderId, UpdateOrderRequest request) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
+
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new IllegalArgumentException("Cannot update order: already paid");
+        }
+        if (order.getCurrentStatus() == OrderStatus.RELEASED) {
+            throw new IllegalArgumentException("Cannot update order: already released");
+        }
+
+        int newExtraMinutes = request.getExtraMinutes() != null ? request.getExtraMinutes() : order.getExtraMinutes();
+        if (newExtraMinutes < 0) {
+            throw new IllegalArgumentException("Extra minutes cannot be negative");
+        }
+
+        order.setExtraMinutes(newExtraMinutes);
+
+        BigDecimal extraMinutesAmount = order.getPricePerExtraMinute()
+                .multiply(BigDecimal.valueOf(newExtraMinutes))
+                .setScale(2, RoundingMode.HALF_UP);
+        order.setExtraMinutesAmount(extraMinutesAmount);
+
+        List<CreateOrderCommand.AddOnItem> addOnList;
+        if (request.getAddOns() != null) {
+            addOnList = request.getAddOns().stream()
+                    .map(a -> new CreateOrderCommand.AddOnItem(
+                            a.getName(),
+                            a.getPrice(),
+                            a.getQuantity() > 0 ? a.getQuantity() : 1))
+                    .collect(Collectors.toList());
+            order.getAddOns().clear();
+            for (CreateOrderCommand.AddOnItem item : addOnList) {
+                order.getAddOns().add(OrderAddOn.builder()
+                        .order(order)
+                        .name(item.name())
+                        .price(item.price())
+                        .quantity(item.quantity())
+                        .build());
+            }
+        } else {
+            addOnList = order.getAddOns().stream()
+                    .map(a -> new CreateOrderCommand.AddOnItem(
+                            a.getName(),
+                            a.getPrice(),
+                            a.getQuantity()))
+                    .collect(Collectors.toList());
+        }
+
+        BigDecimal addonsTotalAmount = addOnList.stream()
+                .map(addOnItem -> addOnItem.price().multiply(BigDecimal.valueOf(addOnItem.quantity())).setScale(2, RoundingMode.HALF_UP))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        order.setAddonsTotalAmount(addonsTotalAmount);
+
+        BigDecimal grandTotal = order.getBaseAmount().add(extraMinutesAmount).add(addonsTotalAmount);
+        order.setGrandTotal(grandTotal);
+
+        return orderRepository.save(order);
     }
 
     @Transactional(readOnly = true)

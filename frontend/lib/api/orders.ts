@@ -31,17 +31,30 @@ export type OrderListParams = {
   size?: number;
 };
 
+export type OrderPreviewRequest = components["schemas"]["OrderPreviewRequest"];
+export type OrderPreviewResponse = components["schemas"]["OrderPreviewResponse"];
+export type OrderStatsResponse = components["schemas"]["OrderStatsResponse"];
+export type UpdateOrderRequest = components["schemas"]["UpdateOrderRequest"];
+
 export const ordersApi = {
   list: (params?: OrderListParams) =>
     apiClient.get<OrderPageResponse>("/v1/orders", { params }),
+  getStats: (date?: string) =>
+    apiClient.get<OrderStatsResponse>("/v1/orders/stats", {
+      params: date ? { date } : undefined,
+    }),
   getById: (orderId: number) =>
     apiClient.get<OrderResponse>(`/v1/orders/${orderId}`),
   create: (body: CreateOrderRequest) =>
     apiClient.post<OrderResponse>("/v1/orders", body),
+  preview: (body: OrderPreviewRequest) =>
+    apiClient.post<OrderPreviewResponse>("/v1/orders/preview", body),
   trackByReference: (referenceNumber: string) =>
     apiClient.get<OrderTrackingResponse>(
       `/v1/orders/reference/${encodeURIComponent(referenceNumber)}`
     ),
   updateStatus: (orderId: number, body: UpdateOrderStatusRequest) =>
     apiClient.patch<OrderResponse>(`/v1/orders/${orderId}/status`, body),
+  update: (orderId: number, body: UpdateOrderRequest) =>
+    apiClient.patch<OrderResponse>(`/v1/orders/${orderId}`, body),
 };

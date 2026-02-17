@@ -1,7 +1,11 @@
 package com.himotech.laundryms.orders.api;
 
 import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
+import com.himotech.laundryms.api.dto.request.OrderPreviewRequest;
+import com.himotech.laundryms.api.dto.request.UpdateOrderRequest;
 import com.himotech.laundryms.api.dto.request.UpdateOrderStatusRequest;
+import com.himotech.laundryms.api.dto.response.OrderPreviewResponse;
+import com.himotech.laundryms.api.dto.response.OrderStatsResponse;
 import com.himotech.laundryms.api.dto.response.OrderResponse;
 import com.himotech.laundryms.api.dto.response.OrderTrackingResponse;
 import com.himotech.laundryms.api.dto.response.PageResponse;
@@ -39,6 +43,19 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toResponse(order));
     }
 
+    @PostMapping("/preview")
+    public ResponseEntity<OrderPreviewResponse> preview(@Valid @RequestBody OrderPreviewRequest request) {
+        OrderPreviewResponse response = orderService.preview(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<OrderStatsResponse> getStats(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        LocalDate targetDate = date != null ? date : LocalDate.now();
+        return ResponseEntity.ok(orderService.getStats(targetDate));
+    }
+
     @GetMapping("/reference/{referenceNumber}")
     public ResponseEntity<OrderTrackingResponse> trackByReference(@PathVariable String referenceNumber) {
         Order order = orderService.findByReferenceNumber(referenceNumber);
@@ -72,6 +89,14 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getById(@PathVariable Long orderId) {
         Order order = orderService.findById(orderId);
+        return ResponseEntity.ok(orderMapper.toResponse(order));
+    }
+
+    @PatchMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> update(
+            @PathVariable Long orderId,
+            @Valid @RequestBody UpdateOrderRequest request) {
+        Order order = orderService.update(orderId, request);
         return ResponseEntity.ok(orderMapper.toResponse(order));
     }
 
