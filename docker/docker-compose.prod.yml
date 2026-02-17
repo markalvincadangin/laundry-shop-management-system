@@ -15,7 +15,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-laundry_db}
       POSTGRES_USER: ${DB_USER:-laundry_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-laundry_password}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Error: DB_PASSWORD must be set in .env for production}
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
       - ./init/01-enable-pgcrypto.sql:/docker-entrypoint-initdb.d/01-enable-pgcrypto.sql
@@ -43,8 +43,8 @@ services:
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-laundry_db}
       DB_USER: ${DB_USER:-laundry_user}
-      DB_PASSWORD: ${DB_PASSWORD:-laundry_password}
-      JWT_SECRET: ${JWT_SECRET:-change-me-use-at-least-32-characters-in-production}
+      DB_PASSWORD: ${DB_PASSWORD:?Error: DB_PASSWORD must be set in .env for production}
+      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET must be set in .env (minimum 32 characters)}
       ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost}
     networks:
       - laundry-net

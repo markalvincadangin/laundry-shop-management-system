@@ -16,6 +16,7 @@ set -e
 BACKUP_DIR="${1:-./backups}"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 OUTPUT_FILE="${BACKUP_DIR}/laundry_db_${TIMESTAMP}.sql.gz"
+TEMP_FILE="${BACKUP_DIR}/laundry_db_${TIMESTAMP}.sql"
 
 # Load .env if present (from project root)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -37,22 +38,41 @@ mkdir -p "$BACKUP_DIR"
 # Option A: pg_dump directly (if PostgreSQL client installed)
 if command -v pg_dump >/dev/null 2>&1; then
   export PGPASSWORD="$DB_PASSWORD"
-  pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl | gzip > "$OUTPUT_FILE"
-  unset PGPASSWORD
-  echo "Backup created: $OUTPUT_FILE"
-  exit 0
+  # Write to temp file first, then compress to ensure pg_dump succeeds
+  if pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl > "$TEMP_FILE"; then
+    gzip < "$TEMP_FILE" > "$OUTPUT_FILE"
+    rm -f "$TEMP_FILE"
+    unset PGPASSWORD
+    echo "Backup created: $OUTPUT_FILE"
+    exit 0
+  else
+    unset PGPASSWORD
+    rm -f "$TEMP_FILE"
+    echo "Error: pg_dump failed"
+    exit 1
+  fi
 fi
 
 # Option B: via Docker (if postgres container running)
-if docker ps --format '{{.Names}}' | grep -q 'laundry-postgres'; then
-  CONTAINER="laundry-postgres"
-elif docker ps --format '{{.Names}}' | grep -q 'laundry-postgres-prod'; then
+# Check prod container first, then dev container
+if docker ps --format '{{.Names}}' | grep -qx 'laundry-postgres-prod'; then
   CONTAINER="laundry-postgres-prod"
+elif docker ps --format '{{.Names}}' | grep -qx 'laundry-postgres'; then
+  CONTAINER="laundry-postgres"
 else
-  echo "Error: PostgreSQL client (pg_dump) not found, and no laundry-postgres container running."
+  echo "Error: PostgreSQL client (pg_dump) not found, and no laundry-postgres or laundry-postgres-prod container running."
   echo "Install PostgreSQL client tools or ensure the database container is running."
   exit 1
 fi
 
-docker exec "$CONTAINER" pg_dump -U "${DB_USER}" -d "${DB_NAME}" --no-owner --no-acl | gzip > "$OUTPUT_FILE"
-echo "Backup created: $OUTPUT_FILE"
+# Use temp file approach for container exec as well
+if docker exec "$CONTAINER" pg_dump -U "${DB_USER}" -d "${DB_NAME}" --no-owner --no-acl > "$TEMP_FILE"; then
+  gzip < "$TEMP_FILE" > "$OUTPUT_FILE"
+  rm -f "$TEMP_FILE"
+  echo "Backup created: $OUTPUT_FILE"
+  exit 0
+else
+  rm -f "$TEMP_FILE"
+  echo "Error: Docker pg_dump failed"
+  exit 1
+fi
