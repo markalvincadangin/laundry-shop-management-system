@@ -125,7 +125,7 @@ Customers can track their order without logging in:
 1. Go to the **Track Order** page (public link, e.g., `/track`).
 2. Enter the reference number (e.g., LDR-20260217-1234).
 3. Click **Track**.
-4. View current status, order date, weight, and total.
+4. View current status, order date, and total.
 
 ---
 
