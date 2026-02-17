@@ -780,11 +780,11 @@ docs: sync implementation plan and README with current state
 
 **Deliverables**
 
-* **Production Docker Compose:** `docker-compose.prod.yml` (optimized images)
-* **Nginx Configuration:** Reverse proxy with SSL setup
-* **Database Backup Script:** Automated nightly backups
-* **User Manual:** PDF guide for Owner and Staff
-* **Handover Session:** Training the staff
+* **Production Docker Compose:** `docker/docker-compose.prod.yml` (optimized images) ✅
+* **Nginx Configuration:** `docker/nginx/` — reverse proxy with SSL setup ✅
+* **Database Backup Script:** `scripts/backup-database.sh` and `scripts/backup-database.ps1` ✅
+* **User Manual:** `docs/06-implementation/user-manual.md` (export to PDF for handover) ✅
+* **Handover Session:** Training the staff (manual process)
 
 **Branch:** `chore/production-deploy`
 

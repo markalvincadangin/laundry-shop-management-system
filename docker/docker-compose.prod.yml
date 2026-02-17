@@ -1,0 +1,87 @@
+# Faith Laundry Shop — Production Stack
+# Run: docker compose -f docker/docker-compose.prod.yml up -d
+# Production: Set DB_PASSWORD, JWT_SECRET (≥32 chars), ALLOWED_ORIGIN, NEXT_PUBLIC_API_URL in .env
+# Defaults below allow local testing; override for production.
+#
+# Access via Nginx: http://localhost (or your domain)
+# Backend API: /api/* → backend:8080
+# Frontend: /* → frontend:3000
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: laundry-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-laundry_db}
+      POSTGRES_USER: ${DB_USER:-laundry_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-laundry_password}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+      - ./init/01-enable-pgcrypto.sql:/docker-entrypoint-initdb.d/01-enable-pgcrypto.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-laundry_user} -d ${DB_NAME:-laundry_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - laundry-net
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: laundry-backend:prod
+    container_name: laundry-backend-prod
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-laundry_db}
+      DB_USER: ${DB_USER:-laundry_user}
+      DB_PASSWORD: ${DB_PASSWORD:-laundry_password}
+      JWT_SECRET: ${JWT_SECRET:-change-me-use-at-least-32-characters-in-production}
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost}
+    networks:
+      - laundry-net
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
+    image: laundry-frontend:prod
+    container_name: laundry-frontend-prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - laundry-net
+
+  nginx:
+    image: nginx:alpine
+    container_name: laundry-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - laundry-net
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  laundry-net:
+    driver: bridge
