@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @see AbstractIntegrationTest
  */
 @DisplayName("OrderSpecification Filtering Integration Tests")
-class OrderSpecificationTest extends AbstractIntegrationTest {
+class OrderSpecificationIT extends AbstractIntegrationTest {
 
     @Autowired
     private TestEntityManager entityManager;
@@ -60,6 +60,10 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
     private Order readyPaidOrder;
     private Order releasedPaidOrder;
     private Order cancelledOrder;
+
+    // Captured timestamps for deterministic date range testing
+    private LocalDateTime earliestCreatedAt;
+    private LocalDateTime latestCreatedAt;
 
     /**
      * Set up test data before each test.
@@ -85,8 +89,9 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
                 .build();
         testCustomer = entityManager.persist(testCustomer);
 
+        // Use a unique service name to avoid conflict with seeded "Standard Wash" in V1__init.sql
         testServiceRate = ServiceRate.builder()
-                .serviceName("Standard Wash")
+                .serviceName("OrderSpec Test Rate")
                 .basePricePerLoad(new BigDecimal("120.00"))
                 .kgLimitPerLoad(new BigDecimal("8.00"))
                 .pricePerExtraMinute(new BigDecimal("1.00"))
@@ -103,6 +108,17 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
 
         entityManager.flush();
         entityManager.clear();
+
+        // Capture actual persisted timestamps for deterministic date range testing
+        List<Order> allOrders = orderRepository.findAll();
+        earliestCreatedAt = allOrders.stream()
+                .map(Order::getCreatedAt)
+                .min(LocalDateTime::compareTo)
+                .orElseThrow();
+        latestCreatedAt = allOrders.stream()
+                .map(Order::getCreatedAt)
+                .max(LocalDateTime::compareTo)
+                .orElseThrow();
     }
 
     private Order createOrder(String refNumber, OrderStatus status, PaymentStatus paymentStatus) {
@@ -208,12 +224,13 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
 
     /**
      * Test 5: Filter by fromTs (date range start) - validates timestamp filtering
+     * Uses captured createdAt from persisted orders for deterministic assertions.
      */
     @Test
     @DisplayName("filterBy - Should filter by fromTs when date range start is provided")
     void filterBy_ShouldFilterByFromTimestamp_WhenFromTsProvided() {
-        // Given - Set fromTs to current time (all test orders were created just now)
-        LocalDateTime fromTs = LocalDateTime.now().minusMinutes(1);
+        // Given - Set fromTs to just before earliest order
+        LocalDateTime fromTs = earliestCreatedAt.minusSeconds(1);
         Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, null);
 
         // When
@@ -225,12 +242,13 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
 
     /**
      * Test 6: Filter by toTs (date range end) - validates timestamp filtering
+     * Uses captured createdAt from persisted orders for deterministic assertions.
      */
     @Test
     @DisplayName("filterBy - Should filter by toTs when date range end is provided")
     void filterBy_ShouldFilterByToTimestamp_WhenToTsProvided() {
-        // Given - Set toTs to future time (all test orders should be before this)
-        LocalDateTime toTs = LocalDateTime.now().plusMinutes(1);
+        // Given - Set toTs to just after latest order
+        LocalDateTime toTs = latestCreatedAt.plusSeconds(1);
         Specification<Order> spec = OrderSpecification.filterBy(null, null, null, toTs);
 
         // When
@@ -242,13 +260,14 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
 
     /**
      * Test 7: Filter by date range (fromTs and toTs) - validates range filtering
+     * Uses captured createdAt from persisted orders for deterministic assertions.
      */
     @Test
     @DisplayName("filterBy - Should filter by date range when both fromTs and toTs are provided")
     void filterBy_ShouldFilterByDateRange_WhenBothTimestampsProvided() {
         // Given - Date range covering all test orders
-        LocalDateTime fromTs = LocalDateTime.now().minusMinutes(1);
-        LocalDateTime toTs = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime fromTs = earliestCreatedAt.minusSeconds(1);
+        LocalDateTime toTs = latestCreatedAt.plusSeconds(1);
         Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, toTs);
 
         // When
@@ -260,13 +279,14 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
 
     /**
      * Test 8: Filter by date range excluding orders - validates boundary conditions
+     * Uses captured createdAt from persisted orders for deterministic assertions.
      */
     @Test
     @DisplayName("filterBy - Should exclude orders outside date range")
     void filterBy_ShouldExcludeOrders_WhenOutsideDateRange() {
-        // Given - Date range in the past (before test orders were created)
-        LocalDateTime fromTs = LocalDateTime.now().minusHours(2);
-        LocalDateTime toTs = LocalDateTime.now().minusHours(1);
+        // Given - Date range before test orders were created
+        LocalDateTime fromTs = earliestCreatedAt.minusHours(2);
+        LocalDateTime toTs = earliestCreatedAt.minusSeconds(1);
         Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, toTs);
 
         // When
@@ -278,13 +298,14 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
 
     /**
      * Test 9: Complex filter - all parameters provided
+     * Uses captured createdAt from persisted orders for deterministic assertions.
      */
     @Test
     @DisplayName("filterBy - Should apply all filters when all parameters are provided")
     void filterBy_ShouldApplyAllFilters_WhenAllParametersProvided() {
         // Given - All filter parameters specified
-        LocalDateTime fromTs = LocalDateTime.now().minusMinutes(1);
-        LocalDateTime toTs = LocalDateTime.now().plusMinutes(1);
+        LocalDateTime fromTs = earliestCreatedAt.minusSeconds(1);
+        LocalDateTime toTs = latestCreatedAt.plusSeconds(1);
         Specification<Order> spec = OrderSpecification.filterBy(
                 OrderStatus.READY_FOR_PICKUP,
                 PaymentStatus.PAID,
