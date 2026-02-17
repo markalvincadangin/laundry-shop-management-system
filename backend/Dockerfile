@@ -9,6 +9,7 @@ COPY .mvn .mvn
 COPY pom.xml .
 RUN ./mvnw -B -ntp dependency:go-offline -DskipTests
 
+COPY checkstyle.xml .
 COPY src ./src
 RUN ./mvnw -B -ntp package -DskipTests
 
