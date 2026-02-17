@@ -69,7 +69,7 @@ class OrderSpecificationTest extends AbstractIntegrationTest {
     void setUp() {
         // Create foreign key dependencies
         testUser = User.builder()
-                .username("teststaff_spec")
+                .username("teststaff_orderspec")
                 .passwordHash("$2a$10$hashedpassword")
                 .role(UserRole.STAFF)
                 .firstName("Test")
