@@ -359,4 +359,241 @@ class OrderServiceTest {
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
         }
     }
+
+    @Nested
+    @DisplayName("update - Order update functionality (BR-OL-06)")
+    class UpdateOrder {
+
+        private Order existingOrder;
+
+        @BeforeEach
+        void setUpOrder() {
+            // Create an unpaid, not-released order for updating
+            existingOrder = TestDataBuilders.order()
+                    .id(1L)
+                    .extraMinutes(5)
+                    .extraMinutesAmount(new BigDecimal("5.00"))
+                    .grandTotal(new BigDecimal("245.00"))
+                    .currentStatus(OrderStatus.RECEIVED)
+                    .paymentStatus(PaymentStatus.UNPAID)
+                    .build();
+
+            when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
+            when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        }
+
+        @Test
+        @DisplayName("Should update extra minutes and recalculate totals (BR-OL-06)")
+        void update_ShouldUpdateExtraMinutesAndRecalculateTotals() {
+            // Given - update extra minutes from 5 to 10
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(10);
+
+            // When
+            Order result = orderService.update(1L, request);
+
+            // Then
+            assertThat(result.getExtraMinutes()).isEqualTo(10);
+            assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("10.00");
+            // baseAmount=240 + extraMinutes=10 + addons=0 = 250
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("250.00");
+            verify(orderRepository).save(existingOrder);
+        }
+
+        @Test
+        @DisplayName("Should update add-ons and recalculate totals (BR-OL-06)")
+        void update_ShouldUpdateAddOnsAndRecalculateTotals() {
+            // Given - add new add-on
+            com.himotech.laundryms.api.dto.request.AddOnInput addOn1 = 
+                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            addOn1.setName("Fabric Conditioner");
+            addOn1.setPrice(new BigDecimal("20.00"));
+            addOn1.setQuantity(1);
+
+            com.himotech.laundryms.api.dto.request.AddOnInput addOn2 = 
+                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            addOn2.setName("Extra Detergent");
+            addOn2.setPrice(new BigDecimal("15.00"));
+            addOn2.setQuantity(2);
+
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setAddOns(List.of(addOn1, addOn2));
+
+            // When
+            Order result = orderService.update(1L, request);
+
+            // Then
+            assertThat(result.getAddOns()).hasSize(2);
+            // addons = 20 + (15*2) = 50
+            assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("50.00");
+            // baseAmount=240 + extraMinutes=5 + addons=50 = 295
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("295.00");
+        }
+
+        @Test
+        @DisplayName("Should update both extra minutes and add-ons together (BR-OL-06)")
+        void update_ShouldUpdateExtraMinutesAndAddOnsTogether() {
+            // Given
+            com.himotech.laundryms.api.dto.request.AddOnInput addOn = 
+                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            addOn.setName("Conditioner");
+            addOn.setPrice(new BigDecimal("25.00"));
+            addOn.setQuantity(1);
+
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(15);
+            request.setAddOns(List.of(addOn));
+
+            // When
+            Order result = orderService.update(1L, request);
+
+            // Then
+            assertThat(result.getExtraMinutes()).isEqualTo(15);
+            assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("15.00");
+            assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("25.00");
+            // baseAmount=240 + extraMinutes=15 + addons=25 = 280
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("280.00");
+        }
+
+        @Test
+        @DisplayName("Should reject update when order is already paid (BR-OL-06)")
+        void update_ShouldReject_WhenOrderAlreadyPaid() {
+            // Given - order is paid
+            existingOrder.setPaymentStatus(PaymentStatus.PAID);
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(10);
+
+            // When/Then
+            assertThatThrownBy(() -> orderService.update(1L, request))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Cannot update order: already paid");
+            verify(orderRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should reject update when order is already released (BR-OL-06)")
+        void update_ShouldReject_WhenOrderAlreadyReleased() {
+            // Given - order is released
+            existingOrder.setCurrentStatus(OrderStatus.RELEASED);
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(10);
+
+            // When/Then
+            assertThatThrownBy(() -> orderService.update(1L, request))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Cannot update order: already released");
+            verify(orderRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should reject when extra minutes is negative (BR-OL-06)")
+        void update_ShouldReject_WhenExtraMinutesNegative() {
+            // Given
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(-5);
+
+            // When/Then
+            assertThatThrownBy(() -> orderService.update(1L, request))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Extra minutes cannot be negative");
+            verify(orderRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should allow updating extra minutes to zero (BR-OL-06)")
+        void update_ShouldAllowZeroExtraMinutes() {
+            // Given - reduce extra minutes to 0
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(0);
+
+            // When
+            Order result = orderService.update(1L, request);
+
+            // Then
+            assertThat(result.getExtraMinutes()).isEqualTo(0);
+            assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+            // baseAmount=240 + extraMinutes=0 + addons=0 = 240
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("240.00");
+        }
+
+        @Test
+        @DisplayName("Should handle null extra minutes (keep existing value) (BR-OL-06)")
+        void update_ShouldKeepExistingExtraMinutes_WhenNotProvided() {
+            // Given - don't update extra minutes
+            com.himotech.laundryms.api.dto.request.AddOnInput addOn = 
+                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            addOn.setName("Test");
+            addOn.setPrice(new BigDecimal("10.00"));
+            addOn.setQuantity(1);
+
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(null);
+            request.setAddOns(List.of(addOn));
+
+            // When
+            Order result = orderService.update(1L, request);
+
+            // Then - extra minutes stays at 5
+            assertThat(result.getExtraMinutes()).isEqualTo(5);
+            assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("5.00");
+            assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("10.00");
+            // baseAmount=240 + extraMinutes=5 + addons=10 = 255
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("255.00");
+        }
+
+        @Test
+        @DisplayName("Should keep existing add-ons when null add-ons list provided (BR-OL-06)")
+        void update_ShouldKeepExistingAddOns_WhenNullAddOnsProvided() {
+            // Given - order has existing add-ons
+            existingOrder.getAddOns().add(
+                com.himotech.laundryms.orders.entity.OrderAddOn.builder()
+                    .order(existingOrder)
+                    .name("Existing AddOn")
+                    .price(new BigDecimal("30.00"))
+                    .quantity(1)
+                    .build()
+            );
+            existingOrder.setAddonsTotalAmount(new BigDecimal("30.00"));
+            existingOrder.setGrandTotal(new BigDecimal("275.00")); // 240 + 5 + 30
+
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(10);
+            request.setAddOns(null); // Don't update add-ons
+
+            // When
+            Order result = orderService.update(1L, request);
+
+            // Then - add-ons remain
+            assertThat(result.getAddOns()).hasSize(1);
+            assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("30.00");
+            assertThat(result.getExtraMinutes()).isEqualTo(10);
+            // baseAmount=240 + extraMinutes=10 + addons=30 = 280
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("280.00");
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when order does not exist (BR-OL-06)")
+        void update_ShouldThrow_WhenOrderNotFound() {
+            // Given
+            when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
+                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            request.setExtraMinutes(10);
+
+            // When/Then
+            assertThatThrownBy(() -> orderService.update(999L, request))
+                    .isInstanceOf(NotFoundException.class)
+                    .hasMessageContaining("Order not found: 999");
+            verify(orderRepository, never()).save(any());
+        }
+    }
 }
