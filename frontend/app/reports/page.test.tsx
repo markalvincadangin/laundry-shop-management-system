@@ -11,6 +11,8 @@ import ReportsPage from "./page";
 vi.mock("@/lib/api/reports", () => ({
   reportsApi: {
     getDailySales: vi.fn(),
+    getMonthlySales: vi.fn(),
+    getYearlySales: vi.fn(),
   },
 }));
 
@@ -26,11 +28,9 @@ describe("ReportsPage", () => {
 
     render(<ReportsPage />);
 
-    expect(screen.getByRole("heading", { name: /daily sales report/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /sales reports/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/^date$/i)).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /refresh/i })).toBeInTheDocument();
-    });
+    expect(screen.getByRole("button", { name: /daily/i })).toBeInTheDocument();
   });
 
   it("fetches report on mount and displays data", async () => {
@@ -74,10 +74,6 @@ describe("ReportsPage", () => {
       expect(reportsApi.getDailySales).toHaveBeenCalled();
     });
 
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /refresh/i })).toBeInTheDocument();
-    });
-
     const dateInput = screen.getByLabelText(/^date$/i);
     fireEvent.change(dateInput, { target: { value: "2025-02-16" } });
 
@@ -94,7 +90,7 @@ describe("ReportsPage", () => {
     render(<ReportsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to load report/i)).toBeInTheDocument();
+      expect(screen.getByText(/network error|failed to load report/i)).toBeInTheDocument();
     });
   });
 
@@ -109,7 +105,7 @@ describe("ReportsPage", () => {
     render(<ReportsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/last 7 days — sales trend/i)).toBeInTheDocument();
+      expect(screen.getByText(/last 7 days/i)).toBeInTheDocument();
     });
     const skeleton = document.querySelector(".animate-pulse");
     expect(skeleton).toBeInTheDocument();

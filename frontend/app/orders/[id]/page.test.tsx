@@ -66,10 +66,10 @@ describe("OrderDetailPage", () => {
     render(<OrderDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/update status/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /move to washing/i })).toBeInTheDocument();
     });
 
-    const statusButtons = screen.getAllByRole("button", { name: /→ (washing|cancelled)/i });
+    const statusButtons = screen.getAllByRole("button", { name: /move to washing|cancel order/i });
     expect(statusButtons.length).toBeGreaterThan(0);
     statusButtons.forEach((btn) => {
       expect(btn).toHaveClass("min-h-[44px]");
@@ -86,10 +86,10 @@ describe("OrderDetailPage", () => {
     render(<OrderDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /→ washing/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /move to washing/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /→ washing/i }));
+    fireEvent.click(screen.getByRole("button", { name: /move to washing/i }));
 
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith("Status updated successfully");
@@ -103,10 +103,10 @@ describe("OrderDetailPage", () => {
     render(<OrderDetailPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /→ washing/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /move to washing/i })).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /→ washing/i }));
+    fireEvent.click(screen.getByRole("button", { name: /move to washing/i }));
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalled();

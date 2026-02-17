@@ -51,21 +51,20 @@ describe("PayOrderPage", () => {
     });
   });
 
-  it("submits payment and redirects on success", async () => {
-    mockPush.mockClear();
+  it("submits payment and shows success screen", async () => {
     vi.mocked(paymentsApi.create).mockResolvedValue({} as never);
 
     render(<PayOrderPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /record payment/i })).toBeEnabled();
+      expect(screen.getByRole("button", { name: /confirm payment/i })).toBeEnabled();
     });
 
-    const form = screen.getByRole("button", { name: /record payment/i }).closest("form");
+    const form = screen.getByRole("button", { name: /confirm payment/i }).closest("form");
     if (form) {
       fireEvent.submit(form);
     } else {
-      fireEvent.click(screen.getByRole("button", { name: /record payment/i }));
+      fireEvent.click(screen.getByRole("button", { name: /confirm payment/i }));
     }
 
     await waitFor(() => {
@@ -76,7 +75,8 @@ describe("PayOrderPage", () => {
           receivedByUserId: "staff-1",
         })
       );
-      expect(mockPush).toHaveBeenCalledWith("/orders/1");
+      expect(screen.getByText(/payment recorded/i)).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /done/i })).toHaveAttribute("href", "/orders/1");
     });
   });
 });

@@ -69,6 +69,18 @@
 
 ---
 
+### BR-PR-05 – Owner Controls Service Rates
+
+**Rule:** The **Owner** MUST be able to update service rates (base price per load, kg limit, price per extra minute) without code changes.  
+**Condition:** Owner requests rate update.  
+**System Behavior:** Allow PATCH on service rates; apply to new orders only. Existing orders retain snapshot pricing.  
+**Constraint:** Owner role only; changes do not affect already-created orders.  
+**Applies To:** Service rates management  
+**Enforcement:** Backend service with role-based access (OWNER)  
+**Supports User Stories:** Owner pricing control (client interview)
+
+---
+
 ## 2. Order Lifecycle Rules
 
 ### BR-OL-01 – Order Must Have a Unique Reference Number
@@ -131,13 +143,25 @@
 
 ### BR-OL-05 – Release Preconditions
 
-**Rule:** An order can only be released if its status is **Ready for Pickup**.  
+**Rule:** An order can only be released if (1) its status is **Ready for Pickup**, and (2) payment has been recorded (**Paid**).  
 **Condition:** Release action requested.  
-**System Behavior:** Validate status; allow release only if Ready for Pickup.  
-**Constraint:** Reject release if not ready.  
+**System Behavior:** Validate status and payment; allow release only if Ready for Pickup and Paid.  
+**Constraint:** Reject release if not ready or if unpaid. Payment is collected upon pickup (see [BR-PAY-01](#br-pay-01--payment-timing)); release must follow payment.  
 **Applies To:** Release action  
 **Enforcement:** Backend service  
-**Supports User Stories:** [US-05](user-stories.md#us-05-verify-laundry-before-release)
+**Supports User Stories:** [US-05](user-stories.md#us-05-verify-laundry-before-release), [US-06](user-stories.md#us-06-record-payment-for-laundry-order)
+
+---
+
+### BR-OL-06 – Order Edit (Extra Minutes, Add-ons)
+
+**Rule:** Staff or Owner MAY edit an order's **extra minutes** and **add-ons** when the order is **unpaid** and **not released**.  
+**Condition:** Edit requested during processing (e.g. extended washing due to excessive dirt).  
+**System Behavior:** Recalculate extra_minutes_amount, addons_total_amount, grand_total using order's snapshot pricing. Reject edit if paid or released.  
+**Constraint:** Weight and base amount are immutable after creation.  
+**Applies To:** Order update (PATCH)  
+**Enforcement:** Backend service  
+**Supports User Stories:** [US-03](user-stories.md#us-03-update-laundry-order-status), Client interview Q9 (extra charge for extended washing)
 
 ---
 
@@ -246,8 +270,8 @@
 ## 6. MVP Enforcement Checklist
 
 **Required for MVP:**
-- BR-PR-01, BR-PR-02, BR-PR-03
-- BR-OL-01, BR-OL-02, BR-OL-03, BR-OL-05
+- BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-05
+- BR-OL-01, BR-OL-02, BR-OL-03, BR-OL-05, BR-OL-06
 - BR-PAY-02, BR-PAY-03, BR-PAY-04
 - BR-NOTIF-02 (tracking by reference)
 

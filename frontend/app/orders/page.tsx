@@ -8,12 +8,16 @@ import {
   ordersApi,
   type OrderResponse,
   type OrderListParams,
+  type OrderStatsResponse,
 } from "@/lib/api/orders";
+import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { StatCard } from "@/components/ui/StatCard";
 import { TableSkeleton } from "@/components/ui/TableSkeleton";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
+  const [stats, setStats] = useState<OrderStatsResponse | null>(null);
   const [page, setPage] = useState(0);
   const [size] = useState(20);
   const [totalPages, setTotalPages] = useState(0);
@@ -22,6 +26,11 @@ export default function OrdersPage() {
   const [appliedFilters, setAppliedFilters] = useState<OrderListParams>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchStats = useCallback(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    ordersApi.getStats(today).then(setStats).catch(() => setStats(null));
+  }, []);
 
   const fetchOrders = useCallback(() => {
     setLoading(true);
@@ -45,6 +54,10 @@ export default function OrdersPage() {
     fetchOrders();
   }, [fetchOrders]);
 
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
   const handleFilterChange = (key: keyof OrderListParams, value: unknown) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
@@ -61,7 +74,7 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold text-slate-800">Orders</h1>
           <Link
             href="/orders/new"
-            className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            className="rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600"
           >
             New Order
           </Link>
@@ -81,23 +94,44 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Orders</h1>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold text-neutral-text-primary">Orders</h1>
         <Link
           href="/orders/new"
-          className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600"
         >
-          New Order
+          + New Order
         </Link>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      {stats && (
+        <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <StatCard title="Today's Orders" value={stats.todaysOrders} />
+          <StatCard
+            title="In Progress"
+            value={stats.inProgress}
+            subtitle="Washing / Drying / Folding"
+          />
+          <StatCard
+            title="Ready for Pickup"
+            value={stats.readyForPickup}
+            variant="accent"
+          />
+          <StatCard
+            title="Unpaid Orders"
+            value={stats.unpaidOrders}
+            variant="warning"
+          />
+        </div>
+      )}
+
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-neutral-border bg-slate-50 p-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-600">
+          <label className="mb-1 block text-xs font-medium text-neutral-text-secondary">
             Status
           </label>
           <select
-            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded border border-neutral-border px-2 py-1.5 text-sm"
             value={filters.status ?? ""}
             onChange={(e) =>
               handleFilterChange("status", e.target.value || undefined)
@@ -107,17 +141,18 @@ export default function OrdersPage() {
             <option value="RECEIVED">Received</option>
             <option value="WASHING">Washing</option>
             <option value="DRYING">Drying</option>
-            <option value="READY">Ready</option>
-            <option value="COMPLETED">Completed</option>
+            <option value="FOLDING">Folding</option>
+            <option value="READY_FOR_PICKUP">Ready for Pickup</option>
+            <option value="RELEASED">Released</option>
             <option value="CANCELLED">Cancelled</option>
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-600">
+          <label className="mb-1 block text-xs font-medium text-neutral-text-secondary">
             Payment
           </label>
           <select
-            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded border border-neutral-border px-2 py-1.5 text-sm"
             value={filters.paymentStatus ?? ""}
             onChange={(e) =>
               handleFilterChange("paymentStatus", e.target.value || undefined)
@@ -129,23 +164,23 @@ export default function OrdersPage() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-600">
+          <label className="mb-1 block text-xs font-medium text-neutral-text-secondary">
             From
           </label>
           <input
             type="date"
-            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded border border-neutral-border px-2 py-1.5 text-sm"
             value={filters.from ?? ""}
             onChange={(e) => handleFilterChange("from", e.target.value || undefined)}
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-600">
+          <label className="mb-1 block text-xs font-medium text-neutral-text-secondary">
             To
           </label>
           <input
             type="date"
-            className="rounded border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded border border-neutral-border px-2 py-1.5 text-sm"
             value={filters.to ?? ""}
             onChange={(e) => handleFilterChange("to", e.target.value || undefined)}
           />
@@ -161,27 +196,36 @@ export default function OrdersPage() {
 
       {orders.length === 0 ? (
         <EmptyState
-          title="No orders yet"
-          description="Create your first order to get started."
+          title="No orders yet today"
+          description="Tap + New Order to get started."
+          action={
+            <Link
+              href="/orders/new"
+              className="inline-flex min-h-[44px] items-center rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600"
+            >
+              + New Order
+            </Link>
+          }
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="min-w-[640px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Reference
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Payment
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Total
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Actions
                 </th>
               </tr>
@@ -192,10 +236,10 @@ export default function OrdersPage() {
                   <td className="whitespace-nowrap px-4 py-3 font-mono text-sm text-slate-800">
                     {order.referenceNumber}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
-                    {order.currentStatus}
+                  <td className="px-4 py-3">
+                    <OrderStatusBadge status={order.currentStatus ?? ""} />
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
+                  <td className="px-4 py-3 text-sm text-neutral-text-secondary">
                     {order.paymentStatus}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-medium text-slate-800">
@@ -204,7 +248,7 @@ export default function OrdersPage() {
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <Link
                       href={`/orders/${order.id}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-primary-600 hover:underline"
                     >
                       View
                     </Link>
@@ -213,12 +257,13 @@ export default function OrdersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {totalPages > 1 && (
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-neutral-text-secondary">
             Showing {page * size + 1}–{Math.min((page + 1) * size, totalElements)}{" "}
             of {totalElements}
           </p>
@@ -227,7 +272,7 @@ export default function OrdersPage() {
               type="button"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0 || loading}
-              className="rounded border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
+              className="rounded border border-neutral-border px-3 py-1 text-sm disabled:opacity-50"
             >
               Previous
             </button>
@@ -235,7 +280,7 @@ export default function OrdersPage() {
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1 || loading}
-              className="rounded border border-slate-300 px-3 py-1 text-sm disabled:opacity-50"
+              className="rounded border border-neutral-border px-3 py-1 text-sm disabled:opacity-50"
             >
               Next
             </button>

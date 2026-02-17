@@ -28,6 +28,12 @@ const mockOrder = (overrides: Partial<OrderResponse> = {}): OrderResponse =>
 vi.mock("@/lib/api/orders", () => ({
   ordersApi: {
     list: vi.fn(),
+    getStats: vi.fn().mockResolvedValue({
+      todaysOrders: 0,
+      inProgress: 0,
+      readyForPickup: 0,
+      unpaidOrders: 0,
+    }),
   },
 }));
 
@@ -92,7 +98,7 @@ describe("OrdersPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("LDR-20260213-1234")).toBeInTheDocument();
-      expect(screen.getByText("RECEIVED")).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: /received/i })).toBeInTheDocument();
       expect(screen.getByText("UNPAID")).toBeInTheDocument();
       expect(screen.getByText(/₱150\.00/)).toBeInTheDocument();
       expect(screen.getByRole("link", { name: /view/i })).toHaveAttribute("href", "/orders/1");
@@ -146,8 +152,8 @@ describe("OrdersPage", () => {
     render(<OrdersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No orders yet")).toBeInTheDocument();
-      expect(screen.getByText(/create your first order to get started/i)).toBeInTheDocument();
+      expect(screen.getByText(/no orders yet today/i)).toBeInTheDocument();
+      expect(screen.getByText(/tap \+ new order to get started/i)).toBeInTheDocument();
     });
   });
 

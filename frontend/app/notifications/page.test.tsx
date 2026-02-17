@@ -74,13 +74,4 @@ describe("NotificationsPage", () => {
     });
   });
 
-  it("shows BR-NOTIF-01 description", async () => {
-    vi.mocked(notificationsApi.list).mockResolvedValue([]);
-
-    render(<NotificationsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/BR-NOTIF-01/)).toBeInTheDocument();
-    });
-  });
 });

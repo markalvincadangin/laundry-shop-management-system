@@ -38,7 +38,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold text-slate-800">
+        <h1 className="mb-6 text-2xl font-bold text-neutral-text-primary">
           Notifications
         </h1>
         <TableSkeleton rows={5} cols={6} />
@@ -55,44 +55,41 @@ export default function NotificationsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Notifications</h1>
+        <h1 className="text-2xl font-bold text-neutral-text-primary">Notifications</h1>
         <Link
           href="/orders"
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-lg border border-neutral-border bg-white px-4 py-2 font-medium text-neutral-text-primary hover:bg-slate-50"
         >
           Back to Orders
         </Link>
       </div>
-      <p className="mb-6 text-slate-600">
-        Notifications are created when orders reach Ready for Pickup (BR-NOTIF-01).
-      </p>
-
       {notifications.length === 0 ? (
         <EmptyState
           title="No notifications yet"
           description="Notifications appear when orders reach Ready for Pickup."
         />
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-slate-200">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="min-w-[640px] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Reference
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Message
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Created
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-600">
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-neutral-text-secondary">
                   Actions
                 </th>
               </tr>
@@ -100,13 +97,13 @@ export default function NotificationsPage() {
             <tbody className="divide-y divide-slate-200 bg-white">
               {notifications.map((n) => (
                 <tr key={n.id} className="hover:bg-slate-50">
-                  <td className="whitespace-nowrap px-4 py-3 font-mono text-sm text-slate-800">
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-sm text-neutral-text-primary">
                     {n.referenceNumber}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600">
+                  <td className="px-4 py-3 text-sm text-neutral-text-secondary">
                     {n.customerName ?? "—"}
                   </td>
-                  <td className="max-w-xs truncate px-4 py-3 text-sm text-slate-600">
+                  <td className="max-w-xs truncate px-4 py-3 text-sm text-neutral-text-secondary">
                     {n.message}
                   </td>
                   <td className="px-4 py-3">
@@ -118,7 +115,7 @@ export default function NotificationsPage() {
                       {n.status}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-500">
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-neutral-text-secondary">
                     {n.createdAt
                       ? new Date(n.createdAt).toLocaleString()
                       : "—"}
@@ -127,7 +124,7 @@ export default function NotificationsPage() {
                     {n.orderId && (
                       <Link
                         href={`/orders/${n.orderId}`}
-                        className="text-blue-600 hover:underline"
+                        className="text-primary-600 hover:underline"
                       >
                         View Order
                       </Link>
@@ -137,6 +134,7 @@ export default function NotificationsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

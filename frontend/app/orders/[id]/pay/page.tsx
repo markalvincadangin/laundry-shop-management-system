@@ -8,15 +8,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
 import { ordersApi } from "@/lib/api/orders";
 import { paymentsApi } from "@/lib/api/payments";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
+import type { OrderResponse } from "@/lib/api/orders";
 
 export default function PayOrderPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = Number(params.id);
-  const [order, setOrder] = useState<{ grandTotal: number } | null>(null);
+  const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState<{
+    referenceNumber: string;
+    amount: number;
+  } | null>(null);
   const { user } = useAuth();
   const staffUserId = user?.userId ?? null;
   const [amountPaid, setAmountPaid] = useState("");
@@ -46,6 +52,17 @@ export default function PayOrderPage() {
     }
   }, [order?.grandTotal]);
 
+  const amountNum = parseFloat(amountPaid);
+  const amountMatches =
+    order?.grandTotal != null &&
+    !isNaN(amountNum) &&
+    Math.abs(amountNum - order.grandTotal) < 0.01;
+  const amountInvalid =
+    !isNaN(amountNum) &&
+    amountNum > 0 &&
+    order?.grandTotal != null &&
+    !amountMatches;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -58,6 +75,10 @@ export default function PayOrderPage() {
       setError("Amount must be greater than 0");
       return;
     }
+    if (order && Math.abs(amount - order.grandTotal) >= 0.01) {
+      setError(`Amount must match order total (₱${order.grandTotal.toFixed(2)})`);
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -67,8 +88,11 @@ export default function PayOrderPage() {
         receivedByUserId: staffUserId,
         paymentMethod,
       });
+      setPaymentSuccess({
+        referenceNumber: order?.referenceNumber ?? "",
+        amount,
+      });
       toast.success("Payment recorded successfully");
-      router.push(`/orders/${orderId}`);
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Failed to record payment";
       setError(msg);
@@ -79,70 +103,132 @@ export default function PayOrderPage() {
   };
 
   if (loading) {
-    return <div className="text-slate-600">Loading order…</div>;
+    return <CardSkeleton />;
   }
 
   if (error && !order) {
     return (
       <div className="rounded-lg bg-red-50 p-4 text-red-700">
         {error}
-        <Link href="/orders" className="ml-4 text-blue-600 hover:underline">
+        <Link href="/orders" className="ml-4 text-primary-500 hover:underline">
           Back to Orders
         </Link>
       </div>
     );
   }
 
+  if (paymentSuccess) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-lg border border-success-600/30 bg-success-50/30 p-8">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-600 text-2xl text-white">
+            ✓
+          </div>
+          <h2 className="text-xl font-bold text-neutral-text-primary">
+            Payment Recorded
+          </h2>
+          <p className="mt-2 font-mono text-lg text-neutral-text-secondary">
+            {paymentSuccess.referenceNumber}
+          </p>
+          <p className="mt-2 text-2xl font-bold text-success-600">
+            ₱{paymentSuccess.amount.toFixed(2)}
+          </p>
+          <p className="mt-1 text-sm text-neutral-text-secondary">
+            Thank you for your payment.
+          </p>
+          <Link
+            href={`/orders/${orderId}`}
+            className="mt-6 inline-flex min-h-[44px] items-center rounded-lg bg-primary-500 px-6 py-2 font-medium text-white hover:bg-primary-600"
+          >
+            Done
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold text-slate-800">
-        Record Payment
+    <div className="max-w-md">
+      <h1 className="mb-6 text-2xl font-bold text-neutral-text-primary">
+        Recording Payment for Order #{order?.referenceNumber ?? orderId}
       </h1>
 
       {order && (
-        <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm text-slate-600">Order total</p>
-          <p className="text-2xl font-bold text-slate-800">
-            ₱{order.grandTotal.toFixed(2)}
+        <div className="mb-6 rounded-lg border border-neutral-border bg-white p-4 shadow-sm">
+          <h2 className="mb-3 font-semibold text-neutral-text-primary">
+            Order Summary
+          </h2>
+          <p className="text-sm text-neutral-text-secondary">
+            Grand Total: ₱{order.grandTotal.toFixed(2)}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Amount must match order total (validation from API)
+          <p className="mt-1 text-sm text-neutral-text-secondary">
+            Status: {order.currentStatus}
           </p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="max-w-md space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-50 p-4 text-red-700">{error}</div>
+          <div
+            className="rounded-lg bg-red-50 p-4 text-red-700"
+            role="alert"
+          >
+            {error}
+          </div>
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Amount paid (₱) *
+          <label
+            htmlFor="amount-paid"
+            className="mb-1 block text-sm font-medium text-neutral-text-primary"
+          >
+            Amount Received (₱) *
           </label>
           <input
+            id="amount-paid"
             type="number"
             step="0.01"
             min="0.01"
             required
             value={amountPaid}
             onChange={(e) => setAmountPaid(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className={`w-full rounded-lg border px-3 py-2 ${
+              amountInvalid
+                ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500/20"
+                : amountMatches
+                  ? "border-success-600 bg-success-50/50 focus:border-success-600 focus:ring-success-500/20"
+                  : "border-neutral-border focus:border-primary-500 focus:ring-primary-500/20"
+            }`}
+            aria-invalid={amountInvalid}
+            aria-describedby={amountInvalid ? "amount-error" : undefined}
           />
+          {amountInvalid && (
+            <p
+              id="amount-error"
+              className="mt-1 text-sm text-red-600"
+              role="alert"
+            >
+              Amount must match order total (₱{order?.grandTotal.toFixed(2)})
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label
+            htmlFor="payment-method"
+            className="mb-1 block text-sm font-medium text-neutral-text-primary"
+          >
             Payment method
           </label>
           <select
+            id="payment-method"
             value={paymentMethod}
             onChange={(e) =>
               setPaymentMethod(
                 e.target.value as "CASH" | "GCASH" | "BANK_TRANSFER"
               )
             }
-            className="w-full rounded-lg border border-slate-300 px-3 py-2"
+            className="w-full rounded-lg border border-neutral-border px-3 py-2"
           >
             <option value="CASH">Cash</option>
             <option value="GCASH">GCash</option>
@@ -153,14 +239,21 @@ export default function PayOrderPage() {
         <div className="flex gap-4">
           <button
             type="submit"
-            disabled={submitting || !staffUserId}
-            className="rounded-lg bg-green-600 px-6 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            disabled={submitting || !staffUserId || amountInvalid}
+            className="min-h-[44px] rounded-lg bg-success-600 px-6 py-2 font-medium text-white hover:bg-success-600/90 disabled:opacity-50"
           >
-            {submitting ? "Recording…" : "Record Payment"}
+            {submitting ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Recording…
+              </span>
+            ) : (
+              "Confirm Payment"
+            )}
           </button>
           <Link
             href={`/orders/${orderId}`}
-            className="rounded-lg border border-slate-300 bg-white px-6 py-2 font-medium text-slate-700 hover:bg-slate-50"
+            className="min-h-[44px] rounded-lg border border-neutral-border bg-white px-6 py-2 font-medium text-neutral-text-primary hover:bg-slate-50"
           >
             Cancel
           </Link>
