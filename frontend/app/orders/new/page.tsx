@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
 import { customersApi, type CustomerResponse } from "@/lib/api/customers";
@@ -103,11 +104,12 @@ export default function NewOrderPage() {
         }
 
         const order = await ordersApi.create(body);
+        toast.success("Order created successfully");
         router.push(`/orders/${order.id}`);
       } catch (err) {
-        setError(
-          err instanceof ApiError ? err.message : "Failed to create order"
-        );
+        const msg = err instanceof ApiError ? err.message : "Failed to create order";
+        setError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }

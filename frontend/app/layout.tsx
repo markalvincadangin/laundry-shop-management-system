@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Toaster } from "sonner";
 import { AuthGuard } from "@/components/AuthGuard";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Nav } from "@/components/Nav";
@@ -23,6 +24,7 @@ export default function RootLayout({
             <AuthGuard>{children}</AuthGuard>
           </main>
         </AuthProvider>
+        <Toaster position="top-right" richColors closeButton />
       </body>
     </html>
   );

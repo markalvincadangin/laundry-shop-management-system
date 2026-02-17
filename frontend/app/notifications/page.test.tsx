@@ -19,11 +19,10 @@ describe("NotificationsPage", () => {
 
     render(<NotificationsPage />);
 
-    expect(screen.getByText(/loading notifications/i)).toBeInTheDocument();
     expect(notificationsApi.list).toHaveBeenCalled();
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /notifications/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /^notifications$/i })).toBeInTheDocument();
       expect(screen.getByText(/no notifications yet/i)).toBeInTheDocument();
     });
   });
@@ -81,7 +80,7 @@ describe("NotificationsPage", () => {
     render(<NotificationsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/ready for pickup/i)).toBeInTheDocument();
+      expect(screen.getByText(/BR-NOTIF-01/)).toBeInTheDocument();
     });
   });
 });

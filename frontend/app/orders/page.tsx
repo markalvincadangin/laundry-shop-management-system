@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ApiError } from "@/lib/api/client";
 import {
   ordersApi,
   type OrderResponse,
   type OrderListParams,
 } from "@/lib/api/orders";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { TableSkeleton } from "@/components/ui/TableSkeleton";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
@@ -31,9 +34,9 @@ export default function OrdersPage() {
         setTotalElements(res.totalElements);
       })
       .catch((err) => {
-        setError(
-          err instanceof ApiError ? err.message : "Failed to load orders"
-        );
+        const msg = err instanceof ApiError ? err.message : "Failed to load orders";
+        setError(msg);
+        toast.error(msg);
       })
       .finally(() => setLoading(false));
   }, [page, size, appliedFilters]);
@@ -53,7 +56,18 @@ export default function OrdersPage() {
 
   if (loading && orders.length === 0) {
     return (
-      <div className="text-slate-600">Loading orders…</div>
+      <div>
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-800">Orders</h1>
+          <Link
+            href="/orders/new"
+            className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+          >
+            New Order
+          </Link>
+        </div>
+        <TableSkeleton rows={8} cols={5} />
+      </div>
     );
   }
 
@@ -146,7 +160,10 @@ export default function OrdersPage() {
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-slate-600">No orders yet.</p>
+        <EmptyState
+          title="No orders yet"
+          description="Create your first order to get started."
+        />
       ) : (
         <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full divide-y divide-slate-200">

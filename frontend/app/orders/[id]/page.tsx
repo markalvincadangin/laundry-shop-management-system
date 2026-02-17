@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -66,7 +67,6 @@ function StatusTimeline({ logs }: { logs: OrderStatusLogResponse[] }) {
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const orderId = Number(params.id);
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,11 +99,12 @@ export default function OrderDetailPage() {
         newStatus: newStatus as OrderResponse["currentStatus"],
         changedByUserId: staffUserId,
       });
+      toast.success("Status updated successfully");
       fetchOrder();
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to update status"
-      );
+      const msg = err instanceof ApiError ? err.message : "Failed to update status";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setUpdating(false);
     }
@@ -129,7 +130,7 @@ export default function OrderDetailPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between no-print">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
             Order {order.referenceNumber}
@@ -158,7 +159,13 @@ export default function OrderDetailPage() {
       </div>
 
       <div className="space-y-6">
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="print-receipt rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 text-center">
+            <p className="font-bold text-slate-800">Faith Laundry Shop</p>
+            <p className="text-sm font-mono text-slate-600">
+              {order.referenceNumber}
+            </p>
+          </div>
           <h2 className="mb-3 font-semibold text-slate-800">Order Details</h2>
           <dl className="grid gap-2 sm:grid-cols-2">
             <div>
@@ -198,13 +205,13 @@ export default function OrderDetailPage() {
           </dl>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm no-print">
           <h2 className="mb-3 font-semibold text-slate-800">Status Timeline</h2>
           <StatusTimeline logs={order.statusLogs ?? []} />
         </div>
 
         {canUpdateStatus && staffUserId && (
-          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="no-print rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-3 font-semibold text-slate-800">
               Update Status
             </h2>
@@ -214,7 +221,7 @@ export default function OrderDetailPage() {
                   key={status}
                   onClick={() => updateStatus(status)}
                   disabled={updating}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="min-h-[44px] min-w-[44px] touch-manipulation rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 sm:min-h-0 sm:min-w-0"
                 >
                   → {STATUS_LABELS[status] ?? status}
                 </button>

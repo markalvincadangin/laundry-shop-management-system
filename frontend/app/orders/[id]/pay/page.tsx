@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api/client";
 import { ordersApi } from "@/lib/api/orders";
@@ -66,11 +67,12 @@ export default function PayOrderPage() {
         receivedByUserId: staffUserId,
         paymentMethod,
       });
+      toast.success("Payment recorded successfully");
       router.push(`/orders/${orderId}`);
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to record payment"
-      );
+      const msg = err instanceof ApiError ? err.message : "Failed to record payment";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

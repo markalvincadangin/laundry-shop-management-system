@@ -1,9 +1,11 @@
 /**
  * Phase 11 — Orders page tests (pagination, filters).
+ * Phase 12 — Skeleton, EmptyState, toast.
  */
 
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
 import { ordersApi, type OrderResponse } from "@/lib/api/orders";
 import OrdersPage from "./page";
 
@@ -104,6 +106,48 @@ describe("OrdersPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/failed to load orders/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows toast.error when API fails (Phase 12)", async () => {
+    vi.mocked(ordersApi.list).mockRejectedValue(new Error("Network error"));
+
+    render(<OrdersPage />);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalled();
+    });
+  });
+
+  it("shows TableSkeleton while loading (Phase 12)", () => {
+    let resolve: (v: unknown) => void;
+    const promise = new Promise((r) => {
+      resolve = r;
+    });
+    vi.mocked(ordersApi.list).mockReturnValue(promise as never);
+
+    render(<OrdersPage />);
+
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("table").querySelectorAll("tr").length).toBeGreaterThan(1);
+  });
+
+  it("shows EmptyState when no orders (Phase 12)", async () => {
+    vi.mocked(ordersApi.list).mockResolvedValue({
+      content: [],
+      page: 0,
+      size: 20,
+      totalElements: 0,
+      totalPages: 0,
+      first: true,
+      last: true,
+    });
+
+    render(<OrdersPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText("No orders yet")).toBeInTheDocument();
+      expect(screen.getByText(/create your first order to get started/i)).toBeInTheDocument();
     });
   });
 
