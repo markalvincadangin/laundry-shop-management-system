@@ -3,6 +3,7 @@ package com.himotech.laundryms.payments.repository;
 import com.himotech.laundryms.payments.entity.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,13 +37,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Query("SELECT COUNT(p) FROM Payment p WHERE p.paymentDate >= :from AND p.paymentDate < :to")
     long countByPaymentDateBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
+    @EntityGraph(attributePaths = {"order", "order.customer", "receivedBy"})
     @Query(value = "SELECT p FROM Payment p " +
-            "LEFT JOIN FETCH p.order o LEFT JOIN FETCH o.customer " +
-            "WHERE (:orderId IS NULL OR p.order.id = :orderId) AND " +
-            "p.paymentDate >= :fromTs AND p.paymentDate < :toTs",
+            "WHERE (CAST(:orderId AS long) IS NULL OR p.order.id = :orderId) AND " +
+            "( CAST(:fromTs AS timestamp) IS NULL OR p.paymentDate >= :fromTs) AND " +
+            "(CAST(:toTs AS timestamp) IS NULL OR p.paymentDate < :toTs)",
             countQuery = "SELECT COUNT(p) FROM Payment p WHERE " +
-            "(:orderId IS NULL OR p.order.id = :orderId) AND " +
-            "p.paymentDate >= :fromTs AND p.paymentDate < :toTs")
+            "(CAST(:orderId AS long) IS NULL OR p.order.id = :orderId) AND " +
+            "(CAST(:fromTs AS timestamp) IS NULL OR p.paymentDate >= :fromTs) AND " +
+            "(CAST(:toTs AS timestamp) IS NULL OR p.paymentDate < :toTs)")
     Page<Payment> findAllFiltered(
             @Param("orderId") Long orderId,
             @Param("fromTs") LocalDateTime fromTs,

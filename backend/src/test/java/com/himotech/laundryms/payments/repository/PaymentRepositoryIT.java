@@ -12,10 +12,14 @@ import com.himotech.laundryms.testcontainers.AbstractIntegrationTest;
 import com.himotech.laundryms.users.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -293,6 +297,291 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         })
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("violates foreign key constraint");
+    }
+
+    @Nested
+    @DisplayName("findAllFiltered - Date Range and Pagination Tests")
+    class FindAllFilteredTests {
+
+        private Order order1, order2, order3;
+        private Payment payment1, payment2, payment3;
+        private LocalDateTime baseTime;
+
+        @BeforeEach
+        void setUpPayments() {
+            baseTime = LocalDateTime.of(2026, 2, 15, 10, 0);
+
+            // Create additional customers and orders
+            Customer customer1 = Customer.builder()
+                    .firstName("Alice")
+                    .lastName("Smith")
+                    .contactNumber("09171111111")
+                    .build();
+            customer1 = entityManager.persist(customer1);
+
+            Customer customer2 = Customer.builder()
+                    .firstName("Bob")
+                    .lastName("Jones")
+                    .contactNumber("09172222222")
+                    .build();
+            customer2 = entityManager.persist(customer2);
+
+            ServiceRate rate = entityManager.find(ServiceRate.class, testOrder.getServiceRate().getId());
+
+            order1 = Order.builder()
+                    .referenceNumber("REF-FILTER-001")
+                    .customer(customer1)
+                    .createdBy(testUser)
+                    .serviceRate(rate)
+                    .weightKg(new BigDecimal("5.00"))
+                    .totalLoads(1)
+                    .basePricePerLoad(new BigDecimal("120.00"))
+                    .kgLimitPerLoad(new BigDecimal("8.00"))
+                    .pricePerExtraMinute(new BigDecimal("1.00"))
+                    .extraMinutes(0)
+                    .baseAmount(new BigDecimal("120.00"))
+                    .extraMinutesAmount(BigDecimal.ZERO)
+                    .addonsTotalAmount(BigDecimal.ZERO)
+                    .grandTotal(new BigDecimal("120.00"))
+                    .currentStatus(OrderStatus.RECEIVED)
+                    .paymentStatus(PaymentStatus.PAID)
+                    .build();
+            order1 = entityManager.persist(order1);
+
+            order2 = Order.builder()
+                    .referenceNumber("REF-FILTER-002")
+                    .customer(customer2)
+                    .createdBy(testUser)
+                    .serviceRate(rate)
+                    .weightKg(new BigDecimal("10.00"))
+                    .totalLoads(2)
+                    .basePricePerLoad(new BigDecimal("120.00"))
+                    .kgLimitPerLoad(new BigDecimal("8.00"))
+                    .pricePerExtraMinute(new BigDecimal("1.00"))
+                    .extraMinutes(0)
+                    .baseAmount(new BigDecimal("240.00"))
+                    .extraMinutesAmount(BigDecimal.ZERO)
+                    .addonsTotalAmount(BigDecimal.ZERO)
+                    .grandTotal(new BigDecimal("240.00"))
+                    .currentStatus(OrderStatus.RECEIVED)
+                    .paymentStatus(PaymentStatus.PAID)
+                    .build();
+            order2 = entityManager.persist(order2);
+
+            order3 = Order.builder()
+                    .referenceNumber("REF-FILTER-003")
+                    .customer(customer1)
+                    .createdBy(testUser)
+                    .serviceRate(rate)
+                    .weightKg(new BigDecimal("15.00"))
+                    .totalLoads(2)
+                    .basePricePerLoad(new BigDecimal("120.00"))
+                    .kgLimitPerLoad(new BigDecimal("8.00"))
+                    .pricePerExtraMinute(new BigDecimal("1.00"))
+                    .extraMinutes(0)
+                    .baseAmount(new BigDecimal("240.00"))
+                    .extraMinutesAmount(BigDecimal.ZERO)
+                    .addonsTotalAmount(BigDecimal.ZERO)
+                    .grandTotal(new BigDecimal("240.00"))
+                    .currentStatus(OrderStatus.RECEIVED)
+                    .paymentStatus(PaymentStatus.PAID)
+                    .build();
+            order3 = entityManager.persist(order3);
+
+            // Create payments with different dates
+            payment1 = Payment.builder()
+                    .order(order1)
+                    .amountPaid(new BigDecimal("120.00"))
+                    .paymentMethod(PaymentMethod.CASH)
+                    .receivedBy(testUser)
+                    .paymentDate(baseTime.minusDays(2)) // Feb 13
+                    .remarks("Payment 1")
+                    .build();
+            payment1 = paymentRepository.save(payment1);
+
+            payment2 = Payment.builder()
+                    .order(order2)
+                    .amountPaid(new BigDecimal("240.00"))
+                    .paymentMethod(PaymentMethod.GCASH)
+                    .receivedBy(testUser)
+                    .paymentDate(baseTime) // Feb 15
+                    .remarks("Payment 2")
+                    .build();
+            payment2 = paymentRepository.save(payment2);
+
+            payment3 = Payment.builder()
+                    .order(order3)
+                    .amountPaid(new BigDecimal("240.00"))
+                    .paymentMethod(PaymentMethod.BANK_TRANSFER)
+                    .receivedBy(testUser)
+                    .paymentDate(baseTime.plusDays(2)) // Feb 17
+                    .remarks("Payment 3")
+                    .build();
+            payment3 = paymentRepository.save(payment3);
+
+            entityManager.flush();
+            entityManager.clear();
+        }
+
+        @Test
+        @DisplayName("Should return all payments when all filters are NULL")
+        void findAllFiltered_ShouldReturnAllPayments_WhenAllFiltersNull() {
+            // Given
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(null, null, null, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(3);
+            assertThat(result.getContent()).hasSize(3);
+            // Verify associations are eagerly loaded (no LazyInitializationException)
+            result.getContent().forEach(payment -> {
+                assertThat(payment.getOrder()).isNotNull();
+                assertThat(payment.getOrder().getCustomer()).isNotNull();
+                assertThat(payment.getReceivedBy()).isNotNull();
+            });
+        }
+
+        @Test
+        @DisplayName("Should filter by date range (from and to)")
+        void findAllFiltered_ShouldFilterByDateRange() {
+            // Given - Filter for payments from Feb 14 to Feb 16 (should get payment2 only)
+            LocalDateTime from = baseTime.minusDays(1); // Feb 14
+            LocalDateTime to = baseTime.plusDays(1);    // Feb 16
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(null, from, to, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent().get(0).getId()).isEqualTo(payment2.getId());
+            assertThat(result.getContent().get(0).getRemarks()).isEqualTo("Payment 2");
+        }
+
+        @Test
+        @DisplayName("Should filter by from date only (NULL to date)")
+        void findAllFiltered_ShouldFilterByFromDateOnly() {
+            // Given - Filter for payments from Feb 15 onwards (should get payment2 and payment3)
+            LocalDateTime from = baseTime; // Feb 15
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(null, from, null, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent()).extracting(Payment::getId)
+                    .containsExactlyInAnyOrder(payment2.getId(), payment3.getId());
+        }
+
+        @Test
+        @DisplayName("Should filter by to date only (NULL from date)")
+        void findAllFiltered_ShouldFilterByToDateOnly() {
+            // Given - Filter for payments before Feb 16 (should get payment1 and payment2)
+            LocalDateTime to = baseTime.plusDays(1); // Feb 16
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(null, null, to, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(2);
+            assertThat(result.getContent()).extracting(Payment::getId)
+                    .containsExactlyInAnyOrder(payment1.getId(), payment2.getId());
+        }
+
+        @Test
+        @DisplayName("Should filter by orderId")
+        void findAllFiltered_ShouldFilterByOrderId() {
+            // Given
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(order1.getId(), null, null, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent().get(0).getOrder().getId()).isEqualTo(order1.getId());
+            assertThat(result.getContent().get(0).getRemarks()).isEqualTo("Payment 1");
+        }
+
+        @Test
+        @DisplayName("Should filter by orderId and date range")
+        void findAllFiltered_ShouldFilterByOrderIdAndDateRange() {
+            // Given - Filter for order2 with date range covering payment2
+            LocalDateTime from = baseTime.minusDays(1); // Feb 14
+            LocalDateTime to = baseTime.plusDays(1);    // Feb 16
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(order2.getId(), from, to, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(1);
+            assertThat(result.getContent().get(0).getOrder().getId()).isEqualTo(order2.getId());
+        }
+
+        @Test
+        @DisplayName("Should return empty page when no payments match filters")
+        void findAllFiltered_ShouldReturnEmptyPage_WhenNoMatches() {
+            // Given - Date range with no payments
+            LocalDateTime from = baseTime.plusDays(10); // Feb 25
+            LocalDateTime to = baseTime.plusDays(20);   // Mar 7
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(null, from, to, pageable);
+
+            // Then
+            assertThat(result.getTotalElements()).isEqualTo(0);
+            assertThat(result.getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should paginate correctly with page size")
+        void findAllFiltered_ShouldPaginateCorrectly() {
+            // Given - Page size of 2
+            Pageable firstPage = PageRequest.of(0, 2);
+            Pageable secondPage = PageRequest.of(1, 2);
+
+            // When
+            Page<Payment> page1 = paymentRepository.findAllFiltered(null, null, null, firstPage);
+            Page<Payment> page2 = paymentRepository.findAllFiltered(null, null, null, secondPage);
+
+            // Then
+            assertThat(page1.getTotalElements()).isEqualTo(3);
+            assertThat(page1.getContent()).hasSize(2);
+            assertThat(page1.getTotalPages()).isEqualTo(2);
+            assertThat(page1.isFirst()).isTrue();
+            assertThat(page1.hasNext()).isTrue();
+
+            assertThat(page2.getContent()).hasSize(1);
+            assertThat(page2.isLast()).isTrue();
+            assertThat(page2.hasPrevious()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should eagerly fetch associations to avoid N+1 queries")
+        void findAllFiltered_ShouldEagerlyFetchAssociations() {
+            // Given
+            Pageable pageable = PageRequest.of(0, 10);
+
+            // When
+            Page<Payment> result = paymentRepository.findAllFiltered(null, null, null, pageable);
+            entityManager.clear(); // Clear persistence context to ensure associations are loaded
+
+            // Then - Accessing associations should not trigger LazyInitializationException
+            result.getContent().forEach(payment -> {
+                assertThat(payment.getOrder()).isNotNull();
+                assertThat(payment.getOrder().getReferenceNumber()).isNotNull();
+                assertThat(payment.getOrder().getCustomer()).isNotNull();
+                assertThat(payment.getOrder().getCustomer().getFirstName()).isNotNull();
+                assertThat(payment.getReceivedBy()).isNotNull();
+                assertThat(payment.getReceivedBy().getUsername()).isNotNull();
+            });
+        }
     }
 }
 

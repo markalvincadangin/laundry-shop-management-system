@@ -74,9 +74,8 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, Pageable pageable) {
-        // Use sentinel values instead of null to avoid PostgreSQL "could not determine data type of parameter"
-        LocalDateTime fromTs = from != null ? from.atStartOfDay() : LocalDateTime.of(1970, 1, 1, 0, 0);
-        LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : LocalDateTime.of(2099, 12, 31, 23, 59);
+        LocalDateTime fromTs = from != null ? from.atStartOfDay() : null;
+        LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : null;
         return paymentRepository.findAllFiltered(orderId, fromTs, toTs, pageable);
     }
 
