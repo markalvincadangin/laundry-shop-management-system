@@ -1,8 +1,9 @@
 # Deployment Guide — Faith Laundry Shop Management System
 
-> **Version:** 1.0  
-> **Date:** 2026-02-15  
-> **Purpose:** Production and development deployment instructions
+> **Version:** 1.1  
+> **Date:** 2026-02-20  
+> **Purpose:** Production and development deployment instructions  
+> **Related:** [Project Scope § 9 Operational Readiness](../01-scope/project-scope.md#9-operational-readiness-complete-system)
 
 ---
 
@@ -10,14 +11,22 @@
 
 - **Docker** and **Docker Compose** (v2+)
 - **Java 21** (for local backend development)
-- **Node.js 20** (for local frontend development)
+- **Node.js 18 LTS or 20** (for local frontend development)
 - **PostgreSQL 16** (or use Docker)
 
 ---
 
 ## 2. Environment Variables
 
-Create a `.env` file in the project root (copy from `.env.example`):
+Configuration is **per component**. Create env files by copying from the corresponding `.env.example` in each folder:
+
+| File | Purpose |
+|------|---------|
+| `docker/.env.docker` | Docker Compose (DB credentials, port). Copy from `docker/.env.example`. |
+| `backend/.env` | Spring Boot (DB URL, JWT, CORS). Copy from `backend/.env.example`. |
+| `frontend/.env.local` | Next.js (API URL). Copy from `frontend/.env.example`. |
+
+**Key variables:**
 
 | Variable | Required | Description |
 |---------|----------|-------------|
@@ -27,6 +36,7 @@ Create a `.env` file in the project root (copy from `.env.example`):
 | `DB_PORT` | No | Host port for PostgreSQL (default: `5433`) |
 | `JWT_SECRET` | Yes (prod) | At least 32 characters for JWT signing |
 | `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:3000`) |
+| `NEXT_PUBLIC_API_URL` | Yes (frontend) | Backend API base URL (e.g. `http://localhost:8080/api`) |
 
 ---
 
@@ -45,7 +55,7 @@ docker compose -f docker/docker-compose.fullstack.yml logs -f
 **Access:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8080/api
-- Health check: http://localhost:8080/actuator/health
+- Health check: http://localhost:8080/api/v1/health or http://localhost:8080/actuator/health
 
 **Stop:**
 ```bash
@@ -59,7 +69,8 @@ docker compose -f docker/docker-compose.fullstack.yml down
 For local development with backend and frontend running natively:
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+# From project root; use docker/.env.docker for DB credentials
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 ```
 
 ---
@@ -159,7 +170,74 @@ Run the backup script manually or schedule it (e.g., nightly via cron or Task Sc
 
 Backups are saved as `laundry_db_YYYYMMDD_HHMMSS.sql.gz`.
 
-### 6.5 User Manual
+**Backup script — environment variables**
+
+The project uses **per-component** env files (`docker/.env.docker`, `backend/.env`, `frontend/.env.local`). The backup scripts expect database credentials in one of these ways:
+
+1. **Project root `.env`** — If you create a root `.env` with `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, the scripts will load it automatically.
+2. **Export before running** — Source the same values you use for the backend:
+   ```bash
+   # Linux/macOS (using backend/.env)
+   set -a && . backend/.env && set +a
+   ./scripts/backup-database.sh /path/to/backups
+   ```
+   Or with Docker env:
+   ```bash
+   set -a && . docker/.env.docker && set +a
+   ./scripts/backup-database.sh /path/to/backups
+   ```
+   On Windows PowerShell, set `$env:DB_HOST`, `$env:DB_PORT`, etc. from `backend\.env` or `docker\.env.docker` before running the script.
+3. **Docker-only path** — If the script runs inside a host that has no `.env` but the database runs in Docker, the script can use Docker exec and will use `DB_USER`, `DB_NAME` from the environment you set; ensure `DB_PASSWORD` is set if the container expects it (scripts use defaults for host/port when using Docker exec).
+
+Use the same `DB_*` values as your running backend (e.g. from `backend/.env` or `docker/.env.docker`) so the backup connects to the correct database.
+
+### 6.5 Restore from Backup
+
+To restore the database from a backup file `laundry_db_YYYYMMDD_HHMMSS.sql.gz`:
+
+**Option A: PostgreSQL client (pg_restore not used; dump is plain SQL)**
+
+1. Stop the backend application (so no connections hold locks).
+2. Drop and recreate the database (or drop all objects in the target DB), or restore into a fresh database:
+   ```bash
+   # Create a fresh database (optional: drop existing first)
+   psql -h localhost -p 5433 -U postgres -c "DROP DATABASE IF EXISTS laundry_db;"
+   psql -h localhost -p 5433 -U postgres -c "CREATE DATABASE laundry_db OWNER laundry_user;"
+   ```
+3. Restore the dump:
+   ```bash
+   gunzip -c /path/to/backups/laundry_db_YYYYMMDD_HHMMSS.sql.gz | psql -h localhost -p 5433 -U laundry_user -d laundry_db
+   ```
+   Or on Windows (PowerShell):
+   ```powershell
+   Get-Content "C:\Backups\laundry\laundry_db_YYYYMMDD_HHMMSS.sql.gz" | gunzip -c | psql -h localhost -p 5433 -U laundry_user -d laundry_db
+   ```
+   If you don’t have `gunzip` on Windows, use 7-Zip or similar to decompress to `.sql`, then:
+   ```powershell
+   psql -h localhost -p 5433 -U laundry_user -d laundry_db -f path\to\laundry_db_YYYYMMDD_HHMMSS.sql
+   ```
+
+**Option B: Restore via Docker (database in container)**
+
+If PostgreSQL runs in Docker (e.g. `laundry-postgres` or `laundry-postgres-prod`):
+
+1. Copy the backup file into the container (or mount it), then run:
+   ```bash
+   gunzip -c /path/to/laundry_db_YYYYMMDD_HHMMSS.sql.gz | docker exec -i laundry-postgres psql -U laundry_user -d laundry_db
+   ```
+   To restore into a **fresh** database in the same container:
+   ```bash
+   docker exec -i laundry-postgres psql -U laundry_user -d postgres -c "DROP DATABASE IF EXISTS laundry_db;"
+   docker exec -i laundry-postgres psql -U laundry_user -d postgres -c "CREATE DATABASE laundry_db;"
+   gunzip -c /path/to/laundry_db_YYYYMMDD_HHMMSS.sql.gz | docker exec -i laundry-postgres psql -U laundry_user -d laundry_db
+   ```
+
+**After restore**
+
+- Restart the backend. Flyway will see existing schema; no migration rerun is needed if the dump included the full schema.
+- Verify with a quick health check: `GET http://localhost:8080/api/v1/health` or `GET http://localhost:8080/actuator/health`.
+
+### 6.6 User Manual
 
 See [docs/06-implementation/user-manual.md](user-manual.md) for the Owner and Staff guide. Export to PDF if needed (e.g., `pandoc user-manual.md -o user-manual.pdf`).
 

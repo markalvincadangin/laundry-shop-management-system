@@ -32,7 +32,7 @@
 ### 3. Status Updates (10 min)
 
 - Update order through stages: Received → Washing → Drying → Folding → Ready for Pickup
-- Explain release precondition (must be Ready for Pickup)
+- Explain release precondition: order must be **Ready for Pickup** and **Paid** before it can be released
 - Show status history/timeline
 
 ### 4. Payment Recording (10 min)

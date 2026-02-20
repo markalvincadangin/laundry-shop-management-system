@@ -81,7 +81,7 @@ public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody CreateOr
 - Allow CANCELLED from any non-terminal status before RELEASED
 - Insert `order_status_logs` record with user and timestamp
 - Update `orders.current_status`
-- Enforce: can only RELEASE if the status is READY_FOR_PICKUP (BR-OL-05)
+- Enforce: can only RELEASE if status is READY_FOR_PICKUP and payment is recorded (Paid) (BR-OL-05)
 
 **PaymentService:**
 - Enforce a one-to-one relationship (one payment per order - BR-PAY-02)
@@ -304,9 +304,13 @@ if (!isTransitionAllowed(currentStatus, newStatus)) {
 
 **BR-OL-05: Release Preconditions**
 ```java
-if (newStatus == OrderStatus.RELEASED && 
-    order.getCurrentStatus() != OrderStatus.READY_FOR_PICKUP) {
-    throw new IllegalStateException("Order must be READY_FOR_PICKUP before release");
+if (newStatus == OrderStatus.RELEASED) {
+    if (order.getCurrentStatus() != OrderStatus.READY_FOR_PICKUP) {
+        throw new IllegalStateException("Order must be READY_FOR_PICKUP before release");
+    }
+    if (order.getPaymentStatus() != PaymentStatus.PAID) {
+        throw new IllegalStateException("Order must be paid before release. Record payment first.");
+    }
 }
 ```
 

@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** SCOPE-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
+> **Version:** 1.1  
+> **Date:** 2026-02-20  
 > **Purpose:** Define MVP boundaries, deliverables, and constraints  
 > **Status:** Baseline (MVP Reference)
 
@@ -13,8 +13,14 @@
 
 ## Document Control
 - **Document Type:** Scope Definition
-- **Related Documents:** [Case Study (CS-001)](../00-context/case-study.md), [Client Interview (INT-001)](../00-context/client-interview.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Architecture](../05-tech-design/architecture.md), [Implementation Plan](../06-implementation/implementation-plan.md)
+- **Related Documents:** [Case Study (CS-001)](../00-context/case-study.md), [Client Interview (INT-001)](../00-context/client-interview.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Non-Functional Requirements](../02-requirements/non-functional-requirements.md), [Architecture](../05-tech-design/architecture.md), [Deployment Guide](../06-implementation/deployment-guide.md)
 - **Confidentiality:** Internal / Academic Use
+
+### Revision History
+| Version | Date       | Author   | Changes |
+|---------|------------|----------|---------|
+| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
+| 1.1     | 2026-02-20 | HIMÓTECH  | Release precondition (Ready + Paid); payment method recording in scope; NFR reference; glossary; operational readiness |
 
 ---
 
@@ -71,9 +77,9 @@ The system shall support order statuses: Received, Washing, Drying, Folding, Rea
 
 The system shall:
 
-- Record status changes with timestamp
-- Restrict invalid status values
-- Prevent release unless status is **Ready for Pickup**
+- Record status changes with timestamp and user (audit trail)
+- Restrict invalid status values and enforce logical status transitions
+- Prevent release unless (1) status is **Ready for Pickup** and (2) payment has been recorded (**Paid**)
 
 #### 3.1.3 Payment Recording
 
@@ -82,6 +88,7 @@ The system shall:
 - Record one payment per order
 - Require full payment (MVP restriction)
 - Validate that payment amount exactly matches the order grand total
+- Record **payment method** (Cash, GCash, Bank Transfer) for each payment — for record-keeping only; no integration with payment gateways
 - Update payment status (**Paid** / **Unpaid**) automatically
 - Record payment timestamp
 
@@ -123,21 +130,34 @@ The system shall:
 
 The following is explicitly excluded from MVP:
 
-- Partial payment support
-- Digital payment integrations (e.g., GCash, bank transfer)
-- Inventory management (detergent, supplies)
-- Machine maintenance tracking
-- Multi-branch management
-- Customer account registration
-- Loyalty programs
-- Advanced business analytics dashboards
-- Real-time SMS integration (notification storage only may exist)
+- **Partial payment support** — full payment only; amount must equal order grand total
+- **Payment gateway integrations** — no API integration with GCash, bank, or other payment providers; the system only records which method (Cash, GCash, Bank Transfer) was used
+- **Inventory management** — detergent, supplies, stock tracking
+- **Machine maintenance tracking** — washing machine status or maintenance scheduling
+- **Multi-branch management** — single-branch only
+- **Customer account registration** — no customer self-service accounts or login
+- **Loyalty programs** — points, discounts, or membership tiers
+- **Advanced business analytics dashboards** — charts, trends, or predictive analytics beyond basic income reports
+- **Real-time SMS sending** — notification records may exist; actual SMS delivery is optional/post-MVP
 
 Future enhancements may address these in later phases.
 
 ---
 
-## 5. Assumptions
+## 5. Non-Functional Requirements (Summary)
+
+Non-functional requirements are detailed in **[docs/02-requirements/non-functional-requirements.md](../02-requirements/non-functional-requirements.md)**. Summary:
+
+- **Security:** Role-based access (Owner/Staff), JWT authentication, no sensitive data on public tracking
+- **Performance:** Responsive UI; API response times suitable for single-shop usage
+- **Availability:** System operable during business hours; backup and recovery procedures documented
+- **Audit:** Status changes and payment records traceable to user and timestamp
+- **Usability:** Owner and staff can operate with minimal training; see [User Manual](../06-implementation/user-manual.md)
+- **Maintainability:** Documented architecture, OpenAPI and ERD as source of truth, automated tests
+
+---
+
+## 6. Assumptions
 
 1. The laundry shop operates as a single branch.
 2. Owner and staff possess basic computer literacy.
@@ -147,9 +167,9 @@ Future enhancements may address these in later phases.
 
 ---
 
-## 6. Constraints
+## 7. Constraints
 
-### 6.1 Technical Constraints
+### 7.1 Technical Constraints
 
 - Backend: Java 21, Spring Boot 3.3+
 - Database: PostgreSQL 16
@@ -159,7 +179,7 @@ Future enhancements may address these in later phases.
 - Testing: Testcontainers
 - CI/CD: GitHub Actions
 
-### 6.2 Operational Constraints
+### 7.2 Operational Constraints
 
 - Limited personnel (owner and one staff)
 - Manual fallback during transition
@@ -167,7 +187,7 @@ Future enhancements may address these in later phases.
 
 ---
 
-## 7. Success Criteria
+## 8. Success Criteria
 
 The project shall be considered successful if:
 
@@ -180,7 +200,19 @@ The project shall be considered successful if:
 
 ---
 
-## 8. Scope Governance
+## 9. Operational Readiness (Complete System)
+
+For the system to be considered **complete and production-ready**, the following must be in place (see [Deployment Guide](../06-implementation/deployment-guide.md) and [Handover Checklist](../06-implementation/handover-checklist.md)):
+
+- **Deployment:** Production stack deployable via Docker Compose (Nginx + Backend + Frontend + PostgreSQL); environment variables documented
+- **Backup:** Database backup script available and scheduled (e.g., nightly); backup location and restore procedure documented
+- **Security:** Strong JWT secret and DB password in production; HTTPS recommended; CORS configured for frontend origin
+- **Handover:** User manual and handover checklist completed; Owner and Staff trained; sign-off obtained
+- **Support:** Contact or process for technical support and maintenance documented
+
+---
+
+## 10. Scope Governance
 
 Any functionality not explicitly listed under **Section 3 – In-Scope** shall:
 
@@ -193,6 +225,18 @@ No undocumented feature additions shall be merged into the main development bran
 
 ---
 
-## 9. Conclusion
+## 11. Glossary
+
+| Term | Definition |
+|------|------------|
+| **Load** | Unit of laundry pricing: one load covers up to 8 kg; price per load is ₱120 (configurable). |
+| **Reference number** | Unique identifier for an order (e.g., LDR-YYYYMMDD-XXXX), used for customer tracking. |
+| **Release** | Final order status when laundry has been handed to the customer; requires status Ready for Pickup and payment recorded. |
+| **Snapshot pricing** | Copy of service rates stored on the order at creation time so historical totals remain correct when rates change. |
+| **MVP** | Minimum Viable Product — the initial deliverable scope defined in this document. |
+
+---
+
+## 12. Conclusion
 
 This document formally defines the system boundaries of the Faith Laundry Shop Management System. It ensures alignment with stakeholder needs, enforces development discipline, and establishes the authoritative reference for MVP functionality and scope control.

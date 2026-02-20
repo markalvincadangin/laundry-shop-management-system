@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** US-CATALOG (US-01 through US-11)  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
+> **Version:** 1.1  
+> **Date:** 2026-02-20  
 > **Source:** Client Interview & Case Study  
 > **Purpose:** Define functional behavior for implementation  
 > **Status:** Baseline (MVP)
@@ -14,7 +14,7 @@
 
 ## Document Control
 - **Document Type:** Requirements — User Stories
-- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [Business Rules](business-rules.md), [Case Study](../00-context/case-study.md), [Client Interview](../00-context/client-interview.md), [OpenAPI Spec](../05-tech-design/openapi.yaml)
+- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [Business Rules](business-rules.md), [Non-Functional Requirements](non-functional-requirements.md), [Case Study](../00-context/case-study.md), [Client Interview](../00-context/client-interview.md), [OpenAPI Spec](../05-tech-design/openapi.yaml)
 - **Confidentiality:** Internal / Academic Use
 
 ---
@@ -101,6 +101,7 @@
 **Acceptance Criteria**
 - Staff can view order and customer details
 - Order MUST be **Ready for Pickup** before release
+- Payment MUST be recorded (**Paid**) before release — release is not allowed for unpaid orders
 - Order status is updated to **Released** after verification
 
 **Related Business Rules:** [BR-OL-05](business-rules.md#br-ol-05-release-preconditions), [BR-OL-03](business-rules.md#br-ol-03-allowed-order-status-values)  
@@ -119,11 +120,13 @@
 **Acceptance Criteria**
 - Payment is linked to exactly one order
 - MVP: full payments only; payment amount MUST exactly match the order grand total
+- **Payment method** (Cash, GCash, Bank Transfer) is recorded for each payment
 - Partial payments, overpayments, and change/refunds are not supported in MVP
 - Payment date is recorded automatically
 - Order payment status is updated to **Paid** or **Unpaid** based on full payment received
 
-**Related Business Rules:** [BR-PAY-01](business-rules.md#br-pay-01-payment-timing), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](business-rules.md#br-pay-03-payment-amount-validation), [BR-PAY-04](business-rules.md#br-pay-04-payment-status)  
+**Related Business Rules:** [BR-PAY-01](business-rules.md#br-pay-01-payment-timing), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](business-rules.md#br-pay-03-payment-amount-validation), [BR-PAY-04](business-rules.md#br-pay-04-payment-status), [BR-PAY-05](business-rules.md#br-pay-05-payment-method-recorded)  
+**Scope:** [§ 3.1.3 Payment Recording](../01-scope/project-scope.md#313-payment-recording)  
 **Scope:** [§ 3.1.3 Payment Recording](../01-scope/project-scope.md#313-payment-recording)
 
 ---
