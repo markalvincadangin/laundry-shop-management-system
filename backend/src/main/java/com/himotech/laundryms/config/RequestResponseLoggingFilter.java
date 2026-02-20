@@ -24,7 +24,7 @@ import java.util.List;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RequestResponseLoggingFilter extends OncePerRequestFilter {
 
-    private static final List<String> EXCLUDED_PATHS = List.of("/actuator/health", "/actuator/info");
+    private static final List<String> EXCLUDED_PATHS = List.of("/actuator/health", "/actuator/info", "/api/v1/health");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {

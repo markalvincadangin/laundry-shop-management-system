@@ -73,7 +73,7 @@ An order can be **Cancelled** from any stage before release.
 4. Add optional notes (e.g., "Customer called to confirm pickup").
 5. Click **Save**.
 
-**Important:** An order can only be **Released** when its status is **Ready for Pickup**. Verify the laundry before releasing.
+**Important:** An order can only be **Released** when (1) its status is **Ready for Pickup** and (2) payment has been recorded. Verify the laundry and collect payment before releasing.
 
 ---
 

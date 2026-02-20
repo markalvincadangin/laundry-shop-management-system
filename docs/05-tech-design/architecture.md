@@ -13,7 +13,7 @@
 
 ## Document Control
 - **Document Type:** Technical Design — Architecture
-- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [To-Be Process Flow](../03-process/to-be-flow.md), [ERD](../04-data-design/erd.dbml), [Data Design Notes](../04-data-design/data-notes.md), [OpenAPI Spec](openapi.yaml), [Implementation Plan](../06-implementation/implementation-plan.md)
+- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Non-Functional Requirements](../02-requirements/non-functional-requirements.md), [To-Be Process Flow](../03-process/to-be-flow.md), [ERD](../04-data-design/erd.dbml), [Data Design Notes](../04-data-design/data-notes.md), [OpenAPI Spec](openapi.yaml), [Deployment Guide](../06-implementation/deployment-guide.md)
 - **Confidentiality:** Internal / Academic Use
 
 ---
@@ -147,9 +147,9 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ### 7.3 Payment Recording
 
-1. Staff records payment upon pickup
+1. Staff records payment upon pickup (payment method: Cash, GCash, or Bank Transfer — BR-PAY-05)
 2. Backend validates: no existing payment for order (BR-PAY-02), amount equals `orders.grand_total` (BR-PAY-03)
-3. Backend inserts payment and sets `orders.payment_status = PAID` (BR-PAY-04)
+3. Backend inserts payment (including payment_method) and sets `orders.payment_status = PAID` (BR-PAY-04)
 4. MVP: Partial payments are not supported; PARTIAL is reserved for post-MVP
 
 ### 7.4 Reporting

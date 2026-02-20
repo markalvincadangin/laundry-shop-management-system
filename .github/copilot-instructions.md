@@ -36,12 +36,12 @@ Faith Laundry Shop is a small-scale laundry service business established in 2022
 | **Data Design** | [docs/04-data-design/data-notes.md](../docs/04-data-design/data-notes.md) | Data design notes |
 | **Tech Design** | [docs/05-tech-design/openapi.yaml](../docs/05-tech-design/openapi.yaml) | API contract definitions |
 | **Tech Design** | [docs/05-tech-design/architecture.md](../docs/05-tech-design/architecture.md) | System architecture and data flows |
-| **Implementation** | [docs/06-implementation/implementation-plan.md](../docs/06-implementation/implementation-plan.md) | Phase-by-phase development roadmap |
+| **Requirements** | [docs/02-requirements/non-functional-requirements.md](../docs/02-requirements/non-functional-requirements.md) | NFRs (security, performance, availability, etc.) |
+| **Implementation** | [docs/06-implementation/deployment-guide.md](../docs/06-implementation/deployment-guide.md) | Deployment, backup, restore |
+| **Implementation** | [docs/06-implementation/implementation-status.md](../docs/06-implementation/implementation-status.md) | Implemented vs required (gap analysis) |
 | **Setup** | [docs/development-credentials.md](../docs/development-credentials.md) | Development credentials (local only) |
 | **Setup** | [docs/GETTING_STARTED.md](../docs/GETTING_STARTED.md) | Getting started guide |
-| **Setup** | [docs/README.md](../docs/README.md) | Documentation overview |
-| **Standards** | [docs/STYLE_GUIDE.md](../docs/STYLE_GUIDE.md) | Code style and conventions |
-| **Standards** | [docs/STAGE1_INVENTORY_AND_TERMINOLOGY.md](../docs/STAGE1_INVENTORY_AND_TERMINOLOGY.md) | Inventory and terminology reference |
+| **Setup** | [docs/README.md](../docs/README.md) | Documentation index (start here) |
 
 **Documentation Hierarchy (Primary References):**
 1. [docs/00-context/case-study.md](../docs/00-context/case-study.md) - Client background and problem statement
@@ -50,7 +50,7 @@ Faith Laundry Shop is a small-scale laundry service business established in 2022
 4. [docs/04-data-design/erd.dbml](../docs/04-data-design/erd.dbml) - Database schema and relationships
 5. [docs/05-tech-design/openapi.yaml](../docs/05-tech-design/openapi.yaml) - API contract definitions
 6. [docs/05-tech-design/architecture.md](../docs/05-tech-design/architecture.md) - System architecture and data flows
-7. [docs/06-implementation/implementation-plan.md](../docs/06-implementation/implementation-plan.md) - Phase-by-phase development roadmap
+7. [docs/README.md](../docs/README.md) - Full documentation index; [deployment-guide.md](../docs/06-implementation/deployment-guide.md) for deploy/backup/restore
 
 **Conflict Resolution:**
 If any suggestion conflicts with these documents:
@@ -163,8 +163,8 @@ grand_total = base_amount + extra_minutes_amount + addons_total_amount
 - Record all status changes in `order_status_logs` table with timestamp and user
 
 **Release Preconditions (BR-OL-05):**
-- Order can only be RELEASED if current status is READY_FOR_PICKUP
-- Reject release action if not ready
+- Order can only be RELEASED if (1) current status is READY_FOR_PICKUP and (2) payment has been recorded (Paid)
+- Reject release action if not ready or if unpaid
 
 ### Payment Rules (BR-PAY-01 to BR-PAY-04)
 
@@ -399,11 +399,11 @@ Repository (Persistence only)
 - Provide verification steps (commands/tests to run)
 
 **PR Checklist:**
-- [ ] Tests pass locally (`.\mvnw.cmd test` for backend)
+- [ ] Tests pass locally (`.\mvnw.cmd test` or `./mvnw test` in backend; `npm run lint && npm run test && npm run build` in frontend)
 - [ ] No hardcoded business rules in frontend
 - [ ] Entities match ERD
 - [ ] APIs match OpenAPI contract
-- [ ] Documentation updated if behavior changed
+- [ ] Documentation updated if behavior changed (see `docs/README.md` for index)
 
 ---
 
@@ -434,13 +434,13 @@ Repository (Persistence only)
 **Local Setup:**
 - Backend: `http://localhost:8080`
 - Frontend: `http://localhost:3000`
-- PostgreSQL: `docker compose -f docker/docker-compose.yml up -d`
+- PostgreSQL: `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d` (from project root)
 
-**Environment Variables:**
-- Backend: `.env` (DB connection, JWT secret)
-- Frontend: `.env.local` (`NEXT_PUBLIC_API_URL`)
-- Never commit secrets to Git
-- Use `.env.example` as template
+**Environment Variables (per component):**
+- `docker/.env.docker` — Docker Compose (DB credentials); copy from `docker/.env.example`
+- `backend/.env` — Spring Boot (DB URL, JWT, CORS); copy from `backend/.env.example`
+- `frontend/.env.local` — Next.js (`NEXT_PUBLIC_API_URL`); copy from `frontend/.env.example`
+- Never commit `.env.docker`, `backend/.env`, or `frontend/.env.local`; use each folder’s `.env.example` as template
 
 **CI/CD:**
 - GitHub Actions (or similar)
@@ -458,11 +458,14 @@ Repository (Persistence only)
 - Keep README.md updated with setup instructions
 
 **Document Locations:**
-- Case study & interview: `/docs/00-context/`
-- Requirements: `/docs/02-requirements/`
-- Data design: `/docs/04-data-design/`
-- Tech design: `/docs/05-tech-design/`
-- Implementation plan: `/docs/06-implementation/`
+- Case study & interview: `docs/00-context/`
+- Scope: `docs/01-scope/`
+- Requirements: `docs/02-requirements/` (user-stories, business-rules, non-functional-requirements)
+- Process: `docs/03-process/`
+- Data design: `docs/04-data-design/`
+- Tech design: `docs/05-tech-design/`
+- Implementation & operations: `docs/06-implementation/` (deployment-guide, user-manual, implementation-status)
+- Index: `docs/README.md`
 
 **When to Update Docs:**
 - New user stories or business rules

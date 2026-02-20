@@ -47,7 +47,7 @@ Based on validated user stories from client interviews:
 - Update order status through defined stages:
   - **Received** → **Washing** → **Drying** → **Folding** → **Ready for Pickup** → **Released**
 - Maintain an **audit trail** of all status changes (who, when, what)
-- Prevent premature release (orders must be "Ready for Pickup" before release)
+- Prevent premature release (orders must be "Ready for Pickup" and paid before release)
 
 ### 💰 Payment Management
 - **Record payments** linked to specific orders (one payment per order)
@@ -96,7 +96,7 @@ These rules are enforced in the backend service layer and derived from **busines
 | **Unique Reference Numbers** | Every order must have a unique tracking reference             | BR-OL-01  |
 | **Initial Status**           | New orders start with status `RECEIVED`                       | BR-OL-02  |
 | **Status Transitions**       | Logical progression (no skipping backwards)                   | BR-OL-04  |
-| **Release Precondition**     | Orders can only be released when status is `READY_FOR_PICKUP` | BR-OL-05  |
+| **Release Precondition**     | Orders can only be released when status is `READY_FOR_PICKUP` and payment is recorded (Paid) | BR-OL-05  |
 
 ### Payment Rules
 | Rule                         | Description                                  | Reference |
@@ -197,8 +197,10 @@ The REST API follows the **OpenAPI 3.0.3** specification defined in **[docs/05-t
 | `/api/v1/payments`                           | POST   | Record payment (1:1 with order)                 | ✅ Staff/Owner |
 | `/api/v1/reports/sales/daily`                | GET    | Daily sales report                              | ✅ Owner only  |
 | `/api/v1/reports/sales/monthly`              | GET    | Monthly income report                           | ✅ Owner only  |
+| `/api/v1/reports/sales/yearly`               | GET    | Yearly income report                            | ✅ Owner only  |
 | `/api/v1/customers`                          | POST   | Create new customer                             | ✅ Staff/Owner |
 | `/api/v1/service-rates/active`               | GET    | Get current pricing rules                       | ✅ Staff/Owner |
+| `/api/v1/health`                             | GET    | Health check (liveness)                         | ❌ No auth     |
 
 #### API Documentation
 
@@ -206,9 +208,13 @@ When the backend is running, access interactive API documentation at:
 - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
+For the full list of endpoints (e.g. order preview, order by ID, payments by ID), see **[docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml)**.
+
 ---
 
 ## 📂 Repository Structure
+
+The layout below matches the project. **Documentation in `docs/` is the source of truth** for requirements, business rules, data design, and API contract — see [docs/README.md](docs/README.md).
 
 ```
 laundry-shop-management-system/
@@ -226,24 +232,37 @@ laundry-shop-management-system/
 ├── frontend/                    # Next.js client application
 ├── docker/
 │   └── docker-compose.yml      # PostgreSQL 16 container setup
-├── docs/                        # Project documentation
+├── docs/                        # Project documentation (source of truth)
+│   ├── README.md               # Documentation index — start here
 │   ├── 00-context/
 │   │   ├── case-study.md       # Client background & problem statement
 │   │   └── client-interview.md # Interview notes
+│   ├── 01-scope/
+│   │   └── project-scope.md    # MVP vs post-MVP, deliverables
 │   ├── 02-requirements/
-│   │   ├── user-stories.md     # Functional requirements (US-xx)
+│   │   ├── user-stories.md     # Functional requirements (US-01 to US-11)
 │   │   └── business-rules.md   # Pricing & validation rules (BR-xx)
+│   ├── 03-process/
+│   │   └── to-be-flow.md       # Future-state process flows
 │   ├── 04-data-design/
 │   │   ├── erd.dbml            # Database schema (source of truth)
 │   │   ├── erd.svg             # Visual ERD diagram
-│   │   └── data-notes.md
+│   │   ├── data-notes.md
+│   │   └── erd.pdf
 │   ├── 05-tech-design/
 │   │   ├── openapi.yaml        # REST API contract (source of truth)
 │   │   └── architecture.md     # System design & deployment
+│   ├── 06-implementation/
+│   │   ├── deployment-guide.md # Production & dev deployment
+│   │   ├── user-manual.md      # End-user guide (Owner/Staff)
+│   │   ├── handover-checklist.md
+│   │   └── release-notes-mvp-v1.md
+│   ├── GETTING_STARTED.md      # Developer implementation guide
 │   └── development-credentials.md
-├── .env.example                 # Environment variables template
-├── README.md                    # This file
-└── ENV_SETUP.md                 # Detailed environment setup guide
+├── scripts/
+│   ├── backup-database.sh      # Database backup (Linux/macOS)
+│   └── backup-database.ps1     # Database backup (Windows)
+└── README.md                    # This file
 ```
 
 ---
@@ -315,8 +334,8 @@ The application requires environment variables for database credentials and conf
 #### 2.1 Create the `.env` files
 
 ```powershell
-# Root .env — for Docker Compose (database credentials)
-Copy-Item .env.example .env
+# Docker .env.docker — for Docker Compose (database credentials)
+Copy-Item docker\.env.example docker\.env.docker
 
 # Backend .env — for Spring Boot when running from backend/
 Copy-Item backend\.env.example backend\.env
@@ -325,11 +344,11 @@ Copy-Item backend\.env.example backend\.env
 Copy-Item frontend\.env.example frontend\.env.local
 ```
 
-> **Note:** The root `.env` is used by Docker Compose. The backend and frontend each have their own env files for when running those components.
+> **Note:** The `docker/.env.docker` is used by Docker Compose. The backend and frontend each have their own env files for when running those components.
 
 #### 2.2 Configure Required Variables
 
-Open `.env` in a text editor and configure the following **required** variables:
+Open `docker/.env.docker` in a text editor and configure the following **required** variables:
 
 ```env
 # Database Configuration (REQUIRED)
@@ -365,9 +384,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 | `NEXT_PUBLIC_API_URL`    | Frontend API base URL    | `http://localhost:8080/api` | ✅ Yes    |
 
 > ⚠️ **IMPORTANT SECURITY WARNINGS:**
-> - **NEVER commit the `.env` file to Git** (already in `.gitignore`)
+> - **NEVER commit the `docker/.env.docker` file to Git** (already in `.gitignore`)
 > - **Change `DB_PASSWORD` and `JWT_SECRET` before deploying to production**
-> - Each developer should maintain their own local `.env` file
+> - Each developer should maintain their own local `docker/.env.docker` file
 
 ### Step 3: Database Setup (Docker)
 
@@ -376,8 +395,8 @@ The project uses **PostgreSQL 16** running in a Docker container with the **pgcr
 #### 3.1 Start the PostgreSQL Container
 
 ```powershell
-# From the repository root, start the database
-docker compose -f docker/docker-compose.yml up -d
+# From the repository root, start the database with the .env.docker file
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # Verify the container is running
 docker compose -f docker/docker-compose.yml ps
@@ -427,14 +446,14 @@ pgcrypto  | 1.3     | public | cryptographic functions
 docker compose -f docker/docker-compose.yml down
 
 # Start the database
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # View database logs
 docker compose -f docker/docker-compose.yml logs -f postgres
 
 # Reset the database (⚠️ DELETES ALL DATA)
 docker compose -f docker/docker-compose.yml down -v
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 ```
 
 ### Step 4: Database Migrations (Flyway)
@@ -639,7 +658,7 @@ After completing all steps, verify the entire system is running:
 | Component       | URL                                                                            | Status Check        |
 |-----------------|--------------------------------------------------------------------------------|---------------------|
 | **Database**    | `localhost:5433`                                                               | `docker compose ps` |
-| **Backend API** | [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)     | HTTP 200 OK         |
+| **Backend API** | [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health) or `/actuator/health` | HTTP 200 OK         |
 | **API Docs**    | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | Swagger UI loads    |
 | **Frontend**    | [http://localhost:3000](http://localhost:3000)                                 | Application loads   |
 
@@ -676,11 +695,13 @@ For experienced developers, here's the condensed version:
 # 1. Clone and setup environment
 git clone <repository-url>
 cd laundry-shop-management-system
-Copy-Item .env.example .env
-# Edit .env with your credentials
+Copy-Item docker\.env.example docker\.env.docker
+Copy-Item backend\.env.example backend\.env
+Copy-Item frontend\.env.example frontend\.env.local
+# Edit docker/.env.docker (and backend/.env, frontend/.env.local if needed)
 
 # 2. Start database
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # 3. Start backend (in new terminal)
 cd backend
@@ -697,33 +718,19 @@ npm run dev
 ## ⚙️ Configuration
 
 ### Environment Variables
-Create a `.env` file in the root directory based on `.env.example`:
 
-```powershell
-Copy-Item .env.example .env
-```
+Environment configuration is **per component** (no single root `.env`). Create env files as in **Step 2: Environment Variables Configuration** above:
 
-Then update the values as needed:
-
-```env
-# Database Configuration
-DB_USER=laundry_user
-DB_PASSWORD=<your_secure_password>
-DB_HOST=localhost
-DB_PORT=5433
-DB_NAME=laundry_db
-
-# Backend Configuration
-SPRING_PORT=8080
-
-# Frontend Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
-```
+| Location | Purpose |
+|----------|---------|
+| `docker/.env.docker` | Docker Compose (DB credentials, ports) — copy from `docker/.env.example` |
+| `backend/.env` | Spring Boot (DB URL, JWT, CORS) — copy from `backend/.env.example` |
+| `frontend/.env.local` | Next.js (API URL) — copy from `frontend/.env.example` |
 
 **Important:**
-- Never commit the `.env` file to version control. It is already excluded in `.gitignore`.
-- Commit `.env.example` so new developers can bootstrap quickly.
-- Each developer should maintain their own local `.env` file with appropriate credentials.
+- Never commit `docker/.env.docker`, `backend/.env`, or `frontend/.env.local` to version control (they are in `.gitignore`).
+- Commit the `.env.example` files in each folder so new developers can bootstrap quickly.
+- Each developer should maintain their own local env files with appropriate credentials.
 
 ### Backend Configuration
 - **File:** `backend/src/main/resources/application.yml`
@@ -731,7 +738,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
   - Server port: 8080
   - Database URL: jdbc:postgresql://\${DB_HOST}:\${DB_PORT}/\${DB_NAME}
   - Flyway auto-migration: enabled
-- Environment variables are injected at runtime from the `.env` file
+- Environment variables are read at runtime from `backend/.env` (or system env)
 
 ### Database Migrations
 All database schema changes are version-controlled using Flyway:
@@ -745,8 +752,8 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 
 ### Local Development Setup
 1. Clone the repository
-2. Create `.env` file from `.env.example`
-3. Start Docker containers: `docker compose -f docker/docker-compose.yml up -d`
+2. Create env files: `docker/.env.docker`, `backend/.env`, `frontend/.env.local` (from each folder’s `.env.example`)
+3. Start database: `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d`
 4. Start backend: `cd backend && .\mvnw.cmd spring-boot:run`
 5. Start frontend: `cd frontend && npm run dev`
 6. Access the application at `http://localhost:3000`
@@ -768,9 +775,9 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 
 ### Database Connection Issues
 - **Verify Docker is running:** `docker compose -f docker/docker-compose.yml ps`
-- **Check credentials:** Ensure `.env` in the repository root has correct `DB_USER` and `DB_PASSWORD`
+- **Check credentials:** Ensure `docker/.env.docker` and `backend/.env` have correct `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
-- **Restart container:** `docker compose -f docker/docker-compose.yml down && docker compose -f docker/docker-compose.yml up -d`
+- **Restart container:** `docker compose -f docker/docker-compose.yml down` then `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d`
 
 ### Flyway Migrations Fail
 - **Check migration format:** Files should follow `V{version}__{description}.sql` (e.g., `V1__init.sql`)
@@ -802,13 +809,23 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 
 ## 📞 Support & Documentation
 
-For detailed project documentation:
-- **Case Study & Problem Statement:** `docs/00-context/case-study.md`
-- **User Stories (Features):** `docs/02-requirements/user-stories.md`
-- **Business Rules:** `docs/02-requirements/business-rules.md`
-- **Database Design:** `docs/04-data-design/erd.dbml` and `erd.svg`
-- **API Contract:** `docs/05-tech-design/openapi.yaml`
-- **Architecture:** `docs/05-tech-design/architecture.md`
+**Documentation index:** **[docs/README.md](docs/README.md)** — central guide to all project docs (source of truth).
+
+| Topic | Document |
+|-------|----------|
+| **Documentation index** | [docs/README.md](docs/README.md) |
+| **Case study & problem statement** | [docs/00-context/case-study.md](docs/00-context/case-study.md) |
+| **Project scope (MVP vs post-MVP)** | [docs/01-scope/project-scope.md](docs/01-scope/project-scope.md) |
+| **User stories (US-01 to US-11)** | [docs/02-requirements/user-stories.md](docs/02-requirements/user-stories.md) |
+| **Business rules (BR-xx)** | [docs/02-requirements/business-rules.md](docs/02-requirements/business-rules.md) |
+| **To-be process flows** | [docs/03-process/to-be-flow.md](docs/03-process/to-be-flow.md) |
+| **Database design (ERD)** | [docs/04-data-design/erd.dbml](docs/04-data-design/erd.dbml), [erd.svg](docs/04-data-design/erd.svg) |
+| **API contract** | [docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml) |
+| **Architecture** | [docs/05-tech-design/architecture.md](docs/05-tech-design/architecture.md) |
+| **Deployment guide** | [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) |
+| **User manual (Owner/Staff)** | [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) |
+| **Getting started (developers)** | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) |
+| **Development credentials** | [docs/development-credentials.md](docs/development-credentials.md) |
 
 ## 📝 License
 
