@@ -315,8 +315,8 @@ The application requires environment variables for database credentials and conf
 #### 2.1 Create the `.env` files
 
 ```powershell
-# Root .env — for Docker Compose (database credentials)
-Copy-Item .env.example .env
+# Docker .env.docker — for Docker Compose (database credentials)
+Copy-Item docker\.env.example docker\.env.docker
 
 # Backend .env — for Spring Boot when running from backend/
 Copy-Item backend\.env.example backend\.env
@@ -325,11 +325,11 @@ Copy-Item backend\.env.example backend\.env
 Copy-Item frontend\.env.example frontend\.env.local
 ```
 
-> **Note:** The root `.env` is used by Docker Compose. The backend and frontend each have their own env files for when running those components.
+> **Note:** The `docker/.env.docker` is used by Docker Compose. The backend and frontend each have their own env files for when running those components.
 
 #### 2.2 Configure Required Variables
 
-Open `.env` in a text editor and configure the following **required** variables:
+Open `docker/.env.docker` in a text editor and configure the following **required** variables:
 
 ```env
 # Database Configuration (REQUIRED)
@@ -365,9 +365,9 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 | `NEXT_PUBLIC_API_URL`    | Frontend API base URL    | `http://localhost:8080/api` | ✅ Yes    |
 
 > ⚠️ **IMPORTANT SECURITY WARNINGS:**
-> - **NEVER commit the `.env` file to Git** (already in `.gitignore`)
+> - **NEVER commit the `docker/.env.docker` file to Git** (already in `.gitignore`)
 > - **Change `DB_PASSWORD` and `JWT_SECRET` before deploying to production**
-> - Each developer should maintain their own local `.env` file
+> - Each developer should maintain their own local `docker/.env.docker` file
 
 ### Step 3: Database Setup (Docker)
 
@@ -376,8 +376,8 @@ The project uses **PostgreSQL 16** running in a Docker container with the **pgcr
 #### 3.1 Start the PostgreSQL Container
 
 ```powershell
-# From the repository root, start the database
-docker compose -f docker/docker-compose.yml up -d
+# From the repository root, start the database with the .env.docker file
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # Verify the container is running
 docker compose -f docker/docker-compose.yml ps
@@ -427,14 +427,14 @@ pgcrypto  | 1.3     | public | cryptographic functions
 docker compose -f docker/docker-compose.yml down
 
 # Start the database
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # View database logs
 docker compose -f docker/docker-compose.yml logs -f postgres
 
 # Reset the database (⚠️ DELETES ALL DATA)
 docker compose -f docker/docker-compose.yml down -v
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 ```
 
 ### Step 4: Database Migrations (Flyway)
