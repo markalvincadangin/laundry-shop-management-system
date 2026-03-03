@@ -304,7 +304,7 @@ npm --version
 git --version
 ```
 
-> **Tip:** Use the project's Maven Wrapper (`.\mvnw.cmd`) — no need to install Maven separately. The wrapper ensures consistent builds across machines.
+> **Tip:** Use the project's Maven Wrapper — no need to install Maven separately. The wrapper ensures consistent builds across machines. Run it from the `backend/` directory: `cd backend && ./mvnw` (macOS/Linux) or `cd backend` then `.\mvnw.cmd` (Windows).
 
 ### Important Database Requirements
 
