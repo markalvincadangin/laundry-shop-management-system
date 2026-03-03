@@ -702,7 +702,7 @@ docker compose -f docker/docker-compose.prod.yml up -d --build
 
 **Optional (HTTPS):** Run `sh docker/nginx/generate-ssl.sh` (Git Bash or WSL on Windows) then `cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf` and restart nginx.
 
-**Backup (Windows):** `.\scripts\backup-database.ps1` or `.\scripts\backup-database.ps1 -BackupDir C:\Backups\laundry`. The script uses the running `laundry-postgres` container, or set `$env:DB_HOST`, `$env:DB_PORT`, `$env:DB_PASSWORD`, etc. from `backend\.env` before running.
+**Backup (Windows):** `.\scripts\backup-database.ps1` or `.\scripts\backup-database.ps1 -BackupDir C:\Backups\laundry`. The script uses the running `laundry-postgres` container by default; to override connection settings, either create a root `.env` with `DB_*` variables or manually set `$env:DB_HOST`, `$env:DB_PORT`, `$env:DB_PASSWORD`, etc. in your shell (you can copy these values from `backend\.env`).
 
 See [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) and [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) for full details.
 
