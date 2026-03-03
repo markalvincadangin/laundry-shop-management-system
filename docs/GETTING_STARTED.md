@@ -13,7 +13,7 @@
 
 ## Document Control
 - **Document Type:** Developer Guide
-- **Related Documents:** [Implementation Plan](06-implementation/implementation-plan.md), [User Stories](02-requirements/user-stories.md), [Business Rules](02-requirements/business-rules.md)
+- **Related Documents:** [Implementation Status](06-implementation/implementation-status.md), [User Stories](02-requirements/user-stories.md), [Business Rules](02-requirements/business-rules.md)
 - **Confidentiality:** Internal / Academic Use
 
 ---
@@ -90,7 +90,7 @@ This guide shows you how to leverage the instruction files (`.github/copilot-ins
 3. docs/02-requirements/business-rules.md  # Learn the business constraints
 4. docs/04-data-design/erd.dbml           # Study the database schema
 5. docs/05-tech-design/architecture.md    # Understand system design
-6. docs/06-implementation/implementation-plan.md  # Know the build sequence
+6. docs/06-implementation/implementation-status.md  # Implementation vs requirements gap
 ```
 
 #### Step 2: Bookmark Instruction Files
@@ -101,9 +101,14 @@ Keep these open in your IDE or browser:
 
 #### Step 3: Set Up Environment
 ```powershell
-# Start PostgreSQL
-cd C:\Users\User\IdeaProjects\laundry-shop-management-system
-docker compose -f docker/docker-compose.yml up -d
+# Copy env files (from project root)
+Copy-Item docker\.env.example docker\.env.docker
+Copy-Item backend\.env.example backend\.env
+Copy-Item frontend\.env.example frontend\.env.local
+# Edit docker/.env.docker and backend/.env with your DB_PASSWORD
+
+# Start PostgreSQL (from project root)
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # Verify database is running
 docker ps | Select-String postgres
@@ -683,7 +688,7 @@ const grandTotal = totalLoads * 120 + extraMinutes;  // Don't do this!
 1. ✅ Read this guide completely
 2. ✅ Bookmark the instruction files
 3. ✅ Set up your development environment
-4. ✅ Start with Phase 1 from `implementation-plan.md`
+4. ✅ Start with Phase 1 from the requirements (user-stories.md, business-rules.md)
 5. ✅ Reference instruction files for every feature
 6. ✅ Use validation checklists before submitting PRs
 

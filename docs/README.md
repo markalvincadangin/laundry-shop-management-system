@@ -31,11 +31,12 @@
 |-----------------------------------------------|-----------------------------------------------------------|
 | [project-scope.md](01-scope/project-scope.md) | MVP vs. post-MVP features, deliverables, and constraints. |
 
-### 02-requirements/ — Functional Requirements
-| Document                                               | Description                                                          |
-|--------------------------------------------------------|----------------------------------------------------------------------|
-| [user-stories.md](02-requirements/user-stories.md)     | All user stories (US-01 to US-11) defining functional behavior.      |
-| [business-rules.md](02-requirements/business-rules.md) | Enforceable business rules (BR-PR-*, BR-OL-*, BR-PAY-*, BR-NOTIF-*). |
+### 02-requirements/ — Functional & Non-Functional Requirements
+| Document                                                           | Description                                                          |
+|--------------------------------------------------------------------|----------------------------------------------------------------------|
+| [user-stories.md](02-requirements/user-stories.md)               | All user stories (US-01 to US-11) defining functional behavior.      |
+| [business-rules.md](02-requirements/business-rules.md)             | Enforceable business rules (BR-PR-*, BR-OL-*, BR-PAY-*, BR-NOTIF-*). |
+| [non-functional-requirements.md](02-requirements/non-functional-requirements.md) | Security, performance, availability, audit, usability, maintainability. |
 
 ### 03-process/ — Business Process Flows
 | Document                                  | Description                                             |
@@ -54,21 +55,20 @@
 | [architecture.md](05-tech-design/architecture.md) | System architecture, tech stack, layered design, data flows.                  |
 | [openapi.yaml](05-tech-design/openapi.yaml)       | API contract definitions (endpoints, request/response schemas, status codes). |
 
-### 06-implementation/ — Development Roadmap
+### 06-implementation/ — Deployment & Operations
 | Document                                                           | Description                                                             |
 |--------------------------------------------------------------------|-------------------------------------------------------------------------|
-| [implementation-plan.md](06-implementation/implementation-plan.md) | Phase-by-phase development roadmap with task breakdowns and guardrails. |
-| [deployment-guide.md](06-implementation/deployment-guide.md)       | Deployment instructions and environment configuration.                  |
-| [user-manual.md](06-implementation/user-manual.md)                 | End-user guide for Owner and Staff (Phase 14). |
-| [handover-checklist.md](06-implementation/handover-checklist.md)   | Handover session agenda and sign-off (Phase 14). |
+| [deployment-guide.md](06-implementation/deployment-guide.md)     | Deployment instructions (dev and production), environment configuration, backup. |
+| [user-manual.md](06-implementation/user-manual.md)                | End-user guide for Owner and Staff.                                     |
+| [handover-checklist.md](06-implementation/handover-checklist.md)  | Handover session agenda and sign-off.                                  |
 | [release-notes-mvp-v1.md](06-implementation/release-notes-mvp-v1.md) | MVP v1.0 release notes and known limitations.                           |
+| [implementation-status.md](06-implementation/implementation-status.md) | Gap analysis: implemented vs. required per docs (user stories, BRs, API, NFRs). |
 
 ### Root-Level Guides
 | Document                                                 | Description                                                                       |
 |----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| [STYLE_GUIDE.md](STYLE_GUIDE.md)                         | Documentation standards, header template, terminology, and cross-reference rules. |
-| [GETTING_STARTED.md](GETTING_STARTED.md)                 | Step-by-step local setup instructions (Docker, database, backend, frontend).      |
-| [development-credentials.md](development-credentials.md) | Default development credentials for database, seeded users, and test accounts.    |
+| [GETTING_STARTED.md](GETTING_STARTED.md)                 | Step-by-step local setup and implementation guide (Docker, database, backend, frontend). |
+| [development-credentials.md](development-credentials.md) | Default development credentials for database, seeded users, and test accounts.   |
 
 ---
 
@@ -81,6 +81,7 @@
 | **What does the database look like?**   | [erd.dbml](04-data-design/erd.dbml) — Tables, columns, constraints, relationships               |
 | **What are the API endpoints?**         | [openapi.yaml](05-tech-design/openapi.yaml) — Request/response contracts, status codes          |
 | **How is the system structured?**       | [architecture.md](05-tech-design/architecture.md) — Layered design, tech stack, data flows      |
-| **What should I build next?**           | [implementation-plan.md](06-implementation/implementation-plan.md) — Phase-by-phase roadmap     |
+| **What rules (non-functional)?**       | [non-functional-requirements.md](02-requirements/non-functional-requirements.md) — Security, performance, audit, etc. |
 | **What's in/out of scope?**             | [project-scope.md](01-scope/project-scope.md) — MVP vs. post-MVP features                       |
+| **How do we deploy and operate?**       | [deployment-guide.md](06-implementation/deployment-guide.md) — Dev/prod deployment, backup     |
 | **Why does the client need this?**      | [case-study.md](00-context/case-study.md) — Business problems and pain points                   |

@@ -72,11 +72,11 @@ The `orders` table stores snapshot values (`base_price_per_load`, `kg_limit_per_
 **MVP (application usage)**
 - `order_status`: RECEIVED, WASHING, DRYING, FOLDING, READY_FOR_PICKUP, RELEASED, CANCELLED (all used)
 - `payment_status`: UNPAID, PAID only (PARTIAL reserved for post-MVP)
-- `payment_method`: CASH only (GCASH, BANK_TRANSFER reserved for post-MVP)
+- `payment_method`: CASH, GCASH, BANK_TRANSFER (all used in MVP for recording how the customer paid; no gateway integration)
 
 **Post-MVP (schema already supports)**
-- `payment_status`: PARTIAL
-- `payment_method`: GCASH, BANK_TRANSFER
+- `payment_status`: PARTIAL (e.g., partial payments)
+- Payment gateway integration (API integration with providers) — out of scope for MVP
 
 ---
 

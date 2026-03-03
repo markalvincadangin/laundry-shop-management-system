@@ -14,7 +14,7 @@
 - Unique reference number generation (LDR-YYYYMMDD-XXXX)
 - List orders with **pagination** and **filtering** (status, payment status, date range)
 - View order details and status history
-- Update order status (RECEIVED → WASHING → DRYING → READY → COMPLETED)
+- Update order status: **Received** → **Washing** → **Drying** → **Folding** → **Ready for Pickup** → **Released** (release requires Ready for Pickup and payment recorded)
 
 ### Customer Management (US-05)
 - Create and manage customers
@@ -22,8 +22,9 @@
 
 ### Payment (US-06, US-07)
 - Record payment for orders (one payment per order)
+- Record **payment method** (Cash, GCash, Bank Transfer) for each payment
 - List payments with **pagination** and **filtering** (order ID, date range)
-- Payment must equal order grand total
+- Payment amount must equal order grand total
 
 ### Public Tracking (US-04)
 - Customers can track order status by reference number (no login required)

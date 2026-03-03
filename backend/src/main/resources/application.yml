@@ -9,8 +9,8 @@ spring:
     # Syntax: ${VAR_NAME:default_value}
     # WARNING: DB_PASSWORD default is for development only - MUST be set via environment variable in production
     # CRITICAL: ?stringtype=unspecified enables PostgreSQL enum compatibility (order_status, payment_status, etc.)
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:laundry_db}?stringtype=unspecified
-    username: ${DB_USER:laundry_user}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5433}/${DB_NAME}?stringtype=unspecified
+    username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 

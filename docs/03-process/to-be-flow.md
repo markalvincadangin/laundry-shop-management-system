@@ -126,7 +126,7 @@ RELEASED
 **Rules/Constraints**
 - Status MUST belong to the predefined set (BR-OL-03).
 - Status transitions SHOULD follow the logical sequence (BR-OL-04, recommended for MVP+).
-- Order cannot move to RELEASED unless the status is READY_FOR_PICKUP (BR-OL-05).
+- Order cannot move to RELEASED unless (1) status is READY_FOR_PICKUP and (2) payment has been recorded (Paid) (BR-OL-05).
 - Every status change is logged with the timestamp and user.
 
 ---
@@ -143,15 +143,15 @@ RELEASED
 **Steps**
 1. Staff or Owner retrieves an order using a reference number or customer search.
 2. System displays order details, computed grand total, and current payment status.
-3. Staff or Owner enters the payment amount.
+3. Staff or Owner enters the payment amount and selects payment method (Cash, GCash, Bank Transfer).
 4. System validates:
    - Payment amount equals order grand total (BR-PAY-03)
    - No existing payment for the order (one payment per order, BR-PAY-02)
 5. If valid:
-   - Payment record is stored
+   - Payment record is stored (including payment method, BR-PAY-05)
    - Payment status updated to **Paid**
    - Order eligible for release
-6. Staff or Owner updates order status to **Released** (order MUST be Ready for Pickup first).
+6. Staff or Owner updates order status to **Released** (order MUST be Ready for Pickup and Paid first; BR-OL-05).
 
 **Rules/Constraints**
 - Payment is typically collected upon pickup (BR-PAY-01).

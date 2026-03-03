@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** BR-CATALOG (BR-PR-*, BR-OL-*, BR-PAY-*, BR-REC-*, BR-NOTIF-*)  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
+> **Version:** 1.1  
+> **Date:** 2026-02-20  
 > **Source:** Client Interview & Case Study  
 > **Purpose:** Define enforceable rules that drive backend logic, validation, and computations  
 > **Status:** Baseline (MVP)
@@ -215,6 +215,18 @@
 
 ---
 
+### BR-PAY-05 – Payment Method Recorded
+
+**Rule:** Each payment MUST record the **payment method** used: Cash, GCash, or Bank Transfer.  
+**Condition:** Payment creation.  
+**System Behavior:** Store selected payment method with the payment record.  
+**Constraint:** For record-keeping only; no integration with payment gateways or providers.  
+**Applies To:** Payment creation  
+**Enforcement:** Backend service + database (payment_method column)  
+**Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order), [US-07](user-stories.md#us-07-view-payment-history)
+
+---
+
 ## 4. Records & Retention Rules
 
 ### BR-REC-01 – Core Data to Record
@@ -272,7 +284,7 @@
 **Required for MVP:**
 - BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-05
 - BR-OL-01, BR-OL-02, BR-OL-03, BR-OL-05, BR-OL-06
-- BR-PAY-02, BR-PAY-03, BR-PAY-04
+- BR-PAY-02, BR-PAY-03, BR-PAY-04, BR-PAY-05
 - BR-NOTIF-02 (tracking by reference)
 
 **Recommended next:**

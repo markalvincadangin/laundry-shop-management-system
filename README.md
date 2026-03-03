@@ -47,7 +47,7 @@ Based on validated user stories from client interviews:
 - Update order status through defined stages:
   - **Received** → **Washing** → **Drying** → **Folding** → **Ready for Pickup** → **Released**
 - Maintain an **audit trail** of all status changes (who, when, what)
-- Prevent premature release (orders must be "Ready for Pickup" before release)
+- Prevent premature release (orders must be "Ready for Pickup" and paid before release)
 
 ### 💰 Payment Management
 - **Record payments** linked to specific orders (one payment per order)
@@ -96,7 +96,7 @@ These rules are enforced in the backend service layer and derived from **busines
 | **Unique Reference Numbers** | Every order must have a unique tracking reference             | BR-OL-01  |
 | **Initial Status**           | New orders start with status `RECEIVED`                       | BR-OL-02  |
 | **Status Transitions**       | Logical progression (no skipping backwards)                   | BR-OL-04  |
-| **Release Precondition**     | Orders can only be released when status is `READY_FOR_PICKUP` | BR-OL-05  |
+| **Release Precondition**     | Orders can only be released when status is `READY_FOR_PICKUP` and payment is recorded (Paid) | BR-OL-05  |
 
 ### Payment Rules
 | Rule                         | Description                                  | Reference |
@@ -197,8 +197,10 @@ The REST API follows the **OpenAPI 3.0.3** specification defined in **[docs/05-t
 | `/api/v1/payments`                           | POST   | Record payment (1:1 with order)                 | ✅ Staff/Owner |
 | `/api/v1/reports/sales/daily`                | GET    | Daily sales report                              | ✅ Owner only  |
 | `/api/v1/reports/sales/monthly`              | GET    | Monthly income report                           | ✅ Owner only  |
+| `/api/v1/reports/sales/yearly`               | GET    | Yearly income report                            | ✅ Owner only  |
 | `/api/v1/customers`                          | POST   | Create new customer                             | ✅ Staff/Owner |
 | `/api/v1/service-rates/active`               | GET    | Get current pricing rules                       | ✅ Staff/Owner |
+| `/api/v1/health`                             | GET    | Health check (liveness)                         | ❌ No auth     |
 
 #### API Documentation
 
@@ -206,9 +208,13 @@ When the backend is running, access interactive API documentation at:
 - **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
+For the full list of endpoints (e.g. order preview, order by ID, payments by ID), see **[docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml)**.
+
 ---
 
 ## 📂 Repository Structure
+
+The layout below matches the project. **Documentation in `docs/` is the source of truth** for requirements, business rules, data design, and API contract — see [docs/README.md](docs/README.md).
 
 ```
 laundry-shop-management-system/
@@ -226,56 +232,69 @@ laundry-shop-management-system/
 ├── frontend/                    # Next.js client application
 ├── docker/
 │   └── docker-compose.yml      # PostgreSQL 16 container setup
-├── docs/                        # Project documentation
+├── docs/                        # Project documentation (source of truth)
+│   ├── README.md               # Documentation index — start here
 │   ├── 00-context/
 │   │   ├── case-study.md       # Client background & problem statement
 │   │   └── client-interview.md # Interview notes
+│   ├── 01-scope/
+│   │   └── project-scope.md    # MVP vs post-MVP, deliverables
 │   ├── 02-requirements/
-│   │   ├── user-stories.md     # Functional requirements (US-xx)
+│   │   ├── user-stories.md     # Functional requirements (US-01 to US-11)
 │   │   └── business-rules.md   # Pricing & validation rules (BR-xx)
+│   ├── 03-process/
+│   │   └── to-be-flow.md       # Future-state process flows
 │   ├── 04-data-design/
 │   │   ├── erd.dbml            # Database schema (source of truth)
 │   │   ├── erd.svg             # Visual ERD diagram
-│   │   └── data-notes.md
+│   │   ├── data-notes.md
+│   │   └── erd.pdf
 │   ├── 05-tech-design/
 │   │   ├── openapi.yaml        # REST API contract (source of truth)
 │   │   └── architecture.md     # System design & deployment
+│   ├── 06-implementation/
+│   │   ├── deployment-guide.md # Production & dev deployment
+│   │   ├── user-manual.md      # End-user guide (Owner/Staff)
+│   │   ├── handover-checklist.md
+│   │   └── release-notes-mvp-v1.md
+│   ├── GETTING_STARTED.md      # Developer implementation guide
 │   └── development-credentials.md
-├── .env.example                 # Environment variables template
-├── README.md                    # This file
-└── ENV_SETUP.md                 # Detailed environment setup guide
+├── scripts/
+│   ├── backup-database.sh      # Database backup (Linux/macOS)
+│   └── backup-database.ps1     # Database backup (Windows)
+└── README.md                    # This file
 ```
 
 ---
 
 ## 📋 Prerequisites
 
-Before you begin, ensure the following tools are installed and properly configured on your development machine:
+Before you begin, ensure the following tools are installed on your development machine. **The team uses Windows** — all commands below use PowerShell and work on Windows 10/11. The setup also runs on macOS/Linux with minor adjustments (e.g., use `./mvnw` instead of `.\mvnw.cmd`).
 
 ### Required Software
 
 | Tool               | Minimum Version  | Verification Command | Download Link                                                                                                            |
 |--------------------|------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------|
 | **Docker Desktop** | Latest           | `docker --version`   | [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)                         |
-| **Java JDK**       | 21 (LTS)         | `java -version`      | [https://www.oracle.com/java/technologies/downloads/#java21](https://www.oracle.com/java/technologies/downloads/#java21) |
-| **Maven**          | 3.9+             | `mvn -version`       | [https://maven.apache.org/download.cgi](https://maven.apache.org/download.cgi)                                           |
+| **Java JDK**       | 21 (LTS)         | `java -version`      | [https://www.oracle.com/java/technologies/downloads/#java21](https://www.oracle.com/java/technologies/downloads/#java21) or [Adoptium Eclipse Temurin](https://adoptium.net/) |
+| **Maven**          | 3.9+ (or use wrapper) | `.\backend\mvnw.cmd -version` | Project includes Maven Wrapper — no separate install needed |
 | **Node.js**        | 18 LTS or 20 LTS | `node --version`     | [https://nodejs.org/](https://nodejs.org/)                                                                               |
 | **Git**            | Latest           | `git --version`      | [https://git-scm.com/downloads](https://git-scm.com/downloads)                                                           |
 
-### Verification Steps
+### Verification Steps (Windows PowerShell)
 
-After installation, verify each tool in PowerShell:
+Open **PowerShell** or **Windows Terminal** and run:
 
 ```powershell
-# Check Docker
+# Check Docker (ensure Docker Desktop is running)
 docker --version
 docker compose version
 
 # Check Java (must be version 21)
 java -version
 
-# Check Maven (or use the included wrapper)
-mvn -version
+# Check Maven wrapper (recommended — no Maven install needed)
+.\mvnw.cmd -version
 
 # Check Node.js
 node --version
@@ -284,6 +303,8 @@ npm --version
 # Check Git
 git --version
 ```
+
+> **Tip:** Use the project's Maven Wrapper — no need to install Maven separately. The wrapper ensures consistent builds across machines. Run it from the `backend/` directory: `cd backend && ./mvnw` (macOS/Linux) or `cd backend` then `.\mvnw.cmd` (Windows).
 
 ### Important Database Requirements
 
@@ -310,64 +331,64 @@ cd laundry-shop-management-system
 
 ### Step 2: Environment Variables Configuration
 
-The application requires environment variables for database credentials and configuration.
+Configuration is **per component** — each part of the stack has its own env file. This avoids conflicts and keeps credentials scoped.
 
-#### 2.1 Create the `.env` files
+#### 2.1 Create the Env Files (Windows PowerShell)
+
+From the **project root** (`laundry-shop-management-system`), run:
 
 ```powershell
-# Root .env — for Docker Compose (database credentials)
-Copy-Item .env.example .env
+# Docker — database credentials for PostgreSQL container
+Copy-Item docker\.env.example docker\.env.docker
 
-# Backend .env — for Spring Boot when running from backend/
+# Backend — DB connection, JWT, CORS for Spring Boot
 Copy-Item backend\.env.example backend\.env
 
-# Frontend .env.local — for Next.js when running from frontend/
+# Frontend — API URL for Next.js
 Copy-Item frontend\.env.example frontend\.env.local
 ```
 
-> **Note:** The root `.env` is used by Docker Compose. The backend and frontend each have their own env files for when running those components.
+#### 2.2 Configure Each File
 
-#### 2.2 Configure Required Variables
-
-Open `.env` in a text editor and configure the following **required** variables:
+**A) `docker/.env.docker`** — Used by Docker Compose for the database container. Edit and set:
 
 ```env
-# Database Configuration (REQUIRED)
 DB_USER=laundry_user
-DB_PASSWORD=laundry_password    # ⚠️ Change this for production
-DB_HOST=localhost
-DB_PORT=5433                    # External port (mapped to 5432 inside container)
+DB_PASSWORD=your_secure_password_here   # ⚠️ Change from example — never commit this file
+DB_PORT=5433
 DB_NAME=laundry_db
+```
 
-# Backend Configuration (REQUIRED)
+**B) `backend/.env`** — Used by Spring Boot. Must match the database credentials and add:
+
+```env
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=laundry_db
+DB_USER=laundry_user
+DB_PASSWORD=your_secure_password_here   # Same as docker/.env.docker
+
 SPRING_PORT=8080
-SPRING_PROFILES_ACTIVE=dev      # Use 'dev' for local development
-JWT_SECRET=dev-only-change-me-in-production  # ⚠️ MUST change in production
+SPRING_PROFILES_ACTIVE=dev
+JWT_SECRET=dev-only-change-me-in-production
 ALLOWED_ORIGIN=http://localhost:3000
+```
 
-# Frontend Configuration (REQUIRED)
+**C) `frontend/.env.local`** — Used by Next.js. Set the API URL:
+
+```env
 NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ```
 
-#### Required Environment Variables Reference
+#### Environment Variables Quick Reference
 
-| Variable                 | Purpose                  | Default Value               | Required |
-|--------------------------|--------------------------|-----------------------------|----------|
-| `DB_USER`                | PostgreSQL username      | `laundry_user`              | ✅ Yes    |
-| `DB_PASSWORD`            | PostgreSQL password      | `laundry_password`          | ✅ Yes    |
-| `DB_HOST`                | Database host            | `localhost`                 | ✅ Yes    |
-| `DB_PORT`                | Database port (external) | `5433`                      | ✅ Yes    |
-| `DB_NAME`                | Database name            | `laundry_db`                | ✅ Yes    |
-| `SPRING_PORT`            | Backend server port      | `8080`                      | ✅ Yes    |
-| `SPRING_PROFILES_ACTIVE` | Spring profile           | `dev`                       | ✅ Yes    |
-| `JWT_SECRET`             | JWT signing key          | (see above)                 | ✅ Yes    |
-| `ALLOWED_ORIGIN`         | CORS allowed origin      | `http://localhost:3000`     | ✅ Yes    |
-| `NEXT_PUBLIC_API_URL`    | Frontend API base URL    | `http://localhost:8080/api` | ✅ Yes    |
+| File                   | Key Variables                                                | Purpose                                   |
+|------------------------|--------------------------------------------------------------|-------------------------------------------|
+| `docker/.env.docker`   | `DB_USER`, `DB_PASSWORD`, `DB_PORT`, `DB_NAME`               | PostgreSQL container                      |
+| `backend/.env`         | `DB_*`, `SPRING_PORT`, `SPRING_PROFILES_ACTIVE`, `JWT_SECRET`, `ALLOWED_ORIGIN` | Backend connection & security |
+| `frontend/.env.local`  | `NEXT_PUBLIC_API_URL`                                        | Frontend → backend API calls              |
 
-> ⚠️ **IMPORTANT SECURITY WARNINGS:**
-> - **NEVER commit the `.env` file to Git** (already in `.gitignore`)
-> - **Change `DB_PASSWORD` and `JWT_SECRET` before deploying to production**
-> - Each developer should maintain their own local `.env` file
+> ⚠️ **Security:** Never commit `docker/.env.docker`, `backend/.env`, or `frontend/.env.local` to Git. They are in `.gitignore`. Each developer maintains their own local copies.
 
 ### Step 3: Database Setup (Docker)
 
@@ -376,8 +397,8 @@ The project uses **PostgreSQL 16** running in a Docker container with the **pgcr
 #### 3.1 Start the PostgreSQL Container
 
 ```powershell
-# From the repository root, start the database
-docker compose -f docker/docker-compose.yml up -d
+# From the repository root, start the database with the .env.docker file
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # Verify the container is running
 docker compose -f docker/docker-compose.yml ps
@@ -427,14 +448,14 @@ pgcrypto  | 1.3     | public | cryptographic functions
 docker compose -f docker/docker-compose.yml down
 
 # Start the database
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # View database logs
 docker compose -f docker/docker-compose.yml logs -f postgres
 
 # Reset the database (⚠️ DELETES ALL DATA)
 docker compose -f docker/docker-compose.yml down -v
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 ```
 
 ### Step 4: Database Migrations (Flyway)
@@ -536,17 +557,28 @@ cd backend
 
 #### 5.3 Run the Application
 
-**Option A: Using Maven Wrapper (Recommended)**
+**Option A: Command Line (PowerShell)**
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-**Option B: Using IntelliJ IDEA**
+**Option B: IntelliJ IDEA**
 
-1. Open `backend/` folder in IntelliJ IDEA
-2. Locate `src/main/java/com/himotech/laundryms/LaundrySystemApplication.java`
-3. Right-click → **Run 'LaundrySystemApplication'**
+1. **File → Open** → select `backend/` folder (or the whole project and set backend as the working module).
+2. Wait for Maven to import (right-side Maven tool window).
+3. Find `LaundrySystemApplication.java` under `src/main/java/com/himotech/laundryms/`.
+4. Right-click the class → **Run 'LaundrySystemApplication'**.
+5. Ensure **Run Configuration** uses `backend/` as working directory so it picks up `backend/.env`.
+
+**Option C: VS Code / Cursor**
+
+1. Open the project folder. Install **Extension Pack for Java** (or **Spring Boot Extension Pack**) if needed.
+2. Open `backend/src/main/java/com/himotech/laundryms/LaundrySystemApplication.java`.
+3. Click **Run | Debug** above the `main` method, or press `F5`.
+4. Alternatively, open **Terminal** in `backend/` and run: `.\mvnw.cmd spring-boot:run`.
+
+> **Note:** Backend loads env from `backend/.env`. Ensure you're running from `backend/` directory so the `.env` file is found.
 
 #### 5.4 Verify Backend is Running
 
@@ -601,18 +633,26 @@ added XXX packages in XX.XXs
 
 #### 6.3 Run the Development Server
 
-```powershell
-# Start the Next.js dev server
-npm run dev
+**Command Line (PowerShell)**
 
-# Or use Yarn
-yarn dev
+```powershell
+npm run dev
+# Or: yarn dev
 ```
+
+**IDE Options**
+
+| IDE | How to Run |
+|-----|------------|
+| **IntelliJ** | Right-click `frontend/package.json` → **Run 'dev'**, or use **Terminal** inside `frontend/` and run `npm run dev`. |
+| **VS Code / Cursor** | Open **Terminal** (Ctrl+`) → `cd frontend` → `npm run dev`, or use the **NPM Scripts** view to run `dev`. |
+| **Any** | Open a terminal, `cd frontend`, then `npm run dev`. |
 
 **Expected output:**
 ```
-- ready started server on 0.0.0.0:3000, url: http://localhost:3000
-- info Loaded env from .env
+▲ Next.js 14.x.x
+- Local:        http://localhost:3000
+- ready started server on 0.0.0.0:3000
 ```
 
 #### 6.4 Verify Frontend is Running
@@ -639,7 +679,7 @@ After completing all steps, verify the entire system is running:
 | Component       | URL                                                                            | Status Check        |
 |-----------------|--------------------------------------------------------------------------------|---------------------|
 | **Database**    | `localhost:5433`                                                               | `docker compose ps` |
-| **Backend API** | [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health)     | HTTP 200 OK         |
+| **Backend API** | [http://localhost:8080/api/v1/health](http://localhost:8080/api/v1/health) or `/actuator/health` | HTTP 200 OK         |
 | **API Docs**    | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | Swagger UI loads    |
 | **Frontend**    | [http://localhost:3000](http://localhost:3000)                                 | Application loads   |
 
@@ -660,9 +700,9 @@ docker compose -f docker/docker-compose.prod.yml up -d --build
 # 3. Access via http://localhost or your server IP
 ```
 
-**Optional:** Enable HTTPS with self-signed cert: `sh docker/nginx/generate-ssl.sh` then `cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf` and restart nginx.
+**Optional (HTTPS):** Run `sh docker/nginx/generate-ssl.sh` (Git Bash or WSL on Windows) then `cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf` and restart nginx.
 
-**Backup:** Run `./scripts/backup-database.sh` (or `.\scripts\backup-database.ps1` on Windows) for database backups.
+**Backup (Windows):** `.\scripts\backup-database.ps1` or `.\scripts\backup-database.ps1 -BackupDir C:\Backups\laundry`. The script uses the running `laundry-postgres` container by default; to override connection settings, either create a root `.env` with `DB_*` variables or manually set `$env:DB_HOST`, `$env:DB_PORT`, `$env:DB_PASSWORD`, etc. in your shell (you can copy these values from `backend\.env`).
 
 See [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) and [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) for full details.
 
@@ -676,11 +716,13 @@ For experienced developers, here's the condensed version:
 # 1. Clone and setup environment
 git clone <repository-url>
 cd laundry-shop-management-system
-Copy-Item .env.example .env
-# Edit .env with your credentials
+Copy-Item docker\.env.example docker\.env.docker
+Copy-Item backend\.env.example backend\.env
+Copy-Item frontend\.env.example frontend\.env.local
+# Edit docker/.env.docker (and backend/.env, frontend/.env.local if needed)
 
 # 2. Start database
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
 
 # 3. Start backend (in new terminal)
 cd backend
@@ -697,33 +739,19 @@ npm run dev
 ## ⚙️ Configuration
 
 ### Environment Variables
-Create a `.env` file in the root directory based on `.env.example`:
 
-```powershell
-Copy-Item .env.example .env
-```
+Environment configuration is **per component** (no single root `.env`). Create env files as in **Step 2: Environment Variables Configuration** above:
 
-Then update the values as needed:
-
-```env
-# Database Configuration
-DB_USER=laundry_user
-DB_PASSWORD=<your_secure_password>
-DB_HOST=localhost
-DB_PORT=5433
-DB_NAME=laundry_db
-
-# Backend Configuration
-SPRING_PORT=8080
-
-# Frontend Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
-```
+| Location | Purpose |
+|----------|---------|
+| `docker/.env.docker` | Docker Compose (DB credentials, ports) — copy from `docker/.env.example` |
+| `backend/.env` | Spring Boot (DB URL, JWT, CORS) — copy from `backend/.env.example` |
+| `frontend/.env.local` | Next.js (API URL) — copy from `frontend/.env.example` |
 
 **Important:**
-- Never commit the `.env` file to version control. It is already excluded in `.gitignore`.
-- Commit `.env.example` so new developers can bootstrap quickly.
-- Each developer should maintain their own local `.env` file with appropriate credentials.
+- Never commit `docker/.env.docker`, `backend/.env`, or `frontend/.env.local` to version control (they are in `.gitignore`).
+- Commit the `.env.example` files in each folder so new developers can bootstrap quickly.
+- Each developer should maintain their own local env files with appropriate credentials.
 
 ### Backend Configuration
 - **File:** `backend/src/main/resources/application.yml`
@@ -731,7 +759,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
   - Server port: 8080
   - Database URL: jdbc:postgresql://\${DB_HOST}:\${DB_PORT}/\${DB_NAME}
   - Flyway auto-migration: enabled
-- Environment variables are injected at runtime from the `.env` file
+- Environment variables are read at runtime from `backend/.env` (or system env)
 
 ### Database Migrations
 All database schema changes are version-controlled using Flyway:
@@ -741,42 +769,44 @@ All database schema changes are version-controlled using Flyway:
 
 For detailed data model and relationships, see `docs/04-data-design/`.
 
-## 👨‍💼 Development Workflow
+## 👥 Team Collaboration & Git Workflow
 
-### Local Development Setup
-1. Clone the repository
-2. Create `.env` file from `.env.example`
-3. Start Docker containers: `docker compose -f docker/docker-compose.yml up -d`
-4. Start backend: `cd backend && .\mvnw.cmd spring-boot:run`
-5. Start frontend: `cd frontend && npm run dev`
-6. Access the application at `http://localhost:3000`
+### Branch Strategy & Workflow
+- **`main`** — Production-ready branch (deployment only). Protected; no direct commits.
+- **`develop`** — Active development branch. All feature/fix/docs/refactor/test/chore branches must open PRs **into `develop`**.
+- **Feature branches** — `feature/short-description` (e.g., `feature/order-preview`).
+- **Bugfix branches** — `fix/bug-description`.
+- **Workflow:** Sync from `develop` (`git checkout develop && git pull --rebase origin develop`) → Branch from `develop` → Commit (use `feat:`, `fix:`, `docs:`, etc.) → Push → Open PR **into `develop`** → Request review.
+- **Local setup:** Create env files from `.env.example` in `docker/`, `backend/`, `frontend/` → Start DB: `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d` → Backend: `cd backend` + `.\mvnw.cmd spring-boot:run` → Frontend: `cd frontend` + `npm run dev` → Open http://localhost:3000
 
-### Git Workflow
-- Create feature branches: `git checkout -b feature/your-feature-name`
-- Keep commits atomic and descriptive
-- Push to the feature branch and create Pull Request
-- Never commit `.env` or sensitive configuration files
-- Follow conventional commit messages: `feat:`, `fix:`, `docs:`, `refactor:`, etc.
+### Pull Request Checklist
 
-### Code Quality
-- Backend: Follow Java coding standards and Spring Boot best practices
-- Frontend: Use TypeScript for type safety
-- Test your changes before pushing
-- Ensure no sensitive data in commit messages or code
+- Fill out the [PR template](.github/pull_request_template.md).
+- Link user stories (US-xx) or business rules (BR-xx) if applicable.
+- Ensure tests pass locally (Backend: `.\mvnw.cmd test` in `backend/`; Frontend: `npm run lint && npm run test && npm run build` in `frontend/`).
+- Request review from at least one team member. Do not merge your own PR without review.
+
+### Rules for All Team Members
+
+- **Never commit** `.env`, `.env.docker`, `.env.local`, or any file with secrets.
+- **Never force-push** to `main` (or shared branches).
+- **Pull before you push** — `git pull --rebase origin main` before opening a PR.
+- **Keep PRs small** — One feature or fix per PR.
+- **Use Maven wrapper** (`.\mvnw.cmd`) for consistency across machines.
 
 ## 🔧 Troubleshooting
 
 ### Database Connection Issues
 - **Verify Docker is running:** `docker compose -f docker/docker-compose.yml ps`
-- **Check credentials:** Ensure `.env` in the repository root has correct `DB_USER` and `DB_PASSWORD`
+- **Check credentials:** Ensure `docker/.env.docker` and `backend/.env` have correct `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
-- **Restart container:** `docker compose -f docker/docker-compose.yml down && docker compose -f docker/docker-compose.yml up -d`
+- **Restart container:** `docker compose -f docker/docker-compose.yml down` then `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d`
 
 ### Flyway Migrations Fail
 - **Check migration format:** Files should follow `V{version}__{description}.sql` (e.g., `V1__init.sql`)
 - **Verify file encoding:** Ensure all migration files are in UTF-8 format
 - **Review logs:** Check application console output for detailed migration error messages
-- **Reset database:** `docker compose -f docker/docker-compose.yml down -v && docker compose -f docker/docker-compose.yml up -d`
+- **Reset database:** `docker compose -f docker/docker-compose.yml down -v` then `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d`
 
 ### Backend Startup Issues
 - **Check Java version:** `java -version` (should be 21 or higher)
@@ -802,14 +832,22 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 
 ## 📞 Support & Documentation
 
-For detailed project documentation:
-- **Case Study & Problem Statement:** `docs/00-context/case-study.md`
-- **User Stories (Features):** `docs/02-requirements/user-stories.md`
-- **Business Rules:** `docs/02-requirements/business-rules.md`
-- **Database Design:** `docs/04-data-design/erd.dbml` and `erd.svg`
-- **API Contract:** `docs/05-tech-design/openapi.yaml`
-- **Architecture:** `docs/05-tech-design/architecture.md`
+**Documentation index:** **[docs/README.md](docs/README.md)** — central guide to all project docs (source of truth).
 
-## 📝 License
-
-[Add your license here if applicable]
+| Topic | Document |
+|-------|----------|
+| **Documentation index** | [docs/README.md](docs/README.md) |
+| **Case study & problem statement** | [docs/00-context/case-study.md](docs/00-context/case-study.md) |
+| **Project scope (MVP vs post-MVP)** | [docs/01-scope/project-scope.md](docs/01-scope/project-scope.md) |
+| **User stories (US-01 to US-11)** | [docs/02-requirements/user-stories.md](docs/02-requirements/user-stories.md) |
+| **Business rules (BR-xx)** | [docs/02-requirements/business-rules.md](docs/02-requirements/business-rules.md) |
+| **To-be process flows** | [docs/03-process/to-be-flow.md](docs/03-process/to-be-flow.md) |
+| **Database design (ERD)** | [docs/04-data-design/erd.dbml](docs/04-data-design/erd.dbml), [erd.svg](docs/04-data-design/erd.svg) |
+| **API contract** | [docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml) |
+| **Architecture** | [docs/05-tech-design/architecture.md](docs/05-tech-design/architecture.md) |
+| **Deployment guide** | [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) |
+| **User manual (Owner/Staff)** | [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) |
+| **Getting started (developers)** | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) |
+| **Development credentials** | [docs/development-credentials.md](docs/development-credentials.md) |
+| **Implementation status** | [docs/06-implementation/implementation-status.md](docs/06-implementation/implementation-status.md) |
+| **Non-functional requirements** | [docs/02-requirements/non-functional-requirements.md](docs/02-requirements/non-functional-requirements.md) |

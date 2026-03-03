@@ -1,6 +1,6 @@
 # Faith Laundry Shop — PostgreSQL 16 for local development
-# Run from project root: docker compose -f docker/docker-compose.yml up -d
-# Requires .env with DB_NAME, DB_USER, DB_PASSWORD, DB_PORT (or use defaults below)
+# Run from project root: docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
+# Requires docker/.env.docker with DB_NAME, DB_USER, DB_PASSWORD, DB_PORT (or use defaults below)
 
 services:
   postgres:
@@ -8,9 +8,9 @@ services:
     container_name: laundry-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:laundry_db}
-      POSTGRES_USER: ${DB_USER:laundry_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:laundry_password}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       # Host 5433 → container 5432 (avoids conflict with local PostgreSQL)
       - "${DB_PORT:-5433}:5432"
