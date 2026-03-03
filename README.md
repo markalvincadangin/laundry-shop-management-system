@@ -277,7 +277,7 @@ Before you begin, ensure the following tools are installed on your development m
 |--------------------|------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------|
 | **Docker Desktop** | Latest           | `docker --version`   | [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)                         |
 | **Java JDK**       | 21 (LTS)         | `java -version`      | [https://www.oracle.com/java/technologies/downloads/#java21](https://www.oracle.com/java/technologies/downloads/#java21) or [Adoptium Eclipse Temurin](https://adoptium.net/) |
-| **Maven**          | 3.9+ (or use wrapper) | `.\mvnw.cmd -version` | Project includes Maven Wrapper — no separate install needed |
+| **Maven**          | 3.9+ (or use wrapper) | `.\backend\mvnw.cmd -version` | Project includes Maven Wrapper — no separate install needed |
 | **Node.js**        | 18 LTS or 20 LTS | `node --version`     | [https://nodejs.org/](https://nodejs.org/)                                                                               |
 | **Git**            | Latest           | `git --version`      | [https://git-scm.com/downloads](https://git-scm.com/downloads)                                                           |
 
