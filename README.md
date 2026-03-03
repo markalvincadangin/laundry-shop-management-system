@@ -277,7 +277,7 @@ Before you begin, ensure the following tools are installed on your development m
 |--------------------|------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------|
 | **Docker Desktop** | Latest           | `docker --version`   | [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)                         |
 | **Java JDK**       | 21 (LTS)         | `java -version`      | [https://www.oracle.com/java/technologies/downloads/#java21](https://www.oracle.com/java/technologies/downloads/#java21) or [Adoptium Eclipse Temurin](https://adoptium.net/) |
-| **Maven**          | 3.9+ (or use wrapper) | `.\mvnw.cmd -version` | Project includes Maven Wrapper — no separate install needed |
+| **Maven**          | 3.9+ (or use wrapper) | `.\backend\mvnw.cmd -version` | Project includes Maven Wrapper — no separate install needed |
 | **Node.js**        | 18 LTS or 20 LTS | `node --version`     | [https://nodejs.org/](https://nodejs.org/)                                                                               |
 | **Git**            | Latest           | `git --version`      | [https://git-scm.com/downloads](https://git-scm.com/downloads)                                                           |
 
@@ -304,7 +304,7 @@ npm --version
 git --version
 ```
 
-> **Tip:** Use the project's Maven Wrapper (`.\mvnw.cmd`) — no need to install Maven separately. The wrapper ensures consistent builds across machines.
+> **Tip:** Use the project's Maven Wrapper — no need to install Maven separately. The wrapper ensures consistent builds across machines. Run it from the `backend/` directory: `cd backend && ./mvnw` (macOS/Linux) or `cd backend` then `.\mvnw.cmd` (Windows).
 
 ### Important Database Requirements
 
@@ -702,7 +702,7 @@ docker compose -f docker/docker-compose.prod.yml up -d --build
 
 **Optional (HTTPS):** Run `sh docker/nginx/generate-ssl.sh` (Git Bash or WSL on Windows) then `cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf` and restart nginx.
 
-**Backup (Windows):** `.\scripts\backup-database.ps1` or `.\scripts\backup-database.ps1 -BackupDir C:\Backups\laundry`. The script uses the running `laundry-postgres` container, or set `$env:DB_HOST`, `$env:DB_PORT`, `$env:DB_PASSWORD`, etc. from `backend\.env` before running.
+**Backup (Windows):** `.\scripts\backup-database.ps1` or `.\scripts\backup-database.ps1 -BackupDir C:\Backups\laundry`. The script uses the running `laundry-postgres` container by default; to override connection settings, either create a root `.env` with `DB_*` variables or manually set `$env:DB_HOST`, `$env:DB_PORT`, `$env:DB_PASSWORD`, etc. in your shell (you can copy these values from `backend\.env`).
 
 See [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) and [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) for full details.
 
@@ -772,10 +772,11 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 ## 👥 Team Collaboration & Git Workflow
 
 ### Branch Strategy & Workflow
-- **`main`** — Production-ready. Require PR review before merge.
+- **`main`** — Production-ready branch (deployment only). Protected; no direct commits.
+- **`develop`** — Active development branch. All feature/fix/docs/refactor/test/chore branches must open PRs **into `develop`**.
 - **Feature branches** — `feature/short-description` (e.g., `feature/order-preview`).
 - **Bugfix branches** — `fix/bug-description`.
-- **Workflow:** Sync → Branch → Commit (use `feat:`, `fix:`, `docs:`) → Push → Open PR → Request review.
+- **Workflow:** Sync from `develop` (`git checkout develop && git pull --rebase origin develop`) → Branch from `develop` → Commit (use `feat:`, `fix:`, `docs:`, etc.) → Push → Open PR **into `develop`** → Request review.
 - **Local setup:** Create env files from `.env.example` in `docker/`, `backend/`, `frontend/` → Start DB: `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d` → Backend: `cd backend` + `.\mvnw.cmd spring-boot:run` → Frontend: `cd frontend` + `npm run dev` → Open http://localhost:3000
 
 ### Pull Request Checklist
