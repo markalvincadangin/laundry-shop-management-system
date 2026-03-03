@@ -772,10 +772,11 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 ## 👥 Team Collaboration & Git Workflow
 
 ### Branch Strategy & Workflow
-- **`main`** — Production-ready. Require PR review before merge.
+- **`main`** — Production-ready branch (deployment only). Protected; no direct commits.
+- **`develop`** — Active development branch. All feature/fix/docs/refactor/test/chore branches must open PRs **into `develop`**.
 - **Feature branches** — `feature/short-description` (e.g., `feature/order-preview`).
 - **Bugfix branches** — `fix/bug-description`.
-- **Workflow:** Sync → Branch → Commit (use `feat:`, `fix:`, `docs:`) → Push → Open PR → Request review.
+- **Workflow:** Sync from `develop` (`git checkout develop && git pull --rebase origin develop`) → Branch from `develop` → Commit (use `feat:`, `fix:`, `docs:`, etc.) → Push → Open PR **into `develop`** → Request review.
 - **Local setup:** Create env files from `.env.example` in `docker/`, `backend/`, `frontend/` → Start DB: `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d` → Backend: `cd backend` + `.\mvnw.cmd spring-boot:run` → Frontend: `cd frontend` + `npm run dev` → Open http://localhost:3000
 
 ### Pull Request Checklist
