@@ -12,7 +12,7 @@
 
 ## Document Control
 - **Document Type:** Development Credentials
-- **Related Documents:** [Implementation Plan](06-implementation/implementation-plan.md), Phase 9 (Authentication & RBAC)
+- **Related Documents:** [Implementation Status](06-implementation/implementation-status.md), [User Stories](02-requirements/user-stories.md)
 - **Confidentiality:** **INTERNAL ONLY** — Development/Testing Only
 
 ---
