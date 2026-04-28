@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("NOT_FOUND", ex.getMessage()));
     }
 
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoHandlerFound(NoHandlerFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("NOT_FOUND", "The requested resource was not found: " + ex.getRequestURL()));
+    }
+
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
         return ResponseEntity
@@ -55,6 +63,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of("BAD_REQUEST", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("CONFLICT", ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)

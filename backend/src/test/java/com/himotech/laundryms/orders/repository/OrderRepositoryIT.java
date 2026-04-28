@@ -6,7 +6,7 @@ import com.himotech.laundryms.common.enums.UserRole;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.rates.entity.ServiceRate;
-import com.himotech.laundryms.testcontainers.AbstractIntegrationTest;
+import com.himotech.laundryms.support.AbstractIntegrationTest;
 import com.himotech.laundryms.users.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,6 +45,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("OrderRepository Persistence Integration Tests")
 class OrderRepositoryIT extends AbstractIntegrationTest {
 
+        private static final String DUMMY_PASSWORD_HASH = "it-hash-" + java.util.UUID.randomUUID();
+
     @Autowired
     private TestEntityManager entityManager;
 
@@ -70,7 +72,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
         // Persist User (satisfies created_by_user_id FK)
         testUser = User.builder()
                 .username("teststaff_order_it")
-                .passwordHash("$2a$10$hashedpassword")
+                .passwordHash(DUMMY_PASSWORD_HASH)
                 .role(UserRole.STAFF)
                 .firstName("Test")
                 .lastName("Staff")
@@ -108,7 +110,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
     void save_ShouldPersistOrder_WhenAllFKsAreValid() {
         // Given
         Order order = Order.builder()
-                .referenceNumber("REF-2026-001")
+                .referenceNumber("LDR-20260425-0001")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -134,7 +136,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
 
         // Then
         assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getReferenceNumber()).isEqualTo("REF-2026-001");
+        assertThat(saved.getReferenceNumber()).isEqualTo("LDR-20260425-0001");
         assertThat(saved.getCustomer().getId()).isEqualTo(testCustomer.getId());
         assertThat(saved.getCreatedBy().getId()).isEqualTo(testUser.getId());
         assertThat(saved.getServiceRate().getId()).isEqualTo(testServiceRate.getId());
@@ -150,7 +152,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
 
         // Verify persistence
         Order retrieved = orderRepository.findById(saved.getId()).orElseThrow();
-        assertThat(retrieved.getReferenceNumber()).isEqualTo("REF-2026-001");
+        assertThat(retrieved.getReferenceNumber()).isEqualTo("LDR-20260425-0001");
     }
 
     /**
@@ -169,7 +171,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
     void save_ShouldThrowViolation_WhenReferenceNumberDuplicated() {
         // Given - First order with reference number "REF-001"
         Order order1 = Order.builder()
-                .referenceNumber("REF-001")
+                .referenceNumber("LDR-20260425-0002")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -193,7 +195,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
 
         // When/Then - Attempt to save second order with same reference number
         Order order2 = Order.builder()
-                .referenceNumber("REF-001")  // DUPLICATE reference number
+                .referenceNumber("LDR-20260425-0002")  // DUPLICATE reference number
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -231,7 +233,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
     void save_ShouldPersistOrder_WithEnumValues() {
         // Given - Order with various enum statuses
         Order order = Order.builder()
-                .referenceNumber("REF-ENUM-TEST")
+                .referenceNumber("LDR-20260425-0003")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)

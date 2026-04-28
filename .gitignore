@@ -46,3 +46,6 @@ docker/.env.docker
 
 # Docker volumes (local)
 **/postgres_data/
+
+# ngrok config
+ngrok.yml

@@ -20,6 +20,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import org.springframework.data.domain.PageImpl;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -155,27 +156,30 @@ class CustomerControllerTest {
         void search_ShouldReturn200_WhenQueryProvided() throws Exception {
             Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
             CustomerResponse resp = CustomerResponse.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
-            when(customerService.search("Juan")).thenReturn(List.of(c));
+            when(customerService.search(eq("Juan"), any(), any(), any(), any(org.springframework.data.domain.Pageable.class))).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(c)));
             when(customerMapper.toResponse(c)).thenReturn(resp);
 
             mockMvc.perform(get("/api/v1/customers").param("q", "Juan"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$[0].firstName").value("Juan"));
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content[0].firstName").value("Juan"));
 
-            verify(customerService).search("Juan");
+            verify(customerService).search(eq("Juan"), any(), any(), any(), any(org.springframework.data.domain.Pageable.class));
         }
 
         @Test
         @DisplayName("Should return 200 and empty array when query blank")
         void search_ShouldReturn200_WhenQueryBlank() throws Exception {
+            when(customerService.search(eq("   "), any(), any(), any(), any(org.springframework.data.domain.Pageable.class)))
+                    .thenReturn(org.springframework.data.domain.Page.empty());
+
             mockMvc.perform(get("/api/v1/customers").param("q", "   "))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$").isEmpty());
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content").isEmpty());
 
-            verify(customerService).search("   ");
+            verify(customerService).search(eq("   "), any(), any(), any(), any(org.springframework.data.domain.Pageable.class));
         }
     }
 

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -16,6 +16,7 @@ public class CustomerResponse {
     private String firstName;
     private String lastName;
     private String contactNumber;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private Boolean isActive;
 }

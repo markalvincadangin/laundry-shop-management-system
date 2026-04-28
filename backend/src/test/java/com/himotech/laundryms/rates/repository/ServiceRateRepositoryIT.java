@@ -1,7 +1,7 @@
 package com.himotech.laundryms.rates.repository;
 
 import com.himotech.laundryms.rates.entity.ServiceRate;
-import com.himotech.laundryms.testcontainers.AbstractIntegrationTest;
+import com.himotech.laundryms.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

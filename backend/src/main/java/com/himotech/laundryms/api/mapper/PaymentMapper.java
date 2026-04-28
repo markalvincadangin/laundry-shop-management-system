@@ -14,6 +14,6 @@ public interface PaymentMapper {
     @Mapping(target = "amountPaid", expression = "java(payment.getAmountPaid() != null ? payment.getAmountPaid().doubleValue() : null)")
     @Mapping(target = "paymentMethod", expression = "java(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null)")
     @Mapping(target = "receivedByUserId", expression = "java(payment.getReceivedBy() != null ? payment.getReceivedBy().getId().toString() : null)")
-    @Mapping(target = "paymentDate", expression = "java(payment.getPaymentDate() != null ? payment.getPaymentDate().atOffset(java.time.ZoneOffset.UTC) : null)")
+    @Mapping(target = "receivedByUsername", expression = "java(payment.getReceivedBy() != null ? payment.getReceivedBy().getUsername() : \"System Agent\")")
     PaymentResponse toResponse(Payment payment);
 }

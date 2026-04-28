@@ -36,7 +36,7 @@
 
 ### Authentication (US-11)
 - Login/logout with JWT stored in HTTP-only cookie
-- Role-based access (Owner, Staff)
+- Role-based access (Admin, Staff)
 
 ### Notifications (US-10)
 - Notification list for staff

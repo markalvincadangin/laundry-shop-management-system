@@ -1,7 +1,7 @@
 # Handover Checklist — Faith Laundry Shop Management System
 
 > **Phase:** 14 — Production Deployment & Handover  
-> **Purpose:** Guide for conducting the handover session with Owner and Staff
+> **Purpose:** Guide for conducting the handover session with Admin and Staff
 
 ---
 
@@ -9,7 +9,7 @@
 
 - [ ] Production stack running: `docker compose -f docker/docker-compose.prod.yml up -d`
 - [ ] Application accessible via local network IP or domain
-- [ ] Owner and Staff accounts created (via seed or migration)
+- [ ] Admin and Staff accounts created (via seed or migration)
 - [ ] User manual printed or available: [user-manual.md](user-manual.md)
 - [ ] Backup script tested: `./scripts/backup-database.sh`
 
@@ -19,8 +19,8 @@
 
 ### 1. Login and Roles (10 min)
 
-- Demonstrate login with Owner and Staff accounts
-- Explain role differences: Owner (reports, rates) vs Staff (orders, payments)
+- Demonstrate login with Admin and Staff accounts
+- Explain role differences: Admin (reports, rates) vs Staff (orders, payments)
 - Have each person log in from their device
 
 ### 2. Create Order (15 min)
@@ -41,7 +41,7 @@
 - Select payment method (Cash, GCash, Bank Transfer)
 - Confirm one payment per order rule
 
-### 5. Reports — Owner Only (10 min)
+### 5. Reports — Admin Only (10 min)
 
 - Daily, monthly, yearly reports
 - Explain data source (paid orders only)
@@ -60,7 +60,7 @@
 
 ## Sign-Off
 
-- [ ] Owner and Staff can log in from their devices
+- [ ] Admin and Staff can log in from their devices
 - [ ] At least one order created and paid during session
 - [ ] Client sign-off received
 

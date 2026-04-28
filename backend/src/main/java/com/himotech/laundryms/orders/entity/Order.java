@@ -11,7 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +22,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"addOns", "statusLogs"})
+@ToString(exclude = {"addOns"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Order {
 
@@ -31,7 +31,7 @@ public class Order {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "reference_number", nullable = false, unique = true)
+    @Column(name = "reference_number", nullable = false, unique = true, length = 30)
     private String referenceNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -78,27 +78,23 @@ public class Order {
     private BigDecimal grandTotal;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "current_status", nullable = false)
+    @Column(name = "current_status", nullable = false, length = 30)
     private OrderStatus currentStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
+    @Column(name = "payment_status", nullable = false, length = 30)
     private PaymentStatus paymentStatus;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderAddOn> addOns = new ArrayList<>();
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<OrderStatusLog> statusLogs = new ArrayList<>();
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 }
 

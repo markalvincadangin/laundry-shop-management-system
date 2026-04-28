@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "payments")
@@ -32,7 +32,7 @@ public class Payment {
     private BigDecimal amountPaid;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", nullable = false)
+    @Column(name = "payment_method", nullable = false, length = 30)
     private PaymentMethod paymentMethod;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,7 +40,7 @@ public class Payment {
     private User receivedBy;
 
     @Column(name = "payment_date", nullable = false)
-    private LocalDateTime paymentDate;
+    private Instant paymentDate;
 
     @Column(columnDefinition = "TEXT")
     private String remarks;

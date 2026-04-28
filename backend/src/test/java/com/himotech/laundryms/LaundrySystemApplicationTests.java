@@ -1,6 +1,6 @@
 package com.himotech.laundryms;
 
-import com.himotech.laundryms.testcontainers.PostgresTestContainerConfig;
+import com.himotech.laundryms.support.PostgresTestContainerConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
