@@ -8,7 +8,7 @@ import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.payments.entity.Payment;
 import com.himotech.laundryms.rates.entity.ServiceRate;
-import com.himotech.laundryms.testcontainers.AbstractIntegrationTest;
+import com.himotech.laundryms.support.AbstractIntegrationTest;
 import com.himotech.laundryms.users.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,7 +22,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -56,6 +57,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("PaymentRepository Persistence Integration Tests")
 class PaymentRepositoryIT extends AbstractIntegrationTest {
 
+        private static final String DUMMY_PASSWORD_HASH = "it-hash-" + java.util.UUID.randomUUID();
+
     @Autowired
     private TestEntityManager entityManager;
 
@@ -70,7 +73,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         // Persist User
         testUser = User.builder()
                 .username("testcashier_payment_it")
-                .passwordHash("$2a$10$hashedpassword")
+                .passwordHash(DUMMY_PASSWORD_HASH)
                 .role(UserRole.STAFF)
                 .firstName("Test")
                 .lastName("Cashier")
@@ -131,7 +134,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 .amountPaid(new BigDecimal("240.00"))
                 .paymentMethod(PaymentMethod.CASH)
                 .receivedBy(testUser)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .remarks("Full payment via cash")
                 .build();
 
@@ -163,7 +166,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 .amountPaid(new BigDecimal("240.00"))
                 .paymentMethod(PaymentMethod.CASH)
                 .receivedBy(testUser)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .build();
         paymentRepository.save(payment1);
         entityManager.flush();
@@ -175,7 +178,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 .amountPaid(new BigDecimal("240.00"))
                 .paymentMethod(PaymentMethod.GCASH)
                 .receivedBy(testUser)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .build();
 
         assertThatThrownBy(() -> {
@@ -195,7 +198,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 .amountPaid(new BigDecimal("240.00"))
                 .paymentMethod(PaymentMethod.GCASH)
                 .receivedBy(testUser)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .build();
         paymentRepository.save(payment);
         entityManager.flush();
@@ -262,7 +265,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 .amountPaid(new BigDecimal("120.00"))
                 .paymentMethod(PaymentMethod.BANK_TRANSFER)
                 .receivedBy(testUser)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .remarks("Bank transfer via BPI")
                 .build();
         Payment saved = paymentRepository.save(payment);
@@ -287,7 +290,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 .amountPaid(new BigDecimal("100.00"))
                 .paymentMethod(PaymentMethod.CASH)
                 .receivedBy(testUser)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .build();
 
         // When/Then - Should fail due to FK constraint
@@ -305,11 +308,11 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         private Order order1, order2, order3;
         private Payment payment1, payment2, payment3;
-        private LocalDateTime baseTime;
+        private Instant baseTime;
 
         @BeforeEach
         void setUpPayments() {
-            baseTime = LocalDateTime.of(2026, 2, 15, 10, 0);
+            baseTime = Instant.parse("2026-02-15T10:00:00Z");
 
             // Create additional customers and orders
             Customer customer1 = Customer.builder()
@@ -394,7 +397,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                     .amountPaid(new BigDecimal("120.00"))
                     .paymentMethod(PaymentMethod.CASH)
                     .receivedBy(testUser)
-                    .paymentDate(baseTime.minusDays(2)) // Feb 13
+                    .paymentDate(baseTime.minus(2, ChronoUnit.DAYS)) // Feb 13
                     .remarks("Payment 1")
                     .build();
             payment1 = paymentRepository.save(payment1);
@@ -414,7 +417,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                     .amountPaid(new BigDecimal("240.00"))
                     .paymentMethod(PaymentMethod.BANK_TRANSFER)
                     .receivedBy(testUser)
-                    .paymentDate(baseTime.plusDays(2)) // Feb 17
+                    .paymentDate(baseTime.plus(2, ChronoUnit.DAYS)) // Feb 17
                     .remarks("Payment 3")
                     .build();
             payment3 = paymentRepository.save(payment3);
@@ -447,8 +450,8 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         @DisplayName("Should filter by date range (from and to)")
         void findAllFiltered_ShouldFilterByDateRange() {
             // Given - Filter for payments from Feb 14 to Feb 16 (should get payment2 only)
-            LocalDateTime from = baseTime.minusDays(1); // Feb 14
-            LocalDateTime to = baseTime.plusDays(1);    // Feb 16
+            Instant from = baseTime.minus(1, ChronoUnit.DAYS); // Feb 14
+            Instant to = baseTime.plus(1, ChronoUnit.DAYS);    // Feb 16
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
@@ -464,7 +467,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         @DisplayName("Should filter by from date only (NULL to date)")
         void findAllFiltered_ShouldFilterByFromDateOnly() {
             // Given - Filter for payments from Feb 15 onwards (should get payment2 and payment3)
-            LocalDateTime from = baseTime; // Feb 15
+            Instant from = baseTime; // Feb 15
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
@@ -480,7 +483,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         @DisplayName("Should filter by to date only (NULL from date)")
         void findAllFiltered_ShouldFilterByToDateOnly() {
             // Given - Filter for payments before Feb 16 (should get payment1 and payment2)
-            LocalDateTime to = baseTime.plusDays(1); // Feb 16
+            Instant to = baseTime.plus(1, ChronoUnit.DAYS); // Feb 16
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
@@ -511,8 +514,8 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         @DisplayName("Should filter by orderId and date range")
         void findAllFiltered_ShouldFilterByOrderIdAndDateRange() {
             // Given - Filter for order2 with date range covering payment2
-            LocalDateTime from = baseTime.minusDays(1); // Feb 14
-            LocalDateTime to = baseTime.plusDays(1);    // Feb 16
+            Instant from = baseTime.minus(1, ChronoUnit.DAYS); // Feb 14
+            Instant to = baseTime.plus(1, ChronoUnit.DAYS);    // Feb 16
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
@@ -527,8 +530,8 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         @DisplayName("Should return empty page when no payments match filters")
         void findAllFiltered_ShouldReturnEmptyPage_WhenNoMatches() {
             // Given - Date range with no payments
-            LocalDateTime from = baseTime.plusDays(10); // Feb 25
-            LocalDateTime to = baseTime.plusDays(20);   // Mar 7
+            Instant from = baseTime.plus(10, ChronoUnit.DAYS); // Feb 25
+            Instant to = baseTime.plus(20, ChronoUnit.DAYS);   // Mar 7
             Pageable pageable = PageRequest.of(0, 10);
 
             // When

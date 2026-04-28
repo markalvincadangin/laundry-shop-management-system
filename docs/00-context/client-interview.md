@@ -40,7 +40,7 @@ To understand the current operational process, identify existing problems, and g
 - Approximately three (3) years; established in 2022.
 
 ### 3.2 Q2. How many people work here (including you)?
-- Two (2) individuals: one staff member and the owner. The owner is actively involved in daily operations.
+- Two (2) individuals: one staff member and the Admin. The Admin is actively involved in daily operations.
 
 ### 3.3 Q3. What services do you currently offer?
 - Wash, Dry, Fold
@@ -113,7 +113,7 @@ To understand the current operational process, identify existing problems, and g
 - Yes, manually.
 
 ### 6.2 Q18. What reports would you like to see but currently cannot?
-- Pending orders, customer history. The owner wants automated reports showing total monthly and yearly income, with the ability to compare performance across periods.
+- Pending orders, customer history. The Admin wants automated reports showing total monthly and yearly income, with the ability to compare performance across periods.
 
 ---
 
@@ -138,17 +138,17 @@ To understand the current operational process, identify existing problems, and g
 - Yes.
 
 ### 8.3 Q23. Who would most likely use the system?
-- Owner, Staff.
+- Admin, Staff.
 
 ---
 
 ## 9. Stakeholder Confirmation
 
 ### 9.1 Q24. Who is responsible for:
-- **Accepting laundry:** Owner and staff
-- **Recording orders:** Owner and staff
-- **Handling payments:** Owner and staff
-- **Managing records:** Owner
+- **Accepting laundry:** Admin and staff
+- **Recording orders:** Admin and staff
+- **Handling payments:** Admin and staff
+- **Managing records:** Admin
 
 ---
 

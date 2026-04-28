@@ -1,5 +1,6 @@
 package com.himotech.laundryms.payments.service;
 
+import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.common.enums.PaymentStatus;
 import com.himotech.laundryms.exception.ConflictException;
 import com.himotech.laundryms.exception.NotFoundException;
@@ -17,8 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Slf4j
 @Service
@@ -28,6 +30,7 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
+    @Auditable(action = "PAYMENT_RECORD", description = "Record payment for order")
     @Transactional
     public Payment create(RecordPaymentCommand command) {
         Order order = orderRepository.findById(command.orderId())
@@ -53,7 +56,7 @@ public class PaymentService {
                 .amountPaid(command.amountPaid())
                 .paymentMethod(command.paymentMethod())
                 .receivedBy(receivedBy)
-                .paymentDate(LocalDateTime.now())
+                .paymentDate(Instant.now())
                 .remarks(command.remarks())
                 .build();
         payment = paymentRepository.save(payment);
@@ -65,6 +68,26 @@ public class PaymentService {
 
         return payment;
     }
+    @Auditable(action = "PAYMENT_VOID", description = "Void existing payment")
+    @Transactional
+    public void voidPayment(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
+
+        if (!paymentRepository.existsByOrder_Id(orderId)) {
+            throw new NotFoundException("No payment found for this order to void");
+        }
+
+        // BR-PAY-06: Set status to VOIDED
+        order.setPaymentStatus(PaymentStatus.VOIDED);
+        orderRepository.save(order);
+
+        // To allow re-payment in MVP (due to 1-to-1 unique constraint), we delete the failed record.
+        // The Audit Log aspect will capture this deletion for the audit trail.
+        paymentRepository.deleteByOrder_Id(orderId);
+
+        log.info("Payment voided successfully: OrderRef={}", order.getReferenceNumber());
+    }
 
     @Transactional(readOnly = true)
     public Payment findById(Long id) {
@@ -74,8 +97,8 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, Pageable pageable) {
-        LocalDateTime fromTs = from != null ? from.atStartOfDay() : null;
-        LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : null;
+        Instant fromTs = from != null ? from.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        Instant toTs = to != null ? to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         return paymentRepository.findAllFiltered(orderId, fromTs, toTs, pageable);
     }
 

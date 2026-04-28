@@ -20,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import com.himotech.laundryms.security.JwtPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -38,7 +41,16 @@ public class OrderController {
     private final OrderMapper orderMapper;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> create(@Valid @RequestBody CreateOrderRequest request) {
+    public ResponseEntity<OrderResponse> create(
+            @Valid @RequestBody CreateOrderRequest request,
+            @AuthenticationPrincipal JwtPrincipal principal) {
+        // Source identity from JWT if available (Phase 9 Auth)
+        if (principal != null) {
+            request.setCreatedByUserId(principal.userId());
+        } else if (request.getCreatedByUserId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Order order = orderService.createFromRequest(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toResponse(order));
     }
@@ -68,10 +80,18 @@ public class OrderController {
             @RequestParam(required = false) PaymentStatus paymentStatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, Math.min(Math.max(size, 1), 100));
-        Page<Order> ordersPage = orderService.findAll(status, paymentStatus, from, to, pageable);
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase("asc") 
+                ? org.springframework.data.domain.Sort.by(sortBy).ascending().and(org.springframework.data.domain.Sort.by("id").descending()) 
+                : org.springframework.data.domain.Sort.by(sortBy).descending().and(org.springframework.data.domain.Sort.by("id").descending());
+        
+        Pageable pageable = PageRequest.of(page, Math.min(Math.max(size, 1), 100), sort);
+        Page<Order> ordersPage = orderService.findAll(status, paymentStatus, from, to, q, pageable);
         List<OrderResponse> content = ordersPage.getContent().stream()
                 .map(orderMapper::toResponse)
                 .toList();
@@ -88,8 +108,7 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getById(@PathVariable Long orderId) {
-        Order order = orderService.findById(orderId);
-        return ResponseEntity.ok(orderMapper.toResponse(order));
+        return ResponseEntity.ok(orderService.getOrderDetails(orderId));
     }
 
     @PatchMapping("/{orderId}")
@@ -103,11 +122,20 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponse> updateStatus(
             @PathVariable Long orderId,
-            @Valid @RequestBody UpdateOrderStatusRequest request) {
+            @Valid @RequestBody UpdateOrderStatusRequest request,
+            @AuthenticationPrincipal JwtPrincipal principal) {
+        
+        // Source identity from JWT if available (Phase 9 Auth)
+        UUID changedBy = principal != null ? principal.userId() : request.getChangedByUserId();
+        
+        if (changedBy == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         Order order = orderStatusService.updateStatus(
                 orderId,
                 OrderStatus.valueOf(request.getNewStatus()),
-                request.getChangedByUserId(),
+                changedBy,
                 request.getNotes()
         );
         return ResponseEntity.ok(orderMapper.toResponse(order));

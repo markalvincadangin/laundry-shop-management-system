@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -19,6 +19,7 @@ public class PaymentResponse {
     private Double amountPaid;
     private String paymentMethod;
     private String receivedByUserId;
-    private OffsetDateTime paymentDate;
+    private String receivedByUsername;
+    private Instant paymentDate;
     private String remarks;
 }

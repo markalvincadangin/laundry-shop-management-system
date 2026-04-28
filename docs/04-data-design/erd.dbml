@@ -1,41 +1,41 @@
 Project Faith_Laundry_Shop_System {
   database_type: 'PostgreSQL'
-  Note: 'ERD for Faith Laundry Shop. Supports dynamic pricing, order lifecycle, payment recording, and reporting. Requires pgcrypto extension for UUIDs.'
+  Note: 'ERD for Faith Laundry Shop. Supports dynamic pricing, order lifecycle, payment recording, and reporting. Standardized on varchar for enums to ensure JPA/PostgreSQL casting stability. Forensic audit trail via database-level triggers writing to activity_logs.'
 }
 
-// --- ENUMS --- //
+// --- ENUMS (Documented for Reference; Implemented as varchar) --- //
+/*
+  user_role: ADMIN, STAFF
+  order_status: RECEIVED, WASHING, DRYING, FOLDING, READY_FOR_PICKUP, RELEASED, CANCELLED
+  payment_status: UNPAID, PAID
+  payment_method: CASH, GCASH, BANK_TRANSFER
+  notification_status: PENDING, SENT, FAILED
+  notification_channel: SMS, IN_APP
+  activity_action: INSERT, UPDATE, DELETE, USER_LOGIN, ORDER_CREATE, ORDER_UPDATE, ORDER_STATUS_UPDATE, PAYMENT_RECORD, PAYMENT_VOID
+*/
 
-Enum user_role {
-  OWNER
-  STAFF
-}
+// --- AUDIT INFRASTRUCTURE --- //
 
-Enum order_status {
-  RECEIVED
-  WASHING
-  DRYING
-  FOLDING
-  READY_FOR_PICKUP
-  RELEASED
-  CANCELLED
-}
+Table activity_logs {
+  id bigserial [pk]
+  user_id varchar [null, note: 'Captured from SET LOCAL app.current_user_id via Spring Boot AOP']
+  action_type varchar(10) [not null, note: 'INSERT, UPDATE, or DELETE']
+  table_name varchar(100) [not null]
+  record_id varchar(255) [not null]
+  old_data jsonb [null, note: 'Snapshot before change (Trigger-based updates)']
+  new_data jsonb [null, note: 'Snapshot after change (Trigger-based updates)']
+  ip_address varchar(45) [null]
+  user_agent text [null]
+  status varchar(20) [null, note: 'SUCCESS or FAILURE']
+  method_name varchar(255) [null]
+  description text [null]
+  created_at timestamp [not null, default: `now()`]
 
-Enum payment_status {
-  UNPAID
-  PAID
-  PARTIAL
-}
-
-Enum payment_method {
-  CASH
-  GCASH
-  BANK_TRANSFER
-}
-
-Enum notification_status {
-  PENDING
-  SENT
-  FAILED
+  Note: 'Forensic audit trail. Populated by fn_audit_activity() trigger on orders, payments, customers, service_rates. Replaces the previous order_status_logs approach.'
+  Indexes {
+    (table_name, record_id) [name: 'idx_activity_logs_table_record']
+    created_at [name: 'idx_activity_logs_created_at']
+  }
 }
 
 // --- CONFIGURATION --- //
@@ -47,8 +47,10 @@ Table service_rates {
   kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: 8 kg limit per load']
   price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: ₱1 per extra minute']
   is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_service_rates_updated_at trigger']
 
-  Note: 'Stores pricing rules. Owner can update without code changes. Snapshot copied to orders at creation.'
+  Note: 'Stores pricing rules. Owner can update without code changes. Snapshot copied to orders at creation. Audited by trg_audit_service_rates trigger.'
 }
 
 // --- USERS & CUSTOMERS --- //
@@ -57,14 +59,14 @@ Table users {
   id uuid [pk, default: `gen_random_uuid()`]
   username varchar [unique, not null]
   password_hash varchar [not null]
-  role user_role [not null, default: 'STAFF', note: 'US-11: Owner / Staff']
+  role varchar [not null, default: 'STAFF', note: 'ADMIN / STAFF']
   first_name varchar [not null]
   last_name varchar [not null]
   is_active boolean [default: true]
   created_at timestamp [default: `now()`]
-  updated_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_users_updated_at trigger']
 
-  Note: 'System users. Owner: reports, rates. Staff: orders, payments. Both record orders.'
+  Note: 'System users. RBAC enforced: Admin vs Staff.'
 }
 
 Table customers {
@@ -72,10 +74,11 @@ Table customers {
   first_name varchar [not null]
   last_name varchar [not null]
   contact_number varchar [not null]
+  is_active boolean [not null, default: true, note: 'Soft delete flag']
   created_at timestamp [default: `now()`]
-  updated_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_customers_updated_at trigger']
 
-  Note: 'US-01: Customer details. BR-REC-01: name and contact required.'
+  Note: 'BR-REC-01: Identity is a combination of name and contact. Audited by trg_audit_customers trigger.'
   Indexes {
     (last_name, first_name, contact_number) [unique]
   }
@@ -85,73 +88,70 @@ Table customers {
 
 Table orders {
   id bigserial [pk]
-  reference_number varchar [unique, not null, note: 'BR-OL-01: Unique tracking identifier']
+  reference_number varchar [unique, not null, note: 'BR-OL-01: LDR-YYYYMMDD-XXXX']
   customer_id bigint [ref: > customers.id, not null]
   created_by_user_id uuid [ref: > users.id, not null]
 
   // Load & Weight
-  service_rate_id int [ref: > service_rates.id, not null, note: 'Informational; snapshot used for pricing']
-  weight_kg decimal(10,2) [not null, note: 'BR-PR-01']
-  total_loads int [not null, note: 'BR-PR-02: ceil(weight_kg / kg_limit_per_load)']
+  service_rate_id int [ref: > service_rates.id, not null]
+  weight_kg decimal(10,2) [not null]
+  total_loads int [not null, note: 'ceil(weight_kg / 8)']
 
-  // Pricing snapshot (copied from service_rates at creation)
-  base_price_per_load decimal(10,2) [not null, note: 'BR-PR-01 snapshot']
-  kg_limit_per_load decimal(5,2) [not null, note: 'BR-PR-02 snapshot']
-  price_per_extra_minute decimal(10,2) [not null, note: 'BR-PR-03 snapshot']
+  // Pricing snapshot
+  base_price_per_load decimal(10,2) [not null]
+  kg_limit_per_load decimal(5,2) [not null]
+  price_per_extra_minute decimal(10,2) [not null]
 
   // Extra charges
-  extra_minutes int [not null, default: 0, note: 'BR-PR-03: Beyond 45 min per load']
+  extra_minutes int [not null, default: 0]
 
   // Computed amounts
-  base_amount decimal(10,2) [not null, note: 'total_loads * base_price_per_load']
-  extra_minutes_amount decimal(10,2) [not null, note: 'extra_minutes * price_per_extra_minute']
-  addons_total_amount decimal(10,2) [not null, default: 0, note: 'BR-PR-04']
-  grand_total decimal(10,2) [not null, note: 'base + extra_minutes + addons']
+  base_amount decimal(10,2) [not null]
+  extra_minutes_amount decimal(10,2) [not null]
+  addons_total_amount decimal(10,2) [not null, default: 0]
+  grand_total decimal(10,2) [not null]
 
   // Status
-  current_status order_status [not null, default: 'RECEIVED', note: 'BR-OL-02: Initial; BR-OL-03: Allowed values']
-  payment_status payment_status [not null, default: 'UNPAID', note: 'BR-PAY-04']
+  current_status varchar [not null, default: 'RECEIVED', note: 'BR-OL-03']
+  payment_status varchar [not null, default: 'UNPAID', note: 'BR-PAY-04']
 
   created_at timestamp [default: `now()`]
-  updated_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_orders_updated_at trigger']
 
-  Note: 'Central transaction table. BR-OL-01 (reference), BR-OL-02 (initial status), BR-OL-05 (release precondition).'
+  Note: 'BR-OL-05: Release requires READY_FOR_PICKUP and PAID status. Audited by trg_audit_orders trigger.'
+  Indexes {
+    reference_number [unique]
+    (customer_id, created_at) [name: 'idx_orders_customer_created']
+    current_status [name: 'idx_orders_status']
+    payment_status [name: 'idx_orders_payment_status']
+  }
 }
 
 Table order_add_ons {
   id bigserial [pk]
   order_id bigint [ref: > orders.id, not null]
-  name varchar [not null, note: 'e.g., Extra Fabric Conditioner']
+  name varchar [not null]
   price decimal(10,2) [not null]
   quantity int [not null, default: 1]
 
-  Note: 'BR-PR-04: Optional add-ons.'
-}
-
-Table order_status_logs {
-  id bigserial [pk]
-  order_id bigint [ref: > orders.id, not null]
-  previous_status order_status
-  new_status order_status [not null]
-  changed_by_user_id uuid [ref: > users.id, not null]
-  changed_at timestamp [default: `now()`]
-  notes text
-
-  Note: 'US-03: Audit trail for status changes. BR-OL-03, BR-OL-04.'
+  Note: 'BR-PR-04: Extra FabCon, etc.'
 }
 
 // --- PAYMENTS --- //
 
 Table payments {
   id bigserial [pk]
-  order_id bigint [ref: - orders.id, unique, not null, note: 'BR-PAY-02: One payment per order']
-  amount_paid decimal(10,2) [not null, note: 'BR-PAY-03: Must match orders.grand_total']
-  payment_method payment_method [not null, default: 'CASH']
+  order_id bigint [ref: - orders.id, unique, not null]
+  amount_paid decimal(10,2) [not null, note: 'BR-PAY-03: Must match grand_total']
+  payment_method varchar [not null, default: 'CASH', note: 'CASH, GCASH, BANK_TRANSFER']
   received_by_user_id uuid [ref: > users.id, not null]
   payment_date timestamp [default: `now()`]
   remarks text
 
-  Note: 'US-06. BR-PAY-02 (1:1), BR-PAY-03 (amount validation in service layer), BR-PAY-04.'
+  Note: 'BR-PAY-02: Exactly one payment per order. Audited by trg_audit_payments trigger.'
+  Indexes {
+    payment_date [name: 'idx_payments_date']
+  }
 }
 
 // --- NOTIFICATIONS --- //
@@ -159,11 +159,12 @@ Table payments {
 Table notifications {
   id bigserial [pk]
   order_id bigint [ref: > orders.id, not null]
-  customer_id bigint [ref: > customers.id, not null]
+  channel varchar(30) [not null, default: 'IN_APP', note: 'SMS, IN_APP']
   message text [not null]
   created_at timestamp [default: `now()`]
-  sent_at timestamp
-  status notification_status [not null, default: 'PENDING']
+  sent_at timestamp [null]
+  status varchar(30) [not null, default: 'PENDING', note: 'PENDING, SENT, FAILED']
+  is_read boolean [not null, default: false, note: 'In-app read status flag']
 
-  Note: 'US-10, BR-NOTIF-01: Notify when READY_FOR_PICKUP.'
+  Note: 'Notification queue. customer_id removed for 3NF compliance (derivable via order_id -> customer_id).'
 }

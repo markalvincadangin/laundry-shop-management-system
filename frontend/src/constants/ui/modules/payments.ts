@@ -1,0 +1,15 @@
+export const payments = {
+  TITLE: "Payments",
+  SUBTITLE: "History of payments received.",
+  LEDGER: "Payment Ledger",
+  EXPORT: "Save as List",
+  METHOD_CASH: "Cash",
+  METHOD_GCASH: "GCash",
+  METHOD_BANK: "Bank Transfer",
+  VOIDED: "Void Payment",
+  RECORD_PAYMENT: "Record Payment",
+  VERIFICATION: "Payment Verification",
+  VERIFIED_TRANSACTION: "Verified Transaction",
+  RECEIVED_BY: "Received By",
+  REMARKS: "Remarks",
+} as const;

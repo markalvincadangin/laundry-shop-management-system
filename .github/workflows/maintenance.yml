@@ -1,0 +1,15 @@
+name: Project Maintenance (Keep Render Awake)
+
+on:
+  schedule:
+    # Runs every 10 minutes to keep Render backend awake
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  keep-render-awake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend
+        run: |
+          curl -s "${{ secrets.RENDER_BACKEND_URL }}/actuator/health" || echo "Backend might be sleeping or URL not set"

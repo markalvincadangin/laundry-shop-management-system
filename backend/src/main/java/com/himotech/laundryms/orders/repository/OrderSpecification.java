@@ -6,7 +6,7 @@ import com.himotech.laundryms.orders.entity.Order;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,8 +25,9 @@ public final class OrderSpecification {
     public static Specification<Order> filterBy(
             OrderStatus status,
             PaymentStatus paymentStatus,
-            LocalDateTime fromTs,
-            LocalDateTime toTs) {
+            Instant fromTs,
+            Instant toTs,
+            String q) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (status != null) {
@@ -40,6 +41,15 @@ public final class OrderSpecification {
             }
             if (toTs != null) {
                 predicates.add(cb.lessThan(root.get("createdAt"), toTs));
+            }
+            if (q != null && !q.trim().isEmpty()) {
+                String searchPattern = "%" + q.trim().toLowerCase() + "%";
+                Predicate searchPredicate = cb.or(
+                        cb.like(cb.lower(root.get("referenceNumber")), searchPattern),
+                        cb.like(cb.lower(root.get("customer").get("firstName")), searchPattern),
+                        cb.like(cb.lower(root.get("customer").get("lastName")), searchPattern)
+                );
+                predicates.add(searchPredicate);
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
