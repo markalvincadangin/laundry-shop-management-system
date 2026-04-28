@@ -20,7 +20,7 @@ describe("ErrorResponse type", () => {
     const withDetails: ErrorResponse = {
       code: "VALIDATION_ERROR",
       message: "Validation failed",
-      details: { fieldErrors: { weightKg: "must be greater than 0" } },
+      details: ["weightKg must be greater than 0"],
     };
     expect(withDetails.details).toBeDefined();
   });

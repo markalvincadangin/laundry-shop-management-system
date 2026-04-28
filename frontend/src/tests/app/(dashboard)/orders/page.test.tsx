@@ -85,12 +85,12 @@ describe("OrdersPage", () => {
 
     renderWithProvider(<OrdersPage />);
 
-    expect(screen.getByText(new RegExp(UI_LABELS.nav.ORDERS, "i"))).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(UI_LABELS.registry_page.SUBTITLE, "i"))).toBeInTheDocument();
+    expect(screen.getAllByText(new RegExp(UI_LABELS.layout.nav.ORDERS, "i"))[0]).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(UI_LABELS.modules.orders.SUBTITLE, "i"))).toBeInTheDocument();
     
     await waitFor(() => {
       expect(screen.getByText("5")).toBeInTheDocument(); // todaysOrders
-      expect(screen.getByText(new RegExp(UI_LABELS.registry_page.NEW_TODAY, "i"))).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(UI_LABELS.modules.dashboard.CREATED_TODAY, "i"))).toBeInTheDocument();
     });
   });
 
@@ -138,7 +138,7 @@ describe("OrdersPage", () => {
 
     renderWithProvider(<OrdersPage />);
 
-    const statusSelect = screen.getByLabelText(new RegExp(UI_LABELS.order.ORDER_STATUS, "i"));
+    const statusSelect = screen.getByLabelText(new RegExp(UI_LABELS.shared.common.STATUS, "i"));
     fireEvent.change(statusSelect, { target: { value: "WASHING" } });
 
     await waitFor(() => {
@@ -159,7 +159,7 @@ describe("OrdersPage", () => {
 
     renderWithProvider(<OrdersPage />);
 
-    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.registry.SEARCH_PLACEHOLDER, "i"));
+    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.shared.common.SEARCH_PLACEHOLDER, "i"));
     fireEvent.change(searchInput, { target: { value: "ORD-123" } });
 
     // Wait for debounce (400ms in component)
@@ -182,7 +182,8 @@ describe("OrdersPage", () => {
     renderWithProvider(<OrdersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(new RegExp(UI_LABELS.feedback.NO_ORDERS, "i"))).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(UI_LABELS.feedback.empty.ORDERS_TITLE, "i"))).toBeInTheDocument();
     });
   });
 });
+

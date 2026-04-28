@@ -83,7 +83,7 @@ describe("OrderDetailsPage", () => {
 
     expect(await screen.findByText(/ORD-TEST-123/i)).toBeInTheDocument();
     expect(screen.getByText(/Mark Alvin/i)).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent(new RegExp(UI_LABELS.status.RECEIVED, "i"));
+    expect(screen.getByRole("status")).toHaveTextContent(new RegExp(UI_LABELS.shared.status.RECEIVED, "i"));
   });
 
   it("shows transition button for next status", async () => {
@@ -92,7 +92,7 @@ describe("OrderDetailsPage", () => {
     renderWithProvider(<OrderDetailsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(UI_LABELS.status.START_WASHING)).toBeInTheDocument();
+      expect(screen.getByText(UI_LABELS.modules.orders.ONE_TAP_WASH)).toBeInTheDocument();
     });
   });
 
@@ -103,7 +103,7 @@ describe("OrderDetailsPage", () => {
     renderWithProvider(<OrderDetailsPage />);
 
     await waitFor(() => {
-      const actionBtn = screen.getByText(UI_LABELS.status.START_WASHING);
+      const actionBtn = screen.getByText(UI_LABELS.modules.orders.ONE_TAP_WASH);
       fireEvent.click(actionBtn);
     });
 

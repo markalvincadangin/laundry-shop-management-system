@@ -18,6 +18,12 @@ vi.mock("@/services/reports.service", () => ({
   },
 }));
 
+vi.mock("@/services/orders.service", () => ({
+  ordersService: {
+    list: vi.fn(() => Promise.resolve({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })),
+  },
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -27,10 +33,12 @@ vi.mock("next/navigation", () => ({
     replace: vi.fn(),
     prefetch: vi.fn(),
   }),
-  useSearchParams: () => ({
-    get: vi.fn(),
-  }),
+  useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/",
+}));
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ user: { userId: "admin-1", username: "admin", role: "ADMIN" }, loading: false }),
 }));
 
 const queryClient = new QueryClient({
@@ -61,8 +69,8 @@ describe("ReportsPage", () => {
 
     renderWithProvider(<ReportsPage />);
 
-    expect(screen.getByText(new RegExp(UI_LABELS.nav.REPORTS, "i"))).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: new RegExp(UI_LABELS.reports.DAILY, "i") })).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(UI_LABELS.layout.nav.REPORTS, "i"))).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: new RegExp(UI_LABELS.modules.reports.DAILY, "i") })).toBeInTheDocument();
   });
 
   it("fetches report on mount and displays data", async () => {
@@ -70,7 +78,7 @@ describe("ReportsPage", () => {
 
     renderWithProvider(<ReportsPage />);
 
-    const dateInput = screen.getByLabelText(new RegExp(UI_LABELS.reports.SELECT_DATE, "i"));
+    const dateInput = screen.getByLabelText(new RegExp(UI_LABELS.modules.reports.SELECT_DATE, "i"));
     fireEvent.change(dateInput, { target: { value: "2025-02-15" } });
 
     await waitFor(() => {
@@ -78,7 +86,7 @@ describe("ReportsPage", () => {
     });
     await waitFor(() => {
       expect(screen.getByText(/1500/)).toBeInTheDocument();
-      expect(screen.getByText(UI_LABELS.reports.TOTAL_REVENUE)).toBeInTheDocument();
+      expect(screen.getByText(UI_LABELS.modules.reports.TOTAL_REVENUE)).toBeInTheDocument();
     });
   });
 
@@ -92,7 +100,7 @@ describe("ReportsPage", () => {
       expect(reportsService.getDailySales).toHaveBeenCalled();
     });
 
-    const dateInput = screen.getByLabelText(new RegExp(UI_LABELS.reports.SELECT_DATE, "i"));
+    const dateInput = screen.getByLabelText(new RegExp(UI_LABELS.modules.reports.SELECT_DATE, "i"));
     fireEvent.change(dateInput, { target: { value: "2025-02-16" } });
 
     await waitFor(() => {
@@ -108,7 +116,7 @@ describe("ReportsPage", () => {
     renderWithProvider(<ReportsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/failed to load report/i)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(UI_LABELS.feedback.error.LOAD_FAILED, "i"))).toBeInTheDocument();
     });
   });
 
@@ -123,7 +131,7 @@ describe("ReportsPage", () => {
     renderWithProvider(<ReportsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(new RegExp(UI_LABELS.reports.SALES_HISTORY, "i"))).toBeInTheDocument();
+      expect(screen.getAllByText(new RegExp(UI_LABELS.modules.reports.SALES_HISTORY, "i"))[0]).toBeInTheDocument();
     });
     const skeleton = document.querySelector(".animate-pulse");
     expect(skeleton).toBeInTheDocument();
@@ -156,3 +164,4 @@ describe("ReportsPage", () => {
     });
   });
 });
+

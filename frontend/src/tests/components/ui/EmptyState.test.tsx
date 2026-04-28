@@ -62,3 +62,4 @@ describe("EmptyState", () => {
     expect(iconWrapper).toBeInTheDocument();
   });
 });
+

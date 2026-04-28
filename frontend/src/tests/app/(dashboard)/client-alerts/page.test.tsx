@@ -107,7 +107,8 @@ describe("ClientAlertsPage", () => {
     renderWithProvider(<ClientAlertsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(new RegExp(UI_LABELS.modules.clientAlerts.EMPTY_TITLE, "i"))).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(UI_LABELS.feedback.empty.CLIENT_ALERTS_TITLE, "i"))).toBeInTheDocument();
     });
   });
 });
+

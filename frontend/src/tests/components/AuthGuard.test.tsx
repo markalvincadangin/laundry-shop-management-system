@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/contexts/AuthContext", () => ({
   useRequireAuth: vi.fn(),
+  useAuth: vi.fn(() => ({ user: { id: "1" }, loading: false })),
 }));
 
 describe("AuthGuard", () => {
@@ -24,3 +25,4 @@ describe("AuthGuard", () => {
     expect(screen.getByText("Protected content")).toBeInTheDocument();
   });
 });
+

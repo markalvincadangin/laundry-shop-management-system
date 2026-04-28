@@ -198,7 +198,7 @@ function TrackContent() {
         >
           {/* Headline — hide when result is visible (H2: remove irrelevant info) */}
           {!hasResult && (
-            <div className="space-y-grid-4 animate-in fade-in duration-500">
+            <div className="space-y-grid-4">
               <div className="inline-flex items-center gap-grid-2 px-grid-4 py-grid-1.5 bg-brand-blue/5 rounded-full border border-brand-blue/10">
                 <ShieldCheck className="h-3.5 w-3.5 text-brand-blue" strokeWidth={2} />
                 <p className="text-caption font-bold text-brand-blue uppercase tracking-[0.3em]">

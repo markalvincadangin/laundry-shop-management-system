@@ -20,19 +20,19 @@ describe("ChartSkeleton", () => {
 
   it("applies proper CSS classes for chart layout", () => {
     const { container } = render(<ChartSkeleton />);
-    const chart = container.querySelector(".rounded-2xl.border.bg-white");
+    const chart = container.querySelector(".rounded-2xl.border.border-white\\/5");
     expect(chart).toBeInTheDocument();
   });
 
   it("renders 7 bar elements representing days of the week", () => {
     const { container } = render(<ChartSkeleton />);
-    const bars = container.querySelectorAll(".flex-1.rounded-t.bg-white");
+    const bars = container.querySelectorAll(".flex-1.rounded-t-lg.bg-white\\/5");
     expect(bars.length).toBe(7);
   });
 
   it("bars have varying heights for realistic appearance", () => {
     const { container } = render(<ChartSkeleton />);
-    const bars = container.querySelectorAll(".flex-1.rounded-t.bg-white");
+    const bars = container.querySelectorAll(".flex-1.rounded-t-lg.bg-white\\/5");
     const heights = Array.from(bars).map((bar) => 
       (bar as HTMLElement).style.height
     );
@@ -42,3 +42,4 @@ describe("ChartSkeleton", () => {
     expect(uniqueHeights.size).toBeGreaterThan(1);
   });
 });
+

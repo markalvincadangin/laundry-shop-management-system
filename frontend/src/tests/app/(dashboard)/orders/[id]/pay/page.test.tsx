@@ -82,7 +82,7 @@ describe("PayOrderPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/150.00/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: new RegExp(UI_LABELS.checkout.SETTLE_PAYMENT, "i") })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: new RegExp(UI_LABELS.forms.checkout.SETTLE, "i") })).toBeInTheDocument();
     });
   });
 
@@ -92,7 +92,7 @@ describe("PayOrderPage", () => {
 
     renderWithProvider(<PayOrderPage />);
 
-    const settleBtn = await screen.findByRole("button", { name: new RegExp(UI_LABELS.checkout.SETTLE_PAYMENT, "i") });
+    const settleBtn = await screen.findByRole("button", { name: new RegExp(UI_LABELS.forms.checkout.SETTLE, "i") });
     
     await waitFor(() => {
       expect(settleBtn).not.toBeDisabled();

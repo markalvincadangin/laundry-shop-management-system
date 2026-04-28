@@ -20,13 +20,14 @@ describe("CardSkeleton", () => {
 
   it("applies proper CSS classes for card layout", () => {
     const { container } = render(<CardSkeleton />);
-    const card = container.querySelector(".rounded-2xl.border.bg-white");
+    const card = container.querySelector(".rounded-2xl.border");
     expect(card).toBeInTheDocument();
   });
 
   it("renders skeleton elements with proper structure", () => {
     const { container } = render(<CardSkeleton />);
-    const skeletonBars = container.querySelectorAll(".bg-white");
+    const skeletonBars = container.querySelectorAll(".animate-pulse div");
     expect(skeletonBars.length).toBeGreaterThan(0);
   });
 });
+

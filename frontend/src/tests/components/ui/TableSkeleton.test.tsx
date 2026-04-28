@@ -30,3 +30,4 @@ describe("TableSkeleton", () => {
     expect(pulse).toBeInTheDocument();
   });
 });
+

@@ -76,8 +76,8 @@ describe("CustomersPage", () => {
 
     renderWithProvider(<CustomersPage />);
 
-    expect(screen.getByRole("heading", { name: new RegExp(UI_LABELS.nav.CUSTOMERS, "i") })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(new RegExp(UI_LABELS.customers.SEARCH_PLACEHOLDER, "i"))).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: new RegExp(UI_LABELS.layout.nav.CUSTOMERS, "i") })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(new RegExp(UI_LABELS.shared.common.SEARCH_PLACEHOLDER, "i"))).toBeInTheDocument();
   });
 
   it("displays customers in the table", async () => {
@@ -117,7 +117,7 @@ describe("CustomersPage", () => {
 
     renderWithProvider(<CustomersPage />);
 
-    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.customers.SEARCH_PLACEHOLDER, "i"));
+    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.shared.common.SEARCH_PLACEHOLDER, "i"));
     fireEvent.change(searchInput, { target: { value: "Mark" } });
 
     // Wait for debounce
@@ -139,8 +139,10 @@ describe("CustomersPage", () => {
     renderWithProvider(<CustomersPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(new RegExp(UI_LABELS.customers.EMPTY_TITLE, "i"))).toBeInTheDocument();
-      expect(screen.getByText(new RegExp(UI_LABELS.customers.REGISTER_ACTION, "i"))).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(UI_LABELS.feedback.empty.CUSTOMERS_TITLE, "i"))).toBeInTheDocument();
+      // Use getAllByText because the button appears both in header and empty state
+      expect(screen.getAllByText(new RegExp(UI_LABELS.modules.customers.REGISTER_NEW, "i"))[0]).toBeInTheDocument();
     });
   });
 });
+
