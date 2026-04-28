@@ -40,9 +40,14 @@ public class ClientAlertController {
         Pageable pageable = PageRequest.of(page, Math.min(Math.max(size, 1), 100), sort);
         
         Instant fromTs = from != null ? from.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
-        Instant toTs = to != null ? to.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant() : null;
+        Instant toTs = to != null ? to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         
-        Page<ClientAlertResponse> pageData = clientAlertService.search(q, status, fromTs, toTs, pageable);
+        com.himotech.laundryms.common.enums.ClientAlertStatus alertStatus = null;
+        if (status != null && !status.isEmpty()) {
+            alertStatus = com.himotech.laundryms.common.enums.ClientAlertStatus.valueOf(status.toUpperCase());
+        }
+        
+        Page<ClientAlertResponse> pageData = clientAlertService.search(q, alertStatus, fromTs, toTs, pageable);
 
         return ResponseEntity.ok(PageResponse.<ClientAlertResponse>builder()
                 .content(pageData.getContent())

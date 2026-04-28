@@ -69,6 +69,7 @@ describe("OrdersPage", () => {
       inProgress: 2,
       readyForPickup: 1,
       unpaidOrders: 2,
+      todaysRevenue: 0,
     });
   });
 

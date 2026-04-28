@@ -39,7 +39,7 @@ public class ClientAlertService {
      * Searches client alerts for the registry.
      */
     @Transactional(readOnly = true)
-    public Page<ClientAlertResponse> search(String q, String status, Instant from, Instant to, Pageable pageable) {
+    public Page<ClientAlertResponse> search(String q, ClientAlertStatus status, Instant from, Instant to, Pageable pageable) {
         Page<ClientAlert> alerts = clientAlertRepository.search(q, status, from, to, pageable);
         return alerts.map(clientAlertMapper::toResponse);
     }

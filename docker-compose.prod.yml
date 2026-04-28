@@ -32,6 +32,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-laundry_db}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-laundry_user}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
       JAVA_TOOL_OPTIONS: >
         -XX:+UseContainerSupport
         -XX:MaxRAMPercentage=75.0

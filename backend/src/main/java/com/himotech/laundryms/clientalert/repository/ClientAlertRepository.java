@@ -27,12 +27,12 @@ public interface ClientAlertRepository extends JpaRepository<ClientAlert, Long> 
            "OR LOWER(n.order.referenceNumber) LIKE LOWER(CONCAT('%', :q, '%')) " +
            "OR LOWER(n.order.customer.firstName) LIKE LOWER(CONCAT('%', :q, '%')) " +
            "OR LOWER(n.order.customer.lastName) LIKE LOWER(CONCAT('%', :q, '%'))) AND " +
-           "(CAST(:status AS text) IS NULL OR :status = '' OR n.status = :status) AND " +
+           "(:status IS NULL OR n.status = :status) AND " +
            "(CAST(:from AS timestamp) IS NULL OR n.createdAt >= :from) AND " +
-           "(CAST(:to AS timestamp) IS NULL OR n.createdAt <= :to)")
+           "(CAST(:to AS timestamp) IS NULL OR n.createdAt < :to)")
     Page<ClientAlert> search(
             @Param("q") String q,
-            @Param("status") String status,
+            @Param("status") com.himotech.laundryms.common.enums.ClientAlertStatus status,
             @Param("from") Instant from,
             @Param("to") Instant to,
             Pageable pageable);

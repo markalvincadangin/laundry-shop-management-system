@@ -71,6 +71,7 @@ describe("CustomersPage", () => {
       size: 10,
       totalElements: 0,
       totalPages: 0,
+      first: true,
       last: true,
     });
 
@@ -88,12 +89,14 @@ describe("CustomersPage", () => {
           firstName: "Mark",
           lastName: "Alvin",
           contactNumber: "09123456789",
+          isActive: true,
         }
       ],
       page: 0,
       size: 10,
       totalElements: 1,
       totalPages: 1,
+      first: true,
       last: true,
     });
 
@@ -112,6 +115,7 @@ describe("CustomersPage", () => {
       size: 10,
       totalElements: 0,
       totalPages: 0,
+      first: true,
       last: true,
     });
 
@@ -133,6 +137,7 @@ describe("CustomersPage", () => {
       size: 10,
       totalElements: 0,
       totalPages: 0,
+      first: true,
       last: true,
     });
 
