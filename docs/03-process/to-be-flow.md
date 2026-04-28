@@ -42,7 +42,7 @@ The system replaces manual logbook and tag-based processes with a structured dig
 ```
 Customer Drop-Off
       ↓
-Order Intake (Staff or Owner)
+Order Intake (Staff or Admin)
       ↓
 Automatic Price Computation
       ↓
@@ -63,7 +63,7 @@ Reporting
 
 ### 3.1 Order Intake Process
 
-**Actor:** Staff or Owner  
+**Actor:** Staff or Admin  
 **Trigger:** Customer brings laundry to the shop.
 
 **Related Requirements**
@@ -71,8 +71,8 @@ Reporting
 - **Business Rules:** [BR-PR-01](../02-requirements/business-rules.md#br-pr-01-base-load-pricing), [BR-PR-02](../02-requirements/business-rules.md#br-pr-02-additional-load-for-excess-weight), [BR-PR-03](../02-requirements/business-rules.md#br-pr-03-extra-washing-time-charge), [BR-PR-04](../02-requirements/business-rules.md#br-pr-04-optional-add-ons-eg-fabric-conditioner), [BR-OL-01](../02-requirements/business-rules.md#br-ol-01-order-must-have-a-unique-reference-number), [BR-OL-02](../02-requirements/business-rules.md#br-ol-02-initial-order-status)
 
 **Steps**
-1. Staff or Owner enters customer details: first name, last name, contact number.
-2. Staff or Owner records: laundry weight (kg), extra minutes (if any), optional add-ons.
+1. Staff or Admin enters customer details: first name, last name, contact number.
+2. Staff or Admin records: laundry weight (kg), extra minutes (if any), optional add-ons.
 3. System automatically:
    - Calculates total loads (8 kg per load)
    - Computes base amount (₱120 per load)
@@ -97,7 +97,7 @@ Reporting
 
 ### 3.2 Order Processing Lifecycle
 
-**Actor:** Staff or Owner  
+**Actor:** Staff or Admin  
 **Trigger:** Order requires status update as laundry moves through processing stages.
 
 **Related Requirements**
@@ -133,7 +133,7 @@ RELEASED
 
 ### 3.3 Payment Process
 
-**Actor:** Staff or Owner  
+**Actor:** Staff or Admin  
 **Trigger:** Customer arrives for pickup.
 
 **Related Requirements**
@@ -141,9 +141,9 @@ RELEASED
 - **Business Rules:** [BR-PAY-01](../02-requirements/business-rules.md#br-pay-01-payment-timing), [BR-PAY-02](../02-requirements/business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](../02-requirements/business-rules.md#br-pay-03-payment-amount-validation), [BR-PAY-04](../02-requirements/business-rules.md#br-pay-04-payment-status)
 
 **Steps**
-1. Staff or Owner retrieves an order using a reference number or customer search.
+1. Staff or Admin retrieves an order using a reference number or customer search.
 2. System displays order details, computed grand total, and current payment status.
-3. Staff or Owner enters the payment amount and selects payment method (Cash, GCash, Bank Transfer).
+3. Staff or Admin enters the payment amount and selects payment method (Cash, GCash, Bank Transfer).
 4. System validates:
    - Payment amount equals order grand total (BR-PAY-03)
    - No existing payment for the order (one payment per order, BR-PAY-02)
@@ -151,7 +151,7 @@ RELEASED
    - Payment record is stored (including payment method, BR-PAY-05)
    - Payment status updated to **Paid**
    - Order eligible for release
-6. Staff or Owner updates order status to **Released** (order MUST be Ready for Pickup and Paid first; BR-OL-05).
+6. Staff or Admin updates order status to **Released** (order MUST be Ready for Pickup and Paid first; BR-OL-05).
 
 **Rules/Constraints**
 - Payment is typically collected upon pickup (BR-PAY-01).
@@ -191,15 +191,15 @@ RELEASED
 
 ### 3.5 Reporting Process
 
-**Actor:** Owner  
-**Trigger:** Owner requests an income report.
+**Actor:** Admin  
+**Trigger:** Admin requests an income report.
 
 **Related Requirements**
 - **User Stories:** [US-08](../02-requirements/user-stories.md#us-08-view-daily-sales-report), [US-09](../02-requirements/user-stories.md#us-09-view-monthly-and-yearly-income-reports)
 - **Business Rules:** [BR-REC-01](../02-requirements/business-rules.md#br-rec-01-core-data-to-record), [BR-PAY-04](../02-requirements/business-rules.md#br-pay-04-payment-status)
 
 **Steps**
-1. Owner selects the report type: Daily, Monthly, or Yearly.
+1. Admin selects the report type: Daily, Monthly, or Yearly.
 2. System aggregates completed payments within the selected period.
 3. System generates total revenue and transaction count.
 
@@ -218,7 +218,7 @@ RELEASED
 
 ### 4.1 Invalid Status Update
 
-**Condition:** Staff or Owner attempts an invalid status value or invalid transition.
+**Condition:** Staff or Admin attempts an invalid status value or invalid transition.
 
 **System Behavior**
 - Reject change

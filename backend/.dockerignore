@@ -1,0 +1,11 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/
+!mvnw
+!mvnw.cmd
+.env
+.env.example
+*.log
+.github/
+.vscode/
+.idea/

@@ -19,49 +19,46 @@
 
 ## Overview
 
-This document lists the default credentials created for **development and testing environments only**.
+This document describes how to configure development seed credentials for **development and testing environments only**.
 
-> ⚠️ **SECURITY WARNING**: These credentials should NEVER be used in production environments. The database migration will only create these accounts when `SPRING_PROFILES_ACTIVE=dev`.
+> ⚠️ **SECURITY WARNING**: Credentials should NEVER be hardcoded in source control. Provide values via environment variables only.
 
-## Default User Accounts
+## Development Seed Accounts
 
-### Owner Account
-- **Username**: `owner`
-- **Password**: `owner123`
-- **Role**: Owner
-- **Name**: System Owner
+When development seed users are enabled, the migration creates:
+- Admin account (role `Admin`)
+- Staff account (role `STAFF`)
 
-### Staff Account
-- **Username**: `staff`
-- **Password**: `staff123`
-- **Role**: Staff
-- **Name**: System Staff
+Usernames and password hashes are sourced from environment variables.
 
 ## Environment Configuration
 
-The seed users are created by the Flyway migration `V2__seed_users.sql` only when the application is running with the `dev` profile.
+The seed users are created by Flyway migration `V2__seed_users.sql` only when all conditions are true:
+1. `SPRING_PROFILES_ACTIVE=dev`
+2. `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD_HASH` are set
+3. `SEED_STAFF_USERNAME` and `SEED_STAFF_PASSWORD_HASH` are set
 
-To enable seed users in development:
-```bash
-export SPRING_PROFILES_ACTIVE=dev
-```
+Example configuration in `backend/.env`:
 
-Or in your `.env` file:
 ```
 SPRING_PROFILES_ACTIVE=dev
+SEED_ADMIN_USERNAME=Admin
+SEED_ADMIN_PASSWORD_HASH=$2a$10$replace_with_Admin_bcrypt_hash
+SEED_STAFF_USERNAME=staff
+SEED_STAFF_PASSWORD_HASH=$2a$10$replace_with_staff_bcrypt_hash
 ```
 
 ## Production Deployment
 
 In production environments:
 1. Do NOT set `SPRING_PROFILES_ACTIVE=dev`
-2. Create admin/owner accounts through the application's user management interface
+2. Create admin/Admin accounts through the application's user management interface
 3. Use strong, unique passwords for all accounts
 4. Enable additional security measures (2FA, password policies, etc.)
 
-## Changing Default Passwords
+## Generating BCrypt Password Hashes
 
-If you need to change the default development passwords:
+If you need to create or rotate development passwords:
 
 1. Generate new BCrypt password hashes using an online tool or:
    ```bash
@@ -74,5 +71,5 @@ If you need to change the default development passwords:
 
    > **Note**: We use BCrypt cost factor 10 for development to speed up test execution and development workflows. Production deployments should use higher cost factors (12-14) for better security.
 
-2. Update the password hashes in `backend/src/main/resources/db/migration/V2__seed_users.sql`
-3. Update this documentation with the new passwords
+2. Set generated hashes in `backend/.env` using `SEED_ADMIN_PASSWORD_HASH` and `SEED_STAFF_PASSWORD_HASH`
+3. Keep plaintext passwords out of source control and documentation

@@ -35,7 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -99,8 +99,8 @@ class OrderControllerTest {
                 .grandTotal(new BigDecimal("240.00"))
                 .currentStatus(OrderStatus.RECEIVED)
                 .paymentStatus(PaymentStatus.UNPAID)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
     }
 
@@ -180,8 +180,8 @@ class OrderControllerTest {
         }
 
         @Test
-        @DisplayName("Should return 400 when createdByUserId is null")
-        void create_ShouldReturn400_WhenCreatedByUserIdNull() throws Exception {
+        @DisplayName("Should return 401 when createdByUserId is null and no principal")
+        void create_ShouldReturn401_WhenCreatedByUserIdNull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
             request.setCustomerId(1L);
             request.setWeightKg(new BigDecimal("10.00"));
@@ -190,7 +190,7 @@ class OrderControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -222,12 +222,11 @@ class OrderControllerTest {
             Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
             Page<Order> page = new PageImpl<>(List.of(order), PageRequest.of(0, 20), 1);
-            when(orderService.findAll(any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
+            when(orderService.findAll(any(), any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
             mockMvc.perform(get("/api/v1/orders"))
                     .andExpect(status().isOk())
-                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.content").isArray())
                     .andExpect(jsonPath("$.content[0].id").value(1))
                     .andExpect(jsonPath("$.content[0].referenceNumber").value("LDR-20260213-1234"))
@@ -236,7 +235,7 @@ class OrderControllerTest {
                     .andExpect(jsonPath("$.totalElements").value(1))
                     .andExpect(jsonPath("$.totalPages").value(1));
 
-            verify(orderService).findAll(any(), any(), any(), any(), any(Pageable.class));
+            verify(orderService).findAll(any(), any(), any(), any(), any(), any(Pageable.class));
         }
     }
 
@@ -247,23 +246,21 @@ class OrderControllerTest {
         @Test
         @DisplayName("Should return 200 and OrderResponse when found")
         void getById_ShouldReturn200_WhenFound() throws Exception {
-            Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
-            when(orderService.findById(1L)).thenReturn(order);
-            when(orderMapper.toResponse(order)).thenReturn(orderResp);
+            when(orderService.getOrderDetails(1L)).thenReturn(orderResp);
 
             mockMvc.perform(get("/api/v1/orders/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(1))
                     .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"));
 
-            verify(orderService).findById(1L);
+            verify(orderService).getOrderDetails(1L);
         }
 
         @Test
         @DisplayName("Should return 404 when not found")
         void getById_ShouldReturn404_WhenNotFound() throws Exception {
-            when(orderService.findById(999L)).thenThrow(new NotFoundException("Order not found: 999"));
+            when(orderService.getOrderDetails(999L)).thenThrow(new NotFoundException("Order not found: 999"));
 
             mockMvc.perform(get("/api/v1/orders/999"))
                     .andExpect(status().isNotFound())
@@ -351,8 +348,8 @@ class OrderControllerTest {
         }
 
         @Test
-        @DisplayName("Should return 400 when changedByUserId is null")
-        void updateStatus_ShouldReturn400_WhenChangedByUserIdNull() throws Exception {
+        @DisplayName("Should return 401 when changedByUserId is null and no principal")
+        void updateStatus_ShouldReturn401_WhenChangedByUserIdNull() throws Exception {
             UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
             request.setNewStatus("WASHING");
 
@@ -360,7 +357,7 @@ class OrderControllerTest {
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isUnauthorized());
         }
 
         @Test

@@ -1,0 +1,33 @@
+export const auditLog = {
+  TITLE: "Audit Log",
+  SUBTITLE: "Review immutable security records and point-in-time forensic snapshots.",
+  AUDIT_RECORD: "Audit Record",
+  AUDIT_INSPECTION: "Audit Inspection",
+  SYSTEM_DETAILS: "Technical Details",
+  ACTION_CREATED: "Initialization",
+  ACTION_MODIFIED: "Modification",
+  ACTION_REMOVED: "Extraction",
+  IP_ADDRESS: "Access Point (IP)",
+  USER_AGENT: "Client Signature",
+  OUTCOME: "Verification Status",
+  ACTION: "System Action",
+  ENTITY: "System Module",
+  SEARCH_LOGS: "Search audit logs...",
+  ACTION_MAP: {
+    INSERT: "Create",
+    UPDATE: "Update",
+    DELETE: "Delete",
+  } as Record<string, string>,
+  TABLE_MAP: {
+    payments: "Payments",
+    customers: "Customers",
+    orders: "Orders",
+    order_items: "Order Items",
+    service_rates: "Service Rates",
+    users: "Staff"
+  } as Record<string, string>,
+  AUDIT_METADATA: "Audit Metadata",
+  OPERATOR: "Identity",
+  OLD_DATA: "Previous State",
+  NEW_DATA: "Current State",
+} as const;

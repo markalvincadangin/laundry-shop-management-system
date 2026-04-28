@@ -12,13 +12,14 @@ servers:
 tags:
   - name: System
   - name: Auth
-  - name: Users
   - name: Customers
   - name: ServiceRates
   - name: Orders
   - name: Payments
   - name: Reports
-  - name: Notifications
+  - name: ClientAlerts
+  - name: AuditLog
+  - name: Users
 
 paths:
   /api/v1/health:
@@ -37,7 +38,8 @@ paths:
     post:
       summary: Login
       description: |
-        User authentication for role-based access (Owner / Staff).
+        User authentication for role-based access (Admin / Staff).
+        Sets an HTTP-only cookie (access_token) in addition to returning the JWT in the body.
         Supports: US-11.
       tags: [Auth]
       requestBody:
@@ -55,6 +57,34 @@ paths:
                 $ref: "#/components/schemas/LoginResponse"
         "401":
           description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/auth/logout:
+    post:
+      summary: Logout
+      description: Clears the HTTP-only JWT cookie (sets max-age=0).
+      tags: [Auth]
+      responses:
+        "200":
+          description: Logout success
+
+  /api/v1/auth/me:
+    get:
+      summary: Get current user
+      description: Returns the authenticated user's identity based on JWT/Session.
+      tags: [Auth]
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUserResponse"
+        "401":
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -95,21 +125,40 @@ paths:
       description: |
         Search customers by name or contact number.
         Supports: US-01 (customer selection for order intake).
+        Returns a PageResponse (includes first field).
       tags: [Customers]
       parameters:
         - in: query
           name: q
           schema: { type: string }
           description: Free-text search by name or contact (optional)
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+          description: Registered from date (inclusive)
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+          description: Registered to date (inclusive)
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 15 }
+        - in: query
+          name: sortBy
+          schema: { type: string, default: lastName }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: asc }
       responses:
         "200":
-          description: Customers list
+          description: Paginated customers list
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CustomerResponse"
+                $ref: "#/components/schemas/CustomerPageResponse"
 
   /api/v1/customers/{customerId}:
     get:
@@ -136,8 +185,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+    patch:
+      summary: Update customer
+      description: Updates customer contact details (firstName, lastName, contactNumber).
+      tags: [Customers]
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerRequest"
+      responses:
+        "200":
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   # -------------------------
-  # SERVICE RATES (dynamic pricing)
+  # SERVICE RATES
   # -------------------------
   /api/v1/service-rates:
     get:
@@ -183,10 +261,11 @@ paths:
 
   /api/v1/service-rates/{rateId}:
     patch:
-      summary: Update service rate (Owner only)
+      summary: Update service rate (Admin only)
       description: |
-        Updates pricing rules. Owner controls pricing without code changes.
-        Supports: ERD note "Owner can update without code changes".
+        Updates pricing rules. Admin controls pricing without code changes.
+        Requires ADMIN role.
+        Supports: ERD note "Admin can update without code changes".
       tags: [ServiceRates]
       parameters:
         - in: path
@@ -212,6 +291,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden - Admin only
         "404":
           description: Rate not found
           content:
@@ -228,6 +309,8 @@ paths:
       description: |
         Creates order with automatic pricing (loads, extra minutes, add-ons).
         Generates unique reference number. Sets initial status RECEIVED.
+        createdByUserId is sourced from JWT when authenticated; falls back to body value.
+        Returns 401 if neither JWT nor body provides the user identity.
         Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
       tags: [Orders]
       requestBody:
@@ -249,6 +332,57 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (no user identity)
+
+    get:
+      summary: List or search orders
+      description: |
+        Returns orders with pagination and optional filters.
+        Supports sortBy and sortDir params (default: createdAt desc).
+        Supports free-text search via q param.
+        Supports: US-01, US-03, US-07.
+      tags: [Orders]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/OrderStatus"
+        - in: query
+          name: paymentStatus
+          schema:
+            $ref: "#/components/schemas/PaymentStatus"
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+          description: Start date (inclusive)
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+          description: End date (inclusive)
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Free-text search (reference number, customer name, etc.)
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: sortBy
+          schema: { type: string, default: createdAt }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: desc }
+      responses:
+        "200":
+          description: Paginated orders list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderPageResponse"
 
   /api/v1/orders/preview:
     post:
@@ -278,48 +412,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-    get:
-      summary: List or search orders
-      description: |
-        Returns orders with pagination and optional filters.
-        Supports: US-01, US-03, US-07.
-      tags: [Orders]
-      parameters:
-        - in: query
-          name: status
-          schema:
-            $ref: "#/components/schemas/OrderStatus"
-        - in: query
-          name: paymentStatus
-          schema:
-            $ref: "#/components/schemas/PaymentStatus"
-        - in: query
-          name: from
-          schema: { type: string, format: date }
-          description: Start date (inclusive)
-        - in: query
-          name: to
-          schema: { type: string, format: date }
-          description: End date (inclusive)
-        - in: query
-          name: page
-          schema: { type: integer, default: 0 }
-        - in: query
-          name: size
-          schema: { type: integer, default: 20 }
-      responses:
-        "200":
-          description: Paginated orders list
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderPageResponse"
-
   /api/v1/orders/stats:
     get:
       summary: Dashboard order stats
       description: |
-        Returns counts for staff dashboard: today's orders, in progress, ready for pickup, unpaid.
+        Returns counts for staff dashboard: today's orders, in progress, ready for pickup, unpaid, today's revenue.
         Supports: UI/UX improvement plan.
       tags: [Orders]
       parameters:
@@ -335,10 +432,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/OrderStatsResponse"
 
+  /api/v1/orders/reference/{referenceNumber}:
+    get:
+      summary: Track order by reference number
+      description: |
+        Public endpoint for customer tracking. Returns limited data (no internal IDs).
+        Includes weightKg and totalLoads in addition to status/payment info.
+        Supports: US-04. Enforces: BR-NOTIF-02, BR-OL-01.
+      tags: [Orders]
+      parameters:
+        - in: path
+          name: referenceNumber
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Order tracking view
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderTrackingResponse"
+        "404":
+          description: Reference not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /api/v1/orders/{orderId}:
     get:
       summary: Get order by ID
-      description: | 
+      description: |
         Supports: US-03, US-05, US-06.
       tags: [Orders]
       parameters:
@@ -397,37 +521,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /api/v1/orders/reference/{referenceNumber}:
-    get:
-      summary: Track order by reference number
-      description: |
-        Public endpoint for customer tracking. Returns limited data (no internal IDs).
-        Supports: US-04. Enforces: BR-NOTIF-02, BR-OL-01.
-      tags: [Orders]
-      parameters:
-        - in: path
-          name: referenceNumber
-          required: true
-          schema: { type: string }
-      responses:
-        "200":
-          description: Order tracking view
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OrderTrackingResponse"
-        "404":
-          description: Reference not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /api/v1/orders/{orderId}/status:
     patch:
       summary: Update order status
       description: |
-        Updates status and records change in order_status_logs.
+        Updates status and records change in audit logs.
+        changedByUserId is sourced from JWT when authenticated; falls back to body value.
+        Returns 401 if neither JWT nor body provides the user identity.
         Supports: US-03, US-05. Enforces: BR-OL-03, BR-OL-04, BR-OL-05.
       tags: [Orders]
       parameters:
@@ -454,51 +554,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (no user identity)
         "404":
           description: Not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-
-  # OUT OF SCOPE FOR MVP - Dynamic add-ons after order creation
-  # /api/v1/orders/{orderId}/add-ons:
-  #   post:
-  #     summary: Add add-on charge to order
-  #     description: |
-  #       Adds optional add-on (e.g., fabric conditioner). Recalculates grand total.
-  #       Supports: US-02. Enforces: BR-PR-04.
-  #     tags: [Orders]
-  #     parameters:
-  #       - in: path
-  #         name: orderId
-  #         required: true
-  #         schema: { type: integer, format: int64 }
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: "#/components/schemas/AddOrderAddOnRequest"
-  #     responses:
-  #       "200":
-  #         description: Updated order (totals recalculated)
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: "#/components/schemas/OrderResponse"
-  #       "400":
-  #         description: Validation error
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: "#/components/schemas/ErrorResponse"
-  #       "404":
-  #         description: Order not found
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: "#/components/schemas/ErrorResponse"
 
   # -------------------------
   # PAYMENTS
@@ -535,10 +598,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PaymentPageResponse"
+
     post:
       summary: Record payment for order
       description: |
         Records payment. One payment per order. MVP: amount must equal order grand total.
+        receivedByUserId is sourced from JWT when authenticated; falls back to body value.
+        Returns 401 if neither JWT nor body provides the user identity.
+        paymentMethod defaults to CASH if not provided.
         Supports: US-06. Enforces: BR-PAY-02, BR-PAY-03, BR-PAY-04.
       tags: [Payments]
       requestBody:
@@ -560,11 +627,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized (no user identity)
 
   /api/v1/payments/{paymentId}:
     get:
       summary: Get payment by ID
-      description: | 
+      description: |
         Supports: US-07.
       tags: [Payments]
       parameters:
@@ -586,25 +655,188 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  # -------------------------
-  # NOTIFICATIONS
-  # -------------------------
-  /api/v1/notifications:
-    get:
-      summary: List notifications
+  /api/v1/payments/order/{orderId}/void:
+    post:
+      summary: Void payment for order
       description: |
-        Returns all notifications (staff view).
-        Supports: US-10. Enforces: BR-NOTIF-01.
-      tags: [Notifications]
+        Voids payment record and reverts order to UNPAID (or VOIDED).
+        Supports: BR-PAY-06.
+      tags: [Payments]
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        "204":
+          description: Payment voided
+        "404":
+          description: Order or payment not found
+
+  # -------------------------
+  # CLIENT ALERTS
+  # -------------------------
+  /api/v1/client-alerts:
+    get:
+      summary: List client alerts
+      description: |
+        Returns all client alerts ordered by createdAt descending (staff view).
+        Supports: US-10. Enforces: BR-ALERT-01.
+      tags: [ClientAlerts]
       responses:
         "200":
-          description: Notifications list
+          description: Client alerts list
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/NotificationResponse"
+                  $ref: "#/components/schemas/ClientAlertResponse"
+
+  /api/v1/client-alerts/{id}/read:
+    patch:
+      summary: Mark alert as read
+      tags: [ClientAlerts]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        "200":
+          description: Success
+
+  /api/v1/client-alerts/read-all:
+    patch:
+      summary: Mark all alerts as read
+      tags: [ClientAlerts]
+      responses:
+        "200":
+          description: Success
+
+  # -------------------------
+  # AUDIT LOGS
+  # -------------------------
+  /api/v1/audit-logs:
+    get:
+      summary: List audit logs
+      description: Returns forensic audit logs of system mutations (Admin only). Snapshot data includes point-in-time state. Sorted by createdAt descending (UTC).
+      tags: [AuditLog]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogPageResponse"
+        "403":
+          description: Forbidden - Admin only
+
+  # -------------------------
+  # USERS (Staff Management)
+  # -------------------------
+  /api/v1/users:
+    get:
+      summary: List all users
+      description: |
+        Returns a complete list of all staff and admin accounts.
+        Requires ADMIN role.
+        Supports: US-11 (Admin audit & directory view).
+      tags: [Users]
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden - Admin only
+
+    post:
+      summary: Create user
+      description: |
+        Onboards a new staff or admin member. Hashes password automatically.
+        Requires ADMIN role.
+        Supports: US-11 (Administrative control).
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Username already exists or validation error
+        "403":
+          description: Forbidden - Admin only
+
+  /api/v1/users/{userId}:
+    patch:
+      summary: Update user profile
+      description: |
+        Updates names, role, or password. Username remains immutable.
+        Requires ADMIN role.
+        Supports: US-11.
+      tags: [Users]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "403":
+          description: Forbidden - Admin only
+        "404":
+          description: User not found
+
+  /api/v1/users/{userId}/toggle-status:
+    patch:
+      summary: Toggle user status
+      description: |
+        Activates or deactivates a user account (soft-archive).
+        Requires ADMIN role.
+        Supports: US-11.
+      tags: [Users]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Status toggled
+        "403":
+          description: Forbidden - Admin only
+        "404":
+          description: User not found
 
   # -------------------------
   # REPORTS
@@ -614,6 +846,7 @@ paths:
       summary: Daily sales report
       description: |
         Aggregates income from payments for the given date.
+        Requires ADMIN role.
         Supports: US-08. Enforces: BR-REC-01, BR-PAY-04.
       tags: [Reports]
       parameters:
@@ -628,19 +861,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DailySalesReportResponse"
+        "403":
+          description: Forbidden - Admin only
 
   /api/v1/reports/sales/monthly:
     get:
       summary: Monthly sales report
       description: |
         Aggregates income from payments for the given month.
+        Requires ADMIN role.
         Supports: US-09. Enforces: BR-REC-01, BR-PAY-04.
       tags: [Reports]
       parameters:
         - in: query
           name: year
           required: true
-          schema: { type: integer, example: 2026 }
+          schema: { type: integer, minimum: 1, example: 2026 }
         - in: query
           name: month
           required: true
@@ -652,19 +888,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PeriodSalesReportResponse"
+        "403":
+          description: Forbidden - Admin only
 
   /api/v1/reports/sales/yearly:
     get:
       summary: Yearly sales report
       description: |
         Aggregates income from payments for the given year.
+        Requires ADMIN role.
         Supports: US-09. Enforces: BR-REC-01, BR-PAY-04.
       tags: [Reports]
       parameters:
         - in: query
           name: year
           required: true
-          schema: { type: integer, example: 2026 }
+          schema: { type: integer, minimum: 1, example: 2026 }
       responses:
         "200":
           description: Yearly sales
@@ -672,6 +911,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PeriodSalesReportResponse"
+        "403":
+          description: Forbidden - Admin only
 
 components:
   schemas:
@@ -682,7 +923,7 @@ components:
       type: object
       properties:
         code: { type: string, example: "VALIDATION_ERROR" }
-        message: { type: string, example: "weight_kg must be greater than 0" }
+        message: { type: string, example: "weightKg must be greater than 0" }
         details:
           type: array
           items: { type: string }
@@ -702,16 +943,23 @@ components:
       type: object
       properties:
         token: { type: string, description: "JWT token" }
-        role:
-          $ref: "#/components/schemas/UserRole"
+        role: { type: string, description: "User role string (ADMIN or STAFF)" }
       required: [token, role]
 
+    CurrentUserResponse:
+      type: object
+      properties:
+        userId: { type: string, description: "UUID string" }
+        username: { type: string }
+        role: { type: string, description: "User role string (ADMIN or STAFF)" }
+      required: [userId, username, role]
+
     # -------------------------
-    # ENUMS (canonical lifecycle values)
+    # ENUMS
     # -------------------------
     UserRole:
       type: string
-      enum: [OWNER, STAFF]
+      enum: [ADMIN, STAFF]
 
     OrderStatus:
       type: string
@@ -719,13 +967,13 @@ components:
 
     PaymentStatus:
       type: string
-      enum: [UNPAID, PAID, PARTIAL]
+      enum: [UNPAID, PAID, PARTIAL, VOIDED, REFUNDED]
 
     PaymentMethod:
       type: string
       enum: [CASH, GCASH, BANK_TRANSFER]
 
-    NotificationStatus:
+    ClientAlertStatus:
       type: string
       enum: [PENDING, SENT, FAILED]
 
@@ -747,9 +995,25 @@ components:
         firstName: { type: string }
         lastName: { type: string }
         contactNumber: { type: string }
+        isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required: [id, firstName, lastName, contactNumber]
+      required: [id, firstName, lastName, contactNumber, isActive]
+
+    CustomerPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomerResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
 
     # -------------------------
     # SERVICE RATES
@@ -759,9 +1023,9 @@ components:
       properties:
         id: { type: integer }
         serviceName: { type: string }
-        basePricePerLoad: { type: number, format: double, description: "₱120 per load (BR-PR-01)" }
-        kgLimitPerLoad: { type: number, format: double, description: "8 kg per load (BR-PR-01)" }
-        pricePerExtraMinute: { type: number, format: double, description: "₱1 per extra minute (BR-PR-03)" }
+        basePricePerLoad: { type: number, format: double }
+        kgLimitPerLoad: { type: number, format: double }
+        pricePerExtraMinute: { type: number, format: double }
         isActive: { type: boolean }
       required: [id, serviceName, basePricePerLoad, kgLimitPerLoad, pricePerExtraMinute, isActive]
 
@@ -780,35 +1044,20 @@ components:
     CreateOrderRequest:
       type: object
       properties:
-        customerId:
-          type: integer
-          format: int64
-          description: "Existing customer ID"
+        customerId: { type: integer, format: int64 }
         createdByUserId:
           type: string
           format: uuid
-          description: "User creating the order. Required until auth (Phase 9)."
+          description: "Optional — overridden by JWT principal when authenticated."
         customer:
           $ref: "#/components/schemas/CreateCustomerRequest"
-        # serviceRateId:
-        #   type: integer
-        #   description: "Rate to apply; if omitted, uses active rate (OUT OF SCOPE FOR MVP)"
-        weightKg:
-          type: number
-          format: double
-          description: "Laundry weight in kg"
-        extraMinutes:
-          type: integer
-          default: 0
-          description: "Extra washing minutes beyond 45 min per load"
+        weightKg: { type: number, format: double }
+        extraMinutes: { type: integer, default: 0, minimum: 0 }
         initialAddOns:
           type: array
           items:
             $ref: "#/components/schemas/AddOnInput"
       required: [weightKg]
-      description: >
-        Provide either customerId OR customer (create on the fly).
-        weightKg required. extraMinutes and initialAddOns optional.
 
     AddOnInput:
       type: object
@@ -821,14 +1070,8 @@ components:
     OrderPreviewRequest:
       type: object
       properties:
-        weightKg:
-          type: number
-          format: double
-          description: "Laundry weight in kg"
-        extraMinutes:
-          type: integer
-          default: 0
-          description: "Extra washing minutes beyond 45 min per load"
+        weightKg: { type: number, format: double }
+        extraMinutes: { type: integer, default: 0 }
         initialAddOns:
           type: array
           items:
@@ -852,7 +1095,8 @@ components:
         inProgress: { type: integer }
         readyForPickup: { type: integer }
         unpaidOrders: { type: integer }
-      required: [todaysOrders, inProgress, readyForPickup, unpaidOrders]
+        todaysRevenue: { type: number, format: double }
+      required: [todaysOrders, inProgress, readyForPickup, unpaidOrders, todaysRevenue]
 
     UpdateOrderRequest:
       type: object
@@ -867,33 +1111,27 @@ components:
       type: object
       properties:
         newStatus:
-          $ref: "#/components/schemas/OrderStatus"
-        notes:
           type: string
+          description: "Target OrderStatus value (e.g. WASHING, READY_FOR_PICKUP)."
+        notes: { type: string }
         changedByUserId:
           type: string
           format: uuid
-          description: "User who initiated the status change (required until Phase 9 authentication)"
-      required: [newStatus, changedByUserId]
-
-    AddOrderAddOnRequest:
-      type: object
-      properties:
-        name: { type: string }
-        price: { type: number, format: double }
-        quantity: { type: integer, default: 1 }
-      required: [name, price]
+          description: "Optional — overridden by JWT principal when authenticated."
+      required: [newStatus]
 
     OrderResponse:
       type: object
       properties:
         id: { type: integer, format: int64 }
-        referenceNumber: { type: string, description: "Unique tracking identifier" }
+        referenceNumber: { type: string }
         customerId: { type: integer, format: int64 }
-        createdByUserId: { type: string, format: uuid }
-        # serviceRateId: { type: integer } # OUT OF SCOPE FOR MVP
+        customerName: { type: string }
+        createdByUserId: { type: string, description: "UUID string" }
+        createdByUsername: { type: string, description: "Username of the staff who created the order" }
+        serviceRateId: { type: integer }
         weightKg: { type: number, format: double }
-        totalLoads: { type: integer, description: "ceil(weight_kg / kg_limit_per_load)" }
+        totalLoads: { type: integer }
         extraMinutes: { type: integer }
         baseAmount: { type: number, format: double }
         extraMinutesAmount: { type: number, format: double }
@@ -902,27 +1140,24 @@ components:
         addOns:
           type: array
           items:
-            $ref: "#/components/schemas/AddOnInput"
-          description: "Order add-ons (for edit form)"
-        currentStatus:
-          $ref: "#/components/schemas/OrderStatus"
-        paymentStatus:
-          $ref: "#/components/schemas/PaymentStatus"
+            $ref: "#/components/schemas/AddOnResponse"
+        currentStatus: { type: string }
+        paymentStatus: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required:
-        - id
-        - referenceNumber
-        - customerId
-        - serviceRateId
-        - weightKg
-        - totalLoads
-        - baseAmount
-        - extraMinutesAmount
-        - addonsTotalAmount
-        - grandTotal
-        - currentStatus
-        - paymentStatus
+        auditLogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLogResponse"
+      required: [id, referenceNumber, customerId, weightKg, totalLoads, baseAmount, extraMinutesAmount, addonsTotalAmount, grandTotal, currentStatus, paymentStatus]
+
+    AddOnResponse:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: number, format: double }
+        quantity: { type: integer }
+      required: [name, price, quantity]
 
     OrderPageResponse:
       type: object
@@ -958,14 +1193,14 @@ components:
       type: object
       properties:
         referenceNumber: { type: string }
-        currentStatus:
-          $ref: "#/components/schemas/OrderStatus"
+        currentStatus: { type: string }
         customerName: { type: string }
         contactNumber: { type: string }
         createdAt: { type: string, format: date-time }
         grandTotal: { type: number, format: double }
-        paymentStatus:
-          $ref: "#/components/schemas/PaymentStatus"
+        paymentStatus: { type: string }
+        weightKg: { type: number, format: double }
+        totalLoads: { type: integer }
       required: [referenceNumber, currentStatus, customerName, createdAt, paymentStatus]
 
     # -------------------------
@@ -975,34 +1210,35 @@ components:
       type: object
       properties:
         orderId: { type: integer, format: int64 }
-        amountPaid: { type: number, format: double, description: "Must equal order grand total (BR-PAY-03)" }
+        amountPaid: { type: number, format: double }
         paymentMethod:
           $ref: "#/components/schemas/PaymentMethod"
+          description: "Defaults to CASH if not provided."
         receivedByUserId:
           type: string
           format: uuid
-          description: "User recording the payment. Required until auth (Phase 9)."
-      required: [orderId, amountPaid, receivedByUserId]
+          description: "Optional — overridden by JWT principal when authenticated."
+      required: [orderId, amountPaid]
 
     PaymentResponse:
       type: object
       properties:
         id: { type: integer, format: int64 }
         orderId: { type: integer, format: int64 }
-        orderReferenceNumber: { type: string, description: "Order reference for display (US-07)" }
-        customerName: { type: string, description: "Customer name for display (US-07)" }
+        orderReferenceNumber: { type: string }
+        customerName: { type: string }
         amountPaid: { type: number, format: double }
-        paymentMethod:
-          $ref: "#/components/schemas/PaymentMethod"
-        receivedByUserId: { type: string, format: uuid }
+        paymentMethod: { type: string }
+        receivedByUserId: { type: string, description: "UUID string" }
+        receivedByUsername: { type: string, description: "Username of the staff who received the payment" }
         paymentDate: { type: string, format: date-time }
         remarks: { type: string }
       required: [id, orderId, amountPaid, paymentMethod, paymentDate]
 
     # -------------------------
-    # NOTIFICATIONS
+    # CLIENT ALERTS
     # -------------------------
-    NotificationResponse:
+    ClientAlertResponse:
       type: object
       properties:
         id: { type: integer, format: int64 }
@@ -1012,8 +1248,8 @@ components:
         customerName: { type: string }
         contactNumber: { type: string }
         message: { type: string }
-        status:
-          $ref: "#/components/schemas/NotificationStatus"
+        status: { type: string, description: "ClientAlertStatus: PENDING, SENT, FAILED" }
+        isRead: { type: boolean }
         createdAt: { type: string, format: date-time }
         sentAt: { type: string, format: date-time }
       required: [id, orderId, customerId, message, status]
@@ -1032,9 +1268,77 @@ components:
     PeriodSalesReportResponse:
       type: object
       properties:
-        period:
-          type: string
-          example: "2026-02"
+        period: { type: string }
         totalIncome: { type: number, format: double }
         paidOrdersCount: { type: integer }
       required: [period, totalIncome, paidOrdersCount]
+
+    # -------------------------
+    # AUDIT LOG
+    # -------------------------
+    AuditLogPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLogResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
+
+    AuditLogResponse:
+      type: object
+      description: Audit record of a system action. Snapshot data includes point-in-time state.
+      properties:
+        id: { type: integer, format: int64 }
+        actor: { type: string, description: "Username who performed the action" }
+        operation: { type: string, enum: [INSERT, UPDATE, DELETE], description: "Type of state change" }
+        entityType: { type: string, description: "Type of record affected (e.g., Order, Payment)" }
+        entityId: { type: string, description: "Primary key of the affected record" }
+        snapshot: { type: string, description: "JSON forensic snapshot of the entity state at time of action" }
+        createdAt: { type: string, format: date-time, description: "Timestamp in UTC" }
+        methodName: { type: string, description: "System method intercepted for this audit" }
+        description: { type: string, description: "Human-readable description of the audit event" }
+      required: [id, actor, operation, createdAt]
+
+    # -------------------------
+    # USERS
+    # -------------------------
+    CreateUserRequest:
+      type: object
+      properties:
+        username: { type: string, minLength: 4, maxLength: 50 }
+        password: { type: string, minLength: 6 }
+        role:
+          $ref: "#/components/schemas/UserRole"
+        firstName: { type: string }
+        lastName: { type: string }
+      required: [username, password, role, firstName, lastName]
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        role:
+          $ref: "#/components/schemas/UserRole"
+        password: { type: string, minLength: 6 }
+
+    UserResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        role:
+          $ref: "#/components/schemas/UserRole"
+        firstName: { type: string }
+        lastName: { type: string }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, username, role, firstName, lastName, isActive, createdAt, updatedAt]

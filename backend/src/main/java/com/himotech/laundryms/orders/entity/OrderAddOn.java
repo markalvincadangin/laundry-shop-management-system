@@ -22,7 +22,7 @@ public class OrderAddOn {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String name;
 
     @Column(nullable = false, precision = 10, scale = 2)

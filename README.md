@@ -11,7 +11,7 @@ A centralized, full-stack information system designed to replace manual paper-ba
 ## 📖 Project Overview
 
 ### The Client
-**Faith Laundry Shop** is a small-scale laundry service business established in 2022, located in Ilaya, Tabuc Suba Jaro, Iloilo City. The business operates with one owner and one staff member, providing washing, drying, and folding services on a per-load basis.
+**Faith Laundry Shop** is a small-scale laundry service business established in 2022, located in Ilaya, Tabuc Suba Jaro, Iloilo City. The business operates with one Admin and one staff member, providing washing, drying, and folding services on a per-load basis.
 
 ### The Problem
 Faith Laundry Shop currently relies on **manual, paper-based processes** for all operations:
@@ -21,7 +21,7 @@ Faith Laundry Shop currently relies on **manual, paper-based processes** for all
 - **No automated reporting** — income tracking is entirely manual
 - **Limited order tracking** — customers must call or visit to check laundry status
 
-These manual processes are time-consuming, error-prone, and limit the owner's visibility into business performance.
+These manual processes are time-consuming, error-prone, and limit the Admin's visibility into business performance.
 
 ### The Solution
 This system digitizes the entire laundry management workflow:
@@ -29,7 +29,7 @@ This system digitizes the entire laundry management workflow:
 - Replace logbooks with a **centralized database** storing all orders and status changes
 - **Automate pricing calculations** based on weight, loads, and extra charges
 - Provide **real-time order tracking** for customers using reference numbers
-- Generate **automated daily, monthly, and yearly sales reports** for the owner
+- Generate **automated daily, monthly, and yearly sales reports** for the Admin
 
 ---
 
@@ -66,7 +66,7 @@ Based on validated user stories from client interviews:
 - Limited data exposure (status, dates, no internal IDs)
 
 ### 👥 User Roles
-- **Owner**: Full access to reports, rates management, all order operations
+- **Admin**: Full access to reports, rates management, all order operations
 - **Staff**: Record orders, update status, record payments (no access to income reports)
 
 ---
@@ -105,7 +105,7 @@ These rules are enforced in the backend service layer and derived from **busines
 | **Exact Amount Match (MVP)** | Payment amount must equal order grand total  | BR-PAY-03 |
 | **Payment Timing**           | Payments are typically collected upon pickup | BR-PAY-01 |
 
-> **Note:** Partial payments, overpayments, and owner override capabilities are **post-MVP features**.
+> **Note:** Partial payments, overpayments, and Admin override capabilities are **post-MVP features**.
 
 ---
 
@@ -156,21 +156,21 @@ The system uses **PostgreSQL 16** with the **pgcrypto extension** (required for 
 
 | Table                 | Primary Key      | Purpose                                                   | Key Relationships                                   |
 |-----------------------|------------------|-----------------------------------------------------------|-----------------------------------------------------|
-| **users**             | `id` (UUID)      | System users (Owner/Staff) with role-based access         | Created by: orders, order_status_logs, payments     |
+| **users**             | `id` (UUID)      | System users (Admin/Staff) with role-based access         | Created by: orders, payments                        |
 | **customers**         | `id` (bigserial) | Customer contact information                              | Referenced by: orders, notifications                |
 | **service_rates**     | `id` (int)       | Configurable pricing rules (₱120/8kg, ₱1/min)             | Referenced by: orders (snapshot)                    |
 | **orders**            | `id` (bigserial) | Central transaction table with computed totals and status | Links to: customers, users, service_rates, payments |
 | **order_add_ons**     | `id` (bigserial) | Flexible additional charges per order                     | Links to: orders                                    |
-| **order_status_logs** | `id` (bigserial) | Audit trail of all status changes                         | Links to: orders, users                             |
+| **activity_logs**     | `id` (bigserial) | Forensic audit trail (INSERT/UPDATE/DELETE via DB triggers) | Audits: orders, payments, customers, service_rates |
 | **payments**          | `id` (bigserial) | One-to-one payment records linked to orders               | Links to: orders (1:1), users                       |
-| **notifications**     | `id` (bigserial) | Queue for customer notifications (MVP optional)           | Links to: orders, customers                         |
+| **notifications**     | `id` (bigserial) | Queue for customer notifications (MVP optional)           | Links to: orders                                    |
 
 #### Key Design Decisions
 
 - **UUID for users**: Uses `gen_random_uuid()` from pgcrypto extension for secure user IDs
 - **Bigserial for business entities**: Auto-incrementing IDs for orders, customers, payments
 - **Price snapshot pattern**: Orders store pricing rules at creation time to preserve historical accuracy
-- **Audit trail**: `order_status_logs` table tracks all status changes with timestamp and user
+- **Forensic audit trail**: `activity_logs` table captures all INSERT/UPDATE/DELETE events on core tables via database-level triggers (`fn_audit_activity`), providing tamper-resistant auditability without application-layer overhead
 - **One-to-one payments**: Each order has exactly one payment (MVP constraint)
 
 #### Database Schema Documentation
@@ -191,22 +191,22 @@ The REST API follows the **OpenAPI 3.0.3** specification defined in **[docs/05-t
 
 | Endpoint                                     | Method | Purpose                                         | Auth Required |
 |----------------------------------------------|--------|-------------------------------------------------|---------------|
-| `/api/v1/orders`                             | POST   | Create order with automatic pricing computation | ✅ Staff/Owner |
-| `/api/v1/orders/{orderId}/status`            | PATCH  | Update order status (creates audit log)         | ✅ Staff/Owner |
+| `/api/v1/orders`                             | POST   | Create order with automatic pricing computation | ✅ Staff/Admin |
+| `/api/v1/orders/{orderId}/status`            | PATCH  | Update order status (creates audit log)         | ✅ Staff/Admin |
 | `/api/v1/orders/reference/{referenceNumber}` | GET    | Public order tracking                           | ❌ No auth     |
-| `/api/v1/payments`                           | POST   | Record payment (1:1 with order)                 | ✅ Staff/Owner |
-| `/api/v1/reports/sales/daily`                | GET    | Daily sales report                              | ✅ Owner only  |
-| `/api/v1/reports/sales/monthly`              | GET    | Monthly income report                           | ✅ Owner only  |
-| `/api/v1/reports/sales/yearly`               | GET    | Yearly income report                            | ✅ Owner only  |
-| `/api/v1/customers`                          | POST   | Create new customer                             | ✅ Staff/Owner |
-| `/api/v1/service-rates/active`               | GET    | Get current pricing rules                       | ✅ Staff/Owner |
+| `/api/v1/payments`                           | POST   | Record payment (1:1 with order)                 | ✅ Staff/Admin |
+| `/api/v1/reports/sales/daily`                | GET    | Daily sales report                              | ✅ Admin only  |
+| `/api/v1/reports/sales/monthly`              | GET    | Monthly income report                           | ✅ Admin only  |
+| `/api/v1/reports/sales/yearly`               | GET    | Yearly income report                            | ✅ Admin only  |
+| `/api/v1/customers`                          | POST   | Create new customer                             | ✅ Staff/Admin |
+| `/api/v1/service-rates/active`               | GET    | Get current pricing rules                       | ✅ Staff/Admin |
 | `/api/v1/health`                             | GET    | Health check (liveness)                         | ❌ No auth     |
 
 #### API Documentation
 
 When the backend is running, access interactive API documentation at:
-- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-- **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+- **Swagger UI**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+- **OpenAPI JSON**: [http://localhost:8081/v3/api-docs](http://localhost:8081/v3/api-docs)
 
 For the full list of endpoints (e.g. order preview, order by ID, payments by ID), see **[docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml)**.
 
@@ -230,8 +230,11 @@ laundry-shop-management-system/
 │   ├── mvnw.cmd                # Maven wrapper (Windows)
 │   └── mvnw                    # Maven wrapper (Unix)
 ├── frontend/                    # Next.js client application
+├── docker-compose.yml           # Base container setup (moved to root)
+├── docker-compose.override.yml  # Development overrides (moved to root)
 ├── docker/
-│   └── docker-compose.yml      # PostgreSQL 16 container setup
+│   ├── docker-compose.prod.yml  # Production setup
+│   ├── .env.docker              # Database credentials
 ├── docs/                        # Project documentation (source of truth)
 │   ├── README.md               # Documentation index — start here
 │   ├── 00-context/
@@ -254,7 +257,7 @@ laundry-shop-management-system/
 │   │   └── architecture.md     # System design & deployment
 │   ├── 06-implementation/
 │   │   ├── deployment-guide.md # Production & dev deployment
-│   │   ├── user-manual.md      # End-user guide (Owner/Staff)
+│   │   ├── user-manual.md      # End-user guide (Admin/Staff)
 │   │   ├── handover-checklist.md
 │   │   └── release-notes-mvp-v1.md
 │   ├── GETTING_STARTED.md      # Developer implementation guide
@@ -369,15 +372,17 @@ DB_USER=laundry_user
 DB_PASSWORD=your_secure_password_here   # Same as docker/.env.docker
 
 SPRING_PORT=8080
+BACKEND_PORT=8081
 SPRING_PROFILES_ACTIVE=dev
 JWT_SECRET=dev-only-change-me-in-production
-ALLOWED_ORIGIN=http://localhost:3000
+ALLOWED_ORIGIN=http://localhost:3001
 ```
 
 **C) `frontend/.env.local`** — Used by Next.js. Set the API URL:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+FRONTEND_PORT=3001
+NEXT_PUBLIC_API_URL=http://localhost:8081/api
 ```
 
 #### Environment Variables Quick Reference
@@ -390,73 +395,59 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 
 > ⚠️ **Security:** Never commit `docker/.env.docker`, `backend/.env`, or `frontend/.env.local` to Git. They are in `.gitignore`. Each developer maintains their own local copies.
 
-### Step 3: Database Setup (Docker)
+### Step 3: Start the Optimized Stack
 
-The project uses **PostgreSQL 16** running in a Docker container with the **pgcrypto extension** pre-enabled.
+The project uses a unified Docker Compose setup optimized for development speed.
 
-#### 3.1 Start the PostgreSQL Container
+### 🚀 Quick Start Commands
 
-```powershell
-# From the repository root, start the database with the .env.docker file
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
+| Command | Description |
+| :--- | :--- |
+| `docker compose up -d` | Start the full stack (Dev mode) |
+| `./scripts/fresh.ps1` | **Optimized Reset**: Wipe DB, Remigrate, and Reseed (Keeps library caches) |
+| `./scripts/share.ps1` | Share local environment via ngrok |
+| `docker compose down` | Stop all services |
 
-# Verify the container is running
-docker compose -f docker/docker-compose.yml ps
-```
+> [!TIP]
+> **Coming from Laravel?** Run `./scripts/fresh.ps1` whenever you want the equivalent of `php artisan migrate:fresh --seed`.
 
-**Expected output:**
-```
-NAME                IMAGE          STATUS          PORTS
-laundry-postgres    postgres:16    Up X seconds    0.0.0.0:5433->5432/tcp
-```
+**Optimizations included:**
+- **Instant Boot:** Backend skips Checkstyle and JaCoCo during development.
+- **Turbo Frontend:** Next.js runs with `--turbo` for faster HMR.
+- **Integrated DB:** Database automatically handles `pgcrypto` initialization.
 
-#### 3.2 Verify Database Connection
+#### 3.1 Verify Services
 
-```powershell
-# Connect to the database using psql (requires PostgreSQL client tools)
-docker exec -it laundry-postgres psql -U laundry_user -d laundry_db
+| Service | Port | Health Check |
+|---------|------|--------------|
+| **Database** | `5433` | `pg_isready` |
+| **Backend** | `8081` | `GET /api/v1/health` |
+| **Frontend** | `3001` | `http://localhost:3001` |
 
-# Once connected, verify the pgcrypto extension
-\dx
-```
-
-**Expected output should include:**
-```
-Name      | Version | Schema | Description
-----------+---------+--------+-------------
-pgcrypto  | 1.3     | public | cryptographic functions
-```
-
-> ✅ **Verification Complete:** If you see `pgcrypto` listed, the extension is properly enabled.
-
-#### 3.3 Database Configuration Details
-
-| Setting       | Value                                         | Description                             |
-|---------------|-----------------------------------------------|-----------------------------------------|
-| **Host**      | `localhost`                                   | Database host (from `.env`)             |
-| **Port**      | `5433`                                        | External port (mapped to internal 5432) |
-| **Database**  | `laundry_db`                                  | Database name                           |
-| **Username**  | `laundry_user`                                | Database user (from `.env`)             |
-| **Password**  | `laundry_password`                            | Database password (from `.env`)         |
-| **Extension** | `pgcrypto`                                    | Required for UUID generation            |
-| **JDBC URL**  | `jdbc:postgresql://localhost:5433/laundry_db` | Full connection string                  |
-
-#### 3.4 Database Management Commands
+#### 3.2 View Logs
 
 ```powershell
-# Stop the database (preserves data)
-docker compose -f docker/docker-compose.yml down
+# Tail all logs
+docker compose logs -f
 
-# Start the database
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
-
-# View database logs
-docker compose -f docker/docker-compose.yml logs -f postgres
-
-# Reset the database (⚠️ DELETES ALL DATA)
-docker compose -f docker/docker-compose.yml down -v
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
+# Tail specific service
+docker compose logs -f backend
 ```
+
+### Step 4: Access & Sharing
+
+#### 4.1 Internal Access
+- **App:** [http://localhost:3001](http://localhost:3001)
+- **API Docs:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+
+#### 4.2 Sharing with the Team (Ngrok)
+If you need to share your local environment with the team or the client, use the provided script:
+
+```powershell
+# Starts an ngrok tunnel to your local environment
+.\share.ps1
+```
+*Note: Requires ngrok installed and configured.*
 
 ### Step 4: Database Migrations (Flyway)
 
@@ -518,8 +509,8 @@ If migrations fail or you need to reset:
 
 ```powershell
 # Option 1: Clean rebuild (deletes all data)
-docker compose -f docker/docker-compose.yml down -v
-docker compose -f docker/docker-compose.yml up -d
+docker compose down -v
+docker compose -f docker/docker-compose.dev.yml up -d
 cd backend
 .\mvnw.cmd spring-boot:run
 
@@ -590,11 +581,11 @@ INFO  LaundrySystemApplication : Started LaundrySystemApplication in X.XXX secon
 **Test the health endpoint:**
 ```powershell
 # Should return HTTP 200 OK
-curl http://localhost:8080/api/v1/health
+curl http://localhost:8081/api/v1/health
 ```
 
 **Test the API documentation:**
-- Open browser: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- Open browser: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
 
 #### 5.5 Backend Startup Checklist
 
@@ -651,14 +642,14 @@ npm run dev
 **Expected output:**
 ```
 ▲ Next.js 14.x.x
-- Local:        http://localhost:3000
-- ready started server on 0.0.0.0:3000
+- Local:        http://localhost:3001
+- ready started server on 0.0.0.0:3001
 ```
 
 #### 6.4 Verify Frontend is Running
 
 **Open your browser:**
-- [http://localhost:3000](http://localhost:3000)
+- [http://localhost:3001](http://localhost:3001)
 
 **Expected:** The Faith Laundry Shop application home page should load.
 
@@ -722,7 +713,7 @@ Copy-Item frontend\.env.example frontend\.env.local
 # Edit docker/.env.docker (and backend/.env, frontend/.env.local if needed)
 
 # 2. Start database
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
+docker compose --env-file docker/.env.docker up -d
 
 # 3. Start backend (in new terminal)
 cd backend
@@ -777,7 +768,7 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 - **Feature branches** — `feature/short-description` (e.g., `feature/order-preview`).
 - **Bugfix branches** — `fix/bug-description`.
 - **Workflow:** Sync from `develop` (`git checkout develop && git pull --rebase origin develop`) → Branch from `develop` → Commit (use `feat:`, `fix:`, `docs:`, etc.) → Push → Open PR **into `develop`** → Request review.
-- **Local setup:** Create env files from `.env.example` in `docker/`, `backend/`, `frontend/` → Start DB: `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d` → Backend: `cd backend` + `.\mvnw.cmd spring-boot:run` → Frontend: `cd frontend` + `npm run dev` → Open http://localhost:3000
+- **Local setup:** Create env files from `.env.example` in `docker/`, `backend/`, `frontend/` → Start DB: `docker compose --env-file docker/.env.docker up -d` → Backend: `cd backend` + `.\mvnw.cmd spring-boot:run` → Frontend: `cd frontend` + `npm run dev` → Open http://localhost:3000
 
 ### Pull Request Checklist
 
@@ -797,16 +788,16 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 ## 🔧 Troubleshooting
 
 ### Database Connection Issues
-- **Verify Docker is running:** `docker compose -f docker/docker-compose.yml ps`
+- **Verify Docker is running:** `docker compose ps`
 - **Check credentials:** Ensure `docker/.env.docker` and `backend/.env` have correct `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
-- **Restart container:** `docker compose -f docker/docker-compose.yml down` then `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d`
+- **Restart container:** `docker compose down` then `docker compose --env-file docker/.env.docker up -d`
 
 ### Flyway Migrations Fail
 - **Check migration format:** Files should follow `V{version}__{description}.sql` (e.g., `V1__init.sql`)
 - **Verify file encoding:** Ensure all migration files are in UTF-8 format
 - **Review logs:** Check application console output for detailed migration error messages
-- **Reset database:** `docker compose -f docker/docker-compose.yml down -v` then `docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d`
+- **Reset database:** `docker compose down -v` then `docker compose --env-file docker/.env.docker up -d`
 
 ### Backend Startup Issues
 - **Check Java version:** `java -version` (should be 21 or higher)
@@ -846,7 +837,7 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 | **API contract** | [docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml) |
 | **Architecture** | [docs/05-tech-design/architecture.md](docs/05-tech-design/architecture.md) |
 | **Deployment guide** | [docs/06-implementation/deployment-guide.md](docs/06-implementation/deployment-guide.md) |
-| **User manual (Owner/Staff)** | [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) |
+| **User manual (Admin/Staff)** | [docs/06-implementation/user-manual.md](docs/06-implementation/user-manual.md) |
 | **Getting started (developers)** | [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) |
 | **Development credentials** | [docs/development-credentials.md](docs/development-credentials.md) |
 | **Implementation status** | [docs/06-implementation/implementation-status.md](docs/06-implementation/implementation-status.md) |

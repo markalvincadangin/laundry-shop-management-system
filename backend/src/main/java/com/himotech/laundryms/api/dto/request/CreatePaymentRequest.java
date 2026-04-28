@@ -20,6 +20,5 @@ public class CreatePaymentRequest {
     @NotNull(message = "paymentMethod is required")
     private PaymentMethod paymentMethod = PaymentMethod.CASH;
 
-    @NotNull(message = "receivedByUserId is required")
     private UUID receivedByUserId;
 }

@@ -35,43 +35,39 @@ Configuration is **per component**. Create env files by copying from the corresp
 | `DB_USER` | No | Database user (default: `laundry_user`) |
 | `DB_PORT` | No | Host port for PostgreSQL (default: `5433`) |
 | `JWT_SECRET` | Yes (prod) | At least 32 characters for JWT signing |
-| `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:3000`) |
-| `NEXT_PUBLIC_API_URL` | Yes (frontend) | Backend API base URL (e.g. `http://localhost:8080/api`) |
+| `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:3001`) |
+| `NEXT_PUBLIC_API_URL` | Yes (frontend) | Backend API base URL (e.g. `http://localhost:8081/api`) |
 
 ---
 
-## 3. Docker Compose — Full Stack
+## 3. Docker Compose — Full Stack (HIMÓTECH Standard)
 
 Run the entire stack (PostgreSQL + Backend + Frontend):
 
 ```bash
 # From project root
-docker compose -f docker/docker-compose.fullstack.yml up -d
+docker compose -f docker/docker-compose.yml --env-file docker/.env.docker --profile fullstack up -d
 
 # View logs
-docker compose -f docker/docker-compose.fullstack.yml logs -f
+docker compose -f docker/docker-compose.yml logs -f
 ```
 
 **Access:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080/api
-- Health check: http://localhost:8080/api/v1/health or http://localhost:8080/actuator/health
+- Frontend: http://localhost:3001
+- Backend API: http://localhost:8081/api
 
 **Stop:**
 ```bash
-docker compose -f docker/docker-compose.fullstack.yml down
+docker compose --profile fullstack down
 ```
 
 ---
 
-## 4. Docker Compose — Database Only (Local Development)
+## 4. Docker Compose — Database: PostgreSQL 16 via Docker Compose
 
-For local development with backend and frontend running natively:
-
-```bash
-# From project root; use docker/.env.docker for DB credentials
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
-```
+- **Configuration:** `.env` (backend), `.env.local` (frontend) — gitignored; use `.env.example` as template
+- **Secrets:** Never committed; JWT secret, DB credentials in `docker/.env.docker`
+- **Orchestration:** `docker compose --profile fullstack up -d`
 
 ---
 
@@ -235,11 +231,11 @@ If PostgreSQL runs in Docker (e.g. `laundry-postgres` or `laundry-postgres-prod`
 **After restore**
 
 - Restart the backend. Flyway will see existing schema; no migration rerun is needed if the dump included the full schema.
-- Verify with a quick health check: `GET http://localhost:8080/api/v1/health` or `GET http://localhost:8080/actuator/health`.
+- Verify with a quick health check: `GET http://localhost:8081/api/v1/health` or `GET http://localhost:8081/actuator/health`.
 
 ### 6.6 User Manual
 
-See [docs/06-implementation/user-manual.md](user-manual.md) for the Owner and Staff guide. Export to PDF if needed (e.g., `pandoc user-manual.md -o user-manual.pdf`).
+See [docs/06-implementation/user-manual.md](user-manual.md) for the Admin and Staff guide. Export to PDF if needed (e.g., `pandoc user-manual.md -o user-manual.pdf`).
 
 ---
 

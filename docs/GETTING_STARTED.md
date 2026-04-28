@@ -108,7 +108,7 @@ Copy-Item frontend\.env.example frontend\.env.local
 # Edit docker/.env.docker and backend/.env with your DB_PASSWORD
 
 # Start PostgreSQL (from project root)
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker up -d
+docker compose --env-file docker/.env.docker up -d
 
 # Verify database is running
 docker ps | Select-String postgres
@@ -424,7 +424,7 @@ export enum OrderStatus {
 // frontend/lib/api/orders.ts
 // Reference: frontend.instructions.md → "API Integration"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 
 export const ordersApi = {
   create: async (data: CreateOrderRequest): Promise<OrderResponse> => {

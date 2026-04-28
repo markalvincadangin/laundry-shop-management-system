@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  /* Hide native browser password reveal and clear buttons */
+  input::-ms-reveal,
+  input::-ms-clear {
+    display: none;
+  }
+  
+  /* Hide native Edge/Chrome clear buttons */
+  input::-webkit-contacts-auto-fill-button,
+  input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+  }
+
+  body {
+    @apply bg-neutral-50 text-slate-900 antialiased selection:bg-brand-blue/10;
+  }
+}
+
+:root {
+  /* Design Tokens (FRONT-001) */
+  --brand-blue: #15489d;
+  --brand-blue-light: #e8eef6;
+  --brand-cyan: #30a8d4;
+  --brand-cyan-dark: #1a7fa8;
+  
+  --neutral-50: #f8fafc;
+  --neutral-100: #f1f5f9;
+  --neutral-200: #e2e8f0;
+  --neutral-900: #0f172a;
+  
+  --success-100: #d1fae5;
+  --success-700: #047857;
+  --emerald-100: #d1fae5;
+  --emerald-700: #047857;
+  
+  --warning-100: #fef3c7;
+  --warning-700: #b45309;
+  --amber-100: #fef3c7;
+  --amber-700: #b45309;
+  
+  --error-50: #fff1f2;
+  --error-700: #be123c;
+  --rose-50: #fff1f2;
+  --rose-700: #be123c;
+
+  /* UI Path Aliases */
+  --color-primary: var(--brand-blue);
+  --color-action: var(--brand-cyan);
+  --color-success: var(--emerald-700);
+  --color-warning: var(--amber-700);
+  --color-error: var(--rose-700);
+}
+
+/* Print styles for order receipt (FRONT-001 §6) */
+@media print {
+  nav,
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  .print-receipt {
+    max-width: 80mm !important;
+    padding: 0.5rem !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  .print-receipt * {
+    background: transparent !important;
+    color: black !important;
+    backdrop-filter: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+}
+
+/* Base Animations (FRONT-001 §2.7) */
+@layer utilities {
+  .animate-in {
+    animation-duration: 400ms;
+    animation-fill-mode: forwards;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .fade-in {
+    animation-name: fadeIn;
+  }
+
+  .slide-in-from-bottom {
+    animation-name: slideInFromBottom;
+  }
+
+  /* Glassmorphism Standard (FRONT-001 §2.4.2) */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInFromBottom {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

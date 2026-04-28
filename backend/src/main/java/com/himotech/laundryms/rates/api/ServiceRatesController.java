@@ -35,7 +35,7 @@ public class ServiceRatesController {
     }
 
     @PatchMapping("/{rateId}")
-    @PreAuthorize("hasRole('OWNER')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceRateResponse> update(
             @PathVariable Integer rateId,
             @Valid @RequestBody UpdateServiceRateRequest request) {

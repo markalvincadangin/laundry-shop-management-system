@@ -1,5 +1,6 @@
 package com.himotech.laundryms.orders.service;
 
+import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
 import com.himotech.laundryms.api.dto.request.OrderPreviewRequest;
 import com.himotech.laundryms.api.dto.request.UpdateOrderRequest;
@@ -15,14 +16,16 @@ import com.himotech.laundryms.customers.repository.CustomerRepository;
 import com.himotech.laundryms.customers.service.CustomerService;
 import com.himotech.laundryms.exception.NotFoundException;
 import com.himotech.laundryms.orders.entity.Order;
-import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.orders.repository.OrderSpecification;
-import com.himotech.laundryms.orders.repository.OrderStatusLogRepository;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
+import com.himotech.laundryms.payments.repository.PaymentRepository;
+import com.himotech.laundryms.api.dto.response.OrderResponse;
+import com.himotech.laundryms.api.mapper.OrderMapper;
+import com.himotech.laundryms.auditlog.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,8 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Set;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -47,7 +51,9 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ServiceRateService serviceRateService;
     private final OrderRepository orderRepository;
-    private final OrderStatusLogRepository orderStatusLogRepository;
+    private final PaymentRepository paymentRepository;
+    private final AuditLogService auditLogService;
+    private final OrderMapper orderMapper;
 
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
 
@@ -137,6 +143,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    @Auditable(action = "ORDER_CREATE", description = "Create new laundry order")
     @Transactional
     public Order create(CreateOrderCommand command) {
         Customer customer = customerRepository.findById(command.customerId())
@@ -209,15 +216,6 @@ public class OrderService {
                 customer.getLastName(), 
                 order.getGrandTotal());
 
-        OrderStatusLog initialLog = OrderStatusLog.builder()
-                .order(order)
-                .previousStatus(null)
-                .newStatus(OrderStatus.RECEIVED)
-                .changedBy(createdBy)
-                .changedAt(LocalDateTime.now())
-                .build();
-        orderStatusLogRepository.save(initialLog);
-
         return order;
     }
 
@@ -279,26 +277,39 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderStatsResponse getStats(LocalDate date) {
-        LocalDateTime from = date.atStartOfDay();
-        LocalDateTime to = date.plusDays(1).atStartOfDay();
+        Instant from = date.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant to = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to));
+        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to, null));
         long inProgress = orderRepository.count(OrderSpecification.filterByStatusIn(
                 Set.of(OrderStatus.WASHING, OrderStatus.DRYING, OrderStatus.FOLDING)));
-        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null));
-        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null));
+        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null, null));
+        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null));
+
+        BigDecimal todaysRevenue = paymentRepository.sumAmountPaidByPaymentDateBetween(from, to);
 
         return OrderStatsResponse.builder()
                 .todaysOrders((int) todaysOrders)
                 .inProgress((int) inProgress)
                 .readyForPickup((int) readyForPickup)
                 .unpaidOrders((int) unpaidOrders)
+                .todaysRevenue(todaysRevenue)
                 .build();
     }
 
     @Transactional(readOnly = true)
+    public OrderResponse getOrderDetails(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Order not found: " + id));
+        
+        OrderResponse response = orderMapper.toResponse(order);
+        response.setAuditLogs(auditLogService.getAuditLogForRecord("orders", id.toString()));
+        return response;
+    }
+
+    @Transactional(readOnly = true)
     public Order findById(Long id) {
-        return orderRepository.findByIdWithStatusLogs(id)
+        return orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
     }
 
@@ -311,6 +322,7 @@ public class OrderService {
      * @param request update request (extraMinutes, addOns)
      * @return the updated order
      */
+    @Auditable(action = "ORDER_UPDATE", description = "Update order details")
     @Transactional
     public Order update(Long orderId, UpdateOrderRequest request) {
         Order order = orderRepository.findById(orderId)
@@ -379,20 +391,16 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<Order> findAll() {
-        return orderRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
     public Page<Order> findAll(
             OrderStatus status,
             PaymentStatus paymentStatus,
             java.time.LocalDate from,
             java.time.LocalDate to,
+            String q,
             Pageable pageable) {
-        java.time.LocalDateTime fromTs = from != null ? from.atStartOfDay() : null;
-        java.time.LocalDateTime toTs = to != null ? to.plusDays(1).atStartOfDay() : null;
-        var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs);
+        java.time.Instant fromTs = from != null ? from.atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
+        java.time.Instant toTs = to != null ? to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
+        var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs, q);
         return orderRepository.findAll(spec, pageable);
     }
 

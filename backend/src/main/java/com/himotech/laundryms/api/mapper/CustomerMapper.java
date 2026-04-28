@@ -12,9 +12,8 @@ public interface CustomerMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "isActive", ignore = true)
     Customer toEntity(CreateCustomerRequest request);
 
-    @Mapping(target = "createdAt", expression = "java(customer.getCreatedAt() != null ? customer.getCreatedAt().atOffset(java.time.ZoneOffset.UTC) : null)")
-    @Mapping(target = "updatedAt", expression = "java(customer.getUpdatedAt() != null ? customer.getUpdatedAt().atOffset(java.time.ZoneOffset.UTC) : null)")
     CustomerResponse toResponse(Customer customer);
 }
