@@ -33,5 +33,13 @@ public interface ServiceRateRepository extends JpaRepository<ServiceRate, Intege
      * @return a list of all active service rates
      */
     List<ServiceRate> findByIsActiveTrue();
+
+    /**
+     * Finds a service rate by its unique name.
+     *
+     * @param serviceName the name of the service
+     * @return an Optional containing the service rate if found
+     */
+    Optional<ServiceRate> findByServiceName(String serviceName);
 }
 

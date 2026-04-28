@@ -23,7 +23,7 @@
 
 ### US-01 – Record Laundry Order
 
-**As a** staff or owner  
+**As a** staff or admin  
 **I want** to record a laundry order with customer and laundry details  
 **So that** the system can track the order from drop-off to pickup.
 
@@ -41,7 +41,7 @@
 
 ### US-02 – Automatically Compute Laundry Price
 
-**As a** staff or owner  
+**As a** staff or admin  
 **I want** the system to compute the laundry price automatically  
 **So that** pricing errors and manual calculations are avoided.
 
@@ -60,7 +60,7 @@
 
 ### US-03 – Update Laundry Order Status
 
-**As a** staff or owner  
+**As a** staff or admin  
 **I want** to update the laundry order status  
 **So that** the current processing stage is accurately reflected.
 
@@ -94,7 +94,7 @@
 
 ### US-05 – Verify Laundry Before Release
 
-**As a** staff or owner  
+**As a** staff or admin  
 **I want** to verify laundry details before releasing the order  
 **So that** incorrect items are not given to customers.
 
@@ -113,7 +113,7 @@
 
 ### US-06 – Record Payment for Laundry Order
 
-**As a** staff or owner  
+**As a** staff or admin  
 **I want** to record customer payments  
 **So that** payment history is properly tracked.
 
@@ -133,14 +133,14 @@
 
 ### US-07 – View Payment History
 
-**As the** owner  
+**As the** admin  
 **I want** to view payment records  
 **So that** I can review transaction history.
 
 **Acceptance Criteria**
 - Payments can be filtered by date range
 - Each payment shows order reference number and amount
-- Only the owner can access the full payment history
+- Only the admin can access the full payment history
 
 **Related Business Rules:** [BR-REC-01](business-rules.md#br-rec-01-core-data-to-record), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order)  
 **Scope:** [§ 3.1.6 User Roles](../01-scope/project-scope.md#316-user-roles-basic-access-control)
@@ -151,7 +151,7 @@
 
 ### US-08 – View Daily Sales Report
 
-**As the** owner  
+**As the** admin  
 **I want** to view daily sales automatically  
 **So that** I do not need to compute income manually.
 
@@ -167,7 +167,7 @@
 
 ### US-09 – View Monthly and Yearly Income Reports
 
-**As the** owner  
+**As the** admin  
 **I want** to view monthly and yearly income reports  
 **So that** I can monitor business performance over time.
 
@@ -208,8 +208,8 @@
 **So that** I can access appropriate system features.
 
 **Acceptance Criteria**
-- User roles: **Owner** and **Staff**
-- Owner: access to reports and records
+- User roles: **Admin** and **Staff**
+- Admin: access to reports and records
 - Staff: manage orders and payments; no access to income reports
 
 **Related Business Rules:** None (role definitions in [Architecture](../05-tech-design/architecture.md))  

@@ -7,7 +7,6 @@ import com.himotech.laundryms.customers.repository.CustomerRepository;
 import com.himotech.laundryms.exception.NotFoundException;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.repository.OrderRepository;
-import com.himotech.laundryms.orders.repository.OrderStatusLogRepository;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import com.himotech.laundryms.support.TestDataBuilders;
@@ -55,8 +54,6 @@ class OrderServiceTest {
     private ServiceRateService serviceRateService;
     @Mock
     private OrderRepository orderRepository;
-    @Mock
-    private OrderStatusLogRepository orderStatusLogRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -109,7 +106,6 @@ class OrderServiceTest {
             assertThat(result.getCreatedBy()).isEqualTo(user);
             assertThat(result.getServiceRate()).isEqualTo(serviceRate);
             verify(orderRepository).save(any(Order.class));
-            verify(orderStatusLogRepository).save(any());
         }
 
         @Test

@@ -8,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 @Service
@@ -20,8 +21,8 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public DailySalesReportResponse getDailySales(LocalDate date) {
-        LocalDateTime from = date.atStartOfDay();
-        LocalDateTime to = date.plusDays(1).atStartOfDay();
+        Instant from = date.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant to = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
         BigDecimal totalIncome = Optional.ofNullable(paymentRepository.sumAmountPaidByPaymentDateBetween(from, to)).orElse(BigDecimal.ZERO);
         long count = paymentRepository.countByPaymentDateBetween(from, to);
         return DailySalesReportResponse.builder()
@@ -33,9 +34,9 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public PeriodSalesReportResponse getMonthlySales(int year, int month) {
-        LocalDateTime from = LocalDate.of(year, month, 1).atStartOfDay();
-        LocalDateTime to = from.plusMonths(1);
-        BigDecimal totalIncome = paymentRepository.sumAmountPaidByPaymentDateBetween(from, to);
+        Instant from = LocalDate.of(year, month, 1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant to = LocalDate.of(year, month, 1).plusMonths(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        BigDecimal totalIncome = Optional.ofNullable(paymentRepository.sumAmountPaidByPaymentDateBetween(from, to)).orElse(BigDecimal.ZERO);
         long count = paymentRepository.countByPaymentDateBetween(from, to);
         String period = String.format("%d-%02d", year, month);
         return PeriodSalesReportResponse.builder()
@@ -47,9 +48,9 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public PeriodSalesReportResponse getYearlySales(int year) {
-        LocalDateTime from = LocalDate.of(year, 1, 1).atStartOfDay();
-        LocalDateTime to = from.plusYears(1);
-        BigDecimal totalIncome = paymentRepository.sumAmountPaidByPaymentDateBetween(from, to);
+        Instant from = LocalDate.of(year, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant to = LocalDate.of(year, 1, 1).plusYears(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        BigDecimal totalIncome = Optional.ofNullable(paymentRepository.sumAmountPaidByPaymentDateBetween(from, to)).orElse(BigDecimal.ZERO);
         long count = paymentRepository.countByPaymentDateBetween(from, to);
         return PeriodSalesReportResponse.builder()
                 .period(String.valueOf(year))

@@ -16,8 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,11 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(com.himotech.laundryms.auth.api.AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import({GlobalExceptionHandler.class, AppConfig.class})
-@TestPropertySource(properties = {
-    "app.security.jwt-secret=test-secret-must-be-at-least-32-characters-long",
-    "app.security.cookie-name=access_token"
-})
+@Import({ GlobalExceptionHandler.class, AppConfig.class })
 class AuthControllerTest {
 
     @Autowired
@@ -55,6 +52,16 @@ class AuthControllerTest {
     PasswordEncoder passwordEncoder;
 
     private static final UUID USER_ID = UUID.randomUUID();
+    private static final String TEST_USERNAME = "owner";
+    private static final String TEST_PASSWORD = "test-pass-" + UUID.randomUUID();
+    private static final String TEST_JWT_SECRET = UUID.randomUUID().toString().replace("-", "")
+            + UUID.randomUUID().toString().replace("-", "");
+
+    @DynamicPropertySource
+    static void dynamicProperties(DynamicPropertyRegistry registry) {
+        registry.add("app.security.jwt-secret", () -> TEST_JWT_SECRET);
+        registry.add("app.security.cookie-name", () -> "access_token");
+    }
 
     @Nested
     @DisplayName("POST /api/v1/auth/login")
@@ -65,23 +72,23 @@ class AuthControllerTest {
         void login_ShouldReturn200_WhenValidCredentials() throws Exception {
             User user = User.builder()
                     .id(USER_ID)
-                    .username("owner")
-                    .role(com.himotech.laundryms.common.enums.UserRole.OWNER)
+                    .username(TEST_USERNAME)
+                    .role(com.himotech.laundryms.common.enums.UserRole.ADMIN)
                     .build();
-            when(authService.authenticate("owner", "owner123")).thenReturn(user);
+            when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(user);
             when(jwtService.createToken(user)).thenReturn("jwt-token");
 
             LoginRequest request = new LoginRequest();
-            request.setUsername("owner");
-            request.setPassword("owner123");
+            request.setUsername(TEST_USERNAME);
+            request.setPassword(TEST_PASSWORD);
 
             mvc.perform(post("/api/v1/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.token").value("jwt-token"))
-                    .andExpect(jsonPath("$.role").value("OWNER"))
+                    .andExpect(jsonPath("$.role").value("ADMIN"))
                     .andExpect(cookie().exists("access_token"))
                     .andExpect(cookie().value("access_token", "jwt-token"));
         }
@@ -97,9 +104,9 @@ class AuthControllerTest {
             request.setPassword("wrong");
 
             mvc.perform(post("/api/v1/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
         }

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @RequestMapping("/api/v1/reports/sales")
 @RequiredArgsConstructor
 @Validated
-@PreAuthorize("hasRole('OWNER')")
+@PreAuthorize("hasRole('ADMIN')")
 public class ReportsController {
 
     private final ReportService reportService;

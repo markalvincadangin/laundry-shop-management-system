@@ -62,22 +62,23 @@
 **Rule:** Additional charges may apply when the customer requests extra fabric conditioner or similar add-ons.  
 **Condition:** Add-on requested.  
 **System Behavior:** Add add-on amount to grand total.  
-**Constraint:** Add-on pricing is configurable or recorded as a manual amount.  
+**Constraint:** Add-on pricing is configurable or recorded as a manual amount. **Canonical Names:** Staff should use consistent naming (e.g., "Fabric Conditioner") to support future reporting.
+
 **Applies To:** Order creation / add-on handling  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
 
 ---
 
-### BR-PR-05 – Owner Controls Service Rates
+### BR-PR-05 – Admin Controls Service Rates
 
-**Rule:** The **Owner** MUST be able to update service rates (base price per load, kg limit, price per extra minute) without code changes.  
-**Condition:** Owner requests rate update.  
+**Rule:** The **Admin** MUST be able to update service rates (base price per load, kg limit, price per extra minute) without code changes.  
+**Condition:** Admin requests rate update.  
 **System Behavior:** Allow PATCH on service rates; apply to new orders only. Existing orders retain snapshot pricing.  
-**Constraint:** Owner role only; changes do not affect already-created orders.  
+**Constraint:** Admin role only; changes do not affect already-created orders.  
 **Applies To:** Service rates management  
-**Enforcement:** Backend service with role-based access (OWNER)  
-**Supports User Stories:** Owner pricing control (client interview)
+**Enforcement:** Backend service with role-based access (ADMIN)  
+**Supports User Stories:** Admin pricing control (client interview)
 
 ---
 
@@ -121,7 +122,7 @@
 
 ### BR-OL-04 – Status Transition Control (Recommended)
 
-**Rule:** Orders SHOULD follow a logical sequence of stages (no skipping backwards unless corrected by staff/owner).  
+**Rule:** Orders SHOULD follow a logical sequence of stages (no skipping backwards unless corrected by staff/Admin).  
 **Condition:** Status update requested.  
 **System Behavior:** Validate transition against allowed sequence.  
 **Constraint:** Recommended for MVP+; not mandatory for MVP.  
@@ -155,10 +156,11 @@
 
 ### BR-OL-06 – Order Edit (Extra Minutes, Add-ons)
 
-**Rule:** Staff or Owner MAY edit an order's **extra minutes** and **add-ons** when the order is **unpaid** and **not released**.  
+**Rule:** Staff or Admin MAY edit an order's **extra minutes** and **add-ons** when the order is **unpaid** and **not released**.  
 **Condition:** Edit requested during processing (e.g. extended washing due to excessive dirt).  
 **System Behavior:** Recalculate extra_minutes_amount, addons_total_amount, grand_total using order's snapshot pricing. Reject edit if paid or released.  
-**Constraint:** Weight and base amount are immutable after creation.  
+**Constraint:** Weight, base amount, and total_loads are immutable after creation.
+
 **Applies To:** Order update (PATCH)  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-03](user-stories.md#us-03-update-laundry-order-status), Client interview Q9 (extra charge for extended washing)
@@ -196,7 +198,7 @@
 **Rule:** Recorded payment amount MUST exactly match the order grand total.  
 **Condition:** Payment creation.  
 **System Behavior:** Validate amount; reject if mismatched.  
-**Constraint:** MVP: strict matching only; partial payments, overpayments, owner override are post-MVP (see [US-06](user-stories.md#us-06-record-payment-for-laundry-order)).  
+**Constraint:** MVP: strict matching only; partial payments, overpayments, Admin override are post-MVP (see [US-06](user-stories.md#us-06-record-payment-for-laundry-order)).  
 **Applies To:** Payment creation  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order)
@@ -224,6 +226,30 @@
 **Applies To:** Payment creation  
 **Enforcement:** Backend service + database (payment_method column)  
 **Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order), [US-07](user-stories.md#us-07-view-payment-history)
+
+---
+
+### BR-PAY-06 – Payment Reversals (Void vs Refund)
+
+**Rule:** A payment record MUST be **Voided** if (1) the transaction was recorded in error, or (2) the external payment (e.g. GCash, Bank Transfer) is found to have failed or been reversed by the provider.  
+**Condition:** Payment reversal requested.  
+**System Behavior:** Set `Order.paymentStatus = VOIDED`. The Payment record is preserved for audit but excluded from revenue sums.  
+**Constraint:** Reverts the order's financial impact; allows for recovery or re-payment. Only Admin or authorized Staff can perform a manual void without order cancellation.  
+**Applies To:** Payment management  
+**Enforcement:** Backend service  
+**Supports User Stories:** [US-07](user-stories.md#us-07-view-payment-history), Admin audit needs
+
+---
+
+### BR-PAY-07 – Automatic Reversal on Cancellation
+
+**Rule:** When a paid order is **Cancelled**, the associated payment status MUST automatically transition to **VOIDED** to ensure financial reports accurately reflect "Net Revenue."  
+**Condition:** Order status changed to CANCELLED.  
+**System Behavior:** Automatically update `paymentStatus = VOIDED` if current status is PAID or PARTIAL.  
+**Constraint:** Prevents "ghost revenue" from unfulfilled orders.  
+**Applies To:** Order status transition  
+**Enforcement:** Backend service logic (OrderStatusService)  
+**Supports User Stories:** [US-08](user-stories.md#us-08-view-daily-sales-report), [US-09](user-stories.md#us-09-view-monthly-and-yearly-income-reports)
 
 ---
 

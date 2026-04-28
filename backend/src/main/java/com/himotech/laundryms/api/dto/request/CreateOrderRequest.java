@@ -15,8 +15,6 @@ public class CreateOrderRequest {
     private Long customerId;
     private CreateCustomerRequest customer;
 
-    @NotNull(message = "createdByUserId is required")
-
     private UUID createdByUserId;
 
     @NotNull(message = "weightKg is required")

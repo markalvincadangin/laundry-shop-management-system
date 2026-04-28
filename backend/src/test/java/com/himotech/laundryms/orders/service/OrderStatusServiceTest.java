@@ -3,11 +3,9 @@ package com.himotech.laundryms.orders.service;
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
 import com.himotech.laundryms.exception.NotFoundException;
-import com.himotech.laundryms.notification.NotificationService;
+import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import com.himotech.laundryms.orders.entity.Order;
-import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
-import com.himotech.laundryms.orders.repository.OrderStatusLogRepository;
 import com.himotech.laundryms.support.TestDataBuilders;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
@@ -47,9 +45,7 @@ class OrderStatusServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private OrderStatusLogRepository orderStatusLogRepository;
-    @Mock
-    private NotificationService notificationService;
+    private ClientAlertService clientAlertService;
 
     @InjectMocks
     private OrderStatusService orderStatusService;
@@ -67,7 +63,7 @@ class OrderStatusServiceTest {
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(orderStatusLogRepository.save(any(OrderStatusLog.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
     @Nested
@@ -86,12 +82,6 @@ class OrderStatusServiceTest {
             // Then
             assertThat(result.getCurrentStatus()).isEqualTo(OrderStatus.WASHING);
             verify(orderRepository).save(order);
-
-            ArgumentCaptor<OrderStatusLog> logCaptor = ArgumentCaptor.forClass(OrderStatusLog.class);
-            verify(orderStatusLogRepository).save(logCaptor.capture());
-            OrderStatusLog log = logCaptor.getValue();
-            assertThat(log.getPreviousStatus()).isEqualTo(OrderStatus.RECEIVED);
-            assertThat(log.getNewStatus()).isEqualTo(OrderStatus.WASHING);
         }
 
         @Test
@@ -106,19 +96,6 @@ class OrderStatusServiceTest {
 
             // Then
             assertThat(result.getCurrentStatus()).isEqualTo(OrderStatus.RELEASED);
-            verify(orderStatusLogRepository).save(any(OrderStatusLog.class));
-        }
-
-        @Test
-        @DisplayName("Should save notes in status log")
-        void updateStatus_ShouldSaveNotes_InStatusLog() {
-            // When
-            orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, "Started washing");
-
-            // Then
-            ArgumentCaptor<OrderStatusLog> logCaptor = ArgumentCaptor.forClass(OrderStatusLog.class);
-            verify(orderStatusLogRepository).save(logCaptor.capture());
-            assertThat(logCaptor.getValue().getNotes()).isEqualTo("Started washing");
         }
 
         @Test
@@ -131,7 +108,7 @@ class OrderStatusServiceTest {
             orderStatusService.updateStatus(ORDER_ID, OrderStatus.READY_FOR_PICKUP, USER_ID, null);
 
             // Then
-            verify(notificationService).createForReadyForPickup(eq(order));
+            verify(clientAlertService).createForReadyForPickup(eq(order));
         }
     }
 
