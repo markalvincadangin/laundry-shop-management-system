@@ -16,6 +16,7 @@ import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,6 +55,12 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final Random random = new Random(42);
 
+    @Value("${app.seed.admin-password:admin123}")
+    private String adminPassword;
+
+    @Value("${app.seed.staff-password:staff123}")
+    private String staffPassword;
+
     @Override
     @Transactional
     public void run(String... args) {
@@ -78,7 +85,7 @@ public class DemoDataSeeder implements CommandLineRunner {
             log.info("[DemoDataSeeder] Creating admin user...");
             return userRepository.save(User.builder()
                     .username("admin")
-                    .passwordHash(passwordEncoder.encode("admin123"))
+                    .passwordHash(passwordEncoder.encode(adminPassword))
                     .role(UserRole.ADMIN)
                     .firstName("Faith")
                     .lastName("Laundry")
@@ -92,7 +99,7 @@ public class DemoDataSeeder implements CommandLineRunner {
             log.info("[DemoDataSeeder] Creating staff user...");
             return userRepository.save(User.builder()
                     .username("staff")
-                    .passwordHash(passwordEncoder.encode("staff123"))
+                    .passwordHash(passwordEncoder.encode(staffPassword))
                     .role(UserRole.STAFF)
                     .firstName("Ana")
                     .lastName("Reyes")
