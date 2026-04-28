@@ -5,8 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -17,7 +16,9 @@ public class OrderResponse {
     private Long id;
     private String referenceNumber;
     private Long customerId;
+    private String customerName;
     private String createdByUserId;
+    private String createdByUsername;
     private Integer serviceRateId;
     private Double weightKg;
     private Integer totalLoads;
@@ -28,10 +29,8 @@ public class OrderResponse {
     private Double grandTotal;
     private String currentStatus;
     private String paymentStatus;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime updatedAt;
-    /** Status timeline from order_status_logs (chronological). */
-    private List<OrderStatusLogResponse> statusLogs;
-    /** Order add-ons (for edit form). */
+    private Instant createdAt;
+    private Instant updatedAt;
     private List<AddOnResponse> addOns;
+    private List<AuditLogResponse> auditLogs;
 }

@@ -2,8 +2,8 @@
 ## Faith Laundry Shop Management System
 
 > **Source of truth:** [docs/](../) — scope, user stories, business rules, NFRs, OpenAPI, ERD  
-> **Last scanned:** 2026-02-20  
-> **Last updated:** 2026-02-20 (missing items implemented)  
+> **Last scanned:** 2026-04-24  
+> **Last updated:** 2026-04-24 (Frontend Modularity Refactor)  
 > **Purpose:** Gap analysis of what is implemented vs. what is required per documentation
 
 ---
@@ -20,18 +20,18 @@
 | US-04 | Track by reference number | ✅ | ✅ | Public `/track` page; GET `/api/v1/orders/reference/{ref}`; no auth |
 | US-05 | Verify laundry before release | ✅ | ✅ | Release only when READY_FOR_PICKUP + Paid (BR-OL-05) enforced in OrderStatusService |
 | US-06 | Record payment | ✅ | ✅ | One payment per order; amount = grand total; payment method (CASH/GCASH/BANK_TRANSFER); BR-PAY-02–05 |
-| US-07 | View payment history | ✅ | ✅ | GET /payments (paginated, filtered); Owner-only in UI; Staff use order-level payment |
-| US-08 | View daily sales report | ✅ | ✅ | Reports page (Owner only); daily income + completed orders |
-| US-09 | View monthly and yearly income reports | ✅ | ✅ | Monthly/yearly reports; Owner only |
+| US-07 | View payment history | ✅ | ✅ | GET /payments (paginated, filtered); Admin-only in UI; Staff use order-level payment |
+| US-08 | View daily sales report | ✅ | ✅ | Reports page (Admin only); daily income + completed orders; Using RevenueChart molecule |
+| US-09 | View monthly and yearly income reports | ✅ | ✅ | Monthly/yearly reports; Admin only; Using RevenueChart molecule |
 | US-10 | Notify customer when ready | ✅ (partial) | ✅ | Notification record on READY_FOR_PICKUP; list notifications; SMS stubbed (logs only) |
-| US-11 | User login and role-based access | ✅ | ✅ | JWT in HTTP-only cookie; Owner vs Staff; reports/rates Owner-only in backend and frontend |
+| US-11 | User login and role-based access | ✅ | ✅ | JWT in HTTP-only cookie; Admin vs Staff; reports/rates Admin-only in backend and frontend |
 
 ### 1.2 Business rules (MVP)
 
 | Rule | Description | Status |
 |------|-------------|--------|
 | BR-PR-01 to BR-PR-04 | Pricing (base load, extra load, extra minutes, add-ons) | ✅ Enforced in OrderService |
-| BR-PR-05 | Owner updates service rates | ✅ PATCH /service-rates/{id} Owner-only |
+| BR-PR-05 | Admin updates service rates | ✅ PATCH /service-rates/{id} Admin-only |
 | BR-OL-01 | Unique reference number | ✅ DB unique + generation |
 | BR-OL-02 | Initial status RECEIVED | ✅ |
 | BR-OL-03 | Allowed status values | ✅ Enum validation |
@@ -107,7 +107,8 @@
 | BR-OL-04 | Status transitions already enforced. | Done. |
 | Partial payments / PARTIAL | Out of scope for MVP. | Post-MVP. |
 | Receipt printing | Release notes – planned. | Post-MVP. |
-| Dashboard charts | Release notes – planned. | Post-MVP. |
+| Dashboard charts | Integrated via `RevenueChart` organism | ✅ |
+| Component Modularity | Extracted DataTable, Pagination, FilterBar, PageHeader | ✅ |
 | implementation-plan.md | Removed from docs index (file not present). | Optional; add if phase-by-phase roadmap is needed. |
 
 ---

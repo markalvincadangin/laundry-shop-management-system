@@ -1,0 +1,12 @@
+.git
+.github
+.vscode
+.idea
+*.log
+node_modules
+.next
+target
+docker/nginx/ssl
+qa_cookies.txt
+academic-docs-deliverables
+docs

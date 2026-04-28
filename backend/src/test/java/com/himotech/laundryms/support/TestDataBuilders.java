@@ -13,7 +13,7 @@ import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.users.entity.User;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +22,8 @@ import java.util.UUID;
  * Provides deterministic, minimal data for Given/When/Then scenarios.
  */
 public final class TestDataBuilders {
+
+    private static final String DUMMY_PASSWORD_HASH = "test-hash-" + UUID.randomUUID();
 
     private TestDataBuilders() {
     }
@@ -51,7 +53,7 @@ public final class TestDataBuilders {
         return User.builder()
                 .id(UUID.fromString("11111111-1111-1111-1111-111111111111"))
                 .username("staff1")
-                .passwordHash("$2a$10$hashed")
+            .passwordHash(DUMMY_PASSWORD_HASH)
                 .role(UserRole.STAFF)
                 .firstName("Test")
                 .lastName("Staff")
@@ -152,6 +154,6 @@ public final class TestDataBuilders {
                 .amountPaid(new BigDecimal("240.00"))
                 .paymentMethod(PaymentMethod.CASH)
                 .receivedBy(u)
-                .paymentDate(LocalDateTime.now());
+                .paymentDate(Instant.now());
     }
 }

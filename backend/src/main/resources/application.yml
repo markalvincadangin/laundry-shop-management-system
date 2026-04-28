@@ -5,6 +5,17 @@ spring:
   application:
     name: laundryms-backend
 
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: true # Keep true for Swagger UI, but allow 404 exceptions for API paths
+
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+
   datasource:
     # Syntax: ${VAR_NAME:default_value}
     # WARNING: DB_PASSWORD default is for development only - MUST be set via environment variable in production
@@ -18,11 +29,24 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    # ALLOW cleaning the DB (disabled by default for safety)
+    clean-disabled: ${SPRING_FLYWAY_CLEAN_DISABLED:true}
+    # Whether to run flyway.clean() on startup (useful for resetting the dev DB)
+    clean-on-startup: ${SPRING_FLYWAY_CLEAN_ON_STARTUP:false}
+    # Group all pending migrations in a single transaction (Standard)
+    group: true
+    # Prevent running migrations out of order (Standard for production)
+    out-of-order: false
     placeholder-replacement: true
     placeholders:
       # Controls whether seed users are created in migrations
       # Set to 'dev' to enable seed users, defaults to 'production' (no seed users)
       seed_environment: ${SPRING_PROFILES_ACTIVE:production}
+      # Optional development seed placeholders. Keep empty unless intentionally seeding users.
+      seed_admin_username: ${SEED_ADMIN_USERNAME:}
+      seed_admin_password_hash: ${SEED_ADMIN_PASSWORD_HASH:}
+      seed_staff_username: ${SEED_STAFF_USERNAME:}
+      seed_staff_password_hash: ${SEED_STAFF_PASSWORD_HASH:}
 
   jpa:
     hibernate:
@@ -32,6 +56,8 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
 
 logging:
   level:
@@ -43,5 +69,11 @@ app:
   security:
     cookie-name: access_token
     allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
-    # Must be at least 32 characters for HS256. Override in production.
-    jwt-secret: ${JWT_SECRET:dev-only-change-me-in-production-use-32-chars}
+    allowed-origin-patterns: ${ALLOWED_ORIGIN_PATTERNS:}
+    jwt-secret: ${JWT_SECRET}
+  sms:
+    semaphore:
+      api-key: ${SEMAPHORE_API_KEY:}
+      sender-name: ${SEMAPHORE_SENDER_NAME:FaithLaundry}
+    template: "Hi %s, your order #%s from Faith Laundry is ready for pickup! Total: P%s. See you soon!"
+

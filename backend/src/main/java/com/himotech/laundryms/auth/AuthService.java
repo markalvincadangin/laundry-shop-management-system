@@ -1,5 +1,6 @@
 package com.himotech.laundryms.auth;
 
+import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class AuthService {
      * @return the user if credentials are valid
      * @throws InvalidCredentialsException if credentials are invalid
      */
+    @Auditable(action = "USER_LOGIN", description = "User login attempt")
     public User authenticate(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(InvalidCredentialsException::new);

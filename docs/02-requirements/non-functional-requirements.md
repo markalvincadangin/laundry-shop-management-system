@@ -22,9 +22,9 @@
 
 | ID    | Requirement | Priority |
 |-------|-------------|----------|
-| NFR-S1 | The system SHALL authenticate users (Owner, Staff) via username and password. | Must |
+| NFR-S1 | The system SHALL authenticate users (Admin, Staff) via username and password. | Must |
 | NFR-S2 | The system SHALL use JWT (or equivalent) for session management; credentials SHALL NOT be stored in client-side code. | Must |
-| NFR-S3 | The system SHALL enforce role-based access: Owner (reports, rates, all operations); Staff (orders, status, payments, customers; no reports). | Must |
+| NFR-S3 | The system SHALL enforce role-based access: Admin (reports, rates, all operations); Staff (orders, status, payments, customers; no reports). | Must |
 | NFR-S4 | The public tracking endpoint SHALL return only: reference number, current status, order date, basic summary. Internal IDs, staff information, and payment details SHALL NOT be exposed. | Must |
 | NFR-S5 | Passwords SHALL be stored as one-way hashes; JWT secret and database credentials SHALL be configurable via environment variables and SHALL NOT be committed to version control. | Must |
 | NFR-S6 | In production, the system SHALL use a strong JWT secret (≥32 characters) and a non-default database password. | Must |
@@ -35,7 +35,7 @@
 
 | ID    | Requirement | Priority |
 |-------|-------------|----------|
-| NFR-P1 | The system SHALL support concurrent use by at least two users (Owner and Staff) without degradation. | Must |
+| NFR-P1 | The system SHALL support concurrent use by at least two users (Admin and Staff) without degradation. | Must |
 | NFR-P2 | Order list and payment list SHALL support pagination to handle growth of data. | Must |
 | NFR-P3 | API responses SHALL complete within a reasonable time for single-shop workload (no formal SLA for MVP). | Should |
 
@@ -65,7 +65,7 @@
 
 | ID    | Requirement | Priority |
 |-------|-------------|----------|
-| NFR-U1 | Owner and Staff SHALL be able to perform core tasks (create order, update status, record payment, view reports) with minimal training. | Must |
+| NFR-U1 | Admin and Staff SHALL be able to perform core tasks (create order, update status, record payment, view reports) with minimal training. | Must |
 | NFR-U2 | An end-user manual SHALL be provided (see [User Manual](../06-implementation/user-manual.md)). | Must |
 | NFR-U3 | Error messages SHALL be clear enough for staff to correct invalid input (e.g., payment amount mismatch, invalid status transition). | Should |
 

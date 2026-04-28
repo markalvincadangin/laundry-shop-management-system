@@ -42,10 +42,10 @@ public class AuthController {
 
         Cookie cookie = new Cookie(cookieName, token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // Set true in production with HTTPS
+        cookie.setSecure(securityProperties.isCookieSecure());
         cookie.setPath("/");
         cookie.setMaxAge(24 * 60 * 60); // 24 hours
-        cookie.setAttribute("SameSite", "Lax");
+        cookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
         response.addCookie(cookie);
 
         return ResponseEntity.ok(LoginResponse.builder()

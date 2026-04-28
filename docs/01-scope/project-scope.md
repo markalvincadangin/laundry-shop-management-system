@@ -47,7 +47,7 @@ Design and implement a Laundry Shop Management System that replaces manual paper
 - Records and validates payments
 - Generates income reports
 - Enables order tracking via reference number
-- Supports role-based access control (Owner / Staff)
+- Supports role-based access control (Admin / Staff)
 
 ---
 
@@ -78,7 +78,7 @@ The system shall support order statuses: Received, Washing, Drying, Folding, Rea
 The system shall:
 
 - Record status changes with timestamp and user (audit trail)
-- Restrict invalid status values and enforce logical status transitions
+- Restrict invalid status values and enforce logical status transitions (BR-OL-04)
 - Prevent release unless (1) status is **Ready for Pickup** and (2) payment has been recorded (**Paid**)
 
 #### 3.1.3 Payment Recording
@@ -113,7 +113,7 @@ No sensitive or internal system data shall be exposed.
 
 The system shall support two roles:
 
-- **Owner:** View reports, access payment history, manage rates
+- **Admin:** View reports, access payment history, manage rates
 - **Staff:** Create orders, update order status, record payments (no access to reports)
 
 #### 3.1.7 Pricing Configuration
@@ -148,11 +148,11 @@ Future enhancements may address these in later phases.
 
 Non-functional requirements are detailed in **[docs/02-requirements/non-functional-requirements.md](../02-requirements/non-functional-requirements.md)**. Summary:
 
-- **Security:** Role-based access (Owner/Staff), JWT authentication, no sensitive data on public tracking
+- **Security:** Role-based access (Admin/Staff), JWT authentication, no sensitive data on public tracking
 - **Performance:** Responsive UI; API response times suitable for single-shop usage
 - **Availability:** System operable during business hours; backup and recovery procedures documented
 - **Audit:** Status changes and payment records traceable to user and timestamp
-- **Usability:** Owner and staff can operate with minimal training; see [User Manual](../06-implementation/user-manual.md)
+- **Usability:** Admin and staff can operate with minimal training; see [User Manual](../06-implementation/user-manual.md)
 - **Maintainability:** Documented architecture, OpenAPI and ERD as source of truth, automated tests
 
 ---
@@ -160,7 +160,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 ## 6. Assumptions
 
 1. The laundry shop operates as a single branch.
-2. Owner and staff possess basic computer literacy.
+2. Admin and staff possess basic computer literacy.
 3. Payment is typically collected upon pickup.
 4. Internet connectivity is sufficient for system use.
 5. Hardware for system operation is available.
@@ -181,7 +181,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 
 ### 7.2 Operational Constraints
 
-- Limited personnel (owner and one staff)
+- Limited personnel (Admin and one staff)
 - Manual fallback during transition
 - Budget limitations typical of MSMEs
 
@@ -207,7 +207,7 @@ For the system to be considered **complete and production-ready**, the following
 - **Deployment:** Production stack deployable via Docker Compose (Nginx + Backend + Frontend + PostgreSQL); environment variables documented
 - **Backup:** Database backup script available and scheduled (e.g., nightly); backup location and restore procedure documented
 - **Security:** Strong JWT secret and DB password in production; HTTPS recommended; CORS configured for frontend origin
-- **Handover:** User manual and handover checklist completed; Owner and Staff trained; sign-off obtained
+- **Handover:** User manual and handover checklist completed; Admin and Staff trained; sign-off obtained
 - **Support:** Contact or process for technical support and maintenance documented
 
 ---

@@ -1,0 +1,15 @@
+export const customers = {
+  TITLE: "Customers",
+  SUBTITLE: "Search for customer information.",
+  REGISTRY: "Customer Registry",
+  REGISTER_NEW: "Register New Customer",
+  EDIT_PROFILE: "Edit Profile",
+  TOTAL_ORDERS: "Lifetime Orders",
+  LIFETIME_VALUE: "Total Revenue",
+  LAST_VISIT: "Recent Activity",
+  NO_VISITS: "No visits recorded",
+  RECENT_TRANS: "Recent Transactions",
+  EMPTY_HISTORY: "No order history for this customer.",
+  NOT_FOUND: "Customer not found",
+  SHOWING_LAST: "Showing last",
+} as const;

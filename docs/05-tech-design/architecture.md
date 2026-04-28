@@ -32,7 +32,7 @@
 
 ### 2.1 In Scope
 
-- Owner and Staff authentication (username/password)
+- Admin and Staff authentication (username/password)
 - Customer management (create, search by name/contact)
 - Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique reference number
 - Order status updates with audit trail (order_status_logs)
@@ -54,8 +54,8 @@
 
 | Layer      | Technology                            |
 |------------|---------------------------------------|
-| Backend    | Java 21, Spring Boot 3.3+, Maven      |
-| Frontend   | Next.js 14+, TypeScript, Tailwind CSS |
+| Backend    | Java 21, Spring Boot 3.4+, Maven      |
+| Frontend   | Next.js 15+, TypeScript, Tailwind CSS |
 | Database   | PostgreSQL 16                         |
 | Migrations | Flyway                                |
 | Local Dev  | Docker Compose                        |
@@ -69,7 +69,7 @@
 ### 4.1 System Context
 
 **Actors**
-- **Owner:** Views reports, manages rates, oversees operations
+- **Admin:** Views reports, manages rates, oversees operations
 - **Staff:** Encodes orders, updates status, records payments
 - **Customer:** Tracks order status via reference number (public endpoint)
 
@@ -80,13 +80,13 @@
 
 1. **Web App (Frontend)** — Next.js 14+, TypeScript, Tailwind
    - Order intake, status updates, payment recording
-   - Reports dashboard (Owner only)
+   - Reports dashboard (Admin only)
    - Public tracking page (reference number lookup)
 
 2. **API Server (Backend)** — Java Spring Boot 3.3+
    - Business rules enforcement (Service layer only)
    - Reference number generation and uniqueness
-   - Auth and role-based access (OWNER vs STAFF)
+   - Auth and role-based access (ADMIN vs STAFF)
    - Reporting queries from payments
    - Notification triggers (MVP optional)
 
@@ -116,11 +116,11 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 ## 6. Backend Modules (Spring Boot)
 
 - **auth** — Login, JWT/session, role guards
-- **users** — User management (Owner/Staff), seeded admin
+- **users** — User management (Admin/Staff), seeded admin
 - **customers** — CRUD, search (US-01)
 - **rates** — Service rates management, active rate retrieval
 - **orders** — Order creation, pricing computation, reference generation (US-01, US-02)
-- **orderstatus** — Status updates, transition validation, status logs (US-03, US-05)
+- **activity** — Read-only access to `activity_logs`; surfaces forensic audit trail to the dashboard (US-03, US-05)
 - **payments** — Create payment (1:1), validate amount equals grand total, update payment status (US-06)
 - **reports** — Daily, monthly, yearly sales from payments (US-08, US-09)
 - **notifications** (optional) — Record and send on READY_FOR_PICKUP (US-10)
@@ -140,10 +140,13 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ### 7.2 Status Updates and Audit Trail
 
-1. Staff requests status update
-2. Backend validates allowed status and transition (BR-OL-03, BR-OL-04, BR-OL-05)
-3. Backend inserts `order_status_logs` record
-4. Backend updates `orders.current_status`
+1. Staff requests a status update via the API
+2. Backend validates the allowed status and transition (BR-OL-03, BR-OL-04, BR-OL-05)
+3. Backend updates `orders.current_status`
+4. **Hybrid Auditing Synergy**:
+   - **Database Layer**: The `trg_audit_orders` trigger fires automatically, invoking `fn_audit_activity()`, which writes a full JSONB snapshot (old and new row) to `activity_logs`.
+   - **Application Layer**: The `@Auditable` aspect intercepts the call and publishes an asynchronous `AuditEvent` to capture high-level intent, outcome (SUCCESS/FAILURE), and forensic context (IP Address, User Agent).
+5. Both layers write to the same `activity_logs` table, providing a complete forensic record.
 
 ### 7.3 Payment Recording
 
@@ -154,7 +157,7 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ### 7.4 Reporting
 
-1. Owner requests report (daily, monthly, yearly)
+1. Admin requests report (daily, monthly, yearly)
 2. Backend aggregates totals from payments within the date range
 
 ### 7.5 Customer Tracking (Public)
@@ -168,11 +171,12 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ### 8.1 Local Development
 
-- **Frontend:** `localhost:3000`
-- **Backend:** `localhost:8080`
+- **Frontend:** `localhost:3001`
+- **Backend:** `localhost:8081`
 - **Database:** PostgreSQL 16 via Docker Compose
 - **Configuration:** `.env` (backend), `.env.local` (frontend) — gitignored; use `.env.example` as template
-- **Secrets:** Never committed; JWT secret, DB credentials, SMS keys (optional) in local env only
+- **Secrets:** Never committed; JWT secret, DB credentials in `docker/.env.docker`
+- **Orchestration:** `docker compose --env-file docker/.env.docker up -d`
 
 ### 8.2 CI
 
@@ -183,7 +187,7 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ## 9. Security (MVP)
 
-- Role-based access: Owner (reports, rates); Staff (orders, status, payments, customers)
+- Role-based access: Admin (reports, rates); Staff (orders, status, payments, customers)
 - Public tracking endpoint returns only: reference number, current status, created date, basic customer/payment summary — no internal IDs or staff information
 
 ---

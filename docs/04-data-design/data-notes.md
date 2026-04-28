@@ -4,10 +4,10 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** DATA-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
+> **Version:** 2.0  
+> **Date:** 2026-04-26  
 > **Purpose:** Document data design decisions and traceability to Business Rules  
-> **Status:** Baseline (Reference)
+> **Status:** Updated — Synced with Flyway V1__init.sql
 
 ---
 
@@ -32,7 +32,7 @@ This ERD supports order tracking, pricing computation, payment recording, report
 | `customers`         | BR-REC-01                                                                       | US-01                      |
 | `orders`            | BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02, BR-OL-03, BR-PAY-04 | US-01, US-02, US-03, US-04 |
 | `order_add_ons`     | BR-PR-04                                                                        | US-02                      |
-| `order_status_logs` | BR-OL-03, BR-OL-04                                                              | US-03                      |
+| `activity_logs`     | BR-OL-03, BR-OL-04 (forensic audit via DB triggers)                             | US-03, US-05               |
 | `payments`          | BR-PAY-02, BR-PAY-03, BR-PAY-04, BR-REC-01                                      | US-06, US-07, US-08, US-09 |
 | `users`             | —                                                                               | US-11                      |
 | `notifications`     | BR-NOTIF-01                                                                     | US-10                      |
@@ -43,7 +43,7 @@ This ERD supports order tracking, pricing computation, payment recording, report
 
 ### 3.1 Pricing Snapshot (BR-PR-01, BR-PR-02, BR-PR-03)
 
-The `orders` table stores snapshot values (`base_price_per_load`, `kg_limit_per_load`, `price_per_extra_minute`) copied from `service_rates` at order creation. This ensures historical accuracy when the owner updates pricing rules. The `service_rate_id` foreign key indicates which service was used but is not relied upon for pricing calculations.
+The `orders` table stores snapshot values (`base_price_per_load`, `kg_limit_per_load`, `price_per_extra_minute`) copied from `service_rates` at order creation. **Additionally, `total_loads` is stored as a snapshot value** (intentional denormalization for display convenience and historical accuracy). This ensures historical accuracy when the Admin updates pricing rules. The `service_rate_id` foreign key indicates which service was used but is not relied upon for pricing calculations.
 
 ### 3.2 Unique Reference Number (BR-OL-01)
 
@@ -59,7 +59,18 @@ The `orders` table stores snapshot values (`base_price_per_load`, `kg_limit_per_
 
 ### 3.5 Order Status Lifecycle (BR-OL-02, BR-OL-03, BR-OL-05)
 
-`orders.current_status` uses the `order_status` enum. The initial value is RECEIVED (BR-OL-02). All status changes are logged in `order_status_logs` for audit (US-03).
+`orders.current_status` stores the current lifecycle stage. The initial value is RECEIVED (BR-OL-02). All mutations to `orders` (including status updates) are automatically captured in `activity_logs` via the `trg_audit_orders` database trigger, providing a tamper-resistant forensic audit trail (US-03, US-05). The `old_data` and `new_data` JSONB snapshots allow reconstruction of any state transition.
+
+### 3.7 Forensic Audit Trail (activity_logs)
+
+The system uses a **database-level trigger pattern** for forensic auditing instead of an application-managed `order_status_logs` table. The `fn_audit_activity()` PL/pgSQL function fires `AFTER INSERT OR UPDATE OR DELETE` on `orders`, `payments`, `customers`, and `service_rates`, writing full JSONB snapshots (`old_data`, `new_data`) to `activity_logs`.
+
+The acting user is captured via `current_setting('app.current_user_id', true)`, which is set by a Spring Boot AOP aspect before each write operation.
+
+**Advantages over application-level logging:**
+- Guaranteed audit capture even if the application layer fails or bypasses service methods
+- Covers any direct DB writes during maintenance or migration
+- Single function maintains all audit records with consistent schema
 
 ### 3.6 Customer Uniqueness (BR-REC-01)
 
@@ -89,7 +100,11 @@ The `orders` table stores snapshot values (`base_price_per_load`, `kg_limit_per_
 | UNIQUE     | customers (last_name, first_name, contact_number) | BR-REC-01                         |
 | NOT NULL   | orders.customer_id                                | —                                 |
 | NOT NULL   | orders.created_by_user_id                         | —                                 |
-| NOT NULL   | order_status_logs.order_id                        | —                                 |
+| CHECK      | orders.reference_number format                    | BR-OL-01                          |
+| CHECK      | orders (weight, loads, grand_total)               | DATA-001 (Integrity)              |
+| CHECK      | payments (amount_paid > 0)                        | BR-PAY-03                         |
+| CHECK      | customers.contact_number format                   | BR-REC-01                         |
+| CHECK      | order_add_ons (quantity, price)                   | BR-PR-04                          |
 
 ---
 
@@ -97,12 +112,42 @@ The `orders` table stores snapshot values (`base_price_per_load`, `kg_limit_per_
 
 - `orders.reference_number` (unique) — tracking lookup (US-04)
 - `payments.payment_date` — reporting (US-08, US-09)
-- `orders.created_at` — filtering and dashboard queries
+- `orders (customer_id, created_at DESC)` — composite index for customer order history
+- `orders.current_status` — dashboard status filtering
+- `orders.payment_status` — dashboard payment filtering
+- `activity_logs (table_name, record_id)` — entity-level audit history lookup
+- `activity_logs (created_at DESC)` — chronological activity log browsing
 
 ---
 
-## 7. Technical Notes
+---
 
-- PostgreSQL: `gen_random_uuid()` requires the `pgcrypto` extension.
-- All monetary values use `decimal(10,2)`.
-- Timestamps use `timestamp` with `default: now()`.
+## 7. Technical Notes & Standards
+
+### 7.1 Enum Standardization (VARCHAR vs NATIVE ENUM)
+The system uses `VARCHAR` for all status and role columns. 
+- **Rationale**: PostgreSQL Native Enums are strict and cause "operator does not exist" errors when queried via standard Spring Boot/Hibernate drivers without explicit casting. `VARCHAR` ensures seamless JPA compatibility and allows easier schema evolution (e.g., adding a new status) without downtime.
+- **Enforcement**: Validation is strictly enforced in the Java Service Layer using `@Enumerated(EnumType.STRING)`.
+
+### 7.2 Monetary Values
+- **Type**: `decimal(10,2)` is used for all currency fields to ensure precision and avoid floating-point errors (HCI/Financial compliance).
+
+### 7.3 Performance Strategy (Indexing)
+- **Reference Tracking**: `orders.reference_number` is indexed for $O(1)$ tracking lookups.
+- **Reporting**: `payments.payment_date` is indexed to ensure income reports (Daily/Monthly/Yearly) remain fast even with thousands of transactions.
+- **Auditability**: `order_status_logs.order_id` is indexed to facilitate quick "Timeline" rendering in the order details view.
+- **Staff Dashboard**: `orders.current_status` and `orders.payment_status` are indexed for high-frequency filtering.
+- **Customer History**: A composite index `(customer_id, created_at DESC)` ensures lightning-fast retrieval of a customer's recent orders.
+
+### 7.4 Security
+- **UUID**: `users.id` uses random UUIDs to prevent user-count enumeration.
+- **Audit Trail**: Every status change is linked to a `user_id` and `timestamp` for non-repudiation.
+
+### 7.5 Data Refresh Strategy (Triggers)
+- **Automatic Timestamps**: The `updated_at` column in `orders`, `customers`, `users`, and `service_rates` is automatically maintained via `BEFORE UPDATE` PostgreSQL triggers (`trg_*_updated_at`). This prevents stale timestamps caused by application-layer patching omissions.
+- **Forensic Audit**: `AFTER INSERT OR UPDATE OR DELETE` triggers (`trg_audit_*`) on `orders`, `payments`, `customers`, and `service_rates` invoke `fn_audit_activity()`, which writes full JSONB snapshots to `activity_logs`. The acting user is injected via the `app.current_user_id` session variable set by Spring Boot AOP.
+
+### 7.6 Notification Normalization
+- **3NF Compliance**: `customer_id` has been removed from the `notifications` table to eliminate transitive dependency (derivable via `order_id`). This change is now reflected in `erd.dbml` and `schema.sql`.
+- **Channel Support**: A `channel` column (`SMS`, `IN_APP`) distinguishes delivery methods.
+- **Read Tracking**: An `is_read BOOLEAN DEFAULT FALSE` column has been added to track whether in-app notifications have been acknowledged by staff.

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -16,7 +16,9 @@ public class OrderTrackingResponse {
     private String currentStatus;
     private String customerName;
     private String contactNumber;
-    private OffsetDateTime createdAt;
+    private Instant createdAt;
     private Double grandTotal;
     private String paymentStatus;
+    private Double weightKg;
+    private Integer totalLoads;
 }

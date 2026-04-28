@@ -1,7 +1,7 @@
 package com.himotech.laundryms.customers.repository;
 
 import com.himotech.laundryms.customers.entity.Customer;
-import com.himotech.laundryms.testcontainers.AbstractIntegrationTest;
+import com.himotech.laundryms.support.AbstractIntegrationTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

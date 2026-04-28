@@ -1,13 +1,12 @@
 package com.himotech.laundryms.orders.service;
 
+import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
 import com.himotech.laundryms.exception.NotFoundException;
-import com.himotech.laundryms.notification.NotificationService;
+import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import com.himotech.laundryms.orders.entity.Order;
-import com.himotech.laundryms.orders.entity.OrderStatusLog;
 import com.himotech.laundryms.orders.repository.OrderRepository;
-import com.himotech.laundryms.orders.repository.OrderStatusLogRepository;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -45,9 +43,9 @@ public class OrderStatusService {
     );
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final OrderStatusLogRepository orderStatusLogRepository;
-    private final NotificationService notificationService;
+    private final ClientAlertService clientAlertService;
 
+    @Auditable(action = "ORDER_STATUS_UPDATE", description = "Update order lifecycle status")
     @Transactional
     public Order updateStatus(Long orderId, OrderStatus newStatus, UUID changedByUserId, String notes) {
         Order order = orderRepository.findById(orderId)
@@ -88,24 +86,22 @@ public class OrderStatusService {
 
         OrderStatus previousStatus = order.getCurrentStatus();
         order.setCurrentStatus(newStatus);
+
+        // Financial Integrity: If order is cancelled, void the payment status so it doesn't count as revenue
+        if (newStatus == OrderStatus.CANCELLED) {
+            if (order.getPaymentStatus() == PaymentStatus.PAID || order.getPaymentStatus() == PaymentStatus.PARTIAL) {
+                order.setPaymentStatus(PaymentStatus.VOIDED);
+            }
+        }
+
         orderRepository.save(order);
 
         log.info("Order status updated: Reference={}, {} → {}, ChangedBy={}", 
                 order.getReferenceNumber(), previousStatus, newStatus, changedBy.getUsername());
 
-        OrderStatusLog statusLog = OrderStatusLog.builder()
-                .order(order)
-                .previousStatus(previousStatus)
-                .newStatus(newStatus)
-                .changedBy(changedBy)
-                .changedAt(LocalDateTime.now())
-                .notes(notes)
-                .build();
-        orderStatusLogRepository.save(statusLog);
-
-        // BR-NOTIF-01: Create notification when status → READY_FOR_PICKUP
+        // BR-ALERT-01: Create client alert when status → READY_FOR_PICKUP
         if (newStatus == OrderStatus.READY_FOR_PICKUP) {
-            notificationService.createForReadyForPickup(order);
+            clientAlertService.createForReadyForPickup(order);
         }
 
         return order;

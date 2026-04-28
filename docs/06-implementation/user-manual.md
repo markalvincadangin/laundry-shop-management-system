@@ -2,7 +2,7 @@
 
 > **Version:** 1.0  
 > **Date:** 2026-02-17  
-> **Audience:** Owner and Staff  
+> **Audience:** Admin and Staff  
 > **Purpose:** End-user guide for the Laundry Shop Management System
 
 ---
@@ -16,7 +16,7 @@
 3. Click **Login**.
 
 **Roles:**
-- **Owner:** Full access to reports, service rates, and all order operations.
+- **Admin:** Full access to reports, service rates, and all order operations.
 - **Staff:** Record orders, update status, record payments. No access to income reports.
 
 ### 1.2 Home Screen
@@ -25,7 +25,7 @@ After login, you will see the main dashboard with quick links to:
 - **Orders** — View and manage laundry orders
 - **New Order** — Create a new order
 - **Customers** — Search and add customers
-- **Reports** — Daily, monthly, yearly sales (Owner only)
+- **Reports** — Daily, monthly, yearly sales (Admin only)
 
 ---
 
@@ -96,7 +96,7 @@ Payments are typically collected when the customer picks up the laundry.
 
 ---
 
-## 5. Viewing Reports (US-08, US-09) — Owner Only
+## 5. Viewing Reports (US-08, US-09) — Admin Only
 
 ### 5.1 Daily Report
 
@@ -129,9 +129,9 @@ Customers can track their order without logging in:
 
 ---
 
-## 7. Managing Service Rates — Owner Only
+## 7. Managing Service Rates — Admin Only
 
-The default pricing is ₱120 per load (8 kg), ₱1 per extra minute. The Owner can update these in **Service Rates** if business rules change.
+The default pricing is ₱120 per load (8 kg), ₱1 per extra minute. The Admin can update these in **Service Rates** if business rules change.
 
 ---
 
@@ -139,7 +139,7 @@ The default pricing is ₱120 per load (8 kg), ₱1 per extra minute. The Owner 
 
 | Problem | Solution |
 |--------|----------|
-| **Cannot log in** | Check username and password. Contact Owner if locked out. |
+| **Cannot log in** | Check username and password. Contact Admin if locked out. |
 | **Order total seems wrong** | Verify weight and extra minutes. Base: ₱120 per 8 kg load. Extra: ₱1 per minute. |
 | **Cannot release order** | Order must be **Ready for Pickup** before release. Update status first. |
 | **Payment already exists** | Each order has one payment only. Check if payment was already recorded. |

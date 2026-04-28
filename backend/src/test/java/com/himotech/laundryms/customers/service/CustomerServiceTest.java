@@ -3,7 +3,6 @@ package com.himotech.laundryms.customers.service;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.repository.CustomerRepository;
 import com.himotech.laundryms.support.TestDataBuilders;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -111,30 +111,47 @@ class CustomerServiceTest {
         @Test
         @DisplayName("Should return empty list when query is null")
         void search_ShouldReturnEmpty_WhenQueryNull() {
-            List<Customer> result = customerService.search(null);
+            when(customerRepository.search(eq(null), any(), any(), any(),
+                    any(org.springframework.data.domain.Pageable.class)))
+                    .thenReturn(org.springframework.data.domain.Page.empty());
+
+            org.springframework.data.domain.Page<Customer> result = customerService.search(null, null, null, null,
+                    org.springframework.data.domain.Pageable.unpaged());
 
             assertThat(result).isEmpty();
-            verify(customerRepository, never()).search(any());
+            verify(customerRepository).search(eq(null), any(), any(), any(),
+                    any(org.springframework.data.domain.Pageable.class));
         }
 
         @Test
         @DisplayName("Should return empty list when query is blank")
         void search_ShouldReturnEmpty_WhenQueryBlank() {
-            List<Customer> result = customerService.search("   ");
+            when(customerRepository.search(eq(""), any(), any(), any(),
+                    any(org.springframework.data.domain.Pageable.class)))
+                    .thenReturn(org.springframework.data.domain.Page.empty());
+
+            org.springframework.data.domain.Page<Customer> result = customerService.search("   ", null, null, null,
+                    org.springframework.data.domain.Pageable.unpaged());
 
             assertThat(result).isEmpty();
-            verify(customerRepository, never()).search(any());
+            verify(customerRepository).search(eq(""), any(), any(), any(),
+                    any(org.springframework.data.domain.Pageable.class));
         }
 
         @Test
         @DisplayName("Should delegate to repository when query is trimmed")
         void search_ShouldDelegate_WhenQueryTrimmed() {
-            when(customerRepository.search("Juan")).thenReturn(List.of(TestDataBuilders.customer().build()));
+            when(customerRepository.search(eq("Juan"), any(), any(), any(),
+                    any(org.springframework.data.domain.Pageable.class)))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(
+                            List.of(TestDataBuilders.customer().build())));
 
-            List<Customer> result = customerService.search("  Juan  ");
+            org.springframework.data.domain.Page<Customer> result = customerService.search("  Juan  ", null, null, null,
+                    org.springframework.data.domain.Pageable.unpaged());
 
             assertThat(result).hasSize(1);
-            verify(customerRepository).search("Juan");
+            verify(customerRepository).search(eq("Juan"), any(), any(), any(),
+                    any(org.springframework.data.domain.Pageable.class));
         }
     }
 }
