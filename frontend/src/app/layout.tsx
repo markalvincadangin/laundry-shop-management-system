@@ -43,12 +43,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html 
-      lang="en" 
+    <html
+      lang="en"
       className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body 
+      <body
         className="min-h-screen bg-neutral-50 font-sans text-slate-900 antialiased selection:bg-brand-blue/10 custom-scrollbar overflow-x-hidden"
         suppressHydrationWarning
       >

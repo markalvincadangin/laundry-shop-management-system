@@ -3,6 +3,8 @@ export * from "./Avatar";
 export * from "./Card";
 export * from "./Input";
 export * from "./KPICard";
+export { KPICardSkeleton } from "./KPICard";
+export * from "./CurrencyDisplay";
 export * from "./StatusBadge";
 export * from "./Select";
 export * from "./Modal";

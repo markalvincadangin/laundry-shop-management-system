@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { 
-  TrendingUp, 
+import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
+import {
+  TrendingUp,
   Info,
   DollarSign,
   ClipboardCheck,
@@ -10,19 +12,22 @@ import {
 } from "lucide-react";
 import { reportsService } from "@/services/reports.service";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
+import {
+  Card,
+  CardHeader,
+  CardTitle,
   CardContent,
-  Input, 
+  Input,
   Select,
   KPICard,
-  SegmentedControl 
+  KPICardSkeleton,
+  CurrencyDisplay,
+  SegmentedControl
 } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { SectionHeader, ErrorState, AccessDenied, LoadingState } from "@/features/shared";
-import { RevenueChart, DetailedSalesTable } from "@/components/features/reports";
+const RevenueChart = dynamic(() => import("@/components/features/reports/RevenueChart").then(m => m.RevenueChart), { ssr: false });
+const DetailedSalesTable = dynamic(() => import("@/components/features/reports/DetailedSalesTable").then(m => m.DetailedSalesTable), { ssr: false });
 import { UI_LABELS } from "@/constants/ui";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
@@ -40,6 +45,7 @@ export default function ReportsPage() {
     period?: string;
     totalIncome: number;
     paidOrdersCount: number;
+    revenueByMethod?: Record<string, number>;
   } | null>(null);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [chartLoading, setChartLoading] = useState(false);
@@ -93,20 +99,31 @@ export default function ReportsPage() {
 
   const fetchChartData = useCallback(async () => {
     setChartLoading(true);
-    const now = new Date();
     try {
-      const promises = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(now);
-        d.setDate(d.getDate() - (6 - i));
-        const dateStr = d.toISOString().split('T')[0];
-        return reportsService.getDailySales(dateStr).then((res) => ({
+      const to = new Date();
+      const from = new Date();
+      from.setDate(to.getDate() - 6);
+      
+      const fromStr = from.toISOString().split('T')[0];
+      const toStr = to.toISOString().split('T')[0];
+      
+      const data = await reportsService.getSalesTrend(fromStr, toStr);
+      
+      // Map to chart points, ensuring all 7 days are represented even if zero
+      const points: ChartPoint[] = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(from);
+        d.setDate(from.getDate() + i);
+        const dStr = d.toISOString().split('T')[0];
+        const dayData = data.find(item => item.date === dStr);
+        
+        points.push({
           period: d.toLocaleString("en-US", { weekday: "short", day: "numeric" }),
-          income: res.totalIncome,
-          orders: res.paidOrdersCount,
-          rawDate: dateStr
-        }));
-      });
-      const points = await Promise.all(promises);
+          income: dayData?.totalIncome ?? 0,
+          orders: dayData?.paidOrdersCount ?? 0,
+          rawDate: dStr
+        });
+      }
       setChartData(points);
     } catch {
       setChartData([]);
@@ -119,8 +136,8 @@ export default function ReportsPage() {
     fetchChartData();
   }, [fetchChartData]);
 
-  const avgOrderValue = report && report.paidOrdersCount > 0 
-    ? report.totalIncome / report.paidOrdersCount 
+  const avgOrderValue = report && report.paidOrdersCount > 0
+    ? report.totalIncome / report.paidOrdersCount
     : 0;
 
   if (authLoading) {
@@ -133,11 +150,12 @@ export default function ReportsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 pb-20">
-      <PageHeader 
+      <PageHeader
         title={UI_LABELS.layout.nav.REPORTS}
         subtitle={UI_LABELS.modules.reports.SUBTITLE}
         icon={TrendingUp}
         actions={
+<<<<<<< Updated upstream
           <SegmentedControl 
             options={[
               { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
@@ -147,40 +165,73 @@ export default function ReportsPage() {
             value={tab}
             onChange={(v: string) => setTab(v as Tab)}
           />
+=======
+          <div className="flex items-center gap-4">
+            <Button variant="outline" className="h-12 px-6 gap-2 text-caption font-black uppercase tracking-widest border-slate-200" onClick={() => window.print()}>
+              <Download className="h-4 w-4" />
+              {UI_LABELS.modules.reports.EXPORT_PDF}
+            </Button>
+            <SegmentedControl
+              options={[
+                { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
+                { label: UI_LABELS.modules.reports.MONTHLY, value: "monthly" },
+                { label: UI_LABELS.modules.reports.YEARLY, value: "yearly" }
+              ]}
+              value={tab}
+              onChange={(v: string) => setTab(v as Tab)}
+            />
+          </div>
+>>>>>>> Stashed changes
         }
       />
 
       {error ? (
-        <ErrorState 
-          error={error} 
-          reset={() => tab === "daily" ? fetchDailyReport() : tab === "monthly" ? fetchMonthlyReport() : fetchYearlyReport()} 
+        <ErrorState
+          error={error}
+          reset={() => tab === "daily" ? fetchDailyReport() : tab === "monthly" ? fetchMonthlyReport() : fetchYearlyReport()}
         />
       ) : (
         <>
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <KPICard 
-              title={UI_LABELS.modules.reports.TOTAL_REVENUE} 
-              value={formatCurrency(report?.totalIncome ?? 0)} 
-              subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS}
-              icon={DollarSign}
-              variant="accent"
-            />
-            <KPICard 
-              title={UI_LABELS.modules.reports.PAID_ORDERS} 
-              value={report?.paidOrdersCount ?? 0} 
-              subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS}
-              icon={ClipboardCheck}
-              variant="success"
-            />
-            <KPICard 
-              title={UI_LABELS.modules.reports.AVG_SALE} 
-              value={formatCurrency(avgOrderValue)} 
-              subtitle={UI_LABELS.modules.reports.PER_ORDER_REV}
-              icon={PercentCircle}
-              variant="default"
-            />
+            {loading ? (
+              <>
+                <KPICardSkeleton />
+                <KPICardSkeleton />
+                <KPICardSkeleton />
+              </>
+            ) : (
+              <>
+                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" />} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={DollarSign} variant="accent" />
+                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={ClipboardCheck} variant="success" />
+                <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<CurrencyDisplay amount={avgOrderValue} size="xl" />} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={PercentCircle} variant="default" />
+              </>
+            )}
           </div>
+
+          {/* Forensic Breakdown by Method (Daily only) */}
+          {tab === "daily" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+              {loading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-20 bg-slate-100 rounded-2xl animate-pulse" />
+                ))
+              ) : report?.revenueByMethod && Object.keys(report.revenueByMethod).length > 0 ? (
+                Object.entries(report.revenueByMethod).map(([method, amount]) => (
+                  <div key={method} className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl p-5 flex flex-col gap-1 shadow-sm hover:border-brand-blue/30 transition-all group">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand-blue transition-colors">
+                      {method.replace(/_/g, ' ')}
+                    </p>
+                    <CurrencyDisplay amount={amount} size="md" className="text-slate-900 font-bold" />
+                  </div>
+                ))
+              ) : null}
+            </motion.div>
+          )}
 
           {/* Selection & Chart Section */}
           <div className="grid lg:grid-cols-12 gap-8 items-start">
@@ -203,7 +254,7 @@ export default function ReportsPage() {
                   )}
                   {tab === "monthly" && (
                     <div className="grid gap-6">
-                       <Select
+                      <Select
                         label={UI_LABELS.modules.reports.MONTH}
                         value={month}
                         onChange={(e) => setMonth(parseInt(e.target.value, 10))}
@@ -233,9 +284,10 @@ export default function ReportsPage() {
                       className="border-slate-200 bg-white h-14"
                     />
                   )}
-                  <div className="flex items-start gap-3 p-5 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 shadow-inner">
-                    <Info className="h-5 w-5 text-brand-blue shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
+                  <div className="flex items-start gap-4 p-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 shadow-sm relative overflow-hidden group/info">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full -mr-12 -mt-12 group-hover/info:scale-110 transition-transform duration-700" />
+                    <Info className="h-5 w-5 text-brand-blue shrink-0 mt-1 relative z-10" />
+                    <p className="text-xs text-slate-600 font-medium leading-relaxed italic relative z-10">
                       {UI_LABELS.modules.reports.INFO_TEXT}
                     </p>
                   </div>
@@ -244,7 +296,7 @@ export default function ReportsPage() {
             </div>
 
             <div className="lg:col-span-8">
-               <RevenueChart data={chartData} loading={chartLoading} />
+              <RevenueChart data={chartData} loading={chartLoading} />
             </div>
           </div>
         </>
@@ -257,14 +309,14 @@ export default function ReportsPage() {
           <DetailedSalesTable date={date} />
         )}
         {tab === "monthly" && (
-          <DetailedSalesTable 
+          <DetailedSalesTable
             from={`${year}-${String(month).padStart(2, '0')}-01`}
             to={`${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`}
             label={`Detailed breakdown for ${new Date(year, month - 1).toLocaleString("default", { month: "long" })} ${year}`}
           />
         )}
         {tab === "yearly" && (
-          <DetailedSalesTable 
+          <DetailedSalesTable
             from={`${year}-01-01`}
             to={`${year}-12-31`}
             label={`Detailed breakdown for Full Year ${year}`}

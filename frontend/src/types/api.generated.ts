@@ -1652,6 +1652,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/sales/trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales trend report
+         * @description Returns a list of daily sales aggregates (income, orders) for a given range.
+         *     Max range is 31 days.
+         *     Requires ADMIN role.
+         */
+        get: {
+            parameters: {
+                query: {
+                    from: string;
+                    to: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sales trend */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DailySalesReportResponse"][];
+                    };
+                };
+                /** @description Forbidden - Admin only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1928,6 +1979,10 @@ export interface components {
             /** Format: double */
             totalIncome: number;
             paidOrdersCount: number;
+            /** @description Revenue breakdown by payment method. */
+            revenueByMethod?: {
+                [key: string]: number;
+            };
         };
         PeriodSalesReportResponse: {
             period: string;
