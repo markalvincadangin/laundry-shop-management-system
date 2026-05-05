@@ -51,9 +51,9 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
       link.download = `receipt-${order.referenceNumber}.png`;
       link.href = dataUrl;
       link.click();
-      toast.success("Receipt saved as image");
+      toast.success(UI_LABELS.modules.orders.RECEIPT_SAVED);
     } catch (err) {
-      toast.error("Download failed. Use print instead.");
+      toast.error(UI_LABELS.modules.orders.RECEIPT_DOWNLOAD_FAILED);
     } finally {
       setDownloading(false);
     }
@@ -159,7 +159,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
           {order.paymentStatus === "PAID" && (
             <div className="flex justify-between text-slate-500">
               <span>PAYMENT METHOD:</span>
-              <span>CASH</span>
+              <span>{order.paymentMethod ?? "CASH"}</span>
             </div>
           )}
           <div className="flex justify-between border-t border-dashed border-slate-300 pt-1 font-black text-xs bg-slate-50 px-1 rounded mt-1">

@@ -70,9 +70,9 @@ public final class TestDataBuilders {
         return ServiceRate.builder()
                 .id(1)
                 .serviceName("Standard Wash")
-                .basePricePerLoad(new BigDecimal("120.00"))
-                .kgLimitPerLoad(new BigDecimal("8.00"))
-                .pricePerExtraMinute(new BigDecimal("1.00"))
+                .basePricePerLoad(new BigDecimal("140.00"))  // BR-PR-01: ₱140 per load
+                .kgLimitPerLoad(new BigDecimal("8.00"))       // 8kg per load
+                .pricePerExtraMinute(new BigDecimal("1.00"))  // ₱1 per extra minute
                 .isActive(true);
     }
 
@@ -96,16 +96,16 @@ public final class TestDataBuilders {
                 .customer(c)
                 .createdBy(u)
                 .serviceRate(r)
-                .weightKg(new BigDecimal("10.00"))
+                .weightKg(new BigDecimal("10.00"))       // 10kg / 8kg = 2 loads
                 .totalLoads(2)
-                .basePricePerLoad(new BigDecimal("120.00"))
+                .basePricePerLoad(new BigDecimal("140.00"))  // BR-PR-01: ₱140/load
                 .kgLimitPerLoad(new BigDecimal("8.00"))
                 .pricePerExtraMinute(new BigDecimal("1.00"))
                 .extraMinutes(0)
-                .baseAmount(new BigDecimal("240.00"))
+                .baseAmount(new BigDecimal("280.00"))    // 2 loads × ₱140
                 .extraMinutesAmount(BigDecimal.ZERO)
                 .addonsTotalAmount(BigDecimal.ZERO)
-                .grandTotal(new BigDecimal("240.00"))
+                .grandTotal(new BigDecimal("280.00"))    // 280 + 0 + 0
                 .currentStatus(OrderStatus.RECEIVED)
                 .paymentStatus(PaymentStatus.UNPAID);
     }
@@ -151,7 +151,7 @@ public final class TestDataBuilders {
         return Payment.builder()
                 .id(1L)
                 .order(o)
-                .amountPaid(new BigDecimal("240.00"))
+                .amountPaid(new BigDecimal("280.00"))  // matches default order() grandTotal (BR-PR-01)
                 .paymentMethod(PaymentMethod.CASH)
                 .receivedBy(u)
                 .paymentDate(Instant.now());

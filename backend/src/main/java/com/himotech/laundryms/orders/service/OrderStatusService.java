@@ -87,9 +87,9 @@ public class OrderStatusService {
         OrderStatus previousStatus = order.getCurrentStatus();
         order.setCurrentStatus(newStatus);
 
-        // Financial Integrity: If order is cancelled, void the payment status so it doesn't count as revenue
+        // Financial Integrity: If order is cancelled, void the payment so it doesn't count as revenue
         if (newStatus == OrderStatus.CANCELLED) {
-            if (order.getPaymentStatus() == PaymentStatus.PAID || order.getPaymentStatus() == PaymentStatus.PARTIAL) {
+            if (order.getPaymentStatus() == PaymentStatus.PAID) {  // BR-PAY-07
                 order.setPaymentStatus(PaymentStatus.VOIDED);
             }
         }

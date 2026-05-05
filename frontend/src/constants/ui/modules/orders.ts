@@ -24,4 +24,6 @@ export const orders = {
   SERVICE_TYPE: "Service Type",
   CHOOSE_SERVICE: "Choose Service",
   SPECIAL_INSTRUCTIONS: "Special Instructions",
+  RECEIPT_SAVED: "Receipt saved as image",
+  RECEIPT_DOWNLOAD_FAILED: "Download failed. Use Print instead.",
 } as const;

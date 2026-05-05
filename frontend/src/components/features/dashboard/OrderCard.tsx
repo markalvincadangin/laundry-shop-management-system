@@ -49,11 +49,11 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
           isUrgent ? "border-l-[6px] border-l-emerald-500 ring-1 ring-emerald-500/10 shadow-lg shadow-emerald-500/5" : "hover:translate-y-[-6px]"
         }`}
       >
-        {/* Service Type Icon Overlay (§1.4) */}
+        {/* Service Type Icon Overlay — decorative ambient icon per order type */}
         <div className="absolute top-[-10px] right-[-10px] opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
-          {order.serviceType === 'rush' ? (
+          {order.serviceType === 'WASH_DRY_FOLD_RUSH' ? (
             <Zap className="h-32 w-32 rotate-12" />
-          ) : order.serviceType === 'blanket' ? (
+          ) : order.serviceType === 'BLANKETS' ? (
             <Wind className="h-32 w-32 rotate-12" />
           ) : (
             <Package className="h-32 w-32 rotate-12" />
@@ -73,8 +73,8 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
         {/* HCI: Name gets full width to prevent truncation */}
         <h3 className="text-[16px] font-black text-slate-900 tracking-tight line-clamp-2 break-words font-display leading-tight flex items-center gap-2">
           {order.customerName || "Walk-in Customer"}
-          {order.serviceType === 'rush' && (
-            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" />
+          {order.serviceType === 'WASH_DRY_FOLD_RUSH' && (
+            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" title="Rush Order" />
           )}
         </h3>
       </div>
