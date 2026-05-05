@@ -104,7 +104,7 @@ export function LiveTicket({
                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Special Instructions</span>
                 </div>
                 <p className="text-sm font-bold text-slate-900 italic pl-7 leading-relaxed">
-                  "{notes}"
+                  &quot;{notes}&quot;
                 </p>
               </div>
             )}

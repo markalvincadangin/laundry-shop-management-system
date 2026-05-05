@@ -347,7 +347,7 @@ class OrderServiceTest {
         @Test
         @DisplayName("Should handle null addOns as empty list")
         void create_ShouldHandleNullAddOns_AsEmptyList() {
-            var command = new CreateOrderCommand(CUSTOMER_ID, USER_ID, new BigDecimal("8.00"), 0, null);
+            var command = new CreateOrderCommand(CUSTOMER_ID, USER_ID, new BigDecimal("8.00"), 0, null, "STANDARD", null);
 
             Order result = orderService.create(command);
 

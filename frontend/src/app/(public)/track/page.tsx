@@ -424,9 +424,7 @@ function TrackContent() {
                     H1: Icon is semantic — Bell for in-progress, CheckCircle2 for pickup/released.
                     H2: Clock watermark removed — it was decorative noise.
                     H3: Claim instruction is INSIDE this block (elevated from footer). */}
-                <motion.div 
-                  initial={{ scale: 0.95, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                <div 
                   className={`relative p-grid-8 rounded-2xl overflow-hidden transition-all duration-500 shadow-2xl ${
                     order.currentStatus === 'RELEASED' 
                       ? 'bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-emerald-500/20' 
