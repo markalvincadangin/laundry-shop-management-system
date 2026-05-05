@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** CRED-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
+> **Version:** 1.1  
+> **Date:** 2026-05-05  
 > **Status:** Living Document
 
 ---

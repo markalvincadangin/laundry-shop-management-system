@@ -3,7 +3,7 @@
 
 > **Source of truth:** [docs/](../) — scope, user stories, business rules, NFRs, OpenAPI, ERD  
 > **Last scanned:** 2026-05-05  
-> **Last updated:** 2026-05-05 (Hardened Order Workflow & Claim Stub)  
+> **Last updated:** 2026-05-05 (Hardened Order Workflow, Add-ons, & Claim Stub)  
 > **Purpose:** Gap analysis of what is implemented vs. what is required per documentation
 
 ---
