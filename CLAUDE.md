@@ -25,12 +25,12 @@ A full-stack web application designed to digitize and streamline the operations 
 | Layer | Technology |
 |-------|-----------|
 | Language | Java 21 |
-| Framework | Spring Boot 3.5.10 |
+| Framework | Spring Boot 3.5.14 (**EOL: June 30, 2026** — plan Spring Boot 4.0 migration post-MVP) |
 | ORM | Spring Data JPA + Hibernate |
 | DB Migrations | Flyway |
 | Database | PostgreSQL 16 |
 | Security | Spring Security + JWT (JJWT 0.12.6, HTTP-only cookie) |
-| DTO Mapping | MapStruct 1.5.5 (with `disableBuilder = true` on OrderMapper — do NOT remove) |
+| DTO Mapping | MapStruct 1.6.3 (with `disableBuilder = true` on OrderMapper — do NOT remove) |
 | Code Gen | Lombok |
 | Validation | Jakarta Validation (Bean Validation) |
 | Testing | JUnit 5, Mockito, Testcontainers (PostgreSQL), AssertJ |

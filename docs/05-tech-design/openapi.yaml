@@ -1219,6 +1219,9 @@ components:
           type: string
           format: uuid
           description: "Optional — overridden by JWT principal when authenticated."
+        paymentReference:
+          type: string
+          description: "Reference / Transaction ID for non-cash payments (GCash, Bank)."
       required: [orderId, amountPaid]
 
     PaymentResponse:
@@ -1234,6 +1237,7 @@ components:
         receivedByUsername: { type: string, description: "Username of the staff who received the payment" }
         paymentDate: { type: string, format: date-time }
         remarks: { type: string }
+        paymentReference: { type: string, description: "Reference / Transaction ID for digital payments." }
       required: [id, orderId, amountPaid, paymentMethod, paymentDate]
 
     # -------------------------

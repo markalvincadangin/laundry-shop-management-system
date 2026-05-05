@@ -136,7 +136,7 @@ public final class TestDataBuilders {
     // --- RecordPaymentCommand ---
 
     public static RecordPaymentCommand recordPaymentCommand(Long orderId, BigDecimal amountPaid, PaymentMethod method, UUID receivedByUserId, String remarks) {
-        return new RecordPaymentCommand(orderId, amountPaid, method, receivedByUserId, remarks);
+        return new RecordPaymentCommand(orderId, amountPaid, method, receivedByUserId, remarks, null);
     }
 
     public static RecordPaymentCommand recordPaymentCommand(Long orderId, BigDecimal amountPaid, UUID receivedByUserId) {

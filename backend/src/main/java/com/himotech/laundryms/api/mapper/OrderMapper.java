@@ -18,6 +18,7 @@ public interface OrderMapper {
 
     @Mapping(target = "customerId", source = "customer.id")
     @Mapping(target = "customerName", source = "order", qualifiedByName = "customerName")
+    @Mapping(target = "contactNumber", source = "customer.contactNumber")
     @Mapping(target = "createdByUserId", source = "order", qualifiedByName = "createdByUserId")
     @Mapping(target = "createdByUsername", source = "order", qualifiedByName = "createdByUsername")
     @Mapping(target = "serviceRateId", source = "serviceRate.id")

@@ -79,7 +79,8 @@ public class PaymentController {
                 request.getAmountPaid(),
                 request.getPaymentMethod(),
                 receivedBy,
-                null
+                null,
+                request.getPaymentReference()
         );
         Payment payment = paymentService.create(cmd);
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentMapper.toResponse(payment));

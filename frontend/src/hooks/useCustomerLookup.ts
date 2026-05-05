@@ -31,7 +31,7 @@ export function useCustomerLookup(initialQuery: string = "") {
 
   useEffect(() => {
     if (!selected && !isRegistering) {
-      const timer = setTimeout(() => fetchResults(search), 200);
+      const timer = setTimeout(() => fetchResults(search), 500);
       return () => clearTimeout(timer);
     }
   }, [search, selected, isRegistering, fetchResults]);

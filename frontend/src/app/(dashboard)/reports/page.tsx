@@ -6,7 +6,8 @@ import {
   Info,
   DollarSign,
   ClipboardCheck,
-  PercentCircle
+  PercentCircle,
+  Download
 } from "lucide-react";
 import { reportsService } from "@/services/reports.service";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,6 +18,7 @@ import {
   CardContent,
   Input, 
   Select,
+  Button,
   KPICard,
   SegmentedControl 
 } from "@/components/ui";
@@ -138,15 +140,21 @@ export default function ReportsPage() {
         subtitle={UI_LABELS.modules.reports.SUBTITLE}
         icon={TrendingUp}
         actions={
-          <SegmentedControl 
-            options={[
-              { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
-              { label: UI_LABELS.modules.reports.MONTHLY, value: "monthly" },
-              { label: UI_LABELS.modules.reports.YEARLY, value: "yearly" }
-            ]}
-            value={tab}
-            onChange={(v: string) => setTab(v as Tab)}
-          />
+          <div className="flex items-center gap-4">
+            <Button variant="outline" className="h-12 px-6 gap-2 text-caption font-black uppercase tracking-widest border-slate-200" onClick={() => window.print()}>
+              <Download className="h-4 w-4" />
+              {UI_LABELS.modules.payments.EXPORT}
+            </Button>
+            <SegmentedControl 
+              options={[
+                { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
+                { label: UI_LABELS.modules.reports.MONTHLY, value: "monthly" },
+                { label: UI_LABELS.modules.reports.YEARLY, value: "yearly" }
+              ]}
+              value={tab}
+              onChange={(v: string) => setTab(v as Tab)}
+            />
+          </div>
         }
       />
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ArrowRight, Clock, Scale, Zap, Package, Wind, FileText } from "lucide-react";
-import { Card, Button, StatusBadge } from "@/components/ui";
+import { Card, Button, StatusBadge, Tooltip } from "@/components/ui";
 import { OrderResponse } from "@/services/orders.service";
 import { STATUS_TRANSITIONS, OrderStatus } from "@/constants/order-status";
 import { motion, AnimatePresence } from "framer-motion";
@@ -115,20 +115,22 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
 
       {/* Staff Action: One-Tap Advance Lifecycle */}
       {transition && (
-        <Button
-          onClick={() => onAdvance(order.id!, transition.next)}
-          disabled={isLoading}
-          variant="primary"
-          size="md"
-          className={`w-full text-[11px] font-bold uppercase tracking-[0.15em] h-12 gap-3 transition-all active:scale-[0.98] rounded-xl shadow-xl shadow-brand-blue/10 font-display ${
-            isUrgent
-              ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
-              : "bg-brand-blue hover:bg-brand-blue/90"
-          }`}
-        >
-          {transition.label}
-          <ArrowRight className="h-4 w-4 group-hover:translate-x-1.5 transition-transform" />
-        </Button>
+        <Tooltip content={`Advance to ${transition.next.replace(/_/g, ' ')}`} position="top">
+          <Button
+            onClick={() => onAdvance(order.id!, transition.next)}
+            disabled={isLoading}
+            variant="primary"
+            size="md"
+            className={`w-full text-[11px] font-bold uppercase tracking-[0.15em] h-12 gap-3 transition-all active:scale-[0.98] rounded-xl shadow-xl shadow-brand-blue/10 font-display ${
+              isUrgent
+                ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                : "bg-brand-blue hover:bg-brand-blue/90"
+            }`}
+          >
+            {transition.label}
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1.5 transition-transform" />
+          </Button>
+        </Tooltip>
       )}
       </Card>
     </motion.div>

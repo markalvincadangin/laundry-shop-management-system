@@ -4,7 +4,7 @@
 > **Client:** Faith Laundry Shop
 > **Prepared By:** HIMÓTECH
 > **Document ID:** FRONT-001
-> **Version:** 3.3
+> **Version:** 3.3.1
 > **Date:** 2026-05-05
 > **Purpose:** Define visual identity, human-centric design (HCI) standards, and user-friendly interaction patterns.
 > **Status:** Hardened — Codebase-aligned, WCAG-verified, architecture-accurate, modular-lexicon-integrated, collapsible-sidebar-enabled, full-HCI-theory-integrated
@@ -16,7 +16,7 @@
 | Field | Value |
 | :--- | :--- |
 | Previous Version | 3.2 — 2026-04-27 |
-| Change Summary | v3.3.0 HCI/UX theory hardening: Added §1.12 Jakob's Law, §1.13 Shneiderman's Eight Golden Rules (complete), §1.14 Gestalt Completeness (Similarity, Continuity, Enclosure), §1.15 WCAG POUR Framework, §2.8.7 Von Restorff & Peak-End applied rationale; fixed stale ₱120 reference → ₱140 (BR-PR-01); resolved KI-001 (brand-cyan-dark Tailwind gap); updated screen inventory status; updated §12 Administrative Laws. |
+| Change Summary | v3.3.1 Precision hardening (audit-driven): Corrected Plus Jakarta Sans typographic classification (G-001); added 220px sidebar proportional-decision note (G-002); added Elliot & Maier context-dependency caveat (G-003). No design decisions changed — classification precision only. |
 | Related Documents | [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Architecture](architecture.md), [OpenAPI Spec](openapi.yaml), **[Frontend Structure Spec — FRONT-002](frontend-structure.md)**, [Case Study (CS-001)](case-study.md), [Client Interview (INT-001)](client-interview.md) |
 | Confidentiality | Internal / Academic Use |
 
@@ -315,7 +315,7 @@ Faith Laundry Shop is a small, community-oriented Filipino service business (CS-
 
 | Role | Font | Classification | Why This Font |
 | :--- | :--- | :--- | :--- |
-| **Display / Headings** | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) | Geometric humanist sans-serif | Combines geometric structure (modern, trustworthy) with humanist details (approachable, community-oriented). The 800-weight display titles provide authority for KPI numbers without feeling corporate. Excellent optical rendering at 14–36px on 96dpi screens. Freely available via Google Fonts / `next/font`. |
+| **Display / Headings** | [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) | Geometric sans-serif with humanist influences | Combines a clean geometric underlying structure (modern, trustworthy) with humanist character details — notably curved terminals and open apertures (approachable, community-oriented). *Note: Technically classified as a geometric sans-serif by its foundry, Tokotype; the humanist influence is expressed through character details, not the primary structural classification.* The 800-weight display titles provide authority for KPI numbers without feeling corporate. Excellent optical rendering at 14–36px on 96dpi screens. Freely available via Google Fonts / `next/font`. |
 | **Body / Data** | [Inter](https://rsms.me/inter/) | Humanist sans-serif, screen-optimized | Designed specifically for computer screens by Rasmus Andersson. Features a tall x-height, open apertures, and spacing tuned for 11–16px rendering — critical for high-density data tables and the `Body Small` (13px) scale. The de-facto standard for operational dashboards and SaaS products. Freely available. |
 | **Identifiers / Mono** | [JetBrains Mono](https://www.jetbrains.com/lp/mono/) | Monospace, screen-optimized | Designed for code editors where character disambiguation is critical. The `0/O` and `1/l` disambiguation is explicitly engineered into the letterforms. Mandated for Order IDs (`LDR-YYYYMMDD-XXXX`) and timestamps to prevent misreading under operational pressure — directly mitigating the order mix-up risk identified in CS-001 §4.1 and INT-001 Q13. Freely available. |
 
@@ -353,7 +353,7 @@ The system adheres to an **8px base grid** — the standard established by Googl
 | `space-8` | 32px | `p-8`, `m-8` | Page-level horizontal margins |
 
 - **Density Mode:** This is a task-execution tool, not a reading interface. Use high-density spacing for data grids (`py-3` for table rows) to maximize visible information. The client operates a small shop where seeing more orders at once reduces the need to scroll.
-- **Sidebar Width:** Desktop sidebar transitions between `220px` (Expanded) and `72px` (Collapsed). The expanded width is the minimum comfortable width for labels; the collapsed width is optimized for icon visibility and alignment with the 8px grid.
+- **Sidebar Width:** Desktop sidebar transitions between `220px` (Expanded) and `72px` (Collapsed). The expanded width is the minimum comfortable width for labels; the collapsed width is optimized for icon visibility and alignment with the 8px grid. *Note: `220px` is a proportional layout decision (not an 8px grid spacing token) — it represents the minimum label-readable width established empirically for navigation sidebars in SaaS dashboard conventions. The 8px grid governs internal spacing within the sidebar, not the sidebar's overall container dimension.*
 - **Kanban Column Min-Width:** `200px` per column. Total minimum pipeline width = `5 × 200px + 4 × 16px gap = 1064px`. Combined with `220px` sidebar + `32px` margins = `1316px` — fits within `1366px` viewport with 50px to spare.
 
 ### 2.4 Border, Shadow & Elevation
@@ -445,7 +445,7 @@ This section provides verifiable theoretical grounding for all design decisions,
 
 #### 2.8.1 Color Psychology & Identity (verified against logo.svg)
 
-- **Primary Blue (`#15489d`) — Logo Source:** This is the only color in the logo SVG. Blue occupies the cool-hue range associated with **trust, competence, and stability** in color psychology (Elliot & Maier, 2014; Hemphill, 1996). For a business that handles customers' clothing and collects payment at pickup (INT-001 Q10), trust signaling is the highest-priority affective goal. Blue achieves this while remaining culturally neutral across Filipino commercial contexts.
+- **Primary Blue (`#15489d`) — Logo Source:** This is the only color in the logo SVG. Blue occupies the cool-hue range associated with **trust, competence, and stability** in color psychology (Elliot & Maier, 2014; Hemphill, 1996). For a business that handles customers' clothing and collects payment at pickup (INT-001 Q10), trust signaling is the highest-priority affective goal. Blue achieves this while remaining culturally neutral across Filipino commercial contexts. *Context-dependency note: Elliot & Maier's color-in-context theory (Annual Review of Psychology, 2014) explicitly establishes that color effects are context-dependent, not universal. The trust association of blue is strongest in contexts where stability and reliability are the primary affective goal — which precisely describes a local service business handling personal belongings. The spec's application is context-valid.*
 - **Derived Cyan (`#30a8d4`, `#1a7fa8`) — Analogous Harmony:** Cyan sits approximately 25–30° counterclockwise from Brand Blue on the HSL hue wheel. Analogous color schemes (hues within 30° of each other) are visually harmonious and non-competing (Itten, *Art of Color*, 1961). The cyan family provides interactive and lifecycle differentiation without introducing hue conflict with the brand anchor.
 - **Neutral Foundation (`#f8fafc`) — Eye Fatigue Reduction:** Pure white (`#ffffff`) under LED monitor backlighting creates a high-luminance field that causes eye strain over extended use (Sheedy et al., 2003). The Admin and Staff may operate this system for 8+ hours; `#f8fafc` (approx. 97.5% luminance) meaningfully reduces glare while remaining visually "white" to users.
 - **Slate-200 for Queue/Accepted state:** Neutral gray signals "pending, not yet active" — analogous to a physical inbox tray before work begins (INT-001 Q4 describes the real-world equivalent: clothes in a labeled bag awaiting processing). No hue association means no semantic confusion with active lifecycle states.
@@ -479,7 +479,7 @@ NNGroup's eye-tracking studies (Nielsen & Pernice, *Eyetracking Web Usability*, 
 
 Font selection was validated against three criteria specific to Faith Laundry Shop's identity:
 
-1. **Community service character:** Plus Jakarta Sans's humanist terminals (curved stroke endings) convey approachability — appropriate for a neighborhood laundry shop — while the geometric underlying structure projects order and reliability. This balances the dual identity: friendly to local customers, professional in internal operations.
+1. **Community service character:** Plus Jakarta Sans's humanist character details (curved terminals, open apertures) convey approachability — appropriate for a neighborhood laundry shop — while the geometric underlying structure projects order and reliability. This balances the dual identity: friendly to local customers, professional in internal operations. *(The font is correctly classified by Tokotype as a geometric sans-serif with humanist influences — the "approachable" quality comes from character-level details, not the primary structural classification.)*
 2. **Philippine display environment:** The vast majority of staff-facing systems in the Philippine SME context are used on 1366×768 displays at standard 96dpi. Inter's screen-optimization (tight hinting, generous x-height) was designed for precisely this density range, unlike print-optimized fonts that render poorly at body sizes on standard office monitors.
 3. **Forensic legibility for order identifiers:** INT-001 Q13 confirms that staff physically verify the order stub against the claimed laundry before release. JetBrains Mono's explicit disambiguation of `0/O`, `1/l`, and `I/l` reduces the risk of misreading an Order ID under time pressure — directly mitigating the mix-up risk identified in CS-001 §4.1.
 
@@ -575,6 +575,7 @@ Before creating any new component, apply these checks in order:
 | `SideSheet` | `SideSheet.tsx` | Slide-out panel for detail flows | `isOpen`, `onClose`, `title?` |
 | `StatusBadge` | `StatusBadge.tsx` | Order lifecycle status pill | `status?: OrderStatus`, `variant?`, `label?`, `icon?` |
 | `TableSkeleton` | `TableSkeleton.tsx` | Skeleton placeholder for table rows | `rows?` |
+| `Tooltip` | `Tooltip.tsx` | Accessible tooltip for icon-only elements (WCAG 1.4.1 compliance) | `content`, `children`, `side?` |
 | `UndoToast` | `UndoToast.tsx` | 5-second recovery notification (powered by `sonner`) | `message`, `onUndo`, `duration?` |
 
 > `StatusBadge` resolves its own color, icon, and label from `ORDER_STATUS_META` when `status` is provided. It **must** render an icon as a secondary cue alongside the text label to satisfy WCAG 1.4.1 (§2.8.4). Manual `label` + `icon` props are available for non-order status uses (e.g., payment status — use `PaymentStatusBadge` for `PaymentStatus` values).
@@ -618,7 +619,6 @@ Component names below match actual filenames. Organized by folder location withi
 
 | Component | Purpose |
 | :--- | :--- |
-| `OrderQueueTable` | High-density data grid for the Orders list page |
 | `IntakeWizard` | Multi-step wizard for new order creation (replaces legacy `OrderIntakeForm`) |
 | `OrderStatusTimeline` | Chronological event log for a single order |
 
@@ -626,7 +626,6 @@ Component names below match actual filenames. Organized by folder location withi
 
 | Component | Purpose |
 | :--- | :--- |
-| `PaymentLedgerTable` | High-density data grid for the Payments page |
 | `PaymentActionModal` | Modal interface for recording payment settlement |
 | `PaymentDetailsModal` | Modal for viewing full details of a settled payment record |
 
@@ -637,7 +636,7 @@ Component names below match actual filenames. Organized by folder location withi
 | `RevenueChart` | Recharts-based sales analytics chart (Admin only) |
 | `DetailedSalesTable` | Paginated transaction history for the Reports page |
 
-**`components/features/activity/` — Activity log organisms:**
+**`components/features/audit-log/` — Activity log organisms:**
 
 | Component | Purpose |
 | :--- | :--- |
@@ -649,7 +648,7 @@ Component names below match actual filenames. Organized by folder location withi
 | :--- | :--- |
 | `CustomerEditModal` | Modal for editing an existing customer profile |
 
-**`components/features/notifications/` — Notification feature organisms:**
+**`components/features/client-alerts/` — Notification feature organisms:**
 
 | Component | Purpose |
 | :--- | :--- |

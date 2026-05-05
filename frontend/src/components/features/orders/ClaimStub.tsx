@@ -110,7 +110,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
         <div className="space-y-1 text-[10px]">
           <div className="flex justify-between leading-tight">
             <span className="flex-1 pr-2">
-              {order.totalLoads} LOAD(S) @ {order.weightKg}KG
+              {order.totalLoads} LOAD(S) @ {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}KG
               <br />
               <span className="text-[9px]">{order.serviceType?.replace(/_/g, " ")}</span>
             </span>
@@ -124,17 +124,22 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
             </div>
           )}
 
-          {order.addOns && order.addOns.length > 0 && (
+          {order.addOns && order.addOns.length > 0 ? (
             <div className="pt-2 mt-2 border-t border-dashed border-slate-300">
               <span className="text-[9px] font-black uppercase text-slate-500 block mb-1">Add-ons</span>
               {order.addOns.map((a, i) => (
                 <div key={i} className="flex justify-between italic text-[10px]">
-                  <span>+ {a.name} (X{a.quantity})</span>
+                  <span>{a.name} (X{a.quantity})</span>
                   <span>{formatCurrency((a.price || 0) * (a.quantity || 1))}</span>
                 </div>
               ))}
             </div>
-          )}
+          ) : (order.addonsTotalAmount ?? 0) > 0 ? (
+            <div className="pt-2 mt-2 border-t border-dashed border-slate-300 flex justify-between text-[10px]">
+              <span className="font-black uppercase text-slate-500">Add-ons Total</span>
+              <span>{formatCurrency(order.addonsTotalAmount)}</span>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -156,12 +161,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
               {order.paymentStatus === "PAID" ? "FULLY PAID" : "UNPAID"}
             </span>
           </div>
-          {order.paymentStatus === "PAID" && (
-            <div className="flex justify-between text-slate-500">
-              <span>PAYMENT METHOD:</span>
-              <span>{order.paymentMethod ?? "CASH"}</span>
-            </div>
-          )}
+
           <div className="flex justify-between border-t border-dashed border-slate-300 pt-1 font-black text-xs bg-slate-50 px-1 rounded mt-1">
             <span>BALANCE DUE:</span>
             <span>{formatCurrency(order.paymentStatus === "PAID" ? 0 : order.grandTotal)}</span>
@@ -203,9 +203,6 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
                 format="CODE128"
               />
             </div>
-            <span className="text-[8px] font-black tracking-[0.2em] uppercase text-slate-400 mt-2">
-              Scan to track order status
-            </span>
           </div>
 
           <div className="text-[10px] font-black tracking-tight pt-2 border-t border-slate-100">
