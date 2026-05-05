@@ -2,882 +2,327 @@
 applyTo: "frontend/**"
 ---
 
-# Frontend Instructions — Next.js 14+
+# Frontend Instructions — Next.js 15
 ## Faith Laundry Shop Management System
 
-> **Context:** Web-based UI for laundry order management with staff/owner workflows and public order tracking  
-> **Stack:** Next.js 14+, React, TypeScript, Tailwind CSS
+> **Context:** Web UI for laundry order management with staff/admin workflows and public order tracking  
+> **Stack:** Next.js 15.5.15, React 19, TypeScript 5, Tailwind CSS 3, TanStack Query v5  
+> **Full context:** See `CLAUDE.md` at project root
 
 ---
 
 ## Tech Stack (Mandatory)
 
-- **Next.js 14+** - Framework (App Router)
-- **React 18+** - UI library
-- **TypeScript** - Language (strict mode)
-- **Tailwind CSS** - Styling
-- **React Hook Form** – Form management (recommended)
-- **Zod** - Schema validation (recommended)
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js **15.5.15** (App Router — NOT Pages Router, NOT Next.js 14) |
+| Language | TypeScript 5 (strict mode) |
+| UI Library | React **19** |
+| Styling | Tailwind CSS 3 + custom `globals.css` design tokens |
+| Server State | TanStack Query (React Query) **v5** |
+| Forms | React Hook Form + Zod |
+| Charts | Recharts 3 |
+| Animations | Framer Motion 12 |
+| Icons | Lucide React |
+| Toasts | Sonner |
+| Testing | Vitest + Testing Library + happy-dom |
+| Type Gen | `npm run generate:types` → from `openapi.yaml` |
+
+**Do NOT suggest:** Redux, MobX, Pages Router, class components, `axios` (services use `fetch`), inline styles (use Tailwind).
 
 ---
 
-## Architecture Principles
+## Critical `"use client"` Rule
 
-### App Router Structure
-Use **Next.js App Router** (not Pages Router)
+**Next.js 15 App Router requires explicit `"use client"` on every file that uses:**
+- `useState`, `useEffect`, `useRef`, `useContext`
+- `useRouter`, `usePathname`, `useSearchParams`
+- `createPortal` (e.g., `Modal.tsx`)
+- Event handlers (`onClick`, `onChange`, etc.)
+- Framer Motion (`motion.*`)
+- Any browser-only API
 
-```
-app/
-├── (auth)/
-│   └── login/
-│       └── page.tsx
-├── (dashboard)/
-│   ├── orders/
-│   │   ├── page.tsx              # Order list
-│   │   ├── new/
-│   │   │   └── page.tsx          # Create order (US-01, US-02)
-│   │   └── [id]/
-│   │       └── page.tsx          # Order detail (US-03, US-05)
-│   ├── customers/
-│   │   ├── page.tsx              # Customer list
-│   │   └── new/
-│   │       └── page.tsx          # Create customer
-│   ├── payments/
-│   │   └── page.tsx              # Payment recording (US-06)
-│   └── reports/                  # Owner-only (US-08, US-09)
-│       ├── daily/
-│       │   └── page.tsx
-│       ├── monthly/
-│       │   └── page.tsx
-│       └── yearly/
-│           └── page.tsx
-├── track/
-│   └── page.tsx                  # Public tracking (US-04)
-└── api/                          # Optional: API routes for server actions
-```
+```tsx
+// ✅ CORRECT — Always at the very top of the file
+"use client";
 
-### Component Organization
-```
-components/
-├── ui/                           # Reusable UI components
-│   ├── Button.tsx
-│   ├── Input.tsx
-│   ├── Card.tsx
-│   └── Table.tsx
-├── forms/                        # Form components
-│   ├── OrderForm.tsx
-│   ├── CustomerForm.tsx
-│   └── PaymentForm.tsx
-├── orders/                       # Order-specific
-│   ├── OrderList.tsx
-│   ├── OrderCard.tsx
-│   ├── OrderStatusBadge.tsx
-│   └── OrderStatusTimeline.tsx
-└── reports/                      # Report components
-    ├── DailyReportChart.tsx
-    └── ReportSummary.tsx
+import { useState } from "react";
+
+// ❌ WRONG — Missing directive on a component using hooks
+import { useState } from "react"; // Will crash in production build!
 ```
 
 ---
 
-## API Integration
+## UI String Constants Rule
 
-### API Client Module
-**Location:** `lib/api/` or `services/`
+**ALL display text must come from `src/constants/ui/`, never hardcoded in components.**
 
-**Rules:**
-- Single source for all API calls
-- Type-safe using TypeScript interfaces
-- Handle errors consistently
-- Use environment variable: `NEXT_PUBLIC_API_URL`
+```tsx
+// ✅ CORRECT
+import { UI_LABELS } from "@/constants/ui";
+<h1>{UI_LABELS.modules.orders.TITLE}</h1>
 
-**Example:**
+// ❌ WRONG — hardcoded string
+<h1>Orders</h1>
+```
+
+**Adding new text:** Add the constant to the appropriate file in `src/constants/ui/modules/` or `src/constants/ui/shared.ts` **first**, then reference it.
+
+---
+
+## TypeScript Types Rule
+
+Types are **auto-generated** from the OpenAPI spec. Never edit `src/types/api.generated.ts` manually.
+
+```bash
+# Run after any openapi.yaml change
+npm run generate:types
+```
+
+Domain types live in `src/types/components.ts`. Import generated types from `@/types/api.generated`.
+
+---
+
+## Directory Structure
+
+```
+frontend/src/
+├── app/
+│   ├── (auth)/
+│   │   └── login/page.tsx            # Public login page
+│   ├── (dashboard)/                  # Auth-required layout
+│   │   ├── overview/page.tsx         # Dashboard KPIs
+│   │   ├── orders/
+│   │   │   ├── page.tsx              # Order queue
+│   │   │   ├── new/page.tsx          # New order intake (US-01, US-02)
+│   │   │   ├── [id]/page.tsx         # Order detail + status actions (US-03, US-05)
+│   │   │   └── [id]/pay/page.tsx     # Checkout (US-06)
+│   │   ├── customers/                # Customer list + detail
+│   │   ├── payments/page.tsx         # Payment history (Admin)
+│   │   ├── reports/page.tsx          # Sales reports (Admin, US-08, US-09)
+│   │   ├── rates/page.tsx            # Service rate management (Admin)
+│   │   ├── client-alerts/page.tsx    # SMS/Notification log (Admin)
+│   │   ├── users/page.tsx            # User management (Admin)
+│   │   └── audit-logs/page.tsx       # Forensic audit (Admin)
+│   └── (public)/
+│       └── track/page.tsx            # Public order tracking (US-04)
+├── components/
+│   ├── features/
+│   │   ├── orders/                   # IntakeWizard, OrderIntakeForm, ClaimStub, LiveTicket
+│   │   ├── dashboard/                # OrderPipeline, OrderCard, ProcessStepper
+│   │   ├── payments/                 # Checkout components
+│   │   ├── reports/                  # RevenueChart
+│   │   └── client-alerts/            # ClientAlertPopover
+│   ├── layout/                       # Topbar, MobileNav, Sidebar
+│   └── ui/                           # Shared atoms: Modal, Input, KPICard, StatusBadge
+├── constants/
+│   └── ui/                           # ALL UI strings
+│       ├── index.ts                  # Main export: UI_LABELS
+│       ├── modules/                  # orders.ts, payments.ts, reports.ts, etc.
+│       ├── shared.ts, forms.ts, etc.
+├── hooks/                            # useOrders, usePayments, usePriceCalculation, etc.
+├── services/                         # API layer (fetch-based)
+├── types/
+│   ├── api.generated.ts              # AUTO-GENERATED — do not edit
+│   └── components.ts                 # Manually maintained component types
+└── tests/                            # Vitest tests mirroring app/ structure
+```
+
+---
+
+## API Integration Pattern
+
+### Services (`src/services/`)
+API calls use `fetch` with `credentials: "include"` (for the HTTP-only JWT cookie).
+
 ```typescript
-// lib/api/orders.ts
-import { CreateOrderRequest, OrderResponse } from './types';
+// src/services/orders.service.ts
+const API = process.env.NEXT_PUBLIC_API_URL;
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
-export const ordersApi = {
-  create: async (data: CreateOrderRequest): Promise<OrderResponse> => {
-    const response = await fetch(`${API_URL}/api/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
-      },
+export const ordersService = {
+  create: (data: CreateOrderRequest) =>
+    fetch(`${API}/v1/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(data),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new ApiError(error.message, response.status);
-    }
-    
-    return response.json();
-  },
-  
-  getByReference: async (referenceNumber: string): Promise<OrderResponse> => {
-    const response = await fetch(`${API_URL}/api/orders/track/${referenceNumber}`);
-    
-    if (!response.ok) {
-      throw new ApiError('Order not found', response.status);
-    }
-    
-    return response.json();
-  },
-  
-  updateStatus: async (orderId: number, newStatus: string): Promise<OrderResponse> => {
-    const response = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify({ newStatus }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new ApiError(error.message, response.status);
-    }
-    
-    return response.json();
-  },
+    }).then(res => res.json()),
 };
 ```
 
-### TypeScript Types
-**Source:** `/docs/05-tech-design/openapi.yaml`
+### Hooks (`src/hooks/`)
+All data fetching goes through TanStack Query hooks.
 
-**Rules:**
-- Define types matching OpenAPI schemas
-- Use exact field names
-- Do NOT add fields not in OpenAPI
-
-**Example:**
 ```typescript
-// lib/api/types.ts
+// src/hooks/useOrders.ts
+"use client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ordersService } from "@/services/orders.service";
 
-// Request DTOs
-export interface CreateOrderRequest {
-  customerId: number;
-  weightKg: number;
-  extraMinutes?: number;
-  addOns?: OrderAddOnRequest[];
-}
-
-export interface OrderAddOnRequest {
-  name: string;
-  price: number;
-  quantity: number;
-}
-
-export interface UpdateOrderStatusRequest {
-  newStatus: OrderStatus;
-  notes?: string;
-}
-
-export interface CreatePaymentRequest {
-  orderId: number;
-  amountPaid: number;
-  paymentMethod: PaymentMethod;
-  remarks?: string;
-}
-
-// Response DTOs
-export interface OrderResponse {
-  id: number;
-  referenceNumber: string;
-  customer: CustomerSummary;
-  weightKg: number;
-  totalLoads: number;
-  extraMinutes: number;
-  baseAmount: number;
-  extraMinutesAmount: number;
-  addonsTotal: number;
-  grandTotal: number;
-  currentStatus: OrderStatus;
-  paymentStatus: PaymentStatus;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CustomerSummary {
-  id: number;
-  firstName: string;
-  lastName: string;
-  contactNumber: string;
-}
-
-// Enums (match backend exactly)
-export enum OrderStatus {
-  RECEIVED = 'RECEIVED',
-  WASHING = 'WASHING',
-  DRYING = 'DRYING',
-  FOLDING = 'FOLDING',
-  READY_FOR_PICKUP = 'READY_FOR_PICKUP',
-  RELEASED = 'RELEASED',
-  CANCELLED = 'CANCELLED',
-}
-
-export enum PaymentStatus {
-  UNPAID = 'UNPAID',
-  PAID = 'PAID',
-  PARTIAL = 'PARTIAL',
-}
-
-export enum PaymentMethod {
-  CASH = 'CASH',
-  GCASH = 'GCASH',
-  BANK_TRANSFER = 'BANK_TRANSFER',
-}
-
-// Error response
-export interface ErrorResponse {
-  message: string;
-  timestamp: string;
-  path: string;
+export function useOrders(params?: OrderListParams) {
+  return useQuery({
+    queryKey: ["orders", params],
+    queryFn: () => ordersService.list(params),
+  });
 }
 ```
 
 ### Error Handling
 ```typescript
-// lib/api/errors.ts
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number,
-    public path?: string
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
+// Use Sonner for user-facing errors
+import { toast } from "sonner";
 
-export function handleApiError(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-  
-  if (error instanceof Error) {
-    return error.message;
-  }
-  
-  return 'An unexpected error occurred';
+try {
+  await ordersService.create(data);
+  toast.success(UI_LABELS.feedback.success.SAVED);
+} catch (err) {
+  toast.error(err?.message || UI_LABELS.feedback.error.GENERIC);
 }
 ```
 
 ---
 
-## Business Logic Rules (Critical)
+## Business Logic Rules
 
-### NO Client-Side Business Logic
+### ❌ NEVER implement on frontend:
+- Pricing calculations (load count, totals)
+- Status transition validation
+- Payment amount validation
+- Business rule enforcement
 
-**NEVER implement these on the frontend:**
-- ❌ Pricing calculations (load computation, totals)
-- ❌ Status transition validation
-- ❌ Payment amount validation
-- ❌ Business rule enforcement
+### ✅ ALWAYS trust the backend:
+- Display totals exactly as returned by API
+- Show status badge based on API response value
+- Let backend reject invalid state transitions
 
-**ALWAYS use backend API:**
-- ✅ Display totals from API response
-- ✅ Show allowed status transitions from API
-- ✅ Validate forms using API error responses
-- ✅ Trust backend for all computations
+**The exception — live price preview:**  
+`usePriceCalculation` hook calls `POST /api/v1/orders/preview` to get a live estimate. The backend still does all computation.
 
-**Example (CORRECT):**
 ```typescript
-// ✅ Good: Let backend compute totals
-const handleCreateOrder = async (data: CreateOrderRequest) => {
-  try {
-    const order = await ordersApi.create(data); // Backend computes everything
-    toast.success(`Order created! Total: ₱${order.grandTotal}`);
-    router.push(`/orders/${order.id}`);
-  } catch (error) {
-    toast.error(handleApiError(error));
-  }
-};
-```
-
-**Example (WRONG):**
-```typescript
-// ❌ Bad: Computing totals on frontend
-const totalLoads = Math.ceil(weightKg / 8); // DON'T DO THIS
-const baseAmount = totalLoads * 120; // DON'T DO THIS
-const grandTotal = baseAmount + extraMinutesAmount; // DON'T DO THIS
-```
-
----
-
-## User Interface Implementation
-
-### Order Creation Form (US-01, US-02)
-
-**Requirements:**
-- Customer selection (existing or new)
-- Weight input (kg, required, > 0)
-- Extra minutes input (optional, >= 0)
-- Add-ons (optional, dynamic list)
-- Display computed totals from the backend before saving
-
-**Example:**
-```typescript
-// app/(dashboard)/orders/new/page.tsx
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { ordersApi } from '@/lib/api/orders';
-
-const orderSchema = z.object({
-  customerId: z.number().positive('Customer is required'),
-  weightKg: z.number().positive('Weight must be greater than 0'),
-  extraMinutes: z.number().min(0, 'Extra minutes cannot be negative').optional(),
-  addOns: z.array(z.object({
-    name: z.string().min(1),
-    price: z.number().positive(),
-    quantity: z.number().positive(),
-  })).optional(),
+// ✅ CORRECT — Preview calls backend
+const pricing = usePriceCalculation({
+  serviceType: String(serviceType),  // Required prop — do NOT omit
+  weightKg: String(weightKg),
+  extraMinutes: String(extraMinutes),
+  addOns,
 });
 
-type OrderFormData = z.infer<typeof orderSchema>;
-
-export default function NewOrderPage() {
-  const router = useRouter();
-  const [preview, setPreview] = useState<OrderResponse | null>(null);
-  
-  const { register, handleSubmit, formState: { errors } } = useForm<OrderFormData>({
-    resolver: zodResolver(orderSchema),
-  });
-  
-  const onPreview = async (data: OrderFormData) => {
-    // Call API to compute totals (preview mode)
-    const previewOrder = await ordersApi.preview(data);
-    setPreview(previewOrder);
-  };
-  
-  const onSubmit = async (data: OrderFormData) => {
-    try {
-      const order = await ordersApi.create(data);
-      toast.success(`Order ${order.referenceNumber} created successfully!`);
-      router.push(`/orders/${order.id}`);
-    } catch (error) {
-      toast.error(handleApiError(error));
-    }
-  };
-  
-  return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">New Laundry Order</h1>
-      
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Customer selection */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Customer</label>
-          <CustomerSelect {...register('customerId')} />
-          {errors.customerId && (
-            <p className="text-red-500 text-sm mt-1">{errors.customerId.message}</p>
-          )}
-        </div>
-        
-        {/* Weight input */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Weight (kg)</label>
-          <input
-            type="number"
-            step="0.1"
-            {...register('weightKg', { valueAsNumber: true })}
-            className="w-full border rounded px-3 py-2"
-          />
-          {errors.weightKg && (
-            <p className="text-red-500 text-sm mt-1">{errors.weightKg.message}</p>
-          )}
-        </div>
-        
-        {/* Extra minutes input */}
-        <div>
-          <label className="block text-sm font-medium mb-2">Extra Minutes (optional)</label>
-          <input
-            type="number"
-            {...register('extraMinutes', { valueAsNumber: true })}
-            className="w-full border rounded px-3 py-2"
-          />
-          <p className="text-sm text-gray-500 mt-1">
-            First 45 minutes per load included. ₱1 per extra minute.
-          </p>
-        </div>
-        
-        {/* Preview totals */}
-        {preview && (
-          <div className="bg-blue-50 border border-blue-200 rounded p-4">
-            <h3 className="font-semibold mb-2">Order Summary</h3>
-            <div className="space-y-1 text-sm">
-              <div className="flex justify-between">
-                <span>Total Loads:</span>
-                <span>{preview.totalLoads}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Base Amount:</span>
-                <span>₱{preview.baseAmount.toFixed(2)}</span>
-              </div>
-              {preview.extraMinutesAmount > 0 && (
-                <div className="flex justify-between">
-                  <span>Extra Minutes:</span>
-                  <span>₱{preview.extraMinutesAmount.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-base pt-2 border-t">
-                <span>Grand Total:</span>
-                <span>₱{preview.grandTotal.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={handleSubmit(onPreview)}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-          >
-            Preview Totals
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Create Order
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
+// ❌ WRONG — Frontend math
+const total = loads * 140 + extraMinutes * 1; // NEVER DO THIS
 ```
 
-### Order Status Update (US-03)
+---
 
-**Requirements:**
-- Display current status
-- Allow status transitions (backend validates)
-- Record status changes with timestamp
-- Show status history timeline
+## Access Control (UI)
 
-**Status Badge Component:**
-```typescript
-// components/orders/OrderStatusBadge.tsx
-import { OrderStatus } from '@/lib/api/types';
+| Role | What they can see |
+|------|-----------------|
+| `ADMIN` | All pages including Reports, Rates, Users, Audit Logs |
+| `STAFF` | Orders, Customers, Payments — NO Reports/Settings |
+| Public | `/track` page only |
 
-const statusColors: Record<OrderStatus, string> = {
-  [OrderStatus.RECEIVED]: 'bg-gray-200 text-gray-800',
-  [OrderStatus.WASHING]: 'bg-blue-200 text-blue-800',
-  [OrderStatus.DRYING]: 'bg-yellow-200 text-yellow-800',
-  [OrderStatus.FOLDING]: 'bg-purple-200 text-purple-800',
-  [OrderStatus.READY_FOR_PICKUP]: 'bg-green-200 text-green-800',
-  [OrderStatus.RELEASED]: 'bg-green-600 text-white',
-  [OrderStatus.CANCELLED]: 'bg-red-200 text-red-800',
-};
-
-interface OrderStatusBadgeProps {
-  status: OrderStatus;
-}
-
-export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
-  return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[status]}`}>
-      {status.replace(/_/g, ' ')}
-    </span>
-  );
-}
+```tsx
+// Pattern for hiding admin-only elements
+const { user } = useAuth();
+if (user?.role !== "ADMIN") return null; // or redirect
 ```
 
-### Public Order Tracking (US-04)
-
-**Requirements:**
-- Customer can enter a reference number
-- Display order status and basic info
-- **NEVER expose:** internal IDs, staff info, customer full details
-
-**Example:**
-```typescript
-// app/track/page.tsx
-'use client';
-
-import { useState } from 'react';
-import { ordersApi } from '@/lib/api/orders';
-import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
-
-export default function TrackOrderPage() {
-  const [referenceNumber, setReferenceNumber] = useState('');
-  const [order, setOrder] = useState<OrderResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  
-  const handleTrack = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    try {
-      const result = await ordersApi.getByReference(referenceNumber);
-      setOrder(result);
-    } catch (err) {
-      setError('Order not found. Please check your reference number.');
-      setOrder(null);
-    }
-  };
-  
-  return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Track Your Order</h1>
-      
-      <form onSubmit={handleTrack} className="mb-6">
-        <input
-          type="text"
-          value={referenceNumber}
-          onChange={(e) => setReferenceNumber(e.target.value)}
-          placeholder="Enter reference number (e.g., LDR-20260210-001)"
-          className="w-full border rounded px-4 py-2 mb-3"
-        />
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Track Order
-        </button>
-      </form>
-      
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-      
-      {order && (
-        <div className="bg-white border rounded-lg p-6 shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h2 className="font-semibold text-lg">{order.referenceNumber}</h2>
-              <p className="text-sm text-gray-500">
-                {new Date(order.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-            <OrderStatusBadge status={order.currentStatus} />
-          </div>
-          
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Weight:</span>
-              <span className="font-medium">{order.weightKg} kg</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total:</span>
-              <span className="font-medium">₱{order.grandTotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Payment Status:</span>
-              <span className={`font-medium ${
-                order.paymentStatus === 'PAID' ? 'text-green-600' : 'text-orange-600'
-              }`}>
-                {order.paymentStatus}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-### Payment Recording (US-06)
-
-**Requirements:**
-- Link payment to order
-- Amount must match order total (backend validates)
-- Select a payment method
-- Display payment confirmation
-
-**Example:**
-```typescript
-// components/forms/PaymentForm.tsx
-interface PaymentFormProps {
-  order: OrderResponse;
-  onSuccess: () => void;
-}
-
-export function PaymentForm({ order, onSuccess }: PaymentFormProps) {
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PaymentMethod.CASH);
-  const [remarks, setRemarks] = useState('');
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      await paymentsApi.create({
-        orderId: order.id,
-        amountPaid: order.grandTotal, // Must match exactly
-        paymentMethod,
-        remarks,
-      });
-      
-      toast.success('Payment recorded successfully');
-      onSuccess();
-    } catch (error) {
-      toast.error(handleApiError(error));
-    }
-  };
-  
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-gray-50 p-4 rounded">
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-semibold">Amount to Pay:</span>
-          <span className="text-2xl font-bold text-blue-600">
-            ₱{order.grandTotal.toFixed(2)}
-          </span>
-        </div>
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium mb-2">Payment Method</label>
-        <select
-          value={paymentMethod}
-          onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value={PaymentMethod.CASH}>Cash</option>
-          <option value={PaymentMethod.GCASH}>GCash</option>
-          <option value={PaymentMethod.BANK_TRANSFER}>Bank Transfer</option>
-        </select>
-      </div>
-      
-      <div>
-        <label className="block text-sm font-medium mb-2">Remarks (optional)</label>
-        <textarea
-          value={remarks}
-          onChange={(e) => setRemarks(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          rows={3}
-        />
-      </div>
-      
-      <button
-        type="submit"
-        className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-      >
-        Record Payment
-      </button>
-    </form>
-  );
-}
-```
-
-### Reports (US-08, US-09)
-
-**Requirements:**
-- Owner-only access
-- Daily/monthly/yearly views
-- Display total income and order count
-- Data from backend aggregation
-
-**Example:**
-```typescript
-// app/(dashboard)/reports/daily/page.tsx
-'use client';
-
-import { useState } from 'react';
-import { reportsApi } from '@/lib/api/reports';
-
-export default function DailyReportPage() {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [report, setReport] = useState<DailyReportResponse | null>(null);
-  
-  const loadReport = async () => {
-    const data = await reportsApi.getDaily(date);
-    setReport(data);
-  };
-  
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Daily Sales Report</h1>
-      
-      <div className="mb-6 flex gap-3">
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border rounded px-3 py-2"
-        />
-        <button
-          onClick={loadReport}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Load Report
-        </button>
-      </div>
-      
-      {report && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white border rounded-lg p-6">
-            <h3 className="text-sm text-gray-500 mb-2">Total Income</h3>
-            <p className="text-3xl font-bold text-green-600">
-              ₱{report.totalIncome.toFixed(2)}
-            </p>
-          </div>
-          <div className="bg-white border rounded-lg p-6">
-            <h3 className="text-sm text-gray-500 mb-2">Orders Completed</h3>
-            <p className="text-3xl font-bold text-blue-600">
-              {report.orderCount}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-```
+**Do NOT expose to public tracking page:** internal IDs, staff names, full customer profiles, financial details.
 
 ---
 
 ## Styling Standards
 
-### Tailwind CSS Usage
+### Design System
+- Use Tailwind utility classes (no inline styles unless absolutely unavoidable)
+- The `globals.css` file defines custom design tokens — use them for brand colors
+- Consistent spacing: `gap-2`, `gap-4`, `gap-6`, `gap-8`, `p-4`, `p-6`
+- Responsive-first: `sm:`, `md:`, `lg:` breakpoints
 
-**Rules:**
-- Use Tailwind utility classes
-- Avoid inline styles unless absolutely necessary
-- Use consistent spacing scale (4, 6, 8, 12, 16, 24)
-- Mobile-responsive by default
+### Premium UI Requirements (Non-negotiable)
+- All interactive elements must have hover states
+- Loading states must show skeleton loaders or spinners
+- Error states must show friendly, actionable messages
+- Animations use Framer Motion (already installed) for page/component transitions
+- Status badges use `StatusBadge` component from `src/components/ui/`
 
-**Color Palette:**
-```typescript
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-        },
-        success: '#10b981',
-        warning: '#f59e0b',
-        error: '#ef4444',
-      },
-    },
-  },
-};
-```
+### Modal Components
+All modals must use the shared `Modal` component from `src/components/ui/Modal.tsx`, which:
+- Has `"use client"` directive (already fixed)
+- Uses `createPortal` for correct stacking context
+- Handles `Escape` key and backdrop click
 
-**Responsive Design:**
+---
+
+## Forms
+
+All forms use React Hook Form + Zod. Pattern:
+
 ```tsx
-<div className="px-4 md:px-6 lg:px-8"> {/* Responsive padding */}
-  <h1 className="text-xl md:text-2xl lg:text-3xl"> {/* Responsive text */}
-    Title
-  </h1>
-</div>
+"use client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const schema = z.object({
+  weightKg: z.string().min(1, "Weight is required"),
+  serviceType: z.string().min(1, "Service type is required"),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export function MyForm() {
+  const { register, handleSubmit, watch, formState: { errors } } = 
+    useForm<FormData>({ resolver: zodResolver(schema) });
+  // ...
+}
 ```
 
 ---
 
-## Security & Access Control
-
-### Role-Based UI
+## Testing Standards
 
 ```typescript
-// lib/auth/useAuth.ts
-export function useAuth() {
-  const user = useUser(); // Get from auth context
-  
-  return {
-    user,
-    isOwner: user?.role === 'OWNER',
-    isStaff: user?.role === 'STAFF',
-    can: (permission: string) => {
-      // Check permissions
-    },
-  };
-}
+// Test file pattern: src/tests/app/(dashboard)/orders/page.test.tsx
+import { render, screen } from "@testing-library/react";
+import { UI_LABELS } from "@/constants/ui";
 
-// Usage in components
-function ReportsLink() {
-  const { isOwner } = useAuth();
-  
-  if (!isOwner) return null; // Hide from staff
-  
-  return <Link href="/reports">Reports</Link>;
-}
+describe("Orders Page", () => {
+  it("renders the page title", () => {
+    render(<MockedOrdersPage />);
+    expect(screen.getByText(UI_LABELS.modules.orders.TITLE)).toBeInTheDocument();
+  });
+});
 ```
 
-### Protected Routes
-
-```typescript
-// middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get('auth_token');
-  
-  if (!token && !request.nextUrl.pathname.startsWith('/login')) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-  
-  // Check role for /reports routes
-  if (request.nextUrl.pathname.startsWith('/reports')) {
-    const userRole = getUserRole(token); // Decode JWT
-    if (userRole !== 'OWNER') {
-      return NextResponse.redirect(new URL('/orders', request.url));
-    }
-  }
-  
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-};
-```
-
----
-
-## Environment Configuration
-
-### .env.local
+**Run tests:**
 ```bash
-# API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8080
-
-# Optional: Feature flags
-NEXT_PUBLIC_ENABLE_NOTIFICATIONS=false
+npm run test           # Run once (Vitest)
+npm run test:watch     # Watch mode
+npm run typecheck      # Type checking only
+npm run lint           # ESLint only
+npm run build          # Full production build (catches all errors)
 ```
 
-### Environment Usage
-```typescript
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
-// Only use NEXT_PUBLIC_ prefix for client-side variables
+**CI simulation — run before every push:**
+```bash
+npm run lint && npm run typecheck && npm run build
 ```
 
 ---
 
-## Development Checklist
+## Development Checklist (Before PR)
 
-Before submitting PR:
-- [ ] No hardcoded business logic (pricing, validation)
-- [ ] All API calls use a centralized client module
-- [ ] Types match OpenAPI schemas exactly
-- [ ] Error handling uses backend `ErrorResponse`
-- [ ] Public tracking page exposes only allowed fields
-- [ ] Mobile-responsive design
-- [ ] Tailwind CSS used consistently
-- [ ] Role-based access control implemented
-- [ ] Forms use validation (React Hook Form + Zod)
-- [ ] Loading states and error states handled
-- [ ] Environment variables properly configured
-- [ ] `npm run build` succeeds
+- [ ] `"use client"` present on every file using hooks, events, or browser APIs
+- [ ] All UI text referenced from `UI_LABELS` (never hardcoded)
+- [ ] No business logic calculations on frontend (use backend preview endpoint)
+- [ ] New constants added to `src/constants/ui/` before use
+- [ ] `api.generated.ts` not manually edited (regenerated via `npm run generate:types`)
+- [ ] TanStack Query used for all API calls (no raw `useEffect` + `fetch`)
+- [ ] Error states handled with Sonner toasts
+- [ ] Loading states implemented (skeleton/spinner)
+- [ ] New client components have `"use client"` at top
+- [ ] `npm run lint` passes ✅
+- [ ] `npm run typecheck` passes ✅
+- [ ] `npm run build` passes ✅
