@@ -1,5 +1,6 @@
 export const orders = {
   TITLE: "Orders",
+  CREATE_TITLE: "New Order",
   SUBTITLE: "Manage current laundry orders.",
   HISTORY: "Order History",
   DETAILS: "Order Details",

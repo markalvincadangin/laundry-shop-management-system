@@ -91,7 +91,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
           { label: "CUSTOMER", value: order.customerName || "WALK-IN" },
           { label: "RECEIVED", value: `${formatDate(order.createdAt!)} ${formatTime(order.createdAt!)}` },
           { label: "READY BY", value: formatDate(new Date(new Date(order.createdAt!).getTime() + 24 * 60 * 60 * 1000).toISOString()) },
-          { label: "STAFF", value: order.staffName || "ADMIN" },
+          { label: "STAFF", value: order.createdByUsername || "ADMIN" },
         ].map((row, i) => (
           <div key={i} className="flex justify-between items-start gap-2">
             <span className="whitespace-nowrap">{row.label}:</span>
