@@ -25,8 +25,6 @@ export function Sidebar() {
   const { alerts: notifications } = useClientAlerts();
   const notificationCount = notifications.length;
 
-  if (!user) return null;
-
   return (
     <aside 
       className={`fixed inset-y-0 left-0 z-[100] hidden flex-col border-r border-slate-200/60 bg-neutral-50 lg:flex shadow-lg shadow-slate-200/30 transition-all duration-300 ${
@@ -81,7 +79,7 @@ export function Sidebar() {
       <div className="flex-1 flex flex-col px-3 py-6 overflow-y-auto custom-scrollbar overflow-x-hidden">
         <nav className="flex-1 flex flex-col gap-8">
           {NAVIGATION_GROUPS.map((group) => {
-            const isGroupRestricted = group.role === "ADMIN" && user.role !== "ADMIN";
+            const isGroupRestricted = group.role === "ADMIN" && user?.role !== "ADMIN";
             if (isGroupRestricted) return null;
 
             return (
@@ -166,22 +164,22 @@ export function Sidebar() {
         isSidebarCollapsed ? "flex flex-col items-center gap-4" : ""
       }`}>
         <div className={`flex items-center gap-3 px-2 mb-2 ${isSidebarCollapsed ? "justify-center" : ""}`}>
-          <Tooltip content={user.username} position="right" disabled={!isSidebarCollapsed}>
+          <Tooltip content={user?.username || "Loading..."} position="right" disabled={!isSidebarCollapsed}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue to-blue-700 text-white shadow-md shadow-brand-blue/20">
               <span className="text-[11px] font-black">
-                {user.username.substring(0, 2).toUpperCase()}
+                {user?.username ? user.username.substring(0, 2).toUpperCase() : "..."}
               </span>
             </div>
           </Tooltip>
           {!isSidebarCollapsed && (
             <div className="flex flex-col min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
               <span className="truncate text-[12px] font-black text-slate-900 leading-tight">
-                {user.username}
+                {user?.username || "Loading..."}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                  {user.role}
+                  {user?.role || "..."}
                 </span>
               </div>
             </div>

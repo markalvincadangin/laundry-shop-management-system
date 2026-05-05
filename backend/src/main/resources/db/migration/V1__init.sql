@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS payments (
     received_by_user_id UUID NOT NULL REFERENCES users(id),
     payment_date        TIMESTAMP NOT NULL DEFAULT now(),
     remarks             TEXT,
+    payment_reference   VARCHAR(100),
     CONSTRAINT ck_payment_amount_positive CHECK (amount_paid > 0)
 );
 

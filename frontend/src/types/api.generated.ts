@@ -1935,6 +1935,8 @@ export interface components {
              * @description Optional — overridden by JWT principal when authenticated.
              */
             receivedByUserId?: string;
+            /** @description Reference / Transaction ID for non-cash payments (GCash, Bank). */
+            paymentReference?: string;
         };
         PaymentResponse: {
             /** Format: int64 */
@@ -1953,6 +1955,8 @@ export interface components {
             /** Format: date-time */
             paymentDate: string;
             remarks?: string;
+            /** @description Reference / Transaction ID for digital payments. */
+            paymentReference?: string;
         };
         ClientAlertResponse: {
             /** Format: int64 */

@@ -42,6 +42,7 @@ export const shared = {
     SUCCESS: "Success",
     FAILURE: "Failure",
     UNKNOWN: "Unknown",
+    WEIGHT: "Weight",
   },
 
   buttons: {

@@ -214,7 +214,7 @@ export interface PaymentLedgerTableProps {
 }
 
 export interface OrderIntakeFormProps {
-  staffUserId: string | null;
+  createdByUserId: string | null;
   onSuccess?: () => void;
   isModal?: boolean;
 }
@@ -239,6 +239,17 @@ export interface ActivityItemProps {
 export interface TopbarProps {
   /** Page title rendered in the topbar left zone. */
   title: string;
+}
+
+export interface OrderPreviewProps {
+  customerName?: string;
+  serviceType: string;
+  weightKg: number;
+  extraMinutes: number;
+  notes?: string;
+  addOns?: Array<{ name: string; price: number; quantity: number }>;
+  preview: components["schemas"]["OrderPreviewResponse"] | null;
+  loading?: boolean;
 }
 
 

@@ -67,11 +67,21 @@ export function PaymentLedgerTable({
       header: UI_LABELS.shared.common.METHOD,
       sortable: true,
       sortKey: "paymentMethod",
-      render: (p) => (
-        <span className="text-xs font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600">
-          {p.paymentMethod === "BANK_TRANSFER" ? UI_LABELS.modules.payments.METHOD_BANK : p.paymentMethod === "GCASH" ? UI_LABELS.modules.payments.METHOD_GCASH : UI_LABELS.modules.payments.METHOD_CASH}
-        </span>
-      ),
+      render: (p) => {
+        const method = p.paymentMethod;
+        const labels = {
+          CASH: { label: UI_LABELS.modules.payments.METHOD_CASH, class: "bg-emerald-50 text-emerald-700 border-emerald-100" },
+          GCASH: { label: UI_LABELS.modules.payments.METHOD_GCASH, class: "bg-sky-50 text-sky-700 border-sky-100" },
+          BANK_TRANSFER: { label: UI_LABELS.modules.payments.METHOD_BANK, class: "bg-indigo-50 text-indigo-700 border-indigo-100" }
+        };
+        const config = labels[method as keyof typeof labels] || { label: method, class: "bg-slate-50 text-slate-700 border-slate-100" };
+        
+        return (
+          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${config.class}`}>
+            {config.label}
+          </span>
+        );
+      },
     },
     {
       header: UI_LABELS.shared.common.TOTAL,

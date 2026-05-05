@@ -138,7 +138,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getTotalLoads()).isEqualTo(1);
-            assertThat(result.getBaseAmount()).isEqualByComparingTo("120.00");
+            assertThat(result.getBaseAmount()).isEqualByComparingTo("140.00"); // 1 load × ₱140 (BR-PR-01)
         }
 
         @Test
@@ -152,7 +152,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getTotalLoads()).isEqualTo(2);
-            assertThat(result.getBaseAmount()).isEqualByComparingTo("240.00");
+            assertThat(result.getBaseAmount()).isEqualByComparingTo("280.00"); // 2 loads × ₱140
         }
 
         @Test
@@ -166,13 +166,13 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getTotalLoads()).isEqualTo(2);
-            assertThat(result.getBaseAmount()).isEqualByComparingTo("240.00");
+            assertThat(result.getBaseAmount()).isEqualByComparingTo("280.00"); // 2 loads × ₱140
         }
 
         @Test
-        @DisplayName("Should compute base_amount = loads × 120 (BR-PR-01)")
+        @DisplayName("Should compute base_amount = loads × 140 (BR-PR-01)")
         void create_ShouldComputeBaseAmount_FromLoadsAndRate() {
-            // Given - 3 loads
+            // Given - 3 loads at 20kg (ceil(20/8) = 3)
             var command = TestDataBuilders.createOrderCommand(CUSTOMER_ID, USER_ID, new BigDecimal("20.00"), 0);
 
             // When
@@ -180,7 +180,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getTotalLoads()).isEqualTo(3);
-            assertThat(result.getBaseAmount()).isEqualByComparingTo("360.00");
+            assertThat(result.getBaseAmount()).isEqualByComparingTo("420.00"); // 3 loads × ₱140 (BR-PR-01)
         }
 
         @Test
@@ -195,7 +195,7 @@ class OrderServiceTest {
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(10);
             assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("10.00");
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("130.00");  // 120 + 10
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("150.00");  // ₱140 base + ₱10 extra
         }
 
         @Test
@@ -209,7 +209,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo(BigDecimal.ZERO);
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("120.00");
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("140.00"); // 1 load × ₱140
         }
 
         @Test
@@ -224,7 +224,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("20.00");
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("140.00");  // 120 + 20
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("160.00");  // ₱140 base + ₱20 addon
             assertThat(result.getAddOns()).hasSize(1);
             assertThat(result.getAddOns().get(0).getName()).isEqualTo("Fabric Conditioner");
             assertThat(result.getAddOns().get(0).getPrice()).isEqualByComparingTo("20.00");
@@ -242,7 +242,7 @@ class OrderServiceTest {
 
             // Then
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("30.00");
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("150.00");
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("170.00"); // ₱140 base + ₱30 (2×15)
         }
 
         @Test
@@ -369,7 +369,7 @@ class OrderServiceTest {
                     .id(1L)
                     .extraMinutes(5)
                     .extraMinutesAmount(new BigDecimal("5.00"))
-                    .grandTotal(new BigDecimal("245.00"))
+                    .grandTotal(new BigDecimal("285.00"))  // baseAmount=280 + extra=5
                     .currentStatus(OrderStatus.RECEIVED)
                     .paymentStatus(PaymentStatus.UNPAID)
                     .build();
@@ -392,8 +392,8 @@ class OrderServiceTest {
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(10);
             assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("10.00");
-            // baseAmount=240 + extraMinutes=10 + addons=0 = 250
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("250.00");
+            // baseAmount=280 + extraMinutes=10 + addons=0 = 290
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("290.00");
             verify(orderRepository).save(existingOrder);
         }
 
@@ -424,8 +424,8 @@ class OrderServiceTest {
             assertThat(result.getAddOns()).hasSize(2);
             // addons = 20 + (15*2) = 50
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("50.00");
-            // baseAmount=240 + extraMinutes=5 + addons=50 = 295
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("295.00");
+            // baseAmount=280 + extraMinutes=5 + addons=50 = 335
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("335.00");
         }
 
         @Test
@@ -450,8 +450,8 @@ class OrderServiceTest {
             assertThat(result.getExtraMinutes()).isEqualTo(15);
             assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("15.00");
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("25.00");
-            // baseAmount=240 + extraMinutes=15 + addons=25 = 280
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("280.00");
+            // baseAmount=280 + extraMinutes=15 + addons=25 = 320
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("320.00");
         }
 
         @Test
@@ -515,8 +515,8 @@ class OrderServiceTest {
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(0);
             assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo(BigDecimal.ZERO);
-            // baseAmount=240 + extraMinutes=0 + addons=0 = 240
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("240.00");
+            // baseAmount=280 + extraMinutes=0 + addons=0 = 280
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("280.00");
         }
 
         @Test
@@ -541,8 +541,8 @@ class OrderServiceTest {
             assertThat(result.getExtraMinutes()).isEqualTo(5);
             assertThat(result.getExtraMinutesAmount()).isEqualByComparingTo("5.00");
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("10.00");
-            // baseAmount=240 + extraMinutes=5 + addons=10 = 255
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("255.00");
+            // baseAmount=280 + extraMinutes=5 + addons=10 = 295
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("295.00");
         }
 
         @Test
@@ -558,7 +558,7 @@ class OrderServiceTest {
                     .build()
             );
             existingOrder.setAddonsTotalAmount(new BigDecimal("30.00"));
-            existingOrder.setGrandTotal(new BigDecimal("275.00")); // 240 + 5 + 30
+            existingOrder.setGrandTotal(new BigDecimal("315.00")); // 280 + 5 + 30
 
             com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
                 new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
@@ -572,8 +572,8 @@ class OrderServiceTest {
             assertThat(result.getAddOns()).hasSize(1);
             assertThat(result.getAddonsTotalAmount()).isEqualByComparingTo("30.00");
             assertThat(result.getExtraMinutes()).isEqualTo(10);
-            // baseAmount=240 + extraMinutes=10 + addons=30 = 280
-            assertThat(result.getGrandTotal()).isEqualByComparingTo("280.00");
+            // baseAmount=280 + extraMinutes=10 + addons=30 = 320
+            assertThat(result.getGrandTotal()).isEqualByComparingTo("320.00");
         }
 
         @Test

@@ -50,7 +50,7 @@ class ServiceRateServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result).isEqualTo(rate);
-            assertThat(result.getBasePricePerLoad()).isEqualByComparingTo("120.00");
+            assertThat(result.getBasePricePerLoad()).isEqualByComparingTo("140.00");  // BR-PR-01
             assertThat(result.getKgLimitPerLoad()).isEqualByComparingTo("8.00");
             verify(serviceRateRepository).findFirstByIsActiveTrueOrderByIdDesc();
         }

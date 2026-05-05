@@ -334,66 +334,41 @@ cd laundry-shop-management-system
 
 ### Step 2: Environment Variables Configuration
 
-Configuration is **per component** — each part of the stack has its own env file. This avoids conflicts and keeps credentials scoped.
+The project uses a unified `.env` file at the root directory for all components.
 
-#### 2.1 Create the Env Files (Windows PowerShell)
+#### 2.1 Create the Env File (Windows PowerShell)
 
 From the **project root** (`laundry-shop-management-system`), run:
 
 ```powershell
-# Docker — database credentials for PostgreSQL container
-Copy-Item docker\.env.example docker\.env.docker
-
-# Backend — DB connection, JWT, CORS for Spring Boot
-Copy-Item backend\.env.example backend\.env
-
-# Frontend — API URL for Next.js
-Copy-Item frontend\.env.example frontend\.env.local
+# Copy the example environment file
+Copy-Item .env.example .env
 ```
 
-#### 2.2 Configure Each File
+#### 2.2 Configure the File
 
-**A) `docker/.env.docker`** — Used by Docker Compose for the database container. Edit and set:
-
-```env
-DB_USER=laundry_user
-DB_PASSWORD=your_secure_password_here   # ⚠️ Change from example — never commit this file
-DB_PORT=5433
-DB_NAME=laundry_db
-```
-
-**B) `backend/.env`** — Used by Spring Boot. Must match the database credentials and add:
+Edit the newly created `.env` file and set your secure credentials:
 
 ```env
-DB_HOST=localhost
-DB_PORT=5433
+# --- DATABASE CONFIG ---
 DB_NAME=laundry_db
 DB_USER=laundry_user
-DB_PASSWORD=your_secure_password_here   # Same as docker/.env.docker
+DB_PASSWORD=your_secure_password_here   # ⚠️ Change this
+DB_PORT=5433
 
-SPRING_PORT=8080
-BACKEND_PORT=8081
+# --- BACKEND CONFIG ---
 SPRING_PROFILES_ACTIVE=dev
-JWT_SECRET=dev-only-change-me-in-production
-ALLOWED_ORIGIN=http://localhost:3001
+JWT_SECRET=dev-secret-change-in-production-min-32-chars
+ALLOWED_ORIGIN=http://localhost:3000
+
+# --- SEED DATA ---
+SEED_ADMIN_USERNAME=admin
+SEED_ADMIN_PASSWORD_HASH=your_bcrypt_hash
+SEED_STAFF_USERNAME=staff
+SEED_STAFF_PASSWORD_HASH=your_bcrypt_hash
 ```
 
-**C) `frontend/.env.local`** — Used by Next.js. Set the API URL:
-
-```env
-FRONTEND_PORT=3001
-NEXT_PUBLIC_API_URL=http://localhost:8081/api
-```
-
-#### Environment Variables Quick Reference
-
-| File                   | Key Variables                                                | Purpose                                   |
-|------------------------|--------------------------------------------------------------|-------------------------------------------|
-| `docker/.env.docker`   | `DB_USER`, `DB_PASSWORD`, `DB_PORT`, `DB_NAME`               | PostgreSQL container                      |
-| `backend/.env`         | `DB_*`, `SPRING_PORT`, `SPRING_PROFILES_ACTIVE`, `JWT_SECRET`, `ALLOWED_ORIGIN` | Backend connection & security |
-| `frontend/.env.local`  | `NEXT_PUBLIC_API_URL`                                        | Frontend → backend API calls              |
-
-> ⚠️ **Security:** Never commit `docker/.env.docker`, `backend/.env`, or `frontend/.env.local` to Git. They are in `.gitignore`. Each developer maintains their own local copies.
+> ⚠️ **Security:** Never commit your `.env` file to Git. It is already in `.gitignore`. Each developer maintains their own local copy.
 
 ### Step 3: Start the Optimized Stack
 
@@ -707,22 +682,11 @@ For experienced developers, here's the condensed version:
 # 1. Clone and setup environment
 git clone <repository-url>
 cd laundry-shop-management-system
-Copy-Item docker\.env.example docker\.env.docker
-Copy-Item backend\.env.example backend\.env
-Copy-Item frontend\.env.example frontend\.env.local
-# Edit docker/.env.docker (and backend/.env, frontend/.env.local if needed)
+Copy-Item .env.example .env
+# Edit .env to set your passwords and secrets
 
-# 2. Start database
-docker compose --env-file docker/.env.docker up -d
-
-# 3. Start backend (in new terminal)
-cd backend
-.\mvnw.cmd spring-boot:run
-
-# 4. Start frontend (in new terminal)
-cd frontend
-npm install
-npm run dev
+# 2. Start the full stack
+docker compose up -d
 
 # Access: http://localhost:3000
 ```
@@ -731,18 +695,16 @@ npm run dev
 
 ### Environment Variables
 
-Environment configuration is **per component** (no single root `.env`). Create env files as in **Step 2: Environment Variables Configuration** above:
+Environment configuration is managed via a single unified `.env` file at the root of the project. This makes setup simpler and avoids duplicating credentials across components.
 
 | Location | Purpose |
 |----------|---------|
-| `docker/.env.docker` | Docker Compose (DB credentials, ports) — copy from `docker/.env.example` |
-| `backend/.env` | Spring Boot (DB URL, JWT, CORS) — copy from `backend/.env.example` |
-| `frontend/.env.local` | Next.js (API URL) — copy from `frontend/.env.example` |
+| `.env` | Unified configuration (DB credentials, JWT secrets, App settings) — copy from `.env.example` |
 
 **Important:**
-- Never commit `docker/.env.docker`, `backend/.env`, or `frontend/.env.local` to version control (they are in `.gitignore`).
-- Commit the `.env.example` files in each folder so new developers can bootstrap quickly.
-- Each developer should maintain their own local env files with appropriate credentials.
+- Never commit `.env` to version control (it is in `.gitignore`).
+- Commit the `.env.example` file so new developers can bootstrap quickly.
+- Each developer should maintain their own local env file with appropriate credentials.
 
 ### Backend Configuration
 - **File:** `backend/src/main/resources/application.yml`
