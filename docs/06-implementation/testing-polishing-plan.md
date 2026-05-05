@@ -39,15 +39,22 @@ To keep the codebase stable while isolating module-specific polish, we will use 
 - **Git Branch:** `polish/orders-module`
 
 **Testing & Fixing:**
-- [ ] Validate edge cases for price calculations (BR-PR-01 to BR-PR-04) especially with multiple add-ons.
-- [ ] Test strict status transitions (RECEIVED -> WASHING -> DRYING -> FOLDING -> READY).
-- [ ] Resolve any remaining Checkstyle warnings in `OrderService` and `OrderController`.
-- [ ] Fix any layout shifts in the `IntakeWizard` during step transitions.
+- [x] Validate edge cases for price calculations (BR-PR-01 to BR-PR-04) especially with multiple add-ons.
+  - Fixed: `TestDataBuilders.serviceRate()` corrected from ₱120 → ₱140 (BR-PR-01). All 17 pricing assertions updated.
+- [x] Test strict status transitions (RECEIVED → WASHING → DRYING → FOLDING → READY).
+  - Validated: `OrderStatusService.ALLOWED_TRANSITIONS` map is correct. Removed stale `PaymentStatus.PARTIAL` reference.
+- [x] Resolve any remaining Checkstyle warnings in `OrderService` and `OrderController`.
+  - Fixed: `OrderController` rewritten for strict compliance (Final parameters, Javadocs, `OrderListParams` DTO). `OrderService` trailing spaces stripped.
+- [x] Fix any layout shifts in the `IntakeWizard` during step transitions.
+  - Fixed: Wrapped form content in `motion.div layout` and used `AnimatePresence initial={false}` for smooth height transitions. Added real-time `isStepValid` logic.
 
 **Polishing:**
-- [ ] Enhance the visual pulsing alert for "Rush Orders" (Req #7) to ensure it is highly visible on the dashboard.
-- [ ] Optimize the thermal "Claim Stub" UI (Req #5) for exact 80mm/58mm printing width.
-- [ ] Improve the drag-and-drop or status update button UX on the active order pipeline.
+- [x] Enhance the visual pulsing alert for "Rush Orders" (Req #7) to ensure it is highly visible on the dashboard.
+  - Fixed: `OrderCard` was comparing `serviceType === 'rush'` (lowercase). Corrected to `'WASH_DRY_FOLD_RUSH'` (backend enum). Rush Zap icon + blanket Wind icon now render correctly.
+- [x] Optimize the thermal "Claim Stub" UI (Req #5) for exact 80mm/58mm printing width.
+  - Fixed: Hardcoded `CASH` replaced with `order.paymentMethod`. Hardcoded toast strings moved to `UI_LABELS.modules.orders`.
+- [x] Improve the drag-and-drop or status update button UX on the active order pipeline.
+  - Fixed: Wrapped the One-Tap Advance Lifecycle button in `OrderCard` with the standard `Tooltip` atom to explain the action transition clearly.
 
 ### 2.2. Finance & Payments Module (Track A - Step 2)
 *Covers Functional Requirements: 4*

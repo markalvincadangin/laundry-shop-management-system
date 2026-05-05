@@ -76,16 +76,16 @@ export default function OrdersPage() {
       render: (order) => (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <span className="text-body-sm font-black text-slate-900 group-hover:text-brand-blue transition-colors font-mono">
+            <span className="text-sm font-bold text-slate-900 group-hover:text-brand-blue transition-colors font-mono tracking-wider">
               {order.referenceNumber}
             </span>
             {(order.serviceName?.includes("Rush") || order.serviceRateId === 2) && (
               <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px]" />
             )}
           </div>
-          <div className="flex items-center gap-grid-1.5 mt-grid-1">
+          <div className="flex items-center gap-1.5 mt-1">
              <User className="h-3 w-3 text-slate-400" />
-              <span className="text-caption text-slate-500 font-black uppercase tracking-tight">
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate max-w-[140px]">
                 {order.customerName || UI_LABELS.shared.common.NAME}
               </span>
           </div>
@@ -95,9 +95,9 @@ export default function OrdersPage() {
     {
       header: UI_LABELS.shared.common.DETAILS,
       render: (order) => (
-        <div className="flex items-center gap-grid-3 text-caption text-slate-500">
-          <span className="flex items-center gap-grid-1"><Package className="h-3.5 w-3.5" /> {order.totalLoads} {UI_LABELS.shared.units.LOADS}</span>
-          <span className="flex items-center gap-grid-1 font-medium">{formatWeight(order.weightKg)}</span>
+        <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5"><Package className="h-3.5 w-3.5 opacity-60" /> {order.totalLoads} {UI_LABELS.shared.units.LOADS}</span>
+          <span className="flex items-center gap-1.5 tabular-nums"><Activity className="h-3.5 w-3.5 opacity-60" /> {formatWeight(order.weightKg)}</span>
         </div>
       ),
     },
@@ -119,16 +119,16 @@ export default function OrdersPage() {
       sortKey: "grandTotal",
       align: "right",
       render: (order) => (
-        <div className="flex items-center justify-end gap-grid-1.5 text-body-sm font-black text-slate-900 group-hover:text-brand-blue transition-colors">
+        <div className="flex items-center justify-end gap-1.5 text-sm font-black text-slate-900 group-hover:text-brand-blue transition-colors tabular-nums">
           {formatCurrency(order.grandTotal)}
-          <ArrowUpRight className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
+          <ArrowUpRight className="h-3.5 w-3.5 opacity-20 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
         </div>
       ),
     },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-10 pb-grid-20">
+    <div className="max-w-7xl mx-auto space-y-10 pb-20">
       <PageHeader 
         title={UI_LABELS.layout.nav.ORDERS}
         subtitle={UI_LABELS.modules.orders.SUBTITLE}
@@ -136,7 +136,7 @@ export default function OrdersPage() {
         actions={
           <Button 
             variant="primary" 
-            className="h-14 px-grid-8 gap-grid-2 bg-slate-900 hover:bg-slate-800 text-white shadow-xl uppercase text-caption tracking-widest font-black rounded-2xl"
+            className="h-14 px-8 gap-2 bg-brand-blue hover:bg-brand-blue/90 text-white shadow-xl uppercase text-caption tracking-widest font-black rounded-2xl"
             onClick={() => router.push("/orders/new")}
           >
             <Plus className="h-5 w-5" />
@@ -147,7 +147,7 @@ export default function OrdersPage() {
 
       {/* Stats Grid */}
       {stats && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-grid-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard title={UI_LABELS.modules.dashboard.KPI_TODAYS_ORDERS} value={stats.todaysOrders} subtitle={UI_LABELS.modules.dashboard.CREATED_TODAY} icon={ShoppingBag} />
           <KPICard title={UI_LABELS.modules.dashboard.KPI_ACTIVE_LOADS} value={stats.inProgress} subtitle={UI_LABELS.modules.dashboard.CURR_PROCESSING} variant="accent" icon={Activity} />
           <KPICard title={UI_LABELS.modules.dashboard.KPI_READY_PICKUP} value={stats.readyForPickup} subtitle={UI_LABELS.modules.dashboard.WAITING_CUST} variant="success" icon={CheckCircle} />
@@ -201,7 +201,7 @@ export default function OrdersPage() {
         <div className="flex-1 min-w-[180px]">
           <Input label={UI_LABELS.shared.common.END_DATE} type="date" value={params.to ?? ""} onChange={(e) => updateParams({ to: e.target.value || undefined })} className="border-slate-200 bg-white" />
         </div>
-        <Button variant="secondary" className="h-14 px-grid-8 gap-grid-2 uppercase text-caption tracking-widest font-black shadow-sm border-slate-200" onClick={() => refresh()}>
+        <Button variant="secondary" className="h-14 px-8 gap-2 uppercase text-caption tracking-widest font-black shadow-sm border-slate-200" onClick={() => refresh()}>
           <RefreshCcw className="h-4 w-4" />
           {UI_LABELS.shared.common.REFRESH}
         </Button>
@@ -210,7 +210,7 @@ export default function OrdersPage() {
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <div className="space-y-grid-6">
+        <div className="space-y-6">
         <DataTable
           data={orders}
           columns={columns}

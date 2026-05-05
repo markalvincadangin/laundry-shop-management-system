@@ -101,17 +101,15 @@ Keep these open in your IDE or browser:
 
 #### Step 3: Set Up Environment
 ```powershell
-# Copy env files (from project root)
-Copy-Item docker\.env.example docker\.env.docker
-Copy-Item backend\.env.example backend\.env
-Copy-Item frontend\.env.example frontend\.env.local
-# Edit docker/.env.docker and backend/.env with your DB_PASSWORD
+# Copy env file (from project root)
+Copy-Item .env.example .env
+# Edit .env with your DB_PASSWORD and other secrets
 
-# Start PostgreSQL (from project root)
-docker compose --env-file docker/.env.docker up -d
+# Start the full stack (Database, Backend, Frontend)
+docker compose up -d
 
-# Verify database is running
-docker ps | Select-String postgres
+# Verify services are running
+docker compose ps
 ```
 
 ---

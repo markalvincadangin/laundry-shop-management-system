@@ -41,6 +41,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={isInvalid}
             className={`block w-full rounded-xl border px-3 py-3 outline-none transition-all min-h-[44px] ${variants[variant]} ${icon ? "pl-11" : ""} ${rightElement ? "pr-11" : ""} ${className}`}
             {...props}
+            value={props.value ?? (('value' in props) ? "" : undefined)}
             onWheel={(e) => {
               // Prevent accidental weight/price changes when scrolling (HCI-001 §4.2)
               e.currentTarget.blur();

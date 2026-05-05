@@ -1,6 +1,7 @@
 package com.himotech.laundryms.payments.service;
 
 import com.himotech.laundryms.auditlog.aspect.Auditable;
+import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
 import com.himotech.laundryms.exception.ConflictException;
 import com.himotech.laundryms.exception.NotFoundException;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -42,10 +45,28 @@ public class PaymentService {
         if (paymentRepository.existsByOrder_Id(command.orderId())) {
             throw new ConflictException("Payment already recorded for this order");
         }
-        if (command.amountPaid().compareTo(order.getGrandTotal()) != 0) {
+
+        // Hardening: Prevent payment for invalid order states
+        if (order.getCurrentStatus() == OrderStatus.CANCELLED) {
+            throw new ConflictException("Cannot record payment for a CANCELLED order");
+        }
+        if (order.getCurrentStatus() == OrderStatus.RELEASED) {
+            throw new ConflictException("Order is already RELEASED. Payment should have been recorded earlier.");
+        }
+
+        // BR-PAY-03: Strict amount validation with scale normalization
+        BigDecimal expected = order.getGrandTotal().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal received = command.amountPaid().setScale(2, RoundingMode.HALF_UP);
+        if (expected.compareTo(received) != 0) {
             throw new IllegalArgumentException(
-                    "Payment amount must match order total. Expected: " + order.getGrandTotal() + ", received: " + command.amountPaid()
+                    "Payment amount must match order total. Expected: ₱" + expected + ", received: ₱" + received
             );
+        }
+
+        // BR-PAY-04: Non-cash payments MUST have a reference number
+        if (command.paymentMethod() != com.himotech.laundryms.common.enums.PaymentMethod.CASH 
+            && (command.paymentReference() == null || command.paymentReference().trim().isEmpty())) {
+            throw new IllegalArgumentException("Reference number is required for " + command.paymentMethod() + " payments");
         }
 
         order.setPaymentStatus(PaymentStatus.PAID);
@@ -53,11 +74,12 @@ public class PaymentService {
 
         Payment payment = Payment.builder()
                 .order(order)
-                .amountPaid(command.amountPaid())
+                .amountPaid(received)
                 .paymentMethod(command.paymentMethod())
                 .receivedBy(receivedBy)
                 .paymentDate(Instant.now())
                 .remarks(command.remarks())
+                .paymentReference(command.paymentReference())
                 .build();
         payment = paymentRepository.save(payment);
 

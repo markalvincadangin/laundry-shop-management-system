@@ -31,7 +31,7 @@ export default function NewOrderPage() {
 
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-8 lg:p-12">
-          <IntakeWizard staffUserId={user?.userId || ""} isModal={false} />
+          <IntakeWizard createdByUserId={user?.userId || ""} isModal={false} />
         </div>
       </div>
     </div>

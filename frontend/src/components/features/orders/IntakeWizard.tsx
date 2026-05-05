@@ -7,15 +7,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
   Search,
+  User,
   UserPlus,
   Trash2,
   Plus,
   Calculator,
+  ChevronLeft,
   ChevronRight,
   Package,
   ShieldCheck,
   ArrowRight,
-  Check
+  Check,
+  FileText,
+  PlusCircle,
+  Wallet,
+  Smartphone,
+  CreditCard,
+  CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -26,18 +34,22 @@ import { Card, CardContent, Input, Button, Select } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useCustomerLookup } from "@/hooks/useCustomerLookup";
-import { useRates } from "@/hooks/useRates";
-import { SERVICE_TYPES, type ServiceDefinition } from "@/constants/service-types";
-import { OrderIntakeSchema, type OrderIntakeInput } from "@/lib/validators";
+import { SERVICE_TYPES, type ServiceDefinition, type ServiceType } from "@/constants/service-types";
+import {
+  OrderIntakeSchema,
+  IntakeCustomerStepSchema,
+  IntakeServiceStepSchema,
+  type OrderIntakeInput
+} from "@/lib/validators";
 import { OrderIntakeFormProps } from "@/types/components";
 import { ClaimStub } from "./ClaimStub";
-import { LiveTicket } from "./LiveTicket";
+import { OrderPreview } from "./OrderPreview";
 import { OrderResponse } from "@/services/orders.service";
 import { ProcessStepper } from "@/components/features/shared/ProcessStepper";
 
 type IntakeStep = "CUSTOMER" | "SERVICE" | "ADDONS" | "CONFIRM";
 
-export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFormProps) {
+export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntakeFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -47,7 +59,7 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
   const [referenceNumber, setReferenceNumber] = useState("");
   const [isClaimStubOpen, setIsClaimStubOpen] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<OrderResponse | null>(null);
-  const [canSubmit, setCanSubmit] = useState(false); // Debounce for final step
+  const [canSubmit, setCanSubmit] = useState(false);
   const [tempAddOnName, setTempAddOnName] = useState("");
   const [tempAddOnPrice, setTempAddOnPrice] = useState("");
 
@@ -59,15 +71,16 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
     getValues,
     watch,
     trigger,
+    setError,
     reset,
     formState: { errors }
   } = useForm<OrderIntakeInput>({
     resolver: zodResolver(OrderIntakeSchema),
     defaultValues: {
-      staffUserId: staffUserId || "",
+      createdByUserId: createdByUserId || "",
       serviceType: "WASH_DRY_FOLD",
-      weightKg: 0,
-      extraMinutes: 0,
+      weightKg: undefined,
+      extraMinutes: undefined,
       initialAddOns: [],
       customer: {
         firstName: "",
@@ -82,10 +95,10 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
 
   // Sync staffUserId if it arrives late from context (§8.6)
   useEffect(() => {
-    if (staffUserId) {
-      setValue("staffUserId", staffUserId);
+    if (createdByUserId) {
+      setValue("createdByUserId", createdByUserId);
     }
-  }, [staffUserId, setValue]);
+  }, [createdByUserId, setValue]);
   const extraMinutes = watch("extraMinutes");
   const addOns = watch("initialAddOns") || [];
   const serviceType = watch("serviceType");
@@ -98,8 +111,6 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
   });
 
   const customerLookup = useCustomerLookup();
-  const { rates } = useRates();
-  const activeRate = rates.find(r => r.isActive) || { basePricePerLoad: 140, kgLimitPerLoad: 8 };
 
   const pricing = usePriceCalculation({
     weightKg: String(weightKg),
@@ -134,11 +145,30 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
 
   const nextStep = async () => {
     let isValid = false;
+    const values = getValues();
+
     if (currentStep === "CUSTOMER") {
-      isValid = !!(customerId || (customerInput?.firstName && customerInput?.lastName && customerInput?.contactNumber));
-      if (!isValid) toast.error("Please select or register a customer");
+      const result = IntakeCustomerStepSchema.safeParse(values);
+      isValid = result.success;
+      if (!isValid && result.error) {
+        // Map Zod errors to react-hook-form
+        result.error.issues.forEach((issue) => {
+          const path = issue.path.join(".") as any;
+          setError(path, { message: issue.message });
+        });
+        toast.error("Please provide valid customer details");
+        return;
+      }
     } else if (currentStep === "SERVICE") {
-      isValid = await trigger(["serviceType", "weightKg"]);
+      const result = IntakeServiceStepSchema.safeParse(values);
+      isValid = result.success;
+      if (!isValid && result.error) {
+        result.error.issues.forEach((issue) => {
+          const path = issue.path.join(".") as any;
+          setError(path, { message: issue.message });
+        });
+        return;
+      }
     } else if (currentStep === "ADDONS") {
       isValid = true; // Add-ons are optional
     }
@@ -147,8 +177,6 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
       const next = steps[stepIndex + 1];
       setCurrentStep(next);
 
-      // If moving to CONFIRM, add a small delay before allowing submission
-      // to prevent accidental double-clicks from Step 3 (HCI Error Prevention)
       if (next === "CONFIRM") {
         setCanSubmit(false);
         setTimeout(() => setCanSubmit(true), 500);
@@ -162,12 +190,35 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
     }
   };
 
+  /** 
+   * HCI: Dynamic Step Validation (Rule 5 — Error Prevention)
+   * Determines if the 'Continue' button should be enabled in real-time.
+   */
+  const isStepValid = React.useMemo(() => {
+    if (currentStep === "CUSTOMER") {
+      // More permissive logic for the UI button state to prevent lockout
+      // Detailed validation happens on click in nextStep
+      return !!(customerId || isRegistering);
+    }
+    if (currentStep === "SERVICE") {
+      return !!(serviceType && Number(weightKg) > 0);
+    }
+    if (currentStep === "ADDONS") {
+      return true; // Optional step
+    }
+    if (currentStep === "CONFIRM") {
+      const needsRef = collectPaymentNow && paymentMethod !== "CASH";
+      const hasRef = !!referenceNumber.trim();
+      return canSubmit && (!needsRef || hasRef);
+    }
+    return false;
+  }, [currentStep, customerId, isRegistering, serviceType, weightKg, canSubmit, collectPaymentNow, paymentMethod, referenceNumber]);
+
   const onSubmit = async (data: OrderIntakeInput) => {
-    // Safety check: Only allow submission from the final step
     if (currentStep !== "CONFIRM") return;
 
-    if (!staffUserId) {
-      toast.error(UI_LABELS.feedback.error.AUTH_REQUIRED);
+    if (!data.createdByUserId) {
+      toast.error("Critical Error: Staff Identity missing. Please log out and back in.");
       return;
     }
 
@@ -180,10 +231,10 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
           orderId: order.id,
           amountPaid: pricing.preview.grandTotal,
           paymentMethod: paymentMethod,
-          receivedByUserId: staffUserId
+          paymentReference: referenceNumber || undefined,
+          receivedByUserId: createdByUserId ?? undefined
         });
-        
-        // Re-fetch the full order record to ensure payment status and final totals are captured
+
         const updatedOrder = await ordersService.getById(order.id);
         setCreatedOrder(updatedOrder);
       } else {
@@ -210,7 +261,7 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
         price: parseFloat(tempAddOnPrice),
         quantity: 1
       });
-      
+
       // Reset local state
       setTempAddOnName("");
       setTempAddOnPrice("");
@@ -236,42 +287,49 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
         className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start"
       >
         {/* ── LEFT AREA: UNIFIED STEPPER + FORM (HCI: Focused Workflow) ── */}
-        <div className="lg:col-span-7 bg-white rounded-[3rem] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden">
+        <div className="lg:col-span-7 glass rounded-[3rem] shadow-premium overflow-hidden border border-white/50 relative">
+          {/* Ambient Step Glow */}
+          <div className={`absolute -top-24 -left-24 w-64 h-64 blur-[100px] opacity-20 transition-all duration-1000 -z-10 ${stepIndex === 0 ? 'bg-brand-blue' :
+            stepIndex === 1 ? 'bg-brand-cyan' :
+              stepIndex === 2 ? 'bg-emerald-500' : 'bg-brand-blue'
+            }`} />
+
           {/* Integrated Compact Stepper */}
-          <div className="p-6 border-b border-slate-50 bg-slate-50/50">
-            <div className="relative flex justify-between items-center max-w-xl mx-auto">
-              {/* Progress Track */}
-              <div className="absolute top-5 left-0 right-0 h-[2px] bg-slate-200/50 -z-10 mx-10" />
-              <div 
-                className="absolute top-5 left-0 h-[2px] bg-brand-blue transition-all duration-700 -z-10 ml-10" 
-                style={{ width: `calc(${(stepIndex / (steps.length - 1)) * 100}% - 80px)` }}
-              />
+          <div className="p-10 border-b border-slate-100/50 bg-slate-50/20 backdrop-blur-xl">
+            <div className="relative flex justify-between items-center max-w-2xl mx-auto px-6">
+              {/* Progress Track (Background) */}
+              <div className="absolute top-6 left-0 right-0 h-1 bg-slate-200/40 rounded-full -z-10 mx-10 overflow-hidden">
+                <motion.div
+                  initial={false}
+                  animate={{ width: `${(stepIndex / (steps.length - 1)) * 100}%` }}
+                  className="h-full bg-brand-blue shadow-[0_0_15px_rgba(21,72,157,0.4)]"
+                  transition={{ duration: 0.8, ease: "circOut" }}
+                />
+              </div>
 
               {steps.map((step, i) => {
                 const isActive = i === stepIndex;
                 const isCompleted = i < stepIndex;
                 const label = ["CLIENT", "SERVICE", "EXTRAS", "REVIEW"][i];
-                
+
                 return (
-                  <div key={step} className="flex flex-col items-center gap-2 relative z-10">
-                    <div 
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 border-2 ${
-                        isActive 
-                          ? "bg-brand-blue border-brand-blue text-white shadow-lg shadow-brand-blue/30 scale-105" 
-                          : isCompleted 
-                            ? "bg-emerald-500 border-emerald-500 text-white" 
-                            : "bg-white border-slate-200 text-slate-300"
-                      }`}
+                  <div key={step} className="flex flex-col items-center gap-4 relative z-10">
+                    <div
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${isActive
+                        ? "bg-brand-blue border-brand-blue text-white shadow-premium scale-110"
+                        : isCompleted
+                          ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                          : "bg-white border-slate-200 text-slate-300"
+                        }`}
                     >
                       {isCompleted ? (
-                        <Check className="h-5 w-5 stroke-[3px]" />
+                        <Check className="h-6 w-6 stroke-[3px]" />
                       ) : (
-                        <span className="text-[10px] font-black">{i + 1}</span>
+                        <span className={`text-[13px] font-black ${isActive ? "scale-110" : ""}`}>{i + 1}</span>
                       )}
                     </div>
-                    <span className={`text-[8px] font-black tracking-[0.2em] uppercase transition-colors duration-300 ${
-                      isActive ? "text-brand-blue" : "text-slate-400"
-                    }`}>
+                    <span className={`text-[10px] font-black tracking-[0.4em] uppercase transition-all duration-500 ${isActive ? "text-brand-blue translate-y-1" : "text-slate-400/60"
+                      }`}>
                       {label}
                     </span>
                   </div>
@@ -281,8 +339,12 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
           </div>
 
           {/* Form Content Area */}
-          <div className="p-10 min-h-[500px]">
-            <AnimatePresence mode="wait">
+          <motion.div
+            layout
+            initial={false}
+            className="p-10 min-h-[500px]"
+          >
+            <AnimatePresence mode="wait" initial={false}>
               {currentStep === "CUSTOMER" && (
                 <motion.div
                   key="step-customer"
@@ -292,8 +354,8 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                   className="space-y-6"
                 >
                   <div className="space-y-1">
-                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">Select Customer</h2>
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Identify the customer for this service request.</p>
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">{UI_LABELS.forms.intake.SELECT_CUSTOMER}</h2>
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{UI_LABELS.forms.intake.SELECT_CUSTOMER_DESC}</p>
                   </div>
 
                   {!customerLookup.isRegistering && !customerLookup.selected ? (
@@ -305,27 +367,52 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                           value={customerLookup.search}
                           onChange={(e) => customerLookup.setSearch(e.target.value)}
                           autoComplete="off"
-                          icon={<Search className="h-5 w-5 text-brand-blue" />}
-                          className="h-16 rounded-2xl border-slate-200 text-lg"
+                          className="h-16 rounded-2xl border-slate-200 text-lg px-8"
                         />
-                        {customerLookup.results.length > 0 && (
+                        {customerLookup.results.length > 0 ? (
                           <div className="absolute z-20 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden shadow-brand-blue/10">
                             {customerLookup.results.map((c) => (
                               <button
                                 key={c.id}
                                 type="button"
                                 onClick={() => customerLookup.select(c)}
-                                className="w-full flex items-center justify-between px-6 py-4 hover:bg-brand-blue/5 transition-colors group"
+                                className="w-full flex items-center justify-between px-8 py-5 hover:bg-brand-blue/5 transition-colors group border-b border-slate-50 last:border-0"
                               >
-                                <div>
-                                  <span className="font-black text-slate-900 uppercase tracking-tight">{c.firstName} {c.lastName}</span>
-                                  <span className="block text-xs font-bold text-slate-400 mt-0.5">{c.contactNumber}</span>
+                                <div className="flex items-center gap-4">
+                                  <div className="text-left">
+                                    <span className="block font-black text-slate-900 uppercase tracking-tight group-hover:text-brand-blue transition-colors text-base">{c.firstName} {c.lastName}</span>
+                                    <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{c.contactNumber}</span>
+                                  </div>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-brand-blue group-hover:translate-x-1 transition-all" />
+                                <div className="h-10 w-10 rounded-full border border-slate-100 flex items-center justify-center group-hover:border-brand-blue group-hover:bg-brand-blue/5 transition-all">
+                                  <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-brand-blue group-hover:translate-x-0.5 transition-all" />
+                                </div>
                               </button>
                             ))}
                           </div>
-                        )}
+                        ) : (customerLookup.search.length >= 2 && !customerLookup.loading) ? (
+                          <div className="absolute z-20 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-10 text-center shadow-brand-blue/10 animate-in fade-in slide-in-from-top-2">
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8">No matching customers found</p>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                const parts = customerLookup.search.trim().split(/\s+/);
+                                if (parts.length >= 2) {
+                                  setValue("customer.firstName", parts[0]);
+                                  setValue("customer.lastName", parts.slice(1).join(" "));
+                                } else {
+                                  setValue("customer.firstName", customerLookup.search);
+                                }
+                                customerLookup.setIsRegistering(true);
+                              }}
+                              className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-brand-blue hover:text-brand-blue"
+                            >
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Register &quot;{customerLookup.search}&quot;
+                            </Button>
+                          </div>
+                        ) : null}
                       </div>
 
                       <div className="flex items-center gap-4">
@@ -337,54 +424,106 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() => customerLookup.setIsRegistering(true)}
-                        className="w-full h-16 rounded-2xl border-2 border-dashed border-slate-200 text-slate-500 hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition-all gap-3"
+                        onClick={() => {
+                          const parts = customerLookup.search.trim().split(/\s+/);
+                          if (parts.length >= 2) {
+                            setValue("customer.firstName", parts[0]);
+                            setValue("customer.lastName", parts.slice(1).join(" "));
+                          } else {
+                            setValue("customer.firstName", customerLookup.search);
+                          }
+                          customerLookup.setIsRegistering(true);
+                        }}
+                        className="w-full h-20 rounded-[2rem] border-2 border-dashed border-slate-200 text-slate-500 hover:border-brand-blue hover:text-brand-blue hover:bg-brand-blue/5 transition-all gap-4 group"
                       >
-                        <UserPlus className="h-5 w-5" />
-                        <span className="uppercase tracking-widest font-black text-xs">Register New Customer</span>
+                        <div className="h-10 w-10 rounded-xl bg-slate-100 group-hover:bg-brand-blue/10 flex items-center justify-center transition-colors">
+                          <UserPlus className="h-5 w-5" />
+                        </div>
+                        <div className="text-left">
+                          <span className="block font-black text-xs uppercase tracking-tight">Register New Customer</span>
+                        </div>
                       </Button>
                     </div>
                   ) : customerLookup.selected ? (
                     <motion.div
-                      initial={{ scale: 0.95 }}
-                      animate={{ scale: 1 }}
-                      className="p-8 bg-brand-blue/5 rounded-3xl border-2 border-brand-blue/20 relative overflow-hidden"
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="p-10 bg-white rounded-[2.5rem] border-2 border-slate-100 relative overflow-hidden shadow-sm hover:border-brand-blue/20 transition-colors"
                     >
-                      <div className="absolute top-0 right-0 p-6 opacity-5">
-                        <UserPlus className="h-32 w-32 -rotate-12" />
-                      </div>
                       <div className="relative z-10 flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                          <div className="h-16 w-16 rounded-2xl bg-brand-blue text-white flex items-center justify-center text-xl font-black shadow-lg">
-                            {customerLookup.selected.firstName[0]}{customerLookup.selected.lastName[0]}
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-4">
+                            <h3 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none">
+                              {customerLookup.selected.firstName} {customerLookup.selected.lastName}
+                            </h3>
+                            <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1.5 uppercase tracking-widest">
+                              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              Verified
+                            </span>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">{customerLookup.selected.firstName} {customerLookup.selected.lastName}</h3>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">{customerLookup.selected.contactNumber}</p>
+                          <div className="flex items-center gap-6 text-sm">
+                            <div className="flex items-center gap-2 text-slate-500 font-bold">
+                              <Smartphone className="h-4 w-4 text-slate-300" />
+                              {customerLookup.selected.contactNumber}
+                            </div>
+                            <div className="flex items-center gap-2 text-slate-500 font-bold">
+                              <ShieldCheck className="h-4 w-4 text-slate-300" />
+                              Member Account
+                            </div>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => customerLookup.clear()}
-                          className="p-3 hover:bg-white rounded-xl transition-colors text-brand-blue font-black uppercase text-[10px] tracking-widest"
+                          className="px-6 h-12 bg-slate-50 text-slate-400 font-black uppercase text-[10px] tracking-widest rounded-2xl hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all border border-transparent shadow-sm"
                         >
-                          Change
+                          {UI_LABELS.shared.buttons.CHANGE}
                         </button>
                       </div>
                     </motion.div>
                   ) : (
                     <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input label="First Name" {...register("customer.firstName")} error={errors.customer?.firstName?.message} className="h-14 rounded-xl" />
-                        <Input label="Last Name" {...register("customer.lastName")} error={errors.customer?.lastName?.message} className="h-14 rounded-xl" />
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="px-3 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20">
+                          <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Registering New Account</span>
+                        </div>
                       </div>
-                      <Input label="Contact Number" {...register("customer.contactNumber")} error={errors.customer?.contactNumber?.message} className="h-14 rounded-xl" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          label="First Name"
+                          placeholder="e.g. Maria"
+                          {...register("customer.firstName")}
+                          error={errors.customer?.firstName?.message}
+                          className="h-16 rounded-2xl"
+                        />
+                        <Input
+                          label="Last Name"
+                          placeholder="e.g. Santos"
+                          {...register("customer.lastName")}
+                          error={errors.customer?.lastName?.message}
+                          className="h-16 rounded-2xl"
+                        />
+                      </div>
+                      <Input
+                        label="Contact Number"
+                        placeholder="09171234567"
+                        {...register("customer.contactNumber", {
+                          onChange: (e) => {
+                            // Auto-clean non-digits and prevent overflow
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 11);
+                            setValue("customer.contactNumber", val);
+                          }
+                        })}
+                        error={errors.customer?.contactNumber?.message}
+                        className="h-16 rounded-2xl"
+                      />
                       <button
                         type="button"
                         onClick={() => customerLookup.setIsRegistering(false)}
-                        className="text-[10px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors"
+                        className="text-[10px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors flex items-center gap-2 mt-2"
                       >
-                        ← Back to search
+                        <ArrowRight className="h-3 w-3 rotate-180" />
+                        Back to search
                       </button>
                     </div>
                   )}
@@ -400,8 +539,8 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                   className="space-y-8"
                 >
                   <div className="space-y-1">
-                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">Service Details</h2>
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Configure the laundry parameters.</p>
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">{UI_LABELS.forms.intake.SERVICE_DETAILS}</h2>
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{UI_LABELS.forms.intake.SERVICE_DETAILS_DESC}</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -413,24 +552,27 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                           key={service.value}
                           type="button"
                           onClick={() => setValue("serviceType", service.value)}
-                          className={`relative flex flex-col items-center p-8 rounded-[2rem] border-2 transition-all duration-300 text-center group ${isSelected
-                              ? "border-brand-blue bg-white shadow-2xl shadow-brand-blue/10 -translate-y-1"
-                              : "border-slate-100 bg-slate-50/50 hover:border-slate-200 hover:bg-white"
+                          className={`relative flex flex-col items-center p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-center group active:scale-95 ${isSelected
+                            ? "border-brand-blue bg-white shadow-2xl shadow-brand-blue/10 -translate-y-2"
+                            : "border-slate-100 bg-slate-50/50 hover:border-slate-200 hover:bg-white hover:-translate-y-1"
                             }`}
                         >
                           {isSelected && (
-                            <div className="absolute inset-0 rounded-[2rem] border-4 border-brand-blue/10 animate-pulse" />
+                            <motion.div
+                              layoutId="service-highlight"
+                              className="absolute inset-0 rounded-[2.5rem] border-4 border-brand-blue/10 animate-pulse"
+                            />
                           )}
-                          <div className={`p-4 rounded-2xl mb-5 transition-all duration-500 ${isSelected
-                              ? "bg-brand-blue text-white shadow-xl shadow-brand-blue/30 rotate-3"
-                              : "bg-white text-slate-400 border border-slate-100 group-hover:text-slate-600 group-hover:-rotate-3"
+                          <div className={`p-5 rounded-2xl mb-6 transition-all duration-500 ${isSelected
+                            ? "bg-brand-blue text-white shadow-xl shadow-brand-blue/30 rotate-6"
+                            : "bg-white text-slate-400 border border-slate-100 group-hover:text-slate-600 group-hover:-rotate-6"
                             }`}>
-                            <Icon className="h-7 w-7" />
+                            <Icon className="h-8 w-8" />
                           </div>
-                          <span className={`text-[11px] font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? "text-brand-blue" : "text-slate-900"}`}>
+                          <span className={`text-xs font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? "text-brand-blue" : "text-slate-900"}`}>
                             {service.label}
                           </span>
-                          <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-tight">
+                          <p className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase tracking-tight px-2">
                             {service.description}
                           </p>
                         </button>
@@ -440,24 +582,41 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
 
                   <div className="grid grid-cols-2 gap-6">
                     <Input
-                      label="Weight (kg)"
+                      label={UI_LABELS.shared.common.WEIGHT + " (kg)"}
                       type="number"
                       step="0.01"
-                      {...register("weightKg", { valueAsNumber: true })}
+                      placeholder="0.0"
+                      rightElement={
+                        <div className="px-4 py-2 bg-slate-100 rounded-lg mr-2">
+                          <span className="text-[10px] font-black text-slate-500 uppercase">KG</span>
+                        </div>
+                      }
+                      {...register("weightKg", {
+                        valueAsNumber: true,
+                        onBlur: (e) => {
+                          const val = parseFloat(e.target.value);
+                          if (!isNaN(val)) {
+                            setValue("weightKg", parseFloat(val.toFixed(2)));
+                          }
+                        }
+                      })}
                       error={errors.weightKg?.message}
-                      className="h-16 rounded-2xl border-slate-200 text-xl font-black"
+                      className="h-16 rounded-2xl border-slate-200 text-xl font-black pr-16 tabular-nums"
                     />
                     <div className="space-y-2">
                       <Input
-                        label="Extra Drying (mins)"
+                        label={UI_LABELS.shared.common.EXTRA_TIME + " (mins)"}
                         type="number"
+                        placeholder="0"
+                        rightElement={
+                          <div className="px-4 py-2 bg-slate-100 rounded-lg mr-2">
+                            <span className="text-[10px] font-black text-slate-500 uppercase">MINS</span>
+                          </div>
+                        }
                         {...register("extraMinutes", { valueAsNumber: true })}
                         error={errors.extraMinutes?.message}
-                        className="h-16 rounded-2xl border-slate-200 text-xl font-black"
+                        className="h-16 rounded-2xl border-slate-200 text-xl font-black pr-20 tabular-nums"
                       />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-                        ₱{activeRate.basePricePerLoad} / {activeRate.kgLimitPerLoad}kg Load
-                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -472,70 +631,85 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                   className="space-y-8"
                 >
                   <div className="space-y-1">
-                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">Extras & Notes</h2>
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">{UI_LABELS.modules.orders.EXTRAS || "Extras & Notes"}</h2>
                     <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Add consumables or special instructions.</p>
                   </div>
 
                   <div className="space-y-6">
                     <div className="flex gap-4">
-                      <Input 
-                        id="addon-name" 
+                      <Input
+                        id="addon-name"
                         value={tempAddOnName}
                         onChange={(e) => setTempAddOnName(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') handleAddAddOn(e);
                         }}
-                        placeholder="Item Name (e.g. Detergent)" 
-                        className="flex-[2] h-14 rounded-xl border-slate-200" 
+                        placeholder={UI_LABELS.forms.intake.ADD_ON_NAME || "Item Name (e.g. Detergent)"}
+                        className="flex-[2] h-14 rounded-xl border-slate-200"
                       />
-                      <Input 
-                        id="addon-price" 
-                        type="number" 
+                      <Input
+                        id="addon-price"
+                        type="number"
                         value={tempAddOnPrice}
                         onChange={(e) => setTempAddOnPrice(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') handleAddAddOn(e);
                         }}
-                        placeholder="Price" 
-                        className="flex-1 h-14 rounded-xl border-slate-200" 
+                        placeholder="Price"
+                        className="flex-1 h-14 rounded-xl border-slate-200"
                       />
-                      <Button 
-                        type="button" 
-                        variant="secondary" 
-                        onClick={handleAddAddOn} 
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={handleAddAddOn}
                         disabled={!tempAddOnName || !tempAddOnPrice}
-                        className="h-14 w-14 rounded-xl shadow-sm"
+                        className="h-14 px-6 rounded-xl shadow-premium group"
                       >
-                        <Plus className="h-6 w-6" />
+                        <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
+                        <span>Add</span>
                       </Button>
                     </div>
 
-                    {addOnsFields.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in zoom-in-95">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <AnimatePresence mode="popLayout">
                         {addOnsFields.map((field, i) => (
-                          <div key={field.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 group">
-                            <div>
-                              <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{field.name}</span>
-                              <span className="block text-xs font-bold text-brand-blue">₱{Number(field.price).toFixed(2)}</span>
+                          <motion.div
+                            key={field.id}
+                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                            className="flex items-center justify-between bg-white/50 backdrop-blur-sm p-6 rounded-3xl border border-slate-100 shadow-sm group hover:border-brand-blue/30 transition-all hover:shadow-md"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="h-12 w-12 rounded-2xl bg-brand-blue/5 flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all">
+                                <PlusCircle className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <span className="block text-sm font-black text-slate-900 uppercase tracking-tight">{field.name}</span>
+                                <span className="block text-xs font-black text-brand-blue mt-0.5 tabular-nums tracking-wide">₱{Number(field.price).toFixed(2)}</span>
+                              </div>
                             </div>
                             <button
                               type="button"
                               onClick={() => removeAddOn(i)}
-                              className="h-8 w-8 flex items-center justify-center text-rose-600 hover:bg-rose-50 rounded-lg"
+                              className="h-10 w-10 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100 active:scale-90"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
-                          </div>
+                          </motion.div>
                         ))}
-                      </div>
-                    )}
+                      </AnimatePresence>
+                    </div>
 
-                    <div className="pt-6 border-t border-slate-100">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3 block">Special Instructions</label>
+                    <div className="pt-8 border-t border-slate-100/50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <FileText className="h-4 w-4 text-slate-400" />
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Special Instructions</label>
+                      </div>
                       <textarea
                         {...register("notes")}
                         placeholder="e.g. Separate whites, low heat drying..."
-                        className="w-full min-h-[120px] rounded-2xl border border-slate-200 bg-white p-5 text-sm text-slate-900 focus:border-brand-blue focus:ring-1 focus:ring-brand-blue transition-all outline-none resize-none shadow-inner"
+                        className="w-full min-h-[140px] rounded-[2rem] border border-slate-200 bg-slate-50/30 p-6 text-sm text-slate-900 focus:bg-white focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none resize-none shadow-inner font-medium placeholder:text-slate-300"
                       />
                     </div>
                   </div>
@@ -551,111 +725,183 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
                   className="space-y-8"
                 >
                   <div className="space-y-1">
-                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">Review & Payment</h2>
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Finalize the order and process payment.</p>
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">{UI_LABELS.forms.intake.REVIEW_PAYMENT}</h2>
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{UI_LABELS.forms.intake.REVIEW_PAYMENT_DESC}</p>
                   </div>
 
-                  <div className="p-8 bg-slate-900 rounded-3xl text-white space-y-6 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                      <Calculator className="h-32 w-32" />
-                    </div>
+                  <div className="relative">
+                    {/* The "Review Receipt" Card - Hardened for FRONT-001/002 */}
+                    <div className="bg-brand-blue rounded-[3rem] text-white p-10 pb-20 shadow-2xl relative border border-brand-blue/20">
+                      {/* Decorative Brand Elements */}
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-brand-cyan/10 rounded-full blur-[80px] -mr-32 -mt-32" />
+                      <div className="absolute bottom-0 left-0 w-48 h-48 bg-brand-cyan/5 rounded-full blur-[60px] -ml-24 -mb-24" />
 
-                    <div className="relative z-10 flex items-center justify-between pb-6 border-b border-white/10">
-                      <div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-cyan">Total to Pay</span>
-                        <h3 className="text-5xl font-display font-black tracking-tighter">₱{pricing.preview?.grandTotal?.toFixed(2) || "0.00"}</h3>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/50">Payment Status</span>
-                        <div className="flex items-center gap-2 mt-1 justify-end">
-                          <div className={`h-2 w-2 rounded-full ${collectPaymentNow ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                          <span className="text-xs font-black uppercase tracking-widest">{collectPaymentNow ? 'Paid' : 'Unpaid'}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="relative z-10 space-y-6">
-                      <label className="flex items-center gap-4 cursor-pointer group">
-                        <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all ${collectPaymentNow ? 'bg-brand-cyan border-brand-cyan' : 'bg-transparent border-white/20 group-hover:border-white/40'
-                          }`}>
-                          {collectPaymentNow && <Plus className="h-4 w-4 text-slate-900" />}
-                        </div>
-                        <input
-                          type="checkbox"
-                          className="hidden"
-                          checked={collectPaymentNow}
-                          onChange={(e) => setCollectPaymentNow(e.target.checked)}
-                        />
-                        <span className="text-sm font-black uppercase tracking-widest">Collect Payment Now</span>
-                      </label>
-
-                      {collectPaymentNow && (
-                        <div className="pt-4 space-y-6 animate-in fade-in slide-in-from-top-4">
-                          <div className="grid grid-cols-3 gap-3">
-                            {["CASH", "GCASH", "BANK"].map((m) => (
-                              <button
-                                key={m}
-                                type="button"
-                                onClick={() => setPaymentMethod(m as any)}
-                                className={`py-4 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl border-2 transition-all ${paymentMethod === m
-                                    ? "bg-white border-white text-slate-900 shadow-xl"
-                                    : "bg-transparent border-white/10 text-white/60 hover:border-white/30"
-                                  }`}
-                              >
-                                {m}
-                              </button>
-                            ))}
+                      <div className="relative z-10 space-y-10">
+                        {/* Header: Reference & Total */}
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-10">
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/30 block">Grand Total</span>
+                              <div className="flex items-baseline">
+                                <span className="text-8xl font-display font-black tracking-tighter leading-none tabular-nums text-white">
+                                  <span className="text-brand-cyan/80 mr-4">₱</span>
+                                  {pricing.preview?.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          {paymentMethod !== "CASH" && (
-                            <Input
-                              label="Transaction Reference"
-                              value={referenceNumber}
-                              onChange={(e) => setReferenceNumber(e.target.value)}
-                              className="bg-white/5 border-white/10 text-white h-14"
-                            />
-                          )}
                         </div>
-                      )}
+
+                        {/* Bottom: Interactive Payment Layer */}
+                        <div className="pt-10 space-y-10">
+                          <button
+                            type="button"
+                            onClick={() => setCollectPaymentNow(!collectPaymentNow)}
+                            className={`w-full p-6 rounded-[2rem] border-2 transition-all flex items-center justify-between group ${collectPaymentNow
+                              ? 'bg-brand-cyan text-brand-blue border-brand-cyan shadow-xl scale-[1.02]'
+                              : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                              }`}
+                          >
+                            <div className="flex items-center gap-5">
+                              <div className={`h-8 w-8 rounded-xl flex items-center justify-center transition-all ${collectPaymentNow ? 'bg-brand-blue text-white' : 'bg-white/10 text-white/40'
+                                }`}>
+                                {collectPaymentNow ? <Check className="h-5 w-5" /> : <Wallet className="h-5 w-5" />}
+                              </div>
+                              <div className="text-left">
+                                <span className="text-sm font-black uppercase tracking-widest">{UI_LABELS.modules.orders.COLLECT_PAYMENT_NOW}</span>
+                              </div>
+                            </div>
+                            <div className={`h-6 w-12 rounded-full relative transition-all ${collectPaymentNow ? 'bg-brand-blue' : 'bg-white/20'
+                              }`}>
+                              <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${collectPaymentNow ? 'left-7' : 'left-1'
+                                }`} />
+                            </div>
+                          </button>
+
+                          <AnimatePresence>
+                            {collectPaymentNow && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="space-y-6 pt-4 pb-6 px-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex-1 h-[1px] bg-white/10" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Payment Method</span>
+                                    <div className="flex-1 h-[1px] bg-white/10" />
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-4">
+                                    {["CASH", "GCASH", "BANK_TRANSFER"].map((m) => {
+                                      const label = m === "CASH" ? UI_LABELS.modules.payments.METHOD_CASH :
+                                        m === "GCASH" ? UI_LABELS.modules.payments.METHOD_GCASH :
+                                          UI_LABELS.modules.payments.METHOD_BANK;
+                                      return (
+                                        <button
+                                          key={m}
+                                          type="button"
+                                          onClick={() => setPaymentMethod(m as any)}
+                                          className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 active:scale-95 relative ${paymentMethod === m
+                                            ? 'bg-brand-blue border-brand-blue text-white shadow-xl -translate-y-1'
+                                            : 'bg-white/10 border-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+                                            }`}
+                                        >
+                                          {m === "CASH" ? <Wallet className="h-5 w-5" /> :
+                                            m === "GCASH" ? <Smartphone className="h-5 w-5" /> :
+                                              <CreditCard className="h-5 w-5" />}
+                                          <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+                                          {paymentMethod === m && (
+                                            <motion.div
+                                              layoutId="active-method"
+                                              className="absolute -top-2 -right-2 h-6 w-6 bg-white rounded-full flex items-center justify-center shadow-lg"
+                                            >
+                                              <Check className="h-3 w-3 text-brand-blue" />
+                                            </motion.div>
+                                          )}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+
+                                  <AnimatePresence>
+                                    {paymentMethod !== "CASH" && (
+                                      <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        className="pt-4"
+                                      >
+                                        <div className="space-y-3">
+                                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">
+                                            Reference Number / Trace ID
+                                          </label>
+                                          <div className="relative group">
+                                            <CreditCard className="h-4 w-4 text-white/20 group-focus-within:text-brand-cyan absolute left-6 top-1/2 -translate-y-1/2 transition-colors" />
+                                            <input
+                                              type="text"
+                                              placeholder="Enter GCash/Bank Ref #"
+                                              value={referenceNumber}
+                                              onChange={(e) => setReferenceNumber(e.target.value)}
+                                              className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-14 pr-6 text-sm font-bold placeholder:text-white/20 focus:bg-white/10 focus:border-brand-cyan transition-all outline-none"
+                                            />
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
+          </motion.div>
 
-            {/* Wizard Navigation Actions */}
-            <div className="pt-12 flex items-center justify-between border-t border-slate-100">
-              {stepIndex > 0 ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={prevStep}
-                  className="h-14 px-8 uppercase font-black text-[10px] tracking-[0.2em] rounded-xl"
-                >
-                  Previous Step
-                </Button>
-              ) : (
-                <div />
-              )}
-
+          {/* Wizard Navigation Actions */}
+          <div className="pt-12 px-12 pb-12 flex items-center justify-between border-t border-slate-100 relative z-20">
+            {stepIndex > 0 ? (
               <Button
-                type={stepIndex < steps.length - 1 ? "button" : "submit"}
-                variant={stepIndex < steps.length - 1 ? "primary" : "action"}
-                onClick={stepIndex < steps.length - 1 ? nextStep : undefined}
-                className={`h-14 transition-all duration-300 ${stepIndex < steps.length - 1 ? "px-12" : "px-16"
-                  } uppercase font-black text-[10px] tracking-[0.2em] rounded-xl group`}
-                isLoading={loading}
-                disabled={loading || isClaimStubOpen || (currentStep === "CONFIRM" && !canSubmit)}
+                type="button"
+                variant="secondary"
+                size="lg"
+                onClick={prevStep}
+                className="h-14 px-8 rounded-2xl group border-none bg-slate-100 hover:bg-slate-200 transition-all"
               >
-                {stepIndex < steps.length - 1 ? (
-                  <>
-                    Continue
-                    <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </>
-                ) : (
-                  "Complete Intake & Print Stub"
-                )}
+                <ChevronLeft className="h-5 w-5 mr-2 group-hover:-translate-x-1 transition-transform" />
+                {UI_LABELS.shared.buttons.BACK}
               </Button>
-            </div>
+            ) : (
+              <div />
+            )}
+
+            <Button
+              type={stepIndex < steps.length - 1 ? "button" : "submit"}
+              variant={stepIndex < steps.length - 1 ? "primary" : "action"}
+              size="lg"
+              onClick={stepIndex < steps.length - 1 ? nextStep : undefined}
+              className={`h-14 transition-all duration-500 rounded-2xl shadow-premium ${stepIndex < steps.length - 1 ? "px-12" : "px-16"
+                } group`}
+              isLoading={loading}
+              disabled={loading || isClaimStubOpen || !isStepValid}
+            >
+              {stepIndex < steps.length - 1 ? (
+                <>
+                  {UI_LABELS.shared.buttons.NEXT}
+                  <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                  {UI_LABELS.forms.intake.SUBMIT_BUTTON}
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
@@ -666,12 +912,13 @@ export function IntakeWizard({ staffUserId, onSuccess, isModal }: OrderIntakeFor
               {/* Visual Depth Glow */}
               <div className="absolute -inset-10 bg-brand-blue/5 rounded-[4rem] blur-[60px] -z-10 opacity-0 group-hover:opacity-100 transition-all duration-700" />
 
-              <LiveTicket
+              <OrderPreview
                 customerName={customerLookup.selected ? `${customerLookup.selected.firstName} ${customerLookup.selected.lastName}` : watch("customer.firstName") ? `${watch("customer.firstName")} ${watch("customer.lastName") || ""}` : "Walk-in Customer"}
-                serviceType={serviceType}
-                weightKg={weightKg}
-                extraMinutes={extraMinutes}
+                serviceType={watch("serviceType")}
+                weightKg={Number(watch("weightKg"))}
+                extraMinutes={Number(watch("extraMinutes"))}
                 notes={watch("notes")}
+                addOns={addOns}
                 preview={pricing.preview}
                 loading={pricing.loading}
               />

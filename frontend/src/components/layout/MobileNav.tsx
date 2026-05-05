@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Menu, 
-  X, 
+import {
+  Menu,
+  X,
   LogOut,
   Plus
 } from "lucide-react";
@@ -39,10 +39,6 @@ export function MobileNav() {
     }
   }, [isOpen]);
 
-  if (loading) return null;
-  const isPublicRoot = pathname === "/";
-  if (!user && !isPublicRoot && pathname !== "/track" && pathname !== "/login") return null;
-
   return (
     <div className="lg:hidden">
       {/* Mobile Sticky Header */}
@@ -54,7 +50,7 @@ export function MobileNav() {
         >
           <Menu className="h-6 w-6" />
         </button>
-        
+
         <Link href={user ? "/overview" : "/"} className="flex items-center gap-2 min-w-0 flex-1 justify-center">
           <div className="relative h-8 w-8 shrink-0">
             <Image
@@ -66,14 +62,14 @@ export function MobileNav() {
             />
           </div>
           <span className="text-sm sm:text-base font-display font-bold text-slate-900 uppercase tracking-tight truncate max-w-[150px] sm:max-w-none">
-                  {UI_LABELS.meta.APP_NAME}
+            {UI_LABELS.meta.APP_NAME}
           </span>
         </Link>
 
         {user ? (
           <div className="flex items-center gap-1 sm:gap-2">
 
-            <Link 
+            <Link
               href="/orders?new=true"
               className="h-11 w-11 flex items-center justify-center rounded-xl bg-brand-blue text-white shadow-lg shadow-brand-blue/20 active:scale-90 transition-transform"
               aria-label={UI_LABELS.layout.nav.INTAKE}
@@ -92,11 +88,11 @@ export function MobileNav() {
       {isOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden">
           {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" 
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-300"
             onClick={() => setIsOpen(false)}
           />
-          
+
           <aside className="absolute inset-y-0 left-0 w-72 max-w-[85vw] flex flex-col bg-neutral-100 border-r border-slate-200 shadow-2xl animate-in slide-in-from-left duration-300 ease-out">
             {/* Header in Drawer */}
             <div className="flex h-16 items-center justify-between border-b border-slate-200 px-6 bg-white">
@@ -110,10 +106,10 @@ export function MobileNav() {
                   />
                 </div>
                 <span className="text-lg font-display font-bold text-slate-900 tracking-tight">
-                        {UI_LABELS.meta.APP_NAME}
+                  {UI_LABELS.meta.APP_NAME}
                 </span>
               </div>
-              <button 
+              <button
                 onClick={() => setIsOpen(false)}
                 className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 transition-colors"
                 aria-label={UI_LABELS.shared.buttons.CANCEL}
@@ -142,11 +138,10 @@ export function MobileNav() {
                           <Link
                             key={item.href}
                             href={item.href}
-                            className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all uppercase tracking-wider ${
-                              isActive
+                            className={`relative flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold transition-all uppercase tracking-wider ${isActive
                                 ? "bg-brand-blue/5 text-brand-blue shadow-sm ring-1 ring-brand-blue/10"
                                 : "text-slate-500 active:bg-slate-200"
-                            }`}
+                              }`}
                           >
                             <div className="relative">
                               <Icon className={`h-5 w-5 ${isActive ? "text-brand-blue stroke-[2.5px]" : "text-slate-400"}`} />

@@ -10,5 +10,6 @@ public record RecordPaymentCommand(
         BigDecimal amountPaid,
         PaymentMethod paymentMethod,
         UUID receivedByUserId,
-        String remarks
+        String remarks,
+        String paymentReference
 ) {}
