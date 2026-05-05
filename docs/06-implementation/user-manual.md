@@ -37,18 +37,20 @@ After login, you will see the main dashboard with quick links to:
 2. **Select or create a customer:**
    - Search by name or contact number to find an existing customer.
    - Or click **Add New Customer** and enter first name, last name, and contact number.
-3. **Enter laundry weight (kg):** Required. Must be greater than 0.
-4. **Extra minutes (optional):** If the customer used more washing time than included (45 min per load), enter the extra minutes. Charged at ₱1 per minute.
-5. **Add-ons (optional):** Add items like fabric conditioner with name, price, and quantity.
-6. Click **Create Order**.
+3. **Select Service Type:**
+   - **Standard Wash:** ₱140/load (8kg).
+   - **Rush Wash:** ₱160/load (8kg). Priority processing.
+   - **Blankets:** ₱200/load (8kg). Specialized care.
+4. **Enter laundry weight (kg):** Required. Must be greater than 0.
+5. **Extra minutes (optional):** If the customer used more washing time than included, enter the extra minutes. 
+6. **Add-ons (optional):** Add items like fabric conditioner.
+7. Click **Create & Print Order**.
 
 The system will:
 - Compute total loads: `ceil(weight ÷ 8 kg)`
-- Compute base amount: loads × ₱120
-- Compute extra minutes charge: extra minutes × ₱1
-- Add add-on totals
-- Generate a unique reference number (e.g., LDR-20260217-1234)
-- Set initial status to **Received**
+- Apply pricing based on selected **Service Type**.
+- Generate a unique reference number.
+- **Open the Claim Stub Modal:** From here you can print the thermal receipt or download a digital copy for the customer.
 
 ### 2.2 Give Reference Number to Customer
 
@@ -64,6 +66,10 @@ Orders move through these stages:
 **Received** → **Washing** → **Drying** → **Folding** → **Ready for Pickup** → **Released**
 
 An order can be **Cancelled** from any stage before release.
+
+### 3.2 Rush Order Alerts (Req #7)
+
+Orders designated as **Rush** will display a pulsing red badge in the Dashboard and Order Queue. These should be prioritized by staff to ensure fast turnaround.
 
 ### 3.2 How to Update Status
 

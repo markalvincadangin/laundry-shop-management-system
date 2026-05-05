@@ -36,6 +36,7 @@ export function StatusBadge({
     success: "bg-emerald-50 border-emerald-100 text-emerald-700",
     warning: "bg-amber-50 border-amber-100 text-amber-700",
     error: "bg-rose-50 border-rose-100 text-rose-700",
+    rush: "bg-rose-600 border-rose-700 text-white shadow-lg shadow-rose-600/20 animate-pulse",
     action: "bg-brand-blue/10 border-brand-blue/20 text-brand-blue shadow-[0_0_15px_rgba(21,72,157,0.08)]",
     neutral: "bg-slate-50 border-slate-200 text-slate-500",
   };

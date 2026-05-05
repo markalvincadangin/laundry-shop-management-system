@@ -424,26 +424,42 @@ function TrackContent() {
                     H1: Icon is semantic — Bell for in-progress, CheckCircle2 for pickup/released.
                     H2: Clock watermark removed — it was decorative noise.
                     H3: Claim instruction is INSIDE this block (elevated from footer). */}
-                <div className="relative p-grid-8 rounded-2xl bg-slate-900 text-white overflow-hidden transition-all duration-300">
-                  <div className="flex flex-col sm:flex-row items-start gap-grid-6">
-                    <div className="h-12 w-12 bg-white/10 rounded-xl border border-white/10 flex items-center justify-center shrink-0">
-                      {/* H1 icon fix: no AlertCircle (warning) for non-warning states */}
-                      <StatusIcon className={`h-6 w-6 ${statusIconColor}`} />
+                <div 
+                  className={`relative p-grid-8 rounded-2xl overflow-hidden transition-all duration-500 shadow-2xl ${
+                    order.currentStatus === 'RELEASED' 
+                      ? 'bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-emerald-500/20' 
+                      : 'bg-slate-900 text-white'
+                  }`}
+                >
+                  {/* Decorative Sparkle for Released */}
+                  {order.currentStatus === 'RELEASED' && (
+                    <div className="absolute top-0 right-0 p-4 opacity-20">
+                      <CheckCircle2 className="h-24 w-24 -rotate-12" />
+                    </div>
+                  )}
+
+                  <div className="relative flex flex-col sm:flex-row items-start gap-grid-6 z-10">
+                    <div className={`h-12 w-12 rounded-xl border flex items-center justify-center shrink-0 ${
+                      order.currentStatus === 'RELEASED'
+                        ? 'bg-white/20 border-white/20'
+                        : 'bg-white/10 border-white/10'
+                    }`}>
+                      <StatusIcon className={`h-6 w-6 ${order.currentStatus === 'RELEASED' ? 'text-white' : statusIconColor}`} />
                     </div>
                     <div className="space-y-grid-2 flex-1">
-                      {/* §2.1.2: brand-cyan ONLY on dark bg (bg-slate-900) — passes 6:1 contrast here */}
-                      <p className="text-caption font-bold text-brand-cyan uppercase tracking-[0.3em]">
-                        {UI_LABELS.portal.tracking.LIVE_UPDATE}
+                      <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${
+                        order.currentStatus === 'RELEASED' ? 'text-emerald-200' : 'text-brand-cyan'
+                      }`}>
+                        {order.currentStatus === 'RELEASED' ? "Success" : UI_LABELS.portal.tracking.LIVE_UPDATE}
                       </p>
-                      <p className="text-body font-semibold text-white/90 leading-relaxed">
+                      <p className="text-body font-bold text-white leading-relaxed">
                         {STATUS_MESSAGES[order.currentStatus ?? ""] ||
                           UI_LABELS.portal.tracking.FALLBACK_PROGRESS}
                       </p>
 
                       {/* H3 Real-world match: Claim instruction elevated to primary CTA position */}
-                      {isPickupState && (
+                      {isPickupState && order.currentStatus !== 'RELEASED' && (
                         <div className="mt-grid-4 pt-grid-4 border-t border-white/10 flex items-start gap-grid-3">
-                          {/* items-start + mt-1: icon cap-height aligns with first text line (§2.5 24px Lucide grid) */}
                           <CheckCircle2
                             className="h-5 w-5 text-white/80 shrink-0 mt-1"
                             strokeWidth={2}
@@ -458,6 +474,14 @@ function TrackContent() {
                               {order.referenceNumber}
                             </button>{" "}
                             {UI_LABELS.portal.tracking.CLAIM_INSTRUCTION_SUFFIX}
+                          </p>
+                        </div>
+                      )}
+
+                      {order.currentStatus === 'RELEASED' && (
+                        <div className="mt-grid-4 pt-grid-4 border-t border-white/10">
+                          <p className="text-sm font-bold text-emerald-100">
+                             We look forward to seeing you again!
                           </p>
                         </div>
                       )}

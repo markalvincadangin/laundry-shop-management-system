@@ -2,7 +2,7 @@ import {
   LayoutGrid,
   ClipboardList,
   Users,
-  Bell,
+  MessageSquare,
   Settings,
   CreditCard,
   BarChart3,
@@ -31,7 +31,7 @@ export interface NavGroup {
  * DESIGN RATIONALE:
  * 1. Functional Grouping: Separates day-to-day operations from system-wide administration.
  * 2. Visual Hierarchy: Prioritizes high-frequency tasks (Orders, Dashboard) at the top.
- * 3. Icon Distinctness: Uses 'Users' for Customers and 'Shield' for User Management to prevent cognitive clash.
+ * 3. Icon Distinctness: Uses 'Users' for Customers and 'MessageSquare' for Messaging.
  */
 export const NAVIGATION_GROUPS: NavGroup[] = [
   {
@@ -41,7 +41,13 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
       { href: "/overview", label: UI_LABELS.layout.nav.DASHBOARD, icon: LayoutGrid },
       { href: "/orders", label: UI_LABELS.layout.nav.ORDERS, icon: ClipboardList },
       { href: "/customers", label: UI_LABELS.layout.nav.CUSTOMERS, icon: Users },
-      { href: "/client-alerts", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: Bell },
+    ],
+  },
+  {
+    id: "logs",
+    label: "Monitoring",
+    items: [
+      { href: "/client-alerts", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare },
     ],
   },
   {

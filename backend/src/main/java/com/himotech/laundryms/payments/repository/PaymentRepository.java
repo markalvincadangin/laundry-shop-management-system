@@ -36,7 +36,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
         void deleteByOrder_Id(Long orderId);
 
-        @Query("SELECT SUM(p.amountPaid) FROM Payment p JOIN p.order o WHERE p.paymentDate >= :from AND p.paymentDate < :to AND o.paymentStatus NOT IN ('VOIDED', 'REFUNDED')")
+        @Query("SELECT COALESCE(SUM(p.amountPaid), 0) FROM Payment p JOIN p.order o WHERE p.paymentDate >= :from AND p.paymentDate < :to AND o.paymentStatus NOT IN ('VOIDED', 'REFUNDED')")
         BigDecimal sumAmountPaidByPaymentDateBetween(@Param("from") Instant from, @Param("to") Instant to);
 
         @Query("SELECT COUNT(p) FROM Payment p JOIN p.order o WHERE p.paymentDate >= :from AND p.paymentDate < :to AND o.paymentStatus NOT IN ('VOIDED', 'REFUNDED')")

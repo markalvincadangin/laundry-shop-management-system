@@ -74,10 +74,15 @@ export default function OrdersPage() {
       sortable: true,
       sortKey: "referenceNumber",
       render: (order) => (
-        <div className="flex flex-col">
-          <span className="text-body-sm font-black text-slate-900 group-hover:text-brand-blue transition-colors font-mono">
-            {order.referenceNumber}
-          </span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-body-sm font-black text-slate-900 group-hover:text-brand-blue transition-colors font-mono">
+              {order.referenceNumber}
+            </span>
+            {(order.serviceName?.includes("Rush") || order.serviceRateId === 2) && (
+              <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px]" />
+            )}
+          </div>
           <div className="flex items-center gap-grid-1.5 mt-grid-1">
              <User className="h-3 w-3 text-slate-400" />
               <span className="text-caption text-slate-500 font-black uppercase tracking-tight">
@@ -129,12 +134,14 @@ export default function OrdersPage() {
         subtitle={UI_LABELS.modules.orders.SUBTITLE}
         icon={ClipboardList}
         actions={
-          <Link href="/orders?new=true">
-            <Button className="h-12 px-grid-8 gap-grid-2 bg-brand-blue shadow-lg shadow-brand-blue/20 uppercase text-caption tracking-widest font-black">
-              <Plus className="h-5 w-5" />
-              {UI_LABELS.forms.intake.TITLE}
-            </Button>
-          </Link>
+          <Button 
+            variant="primary" 
+            className="h-14 px-grid-8 gap-grid-2 bg-slate-900 hover:bg-slate-800 text-white shadow-xl uppercase text-caption tracking-widest font-black rounded-2xl"
+            onClick={() => router.push("/orders/new")}
+          >
+            <Plus className="h-5 w-5" />
+            {UI_LABELS.modules.orders.CREATE_TITLE || "New Order"}
+          </Button>
         }
       />
 

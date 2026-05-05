@@ -2,8 +2,8 @@
 
 import React from "react";
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -25,7 +25,7 @@ import { BRAND_COLORS } from "@/constants/brand-colors";
 export function RevenueChart({ 
   data, 
   loading, 
-  height = 300,
+  height = 400,
   showDetailsOnHover = true 
 }: RevenueChartProps) {
   if (loading) {
@@ -45,50 +45,67 @@ export function RevenueChart({
   }
 
   return (
-    <Card className="h-full border-slate-200 bg-white shadow-xl overflow-hidden">
+    <Card className="h-full border-slate-200 bg-white shadow-xl overflow-hidden rounded-2xl">
       <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-slate-50 px-8 py-6">
-        <CardTitle className="text-slate-900 text-xs font-black tracking-[0.2em] uppercase">
-          {UI_LABELS.modules.dashboard.WEEKLY_SALES}
-        </CardTitle>
-        <TrendingUp className="h-5 w-5 text-brand-blue" />
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-brand-blue/10 rounded-lg">
+            <TrendingUp className="h-5 w-5 text-brand-blue" />
+          </div>
+          <CardTitle className="text-slate-900 text-xs font-black tracking-[0.2em] uppercase">
+            {UI_LABELS.modules.dashboard.WEEKLY_SALES}
+          </CardTitle>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-brand-blue" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Revenue</span>
+        </div>
       </CardHeader>
-      <CardContent style={{ height }} className="pt-8 px-8 pb-8">
+      <CardContent style={{ height }} className="pt-8 px-4 pb-4">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={BRAND_COLORS.blue} stopOpacity={0.15}/>
+                <stop offset="95%" stopColor={BRAND_COLORS.blue} stopOpacity={0.01}/>
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis 
               dataKey="period" 
-              tick={{ fontSize: 12, fill: BRAND_COLORS.slate[500], fontWeight: 700 }} 
+              tick={{ fontSize: 10, fill: BRAND_COLORS.slate[500], fontWeight: 800 }} 
               tickLine={false}
               axisLine={false}
-              dy={10}
+              dy={15}
             />
             <YAxis 
-              tick={{ fontSize: 12, fill: BRAND_COLORS.slate[500], fontWeight: 700 }} 
+              tick={{ fontSize: 10, fill: BRAND_COLORS.slate[500], fontWeight: 800 }} 
               tickLine={false}
               axisLine={false}
               tickFormatter={(value) => `${UI_LABELS.shared.units.CURRENCY}${value}`}
             />
             {showDetailsOnHover && (
               <Tooltip
-                cursor={{ fill: "#f8fafc" }}
+                cursor={{ stroke: BRAND_COLORS.blue, strokeWidth: 2, strokeDasharray: '5 5' }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const point = payload[0].payload;
                     return (
-                      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl ring-1 ring-slate-100">
-                        <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl ring-1 ring-slate-100 animate-in fade-in zoom-in-95 duration-200">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 border-b border-slate-100 pb-2">
                           {point.rawDate || point.period}
                         </p>
                         <div className="space-y-1.5">
                           <p className="text-2xl font-display font-black text-slate-900 flex items-center gap-2 tracking-tight">
                             {UI_LABELS.shared.units.CURRENCY}{Number(point.income).toFixed(2)}
-                            <ArrowUpRight className="h-5 w-5 text-brand-blue" />
+                            <ArrowUpRight className="h-4 w-4 text-brand-blue" />
                           </p>
                           {point.orders !== undefined && (
-                            <p className="text-xs uppercase font-black tracking-widest text-brand-blue">
-                               {point.orders} {UI_LABELS.shared.units.LOADS} {UI_LABELS.shared.status.RELEASED}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                              <p className="text-[10px] uppercase font-black tracking-widest text-slate-500">
+                                 {point.orders} Orders Completed
+                              </p>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -98,16 +115,19 @@ export function RevenueChart({
                 }}
               />
             )}
-            <Bar 
+            <Area 
+              type="monotone" 
               dataKey="income" 
-              fill={BRAND_COLORS.blue} 
-              radius={[6, 6, 0, 0]} 
-              maxBarSize={50}
-              className="opacity-90 hover:opacity-100 transition-opacity"
+              stroke={BRAND_COLORS.blue} 
+              strokeWidth={4}
+              fillOpacity={1} 
+              fill="url(#colorIncome)" 
+              activeDot={{ r: 6, strokeWidth: 0, fill: BRAND_COLORS.blue }}
             />
-          </BarChart>
+          </AreaChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
   );
 }
+

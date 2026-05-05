@@ -5,6 +5,7 @@ import { OrderResponse } from "@/services/orders.service";
 import { ORDER_STATUS, OrderStatus } from "@/constants/order-status";
 import { OrderCard } from "./OrderCard";
 import { UI_LABELS } from "@/constants/ui";
+import { AnimatePresence } from "framer-motion";
 import {
   Inbox,
   WashingMachine,
@@ -123,27 +124,27 @@ function PipelineColumn({
   return (
     <div
       ref={colRef}
-      className={`flex flex-col h-full ${bgClass} backdrop-blur-xl rounded-[2rem] border border-slate-200/60 overflow-hidden shadow-xl shadow-slate-200/30 transition-all duration-300 w-full`}
+      className={`flex flex-col h-full ${bgClass} backdrop-blur-3xl rounded-[2.5rem] border border-white/40 overflow-hidden shadow-2xl shadow-slate-300/30 transition-all duration-500 w-full group/col`}
     >
       {/* Column Header */}
-      <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100/80 bg-white/70 shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="px-6 py-5 flex items-center justify-between border-b border-slate-200/40 bg-white/70 backdrop-blur-md shrink-0 shadow-sm">
+        <div className="flex items-center gap-4">
           {/* Status dot with optional pulse ring (§11.5) */}
           <div className="relative flex items-center justify-center">
-            <span className={`h-2 w-2 rounded-full ${dotClass}`} />
+            <span className={`h-3 w-3 rounded-full shadow-sm ${dotClass}`} />
             {dotPulse && (
               <span
-                className={`absolute inline-flex h-4 w-4 rounded-full bg-brand-cyan opacity-30 animate-ping`}
+                className={`absolute inline-flex h-6 w-6 rounded-full bg-emerald-400 opacity-20 animate-ping`}
                 style={{ animationDuration: "2s" }}
               />
             )}
           </div>
-          <h3 className={`text-[10px] font-black uppercase tracking-[0.2em] ${headerTextClass}`}>
+          <h3 className={`text-[12px] font-bold uppercase tracking-[0.2em] font-display ${headerTextClass}`}>
             {title}
           </h3>
         </div>
         {/* Order count badge */}
-        <span className={`min-w-[1.5rem] px-2 py-0.5 rounded-full text-[10px] font-black text-center ${badgeClass}`}>
+        <span className={`min-w-[1.75rem] h-6 flex items-center justify-center px-2.5 rounded-lg text-[10px] font-bold shadow-inner ${badgeClass}`}>
           {orders.length}
         </span>
       </div>
@@ -161,15 +162,17 @@ function PipelineColumn({
             </p>
           </div>
         ) : (
-          orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onAdvance={onAdvance}
-              isLoading={isLoading}
-              isUrgent={urgent}
-            />
-          ))
+          <AnimatePresence mode="popLayout">
+            {orders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onAdvance={onAdvance}
+                isLoading={isLoading}
+                isUrgent={urgent}
+              />
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>

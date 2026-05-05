@@ -122,7 +122,7 @@ public final class TestDataBuilders {
     // --- CreateOrderCommand ---
 
     public static CreateOrderCommand createOrderCommand(Long customerId, UUID userId, BigDecimal weightKg, int extraMinutes, List<CreateOrderCommand.AddOnItem> addOns) {
-        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, addOns);
+        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, addOns, null, null);
     }
 
     public static CreateOrderCommand createOrderCommand(Long customerId, UUID userId, BigDecimal weightKg, int extraMinutes) {
@@ -130,7 +130,7 @@ public final class TestDataBuilders {
     }
 
     public static CreateOrderCommand createOrderCommandWithAddOns(Long customerId, UUID userId, BigDecimal weightKg, int extraMinutes, CreateOrderCommand.AddOnItem... items) {
-        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, List.of(items));
+        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, List.of(items), null, null);
     }
 
     // --- RecordPaymentCommand ---

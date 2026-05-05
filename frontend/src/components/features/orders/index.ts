@@ -1,4 +1,4 @@
-export * from "./OrderIntakeForm";
+export * from "./IntakeWizard";
 export * from "./OrderQueueTable";
 export * from "./OrderStatusTimeline";
-export * from './NewOrderSideSheet';
+export * from "./ClaimStub";

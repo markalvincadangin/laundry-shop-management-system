@@ -3,6 +3,7 @@
 import React from "react";
 import { CheckCircle2, Circle, Clock } from "lucide-react";
 import { UI_LABELS } from "@/constants/ui";
+import { motion } from "framer-motion";
 
 type OrderStatus = "RECEIVED" | "WASHING" | "DRYING" | "FOLDING" | "READY_FOR_PICKUP" | "RELEASED" | "CANCELLED";
 
@@ -35,14 +36,16 @@ export function ProcessStepper({
   const currentIndex = STEPS.findIndex((s) => s.status === currentStatus);
 
   return (
-    <div className="relative flex items-center justify-between w-full">
+    <div className="relative flex items-center justify-between w-full h-12">
       {/* Background Line */}
       <div className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 bg-slate-100" />
       
       {/* Progress Line */}
-      <div 
-        className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 bg-brand-blue transition-all duration-500 ease-in-out shadow-[0_0_12px_rgba(21,72,157,0.2)]"
-        style={{ width: `${(currentIndex / (STEPS.length - 1)) * 100}%` }}
+      <motion.div 
+        className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 bg-brand-blue shadow-[0_0_12px_rgba(21,72,157,0.2)]"
+        initial={{ width: 0 }}
+        animate={{ width: `${(currentIndex / (STEPS.length - 1)) * 100}%` }}
+        transition={{ duration: 0.8, ease: "circOut" }}
       />
 
       {STEPS.map((step, index) => {
@@ -52,7 +55,9 @@ export function ProcessStepper({
 
         return (
           <div key={step.status} className="relative z-10 flex flex-col items-center group">
-            <button
+            <motion.button
+              whileHover={isInteractive && (isNext || isCompleted) ? { scale: 1.1 } : {}}
+              whileTap={isInteractive && (isNext || isCompleted) ? { scale: 0.95 } : {}}
               onClick={() => isInteractive && onStepClick?.(step.status)}
               disabled={!isInteractive || (!isNext && !isCompleted)}
               className={`flex items-center justify-center rounded-full transition-all duration-300 ${
@@ -61,14 +66,16 @@ export function ProcessStepper({
                 isCompleted 
                   ? "bg-brand-blue text-white border-none shadow-md shadow-brand-blue/10" 
                   : isCurrent 
-                  ? "bg-white text-brand-blue ring-4 ring-brand-blue/10 shadow-lg shadow-brand-blue/20 scale-110" 
+                  ? "bg-white text-brand-blue ring-4 ring-brand-blue/10 shadow-lg shadow-brand-blue/20" 
                   : isNext && isInteractive
-                  ? "bg-white text-brand-blue border-2 border-brand-blue/20 hover:bg-brand-blue/5 hover:scale-105 shadow-sm"
+                  ? "bg-white text-brand-blue border-2 border-brand-blue/20 shadow-sm"
                   : "bg-slate-50 text-slate-300 border border-slate-200"
               } ${!isInteractive ? "cursor-default" : "cursor-pointer"}`}
             >
               {isCompleted ? (
-                <CheckCircle2 className={size === "xs" ? "h-2 w-2" : size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"} />
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
+                  <CheckCircle2 className={size === "xs" ? "h-2 w-2" : size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"} />
+                </motion.div>
               ) : isCurrent ? (
                 <div className="relative">
                    <div className="absolute inset-0 bg-brand-blue rounded-full animate-ping opacity-10" />
@@ -81,10 +88,10 @@ export function ProcessStepper({
               ) : (
                 <div className={`rounded-full bg-current ${size === "xs" ? "h-0.5 w-0.5" : size === "sm" ? "h-1 w-1" : "h-1.5 w-1.5"}`} />
               )}
-            </button>
+            </motion.button>
             
             {size === "md" && (
-               <span className={`absolute -bottom-6 text-xs font-extrabold uppercase tracking-widest whitespace-nowrap transition-colors ${
+               <span className={`absolute -bottom-8 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
                  isCurrent ? "text-brand-blue" : isNext && isInteractive ? "text-brand-blue/60" : "text-slate-400"
                }`}>
                  {step.label}

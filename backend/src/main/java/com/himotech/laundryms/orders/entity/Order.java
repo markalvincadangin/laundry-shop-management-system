@@ -85,6 +85,9 @@ public class Order {
     @Column(name = "payment_status", nullable = false, length = 30)
     private PaymentStatus paymentStatus;
 
+    @Column(name = "notes", length = 500)
+    private String notes;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderAddOn> addOns = new ArrayList<>();

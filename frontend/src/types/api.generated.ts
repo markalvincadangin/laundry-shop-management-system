@@ -1765,6 +1765,7 @@ export interface components {
             weightKg: number;
             /** @default 0 */
             extraMinutes: number;
+            serviceType?: string;
             initialAddOns?: components["schemas"]["AddOnInput"][];
         };
         OrderPreviewResponse: {

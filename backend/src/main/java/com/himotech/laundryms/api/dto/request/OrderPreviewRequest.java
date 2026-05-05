@@ -20,4 +20,6 @@ public class OrderPreviewRequest {
 
     @Valid
     private List<AddOnInput> initialAddOns;
+
+    private String serviceType;
 }

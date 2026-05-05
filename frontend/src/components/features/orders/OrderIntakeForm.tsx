@@ -60,6 +60,7 @@ export function OrderIntakeForm({ staffUserId, onSuccess, isModal }: OrderIntake
   // --- Phase 2 Hooks: Modular Logic ---
   const customerLookup = useCustomerLookup();
   const pricing = usePriceCalculation({ 
+    serviceType: String(serviceType),
     weightKg: String(weightKg), 
     extraMinutes: String(extraMinutes), 
     addOns 

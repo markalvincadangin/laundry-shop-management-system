@@ -12,6 +12,7 @@ export const forms = {
     EMPTY_PRICING: "Enter weight to calculate price",
     COLLECT_PAYMENT: "Collect Payment Now",
     SUBMIT_BUTTON: "Create & Print Order",
+    SUCCESS_TITLE: "Order Created Successfully",
     VERIFY_WEIGHT: "Please verify weight before finalizing",
     STEP_BAG: "What's in the bag?",
     STEP_SERVICE: "Service type",
