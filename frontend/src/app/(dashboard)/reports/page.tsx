@@ -8,7 +8,8 @@ import {
   Info,
   DollarSign,
   ClipboardCheck,
-  PercentCircle
+  PercentCircle,
+  Download
 } from "lucide-react";
 import { reportsService } from "@/services/reports.service";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +23,8 @@ import {
   KPICard,
   KPICardSkeleton,
   CurrencyDisplay,
-  SegmentedControl
+  SegmentedControl,
+  Button
 } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { SectionHeader, ErrorState, AccessDenied, LoadingState } from "@/features/shared";
@@ -103,12 +105,12 @@ export default function ReportsPage() {
       const to = new Date();
       const from = new Date();
       from.setDate(to.getDate() - 6);
-      
+
       const fromStr = from.toISOString().split('T')[0];
       const toStr = to.toISOString().split('T')[0];
-      
+
       const data = await reportsService.getSalesTrend(fromStr, toStr);
-      
+
       // Map to chart points, ensuring all 7 days are represented even if zero
       const points: ChartPoint[] = [];
       for (let i = 0; i < 7; i++) {
@@ -116,7 +118,8 @@ export default function ReportsPage() {
         d.setDate(from.getDate() + i);
         const dStr = d.toISOString().split('T')[0];
         const dayData = data.find(item => item.date === dStr);
-        
+
+
         points.push({
           period: d.toLocaleString("en-US", { weekday: "short", day: "numeric" }),
           income: dayData?.totalIncome ?? 0,
@@ -155,17 +158,6 @@ export default function ReportsPage() {
         subtitle={UI_LABELS.modules.reports.SUBTITLE}
         icon={TrendingUp}
         actions={
-<<<<<<< Updated upstream
-          <SegmentedControl 
-            options={[
-              { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
-              { label: UI_LABELS.modules.reports.MONTHLY, value: "monthly" },
-              { label: UI_LABELS.modules.reports.YEARLY, value: "yearly" }
-            ]}
-            value={tab}
-            onChange={(v: string) => setTab(v as Tab)}
-          />
-=======
           <div className="flex items-center gap-4">
             <Button variant="outline" className="h-12 px-6 gap-2 text-caption font-black uppercase tracking-widest border-slate-200" onClick={() => window.print()}>
               <Download className="h-4 w-4" />
@@ -181,7 +173,6 @@ export default function ReportsPage() {
               onChange={(v: string) => setTab(v as Tab)}
             />
           </div>
->>>>>>> Stashed changes
         }
       />
 
