@@ -74,7 +74,7 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
         <h3 className="text-[16px] font-black text-slate-900 tracking-tight line-clamp-2 break-words font-display leading-tight flex items-center gap-2">
           {order.customerName || "Walk-in Customer"}
           {order.serviceType === 'WASH_DRY_FOLD_RUSH' && (
-            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" title="Rush Order" />
+            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" aria-label="Rush Order" />
           )}
         </h3>
       </div>
