@@ -67,11 +67,7 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto pb-16 space-y-8">
-      <h2 className="sr-only">
-        {UI_LABELS.modules.dashboard.ACCESSIBILITY_TITLE}
-      </h2>
-
+    <div className="max-w-[1600px] mx-auto pb-16 space-y-12 px-4 xl:px-0">
       <PageHeader
         title={UI_LABELS.layout.nav.DASHBOARD}
         subtitle={`${UI_LABELS.modules.dashboard.SUBTITLE} ${formatDate(new Date())}`}
@@ -81,12 +77,12 @@ export default function Home() {
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <>
+        <div className="space-y-12">
           {/* ── KPI Row ── §11.2 ────────────────────────────────────────── */}
           {stats && (
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
               <KPICard
-                title={UI_LABELS.modules.dashboard.KPI_ACTIVE_LOADS}
+                title={stats.inProgress === 1 ? "Active Load" : UI_LABELS.modules.dashboard.KPI_ACTIVE_LOADS}
                 value={stats.inProgress}
                 subtitle={UI_LABELS.modules.dashboard.CURR_PROCESSING}
                 icon={Activity}
@@ -94,7 +90,7 @@ export default function Home() {
                 pulse
               />
               <KPICard
-                title={UI_LABELS.modules.dashboard.KPI_READY_PICKUP}
+                title={stats.readyForPickup === 1 ? "Ready Order" : UI_LABELS.modules.dashboard.KPI_READY_PICKUP}
                 value={stats.readyForPickup}
                 subtitle={UI_LABELS.modules.dashboard.WAITING_CUST}
                 icon={Package}
@@ -102,7 +98,7 @@ export default function Home() {
                 onClick={handleReadyKPIClick}
               />
               <KPICard
-                title={UI_LABELS.modules.dashboard.KPI_TODAYS_ORDERS}
+                title={stats.todaysOrders === 1 ? "New Order" : UI_LABELS.modules.dashboard.KPI_TODAYS_ORDERS}
                 value={stats.todaysOrders}
                 subtitle={UI_LABELS.modules.dashboard.CREATED_TODAY}
                 icon={TrendingUp}
@@ -120,10 +116,10 @@ export default function Home() {
           )}
 
           {/* ── 5-Column Order Pipeline ── §11.3 ───────────────────────── */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex flex-col gap-1">
               <SectionHeader title={UI_LABELS.modules.dashboard.QUEUE_TITLE} viewAllHref="/orders" />
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
                 {UI_LABELS.modules.dashboard.QUEUE_SUBTITLE}
               </p>
             </div>
@@ -134,7 +130,7 @@ export default function Home() {
               readyColumnRef={readyColumnRef}
             />
           </div>
-        </>
+        </div>
       )}
 
       <PaymentActionModal

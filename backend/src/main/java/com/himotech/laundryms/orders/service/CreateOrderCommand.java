@@ -9,7 +9,9 @@ public record CreateOrderCommand(
         UUID createdByUserId,
         BigDecimal weightKg,
         int extraMinutes,
-        List<AddOnItem> addOns
+        List<AddOnItem> addOns,
+        String serviceType,
+        String notes
 ) {
     public record AddOnItem(String name, BigDecimal price, int quantity) {}
 }

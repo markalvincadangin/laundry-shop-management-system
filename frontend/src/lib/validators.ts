@@ -39,6 +39,7 @@ export const OrderIntakeSchema = z.object({
   weightKg: z.number().min(0.1, "Weight is required").max(500),
   extraMinutes: z.number().int().min(0),
   serviceType: z.string().min(1, "Service type is required"),
+  notes: z.string().max(500).optional(),
   initialAddOns: z.array(AddOnSchema).optional(),
 }).refine(data => data.customerId || data.customer, {
   message: "Either an existing customer must be selected or a new one registered",

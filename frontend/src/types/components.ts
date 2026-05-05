@@ -49,7 +49,7 @@ export interface ModalProps {
 export interface StatusBadgeProps {
   status?: OrderStatus;
   label?: string;
-  variant?: "primary" | "success" | "warning" | "error" | "neutral" | "action";
+  variant?: "primary" | "success" | "warning" | "error" | "neutral" | "action" | "rush";
   icon?: React.ElementType;
   className?: string;
 }

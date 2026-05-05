@@ -1,6 +1,5 @@
-"use client";
-
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { ModalProps } from "@/types/components";
 
@@ -16,7 +15,10 @@ export function Modal({
   size = "md",
   className = "",
 }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -25,7 +27,7 @@ export function Modal({
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const sizes = {
     sm: "max-w-md",
@@ -35,18 +37,18 @@ export function Modal({
     full: "max-w-[95vw] h-[90vh]",
   };
 
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-      {/* Backdrop */}
+  const modalContent = (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-8 overflow-hidden">
+      {/* Backdrop — FRONT-001 §2.4.2 */}
       <div 
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-300"
+        className="fixed inset-0 bg-slate-900/50 backdrop-blur-[16px] transition-opacity animate-in fade-in duration-500"
         onClick={onClose}
       />
 
-      {/* Container */}
+      {/* Container — FRONT-001 §2.4.1 (radius-lg = 12px/rounded-xl) */}
       <div 
         className={`
-          relative z-10 w-full transform overflow-hidden rounded-3xl 
+          relative z-10 w-full transform overflow-hidden rounded-xl 
           bg-white border border-slate-200 shadow-2xl transition-all 
           animate-in zoom-in-95 fade-in duration-300
           ${sizes[size]}
@@ -55,18 +57,18 @@ export function Modal({
         role="dialog"
         aria-modal="true"
       >
-        {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-white/[0.02]">
+        {/* Header — space-4 padding */}
+        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-neutral-50/50">
             {title && (
-              <h3 className="text-xl font-display font-bold text-slate-900 tracking-tight">
+              <h3 className="text-lg font-display font-bold text-slate-900 tracking-tight">
                 {title}
               </h3>
             )}
             <button 
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
@@ -77,4 +79,6 @@ export function Modal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

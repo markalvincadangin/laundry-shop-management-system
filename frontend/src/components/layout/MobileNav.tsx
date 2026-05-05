@@ -12,8 +12,6 @@ import {
   Plus
 } from "lucide-react";
 import { UI_LABELS } from "@/constants/ui/index";
-import { useClientAlerts } from "@/hooks/useClientAlerts";
-import { ClientAlertPopover } from "@/features/client-alerts/ClientAlertPopover";
 import { NAVIGATION_GROUPS } from "@/config/navigation";
 
 /**
@@ -25,8 +23,7 @@ export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const { user, logout, loading } = useAuth();
-  const { alerts: notifications } = useClientAlerts();
-  const notificationCount = notifications.length;
+
 
   // Close menu on navigation
   useEffect(() => {
@@ -75,7 +72,7 @@ export function MobileNav() {
 
         {user ? (
           <div className="flex items-center gap-1 sm:gap-2">
-            <ClientAlertPopover />
+
             <Link 
               href="/orders?new=true"
               className="h-11 w-11 flex items-center justify-center rounded-xl bg-brand-blue text-white shadow-lg shadow-brand-blue/20 active:scale-90 transition-transform"
@@ -153,11 +150,7 @@ export function MobileNav() {
                           >
                             <div className="relative">
                               <Icon className={`h-5 w-5 ${isActive ? "text-brand-blue stroke-[2.5px]" : "text-slate-400"}`} />
-                              {item.href === "/client-alerts" && notificationCount > 0 && !isActive && (
-                                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-700 text-[9px] font-bold text-white ring-1 ring-white">
-                                  {notificationCount > 9 ? "9+" : notificationCount}
-                                </span>
-                              )}
+
                             </div>
                             <span className="flex-1 truncate">{item.label}</span>
                             {isActive && <div className="h-1.5 w-1.5 rounded-full bg-brand-blue shadow-[0_0_8px_rgba(21,72,157,0.5)]" />}

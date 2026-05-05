@@ -8,7 +8,7 @@ export const layout = {
     USERS: "Staff Accounts",
     RATES: "Service Rates",
     AUDIT_LOG: "Audit Log",
-    CLIENT_ALERTS: "Client Alerts",
+    CLIENT_ALERTS: "Messaging",
     GROUP_OPERATIONS: "Operation",
     GROUP_ADMIN: "Management",
     TRACK_ORDER: "Track Order",

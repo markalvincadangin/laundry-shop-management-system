@@ -140,4 +140,11 @@ public class OrderController {
         );
         return ResponseEntity.ok(orderMapper.toResponse(order));
     }
+
+    @DeleteMapping("/{orderId}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long orderId) {
+        orderService.deleteOrder(orderId);
+        return ResponseEntity.noContent().build();
+    }
 }

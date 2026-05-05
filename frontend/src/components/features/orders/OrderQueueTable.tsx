@@ -30,8 +30,13 @@ export function OrderQueueTable() {
     {
       header: UI_LABELS.shared.common.ORDER_NUMBER,
       render: (o) => (
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-slate-900 font-mono">{o.referenceNumber}</span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-slate-900 font-mono">{o.referenceNumber}</span>
+            {(o.serviceType?.includes("RUSH") || o.serviceName?.includes("Rush")) && (
+              <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px]" />
+            )}
+          </div>
           <span className="text-xs text-slate-400 font-medium">ID: {o.customerId}</span>
         </div>
       ),

@@ -41,6 +41,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={isInvalid}
             className={`block w-full rounded-xl border px-3 py-3 outline-none transition-all min-h-[44px] ${variants[variant]} ${icon ? "pl-11" : ""} ${rightElement ? "pr-11" : ""} ${className}`}
             {...props}
+            onWheel={(e) => {
+              // Prevent accidental weight/price changes when scrolling (HCI-001 §4.2)
+              e.currentTarget.blur();
+              e.stopPropagation();
+            }}
           />
           {icon && (
             <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">

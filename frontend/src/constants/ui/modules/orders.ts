@@ -20,4 +20,7 @@ export const orders = {
   EXTRA_TIME_FEE: "Extra Time Fee",
   EXTRAS: "Extras",
   PAYMENT_REQUIRED: "Payment Required before Pickup",
+  SERVICE_TYPE: "Service Type",
+  CHOOSE_SERVICE: "Choose Service",
+  SPECIAL_INSTRUCTIONS: "Special Instructions",
 } as const;

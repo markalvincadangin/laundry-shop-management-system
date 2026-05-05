@@ -27,6 +27,12 @@ public class ServiceRateService {
     }
 
     @Transactional(readOnly = true)
+    public ServiceRate getByName(String name) {
+        return serviceRateRepository.findByServiceName(name)
+                .orElseGet(this::getActiveRate); // Fallback to standard if specific not found
+    }
+
+    @Transactional(readOnly = true)
     public ServiceRate findById(Integer id) {
         return serviceRateRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Service rate not found: " + id));

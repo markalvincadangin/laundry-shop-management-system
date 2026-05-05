@@ -2,8 +2,8 @@
 ## Faith Laundry Shop Management System
 
 > **Source of truth:** [docs/](../) — scope, user stories, business rules, NFRs, OpenAPI, ERD  
-> **Last scanned:** 2026-04-24  
-> **Last updated:** 2026-04-24 (Frontend Modularity Refactor)  
+> **Last scanned:** 2026-05-05  
+> **Last updated:** 2026-05-05 (Hardened Order Workflow & Claim Stub)  
 > **Purpose:** Gap analysis of what is implemented vs. what is required per documentation
 
 ---
@@ -106,7 +106,10 @@
 | US-10 full SMS | Notification sending is MVP-optional; storage + stub in place. | Implement when moving to post-MVP. |
 | BR-OL-04 | Status transitions already enforced. | Done. |
 | Partial payments / PARTIAL | Out of scope for MVP. | Post-MVP. |
-| Receipt printing | Release notes – planned. | Post-MVP. |
+| Receipt printing | Claim stub with thermal optimization | ✅ |
+| Rush Order Alerts | Pulsing visual indicator (Req #7) | ✅ |
+| Admin Security | Restrict modify/delete (Req #10) | ✅ |
+| Multi-Service | Rush/Blanket service types (Req #1) | ✅ |
 | Dashboard charts | Integrated via `RevenueChart` organism | ✅ |
 | Component Modularity | Extracted DataTable, Pagination, FilterBar, PageHeader | ✅ |
 | implementation-plan.md | Removed from docs index (file not present). | Optional; add if phase-by-phase roadmap is needed. |
@@ -115,9 +118,10 @@
 
 ## 3. Summary
 
-- **Implemented:** All MVP user stories (US-01–US-11), required business rules, **all** OpenAPI endpoints (including `GET /api/v1/health`), schema, auth/RBAC, Docker, backup scripts, deployment and handover documentation, **restore procedure**, and **backup script env** documentation.
-- **To implement for full doc compliance:** None; all previously missing items have been implemented.
-- **Optional / post-MVP:** SMS delivery, receipt printing, dashboard charts, implementation plan doc.
+- **Implemented:** All MVP user stories (US-01–US-11), required business rules, all OpenAPI endpoints, schema, auth/RBAC, Docker, backup scripts, deployment and handover documentation, restore procedure, and backup script env documentation.
+- **Academic Highlights:** Implemented high-fidelity Claim Stub (thermal optimized), Rush Order visual alerts, and administrative security overrides for completed transactions.
+- **To implement for full doc compliance:** None; the system meets all 12-week academic deliverables.
+- **Optional / post-MVP:** SMS delivery gateway (Twilio), additional report visualizations.
 
 ---
 

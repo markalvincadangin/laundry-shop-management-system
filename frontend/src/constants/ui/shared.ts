@@ -72,7 +72,7 @@ export const shared = {
     WASHING: "Washing",
     DRYING: "Drying",
     FOLDING: "Folding",
-    READY_FOR_PICKUP: "Ready for Pickup",
+    READY_FOR_PICKUP: "Ready",
     RELEASED: "Claimed",
     CANCELLED: "Cancelled",
     // Payment States
@@ -92,6 +92,7 @@ export const shared = {
   units: {
     WEIGHT: "KG",
     TIME: "MIN",
+    LOAD: "Load",
     LOADS: "Loads",
     CURRENCY: "₱",
     PRICE_SYMBOL: "₱",

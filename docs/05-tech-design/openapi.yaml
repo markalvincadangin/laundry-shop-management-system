@@ -1072,6 +1072,7 @@ components:
       properties:
         weightKg: { type: number, format: double }
         extraMinutes: { type: integer, default: 0 }
+        serviceType: { type: string }
         initialAddOns:
           type: array
           items:

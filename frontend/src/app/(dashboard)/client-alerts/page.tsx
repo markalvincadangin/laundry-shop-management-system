@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Bell, Search, RefreshCcw, Eye, BadgeCheck, AlertCircle } from "lucide-react";
+import { MessageSquare, Search, RefreshCcw, Eye, BadgeCheck, Send } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { 
   Button, 
@@ -97,7 +97,7 @@ export default function ClientAlertsPage() {
           <StatusBadge 
             variant={isSent ? "success" : "error"} 
             label={isSent ? UI_LABELS.modules.clientAlerts.STATUS_VERIFIED : UI_LABELS.modules.clientAlerts.STATUS_ACTION_REQUIRED} 
-            icon={isSent ? BadgeCheck : AlertCircle}
+            icon={isSent ? BadgeCheck : Send}
           />
         );
       },
@@ -137,7 +137,7 @@ export default function ClientAlertsPage() {
       <PageHeader 
         title={UI_LABELS.modules.clientAlerts.TITLE}
         subtitle={UI_LABELS.modules.clientAlerts.SUBTITLE}
-        icon={Bell}
+        icon={MessageSquare}
         actions={
           <Button 
             variant="secondary" 
