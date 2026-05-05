@@ -487,7 +487,7 @@ function TrackContent() {
                       )}
                     </div>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Non-pickup states: show a softer claim instruction below the card */}
                 {!isPickupState && (
