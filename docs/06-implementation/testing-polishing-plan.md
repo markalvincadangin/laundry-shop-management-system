@@ -39,14 +39,18 @@ To keep the codebase stable while isolating module-specific polish, we will use 
 - **Git Branch:** `polish/orders-module`
 
 **Testing & Fixing:**
-- [ ] Validate edge cases for price calculations (BR-PR-01 to BR-PR-04) especially with multiple add-ons.
-- [ ] Test strict status transitions (RECEIVED -> WASHING -> DRYING -> FOLDING -> READY).
+- [x] Validate edge cases for price calculations (BR-PR-01 to BR-PR-04) especially with multiple add-ons.
+  - Fixed: `TestDataBuilders.serviceRate()` corrected from ₱120 → ₱140 (BR-PR-01). All 17 pricing assertions updated.
+- [x] Test strict status transitions (RECEIVED → WASHING → DRYING → FOLDING → READY).
+  - Validated: `OrderStatusService.ALLOWED_TRANSITIONS` map is correct. Removed stale `PaymentStatus.PARTIAL` reference.
 - [ ] Resolve any remaining Checkstyle warnings in `OrderService` and `OrderController`.
 - [ ] Fix any layout shifts in the `IntakeWizard` during step transitions.
 
 **Polishing:**
-- [ ] Enhance the visual pulsing alert for "Rush Orders" (Req #7) to ensure it is highly visible on the dashboard.
-- [ ] Optimize the thermal "Claim Stub" UI (Req #5) for exact 80mm/58mm printing width.
+- [x] Enhance the visual pulsing alert for "Rush Orders" (Req #7) to ensure it is highly visible on the dashboard.
+  - Fixed: `OrderCard` was comparing `serviceType === 'rush'` (lowercase). Corrected to `'WASH_DRY_FOLD_RUSH'` (backend enum). Rush Zap icon + blanket Wind icon now render correctly.
+- [x] Optimize the thermal "Claim Stub" UI (Req #5) for exact 80mm/58mm printing width.
+  - Fixed: Hardcoded `CASH` replaced with `order.paymentMethod`. Hardcoded toast strings moved to `UI_LABELS.modules.orders`.
 - [ ] Improve the drag-and-drop or status update button UX on the active order pipeline.
 
 ### 2.2. Finance & Payments Module (Track A - Step 2)
