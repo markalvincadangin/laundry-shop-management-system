@@ -200,9 +200,20 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
     );
   }
 
-  // Split orders into column buckets by status
+  // Split and prioritize orders into column buckets
   const ordersByStatus = (status: string) =>
-    orders.filter((o) => o.currentStatus === status);
+    orders
+      .filter((o) => o.currentStatus === status)
+      .sort((a, b) => {
+        // Priority 1: Rush Orders first
+        const aIsRush = a.serviceType === 'WASH_DRY_FOLD_RUSH';
+        const bIsRush = b.serviceType === 'WASH_DRY_FOLD_RUSH';
+        if (aIsRush && !bIsRush) return -1;
+        if (!aIsRush && bIsRush) return 1;
+        
+        // Priority 2: Oldest first (FIFO)
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      });
 
   return (
     <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-4 items-start">
