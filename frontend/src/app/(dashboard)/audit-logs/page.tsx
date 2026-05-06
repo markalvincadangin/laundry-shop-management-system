@@ -67,22 +67,24 @@ export default function AuditLogPage() {
       sortable: true,
       sortKey: "operation",
       render: (a) => {
-        let variant: "neutral" | "success" | "warning" | "error" = "neutral";
-        if (a.operation === "INSERT") variant = "success";
-        if (a.operation === "UPDATE") variant = "warning";
-        if (a.operation === "DELETE") variant = "error";
+        const op = a.operation as string;
+        let variant: "neutral" | "success" | "warning" | "error" | "primary" | "action" = "neutral";
+        
+        if (op === "INSERT") variant = "success";
+        else if (op === "UPDATE") variant = "warning";
+        else if (op === "DELETE") variant = "error";
+        else if (op === "PAYMENT_RECORD") variant = "success";
+        else if (op === "USER_LOGIN" || op === "USER_LOGOUT") variant = "primary";
+        else if (op === "ORDER_STATUS_UPDATE") variant = "action";
+
+        const label = UI_LABELS.modules.auditLog.ACTION_MAP[op || ""] || op;
 
         return (
-          <div className="flex flex-col gap-1">
-            <StatusBadge 
-              variant={variant} 
-              label={UI_LABELS.modules.auditLog.ACTION_MAP[a.operation || ""] || a.operation} 
-              className="w-24 justify-center shadow-sm"
-            />
-            <span className="text-[9px] font-black uppercase tracking-tighter text-slate-400 px-1">
-              {a.operation} OP
-            </span>
-          </div>
+          <StatusBadge 
+            variant={variant} 
+            label={label} 
+            className="font-bold tracking-tight uppercase"
+          />
         );
       },
     },
@@ -90,28 +92,31 @@ export default function AuditLogPage() {
       header: UI_LABELS.modules.auditLog.ENTITY,
       sortable: true,
       sortKey: "entityType",
-      render: (a) => (
-        <div className="flex flex-col gap-0.5 group">
-          <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-brand-blue transition-colors">
-            <Database className="h-3 w-3" />
-            <span className="text-[10px] font-black uppercase tracking-widest">
-              {a.entityType ? (UI_LABELS.modules.auditLog.TABLE_MAP[a.entityType] || a.entityType.replace("_", " ")) : UI_LABELS.shared.common.SYSTEM}
-            </span>
+      render: (a) => {
+        const moduleName = a.entityType ? (UI_LABELS.modules.auditLog.TABLE_MAP[a.entityType] || a.entityType.replace(/_/g, " ")) : UI_LABELS.shared.common.SYSTEM;
+        const hasId = a.entityId && a.entityId !== "N/A";
+
+        return (
+          <div className="flex items-center gap-3 group">
+            <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-brand-blue/5 group-hover:border-brand-blue/10 transition-all">
+              <Database className="h-3.5 w-3.5 text-slate-400 group-hover:text-brand-blue" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-body-sm font-bold text-slate-700 truncate group-hover:text-brand-blue transition-colors">
+                {moduleName}
+              </span>
+              {hasId && (
+                <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 w-fit">
+                  #{a.entityId}
+                </span>
+              )}
+            </div>
           </div>
-          <span className="text-body-sm font-black text-slate-900">
-            {a.entityType || UI_LABELS.shared.common.SYSTEM}
-          </span>
-          <div className="flex items-center gap-1 mt-0.5">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID:</span>
-            <span className="text-xs font-mono text-slate-600 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
-              {a.entityId}
-            </span>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
-      header: UI_LABELS.shared.common.USER,
+      header: UI_LABELS.modules.auditLog.OPERATOR,
       sortable: true,
       sortKey: "actor",
       render: (a) => {
@@ -129,17 +134,17 @@ export default function AuditLogPage() {
 
         return (
           <div className="flex items-center gap-3">
-            <div className={`h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm transition-all ${
+            <div className={`h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm transition-all ${
               isSystem ? "bg-slate-50 border-slate-100" : "bg-brand-blue/5 border-brand-blue/10"
             }`}>
               <User className={`h-4 w-4 ${isSystem ? "text-slate-400" : "text-brand-blue"}`} />
             </div>
             <div className="flex flex-col">
-              <span className={`text-body-sm font-bold ${isSystem ? "text-slate-500" : "text-slate-900"}`}>
+              <span className={`text-body-sm font-black ${isSystem ? "text-slate-500" : "text-slate-900"}`}>
                 {actorName}
               </span>
-              <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400">
-                {isSystem ? "Automated" : "Administrative"}
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 opacity-70">
+                {isSystem ? "Automated Flow" : "Authorized User"}
               </span>
             </div>
           </div>
@@ -151,12 +156,12 @@ export default function AuditLogPage() {
       sortable: true,
       sortKey: "createdAt",
       render: (a) => (
-        <div className="flex items-center gap-2.5 text-slate-500">
-          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner">
+        <div className="flex items-center gap-3 text-slate-500">
+          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
             <Clock className="h-3.5 w-3.5 text-slate-400" />
           </div>
           <div className="flex flex-col">
-            <span className="text-body-sm font-bold text-slate-700">
+            <span className="text-body-sm font-black text-slate-700">
               {formatDateTime(a.createdAt).split(",")[0]}
             </span>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -173,12 +178,11 @@ export default function AuditLogPage() {
         <Button 
           variant="ghost" 
           size="sm"
-          className="h-10 px-4 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
+          className="h-11 px-5 gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-2xl transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
           onClick={() => setSelected(a)}
         >
-          <Activity className="h-3.5 w-3.5" />
+          <Activity className="h-4 w-4" />
           {UI_LABELS.shared.common.DETAILS}
-          <ChevronRight className="h-3 w-3 opacity-30" />
         </Button>
       ),
     },

@@ -131,6 +131,8 @@ To keep the codebase stable while isolating module-specific polish, we will use 
   - Done: Implemented high-fidelity `ConfirmDialog` with icon support and premium layout.
 - [x] Add visual indicators in the Audit Log to highlight administrative overrides.
   - Done: Upgraded Audit Log with forensic inspection modal and mutation snapshots.
+- [x] Implement "Add New Service Rate" workflow with uniqueness validation and audit logging.
+  - Done: Added `POST /api/v1/service-rates` with RBAC and integrated the premium `RateModal` into the `RatesPage`.
 
 ---
 

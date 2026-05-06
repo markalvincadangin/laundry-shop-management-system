@@ -22,7 +22,8 @@ import {
   Plus,
   Phone,
   Copy,
-  Check
+  Check,
+  ShieldCheck
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api-client";

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Data
 @Builder
@@ -17,7 +18,8 @@ public class AuditLogResponse {
     private String operation;
     private String entityType;
     private String entityId;
-    private String snapshot;
+    private Map<String, Object> oldState;
+    private Map<String, Object> newState;
     private String ipAddress;
     private String userAgent;
     private String status;

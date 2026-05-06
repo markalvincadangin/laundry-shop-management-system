@@ -102,7 +102,7 @@ export function UserModal({ isOpen, onClose, user, onSuccess }: UserModalProps) 
       size="md"
       className="rounded-[40px] overflow-hidden"
     >
-      <form onSubmit={handleSubmit} className="p-grid-6 md:p-grid-8 space-y-grid-8 relative">
+      <form onSubmit={handleSubmit} className="p-grid-6 md:p-grid-8 space-y-grid-8 relative overflow-hidden">
         {/* Glow Effects */}
         <div className="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-brand-blue/5 blur-3xl opacity-40 pointer-events-none" />
         

@@ -7,9 +7,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Implementation for Semaphore.co SMS Gateway.
  */
@@ -40,7 +37,7 @@ public class SemaphoreSmsAdapter implements SmsAdapter {
         }
 
         try {
-            String url = UriComponentsBuilder.fromHttpUrl(API_URL)
+            String url = UriComponentsBuilder.fromUriString(API_URL)
                     .queryParam("apikey", apiKey)
                     .queryParam("number", recipient)
                     .queryParam("message", message)
