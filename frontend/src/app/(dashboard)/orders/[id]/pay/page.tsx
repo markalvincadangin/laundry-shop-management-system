@@ -270,7 +270,7 @@ export default function PayOrderPage() {
                   />
                   <p className="text-[10px] font-black text-success uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Transaction Verified
+                    {UI_LABELS.modules.payments.VERIFIED_TRANSACTION}
                   </p>
                 </div>
               </div>
