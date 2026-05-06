@@ -10,20 +10,18 @@ import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { UI_LABELS } from "@/constants/ui";
 import { NAVIGATION_GROUPS } from "@/config/navigation";
-import { useClientAlerts } from "@/hooks/useClientAlerts";
 import { Tooltip } from "@/components/ui";
 
 /**
- * Sidebar — v3.2
+ * Sidebar — v4.0
  * Supports collapsible states for maximized workspace.
  * FRONT-001 §11.1.
+ * Standardized for professional administrative navigation.
  */
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { isSidebarCollapsed, toggleSidebar } = useLayout();
-  const { alerts: notifications } = useClientAlerts();
-  const notificationCount = notifications.length;
 
   return (
     <aside 
@@ -99,7 +97,6 @@ export function Sidebar() {
                     pathname === item.href || 
                     (item.href !== "/" && pathname?.startsWith(item.href));
                   const Icon = item.icon;
-                  const isNotification = item.href === "/client-alerts";
 
                   const navItemContent = (
                     <Link
@@ -122,13 +119,6 @@ export function Sidebar() {
                         }`}
                       >
                         <Icon className="h-4 w-4" strokeWidth={isActive ? 2.5 : 2} />
-                        
-                        {/* Notification badge */}
-                        {isNotification && notificationCount > 0 && !isActive && (
-                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[8px] font-black text-white ring-2 ring-neutral-50">
-                            {notificationCount > 9 ? "9+" : notificationCount}
-                          </span>
-                        )}
                       </div>
 
                       {/* Label */}

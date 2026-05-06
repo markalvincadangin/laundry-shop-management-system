@@ -21,7 +21,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/reports": UI_LABELS.layout.nav.REPORTS,
   "/rates": UI_LABELS.layout.nav.RATES,
   "/users": UI_LABELS.layout.nav.USERS,
-  "/client-alerts": UI_LABELS.modules.clientAlerts.TITLE,
+  "/messaging": UI_LABELS.modules.clientAlerts.TITLE,
 };
 
 function getPageTitle(pathname: string): string {
