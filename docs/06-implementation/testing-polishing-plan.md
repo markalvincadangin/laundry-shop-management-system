@@ -61,28 +61,40 @@ To keep the codebase stable while isolating module-specific polish, we will use 
 - **Git Branch:** `polish/payments-module`
 
 **Testing & Fixing:**
-- [ ] Ensure payments exactly match the Grand Total (BR-PAY-02 to BR-PAY-05).
-- [ ] Test that an order *cannot* be released to a customer if the payment status is not `PAID`.
-- [ ] Handle potential UI state lag when checking out an order.
-- [ ] Improve error handling when network fails during payment submission.
+- [x] Ensure payments exactly match the Grand Total (BR-PAY-02 to BR-PAY-05).
+  - Validated: `PaymentService.create` enforces strict `setScale(2)` normalization and `compareTo` equality checks.
+- [x] Test that an order *cannot* be released to a customer if the payment status is not `PAID`.
+  - Validated: `OrderStatusService.updateStatus` throws `IllegalStateException` if status is `RELEASED` but payment is not `PAID`.
+- [x] Handle potential UI state lag when checking out an order.
+  - Fixed: Integrated `usePaymentAction` (TanStack Query) for optimistic cache invalidation and robust loading states.
+- [x] Improve error handling when network fails during payment submission.
+  - Fixed: Standardized `onError` toast logic in `usePaymentAction` hook.
 
 **Polishing:**
-- [ ] Add smooth transitions to the Checkout Modal.
-- [ ] Improve the visual design of the payment history data table (badges for CASH, GCASH, BANK).
+- [x] Add smooth transitions to the Checkout Modal.
+  - Fixed: Implemented `AnimatePresence` and `motion` transitions in `PayOrderPage` and `PaymentActionModal`.
+- [x] Improve the visual design of the payment history data table (badges for CASH, GCASH, BANK).
+  - Fixed: Added context-aware icons and high-fidelity color coding to `PaymentLedgerTable` badges.
 
 ### 2.3. Analytics & Reports Module (Track B)
 *Covers Functional Requirements: 8*
 - **Git Branch:** `polish/reports-module`
 
 **Testing & Fixing:**
-- [ ] Verify that `COALESCE(SUM(amount), 0)` holds up for days/months with zero sales.
-- [ ] Check boundary conditions (start and end of the month) for exact data aggregation.
-- [ ] Fix any rendering bugs in the `RevenueChart` when resizing the browser window.
+- [x] Verify that `COALESCE(SUM(amount), 0)` holds up for days/months with zero sales.
+  - Validated: Backend SQL projections return `0.00` correctly for empty periods.
+- [x] Check boundary conditions (start and end of the month) for exact data aggregation.
+  - Validated: `ReportsControllerTest` confirms inclusive boundary ranges.
+- [x] Fix any rendering bugs in the `RevenueChart` when resizing the browser window.
+  - Fixed: Switched to `ResponsiveContainer` with explicit height and debounced resize handling.
 
 **Polishing:**
-- [ ] Add micro-animations to the charts on load.
-- [ ] Improve the styling of the "Export" or "Print" buttons for the reports dashboard.
-- [ ] Ensure exact alignment with the academic deliverable (showing total income and number of transactions clearly).
+- [x] Add micro-animations to the charts on load.
+  - Fixed: Implemented `framer-motion` staggered entry for KPI cards and chart layout.
+- [x] Improve the styling of the "Export" or "Print" buttons for the reports dashboard.
+  - Fixed: Deployed high-fidelity `Button` variants with hover-elevated shadows and `FileDown` icons.
+- [x] Ensure exact alignment with the academic deliverable (showing total income and number of transactions clearly).
+  - Fixed: Integrated `ReportDocument` branding and `CurrencyDisplay` typographic standards.
 
 ### 2.4. Customer & Notifications Module (Track B)
 *Covers Functional Requirements: 3 (Tracking)*

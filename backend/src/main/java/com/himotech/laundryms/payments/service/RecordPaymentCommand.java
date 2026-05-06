@@ -5,6 +5,9 @@ import com.himotech.laundryms.common.enums.PaymentMethod;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Command for recording a payment transaction.
+ */
 public record RecordPaymentCommand(
         Long orderId,
         BigDecimal amountPaid,

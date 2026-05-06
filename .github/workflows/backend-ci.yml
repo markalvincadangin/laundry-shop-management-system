@@ -9,17 +9,33 @@ on:
       - ".github/workflows/backend-ci.yml"
   pull_request:
     branches: [ "develop", "main" ]
-    paths:
-      - "backend/**"
-      - "docker/**"
-      - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Path Filter
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'docker/**'
+              - '.github/workflows/backend-ci.yml'
+
   build-test:
+    needs: check-changes
+    if: needs.check-changes.outputs.backend == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:

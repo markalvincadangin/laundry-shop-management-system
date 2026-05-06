@@ -71,14 +71,31 @@ export function PaymentLedgerTable({
       render: (p) => {
         const method = p.paymentMethod;
         const labels = {
-          CASH: { label: UI_LABELS.modules.payments.METHOD_CASH, class: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-          GCASH: { label: UI_LABELS.modules.payments.METHOD_GCASH, class: "bg-sky-50 text-sky-700 border-sky-100" },
-          BANK_TRANSFER: { label: UI_LABELS.modules.payments.METHOD_BANK, class: "bg-indigo-50 text-indigo-700 border-indigo-100" }
+          CASH: { 
+            label: UI_LABELS.modules.payments.METHOD_CASH, 
+            class: "bg-emerald-50 text-emerald-700 border-emerald-100",
+            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" />
+          },
+          GCASH: { 
+            label: UI_LABELS.modules.payments.METHOD_GCASH, 
+            class: "bg-sky-50 text-sky-700 border-sky-100",
+            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-sky-500 mr-2" />
+          },
+          BANK_TRANSFER: { 
+            label: UI_LABELS.modules.payments.METHOD_BANK, 
+            class: "bg-indigo-50 text-indigo-700 border-indigo-100",
+            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-indigo-500 mr-2" />
+          }
         };
-        const config = labels[method as keyof typeof labels] || { label: method, class: "bg-slate-50 text-slate-700 border-slate-100" };
+        const config = labels[method as keyof typeof labels] || { 
+          label: method, 
+          class: "bg-slate-50 text-slate-700 border-slate-100",
+          icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-slate-500 mr-2" />
+        };
         
         return (
-          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${config.class}`}>
+          <span className={`inline-flex items-center text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm ${config.class}`}>
+            {config.icon}
             {config.label}
           </span>
         );

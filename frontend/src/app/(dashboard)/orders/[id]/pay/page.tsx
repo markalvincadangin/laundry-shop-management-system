@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrder } from "@/hooks/useOrder";
 import { usePaymentAction } from "@/hooks/usePaymentAction";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
-import { Card, CardContent, Button } from "@/components/ui";
+import { Card, CardContent, Button, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { PAYMENT_STATUS, PAYMENT_METHOD, type PaymentMethod } from "@/constants/payment";
 
@@ -129,10 +129,11 @@ export default function PayOrderPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{UI_LABELS.shared.common.TOTAL}</p>
-                      <p className="text-4xl font-display font-black text-brand-blue tracking-tight tabular-nums flex items-baseline justify-end">
-                        <span className="text-2xl mr-1 opacity-40">₱</span>
-                        {order.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
+                      <CurrencyDisplay 
+                        amount={order.grandTotal} 
+                        size="xl" 
+                        numberClassName="font-black text-brand-blue" 
+                      />
                     </div>
                   </div>
                 )}
@@ -260,14 +261,18 @@ export default function PayOrderPage() {
                 </div>
               </div>
 
-              <div className="py-10 border-y border-slate-100 bg-slate-50/50 -mx-12">
-                <p className="text-6xl font-display font-black text-slate-900 tracking-tighter tabular-nums flex items-baseline justify-center">
-                  <span className="text-3xl mr-1 text-slate-300">₱</span>
-                  {paymentSuccess.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-                <p className="text-[10px] font-black text-success uppercase tracking-[0.4em] mt-3">
-                  Transaction Verified
-                </p>
+              <div className="py-10 border-y border-slate-100 bg-slate-50/50 -mx-12 space-y-4">
+                <div className="flex flex-col items-center">
+                  <CurrencyDisplay 
+                    amount={paymentSuccess.amount} 
+                    size="xl" 
+                    numberClassName="text-6xl font-black text-slate-900" 
+                  />
+                  <p className="text-[10px] font-black text-success uppercase tracking-[0.4em] mt-3 flex items-center gap-2">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    {UI_LABELS.modules.payments.VERIFIED_TRANSACTION}
+                  </p>
+                </div>
               </div>
 
               <Link href={`/orders/${orderId}`} className="block w-full">
