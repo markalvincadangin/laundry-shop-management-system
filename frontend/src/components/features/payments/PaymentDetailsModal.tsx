@@ -2,7 +2,8 @@ import React from "react";
 import { CreditCard, Calendar, User, ArrowRight, Receipt, ShieldCheck } from "lucide-react";
 import { Modal, Button } from "@/components/ui";
 import { PaymentResponse } from "@/services/payments.service";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { UI_LABELS } from "@/constants/ui";
 import Link from "next/link";
 
@@ -38,9 +39,7 @@ export function PaymentDetailsModal({ isOpen, onClose, payment }: PaymentDetails
               <h4 className="text-h3 font-black text-slate-900 leading-tight">
                 {payment.orderReferenceNumber || `#${payment.orderId}`}
               </h4>
-              <span className="text-body font-black text-brand-blue">
-                {formatCurrency(payment.amountPaid)}
-              </span>
+              <CurrencyDisplay amount={payment.amountPaid} size="md" className="text-brand-blue" numberClassName="font-black" />
             </div>
           </div>
         </div>

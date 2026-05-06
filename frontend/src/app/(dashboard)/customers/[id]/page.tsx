@@ -24,7 +24,8 @@ import { CustomerEditModal } from "@/components/features/customers";
 import { PageHeader } from "@/components/layout";
 import { DataTable, Pagination, EmptyState } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { DataTableColumn } from "@/types/components";
 import { OrderResponse } from "@/services/orders.service";
 
@@ -101,7 +102,7 @@ export default function CustomerProfilePage() {
       header: UI_LABELS.shared.common.TOTAL,
       align: "right",
       render: (o) => (
-        <span className="text-sm font-bold text-slate-900">{formatCurrency(o.grandTotal)}</span>
+        <CurrencyDisplay amount={o.grandTotal} size="md" numberClassName="font-bold text-slate-900" />
       ),
     },
     {
@@ -176,7 +177,7 @@ export default function CustomerProfilePage() {
         />
         <KPICard 
           title={UI_LABELS.modules.customers.LIFETIME_VALUE} 
-          value={formatCurrency(totalSpent)} 
+          value={<CurrencyDisplay amount={totalSpent} size="xl" />} 
           icon={Wallet}
           variant="accent"
         />

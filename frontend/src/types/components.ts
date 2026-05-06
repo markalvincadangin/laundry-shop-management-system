@@ -170,6 +170,7 @@ export interface RevenueChartProps {
   loading?: boolean;
   height?: number | string;
   showDetailsOnHover?: boolean;
+  onPointClick?: (point: { period: string; income: number; orders?: number; rawDate?: string }) => void;
 }
 
 export interface ProcessStepperProps {

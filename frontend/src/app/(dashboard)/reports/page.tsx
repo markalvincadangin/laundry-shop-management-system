@@ -6,12 +6,18 @@ import { motion } from "framer-motion";
 import {
   TrendingUp,
   Info,
-  DollarSign,
-  ClipboardCheck,
-  PercentCircle,
-  Download
+  Banknote,
+  ShoppingBag,
+  Calculator,
+  Download,
+  Loader2,
+  FileDown
 } from "lucide-react";
+import { toPng } from "html-to-image";
+import { pdf } from "@react-pdf/renderer";
+import { ReportDocument } from "@/components/features/shared/ReportDocument";
 import { reportsService } from "@/services/reports.service";
+import { paymentsService } from "@/services/payments.service";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Card,
@@ -26,7 +32,7 @@ import {
   CurrencyDisplay,
   SegmentedControl
 } from "@/components/ui";
-import { PageHeader } from "@/components/layout";
+import { PageHeader, PrintHeader } from "@/components/layout";
 import { SectionHeader, ErrorState, AccessDenied, LoadingState } from "@/features/shared";
 const RevenueChart = dynamic(() => import("@/components/features/reports/RevenueChart").then(m => m.RevenueChart), { ssr: false });
 const DetailedSalesTable = dynamic(() => import("@/components/features/reports/DetailedSalesTable").then(m => m.DetailedSalesTable), { ssr: false });
@@ -143,6 +149,80 @@ export default function ReportsPage() {
     ? report.totalIncome / report.paidOrdersCount
     : 0;
 
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    if (!report || isExporting) return;
+    
+    setIsExporting(true);
+    try {
+      // 1. Capture the chart as an image
+      const chartElement = document.getElementById("revenue-chart");
+      let chartImage = "";
+      if (chartElement) {
+        // Wait a bit to ensure animations are finished or capture state
+        chartImage = await toPng(chartElement, { 
+          quality: 0.95, 
+          backgroundColor: "#fff",
+          pixelRatio: 2 // High quality
+        });
+      }
+
+      // 1.5 Fetch transactions for the period
+      const transactionResponse = await paymentsService.list({
+        from: tab === 'daily' ? date : tab === 'monthly' ? `${year}-${month}-01` : `${year}-01-01`,
+        to: tab === 'daily' ? date : tab === 'monthly' ? `${year}-${month}-31` : `${year}-12-31`,
+        size: 50,
+        sortBy: "paymentDate",
+        sortDir: "desc"
+      });
+
+      // 2. Prepare data for the PDF
+      const pdfData = {
+        title: `SALES PERFORMANCE — ${tab.toUpperCase()}`,
+        period: tab === 'daily' ? date : tab === 'monthly' ? `${year}-${month}` : year,
+        kpis: [
+          { label: "Total Revenue", value: `PHP ${report.totalIncome.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`, subtitle: "Settled Payments" },
+          { label: "Paid Orders", value: report.paidOrdersCount.toString(), subtitle: "Completed Sales" },
+          { label: "Average Sale", value: `PHP ${avgOrderValue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`, subtitle: "Per Transaction" }
+        ],
+        charts: chartImage ? [chartImage] : [],
+        table: {
+          columns: [
+            { header: "Reference", width: "25%", isMono: true },
+            { header: "Customer", width: "25%", isBold: true },
+            { header: "Method", width: "20%" },
+            { header: "Amount", width: "15%", align: "right", isBold: true },
+            { header: "Status", width: "15%", align: "right" }
+          ],
+          rows: transactionResponse.content.slice(0, 20).map(t => [
+            t.orderReferenceNumber,
+            t.customerName || "Walk-in",
+            t.paymentMethod,
+            `PHP ${t.amountPaid.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            "PAID"
+          ])
+        }
+      };
+
+      // 3. Generate the PDF blob
+      const doc = <ReportDocument data={pdfData as any} />;
+      const blob = await pdf(doc).toBlob();
+      
+      // 4. Download the blob
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Faith_Laundry_Report_${String(pdfData.period).replace(/-/g, '_')}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (authLoading) {
     return <LoadingState fullPage />;
   }
@@ -153,28 +233,44 @@ export default function ReportsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-10 pb-20">
-      <PageHeader
-        title={UI_LABELS.layout.nav.REPORTS}
-        subtitle={UI_LABELS.modules.reports.SUBTITLE}
-        icon={TrendingUp}
-        actions={
-          <div className="flex items-center gap-4">
-            <Button variant="outline" className="h-12 px-6 gap-2 text-caption font-black uppercase tracking-widest border-slate-200" onClick={() => window.print()}>
-              <Download className="h-4 w-4" />
-              {UI_LABELS.modules.reports.EXPORT_PDF}
-            </Button>
-            <SegmentedControl
-              options={[
-                { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
-                { label: UI_LABELS.modules.reports.MONTHLY, value: "monthly" },
-                { label: UI_LABELS.modules.reports.YEARLY, value: "yearly" }
-              ]}
-              value={tab}
-              onChange={(v: string) => setTab(v as Tab)}
-            />
-          </div>
-        }
+      <PrintHeader 
+        module="Sales Performance Report" 
+        period={`${tab.toUpperCase()} — ${tab === 'daily' ? date : tab === 'monthly' ? `${year}-${month}` : year}`} 
       />
+
+      <div className="no-print">
+        <PageHeader
+          title={UI_LABELS.layout.nav.REPORTS}
+          subtitle={UI_LABELS.modules.reports.SUBTITLE}
+          icon={TrendingUp}
+          actions={
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline" 
+                className="h-12 px-6 gap-3 text-caption font-black uppercase tracking-[0.15em] border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50" 
+                onClick={handleExportPDF}
+                disabled={isExporting || loading}
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
+                )}
+                {isExporting ? "Exporting..." : UI_LABELS.modules.reports.EXPORT_PDF}
+              </Button>
+              <SegmentedControl
+                options={[
+                  { label: UI_LABELS.modules.reports.DAILY, value: "daily" },
+                  { label: UI_LABELS.modules.reports.MONTHLY, value: "monthly" },
+                  { label: UI_LABELS.modules.reports.YEARLY, value: "yearly" }
+                ]}
+                value={tab}
+                onChange={(v: string) => setTab(v as Tab)}
+              />
+            </div>
+          }
+        />
+      </div>
 
       {error ? (
         <ErrorState
@@ -184,7 +280,8 @@ export default function ReportsPage() {
       ) : (
         <>
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 kpi-grid-print">
             {loading ? (
               <>
                 <KPICardSkeleton />
@@ -193,9 +290,30 @@ export default function ReportsPage() {
               </>
             ) : (
               <>
-                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" />} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={DollarSign} variant="accent" />
-                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={ClipboardCheck} variant="success" />
-                <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<CurrencyDisplay amount={avgOrderValue} size="xl" />} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={PercentCircle} variant="default" />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  className="kpi-card-print"
+                >
+                  <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" />} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Banknote} variant="accent" />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="kpi-card-print"
+                >
+                  <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={ShoppingBag} variant="success" />
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="kpi-card-print"
+                >
+                  <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<CurrencyDisplay amount={avgOrderValue} size="xl" />} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={Calculator} variant="default" />
+                </motion.div>
               </>
             )}
           </div>
@@ -213,8 +331,8 @@ export default function ReportsPage() {
                 ))
               ) : report?.revenueByMethod && Object.keys(report.revenueByMethod).length > 0 ? (
                 Object.entries(report.revenueByMethod).map(([method, amount]) => (
-                  <div key={method} className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl p-5 flex flex-col gap-1 shadow-sm hover:border-brand-blue/30 transition-all group">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand-blue transition-colors">
+                  <div key={method} className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 flex flex-col gap-2 shadow-sm hover:border-brand-blue/30 transition-all group">
+                    <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-slate-400 group-hover:text-brand-blue transition-colors">
                       {method.replace(/_/g, ' ')}
                     </p>
                     <CurrencyDisplay amount={amount} size="md" className="text-slate-900 font-bold" />
@@ -226,8 +344,8 @@ export default function ReportsPage() {
 
           {/* Selection & Chart Section */}
           <div className="grid lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-4 space-y-6">
-              <Card className="bg-white border-slate-200 shadow-sm">
+            <div className="lg:col-span-4 space-y-6 no-print">
+              <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
                 <CardHeader className="border-b border-slate-100 bg-slate-50">
                   <CardTitle className="text-slate-900 text-sm font-extrabold uppercase tracking-widest">
                     {UI_LABELS.modules.reports.PERIOD_SELECTION}
@@ -286,15 +404,25 @@ export default function ReportsPage() {
               </Card>
             </div>
 
-            <div className="lg:col-span-8">
-              <RevenueChart data={chartData} loading={chartLoading} />
+            <div className="lg:col-span-8 chart-container-print">
+              <RevenueChart 
+                data={chartData} 
+                loading={chartLoading} 
+                onPointClick={(point) => {
+                  if (point.rawDate) {
+                    setDate(point.rawDate);
+                    setTab("daily");
+                    document.getElementById("sales-history-section")?.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+              />
             </div>
           </div>
         </>
       )}
 
       {/* Sales History */}
-      <div className="space-y-6">
+      <div id="sales-history-section" className="space-y-6 pt-8 border-t border-slate-100">
         <SectionHeader title={UI_LABELS.modules.reports.SALES_HISTORY} className="mb-6" />
         {tab === "daily" && (
           <DetailedSalesTable date={date} />

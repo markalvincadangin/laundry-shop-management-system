@@ -81,7 +81,7 @@ export function KPICard({
             {title}
           </p>
           <div className="flex items-baseline gap-3">
-            <div className="text-3xl sm:text-4xl font-display font-black text-slate-900 tracking-tight flex items-center gap-1">
+            <div className="text-3xl sm:text-4xl font-sans font-black text-slate-900 tracking-tight flex items-center gap-1">
               {value}
             </div>
             {subtitle && (

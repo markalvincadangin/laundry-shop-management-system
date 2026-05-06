@@ -7,7 +7,8 @@ import { type PaymentResponse } from "@/services/payments.service";
 import { DataTable, EmptyState } from "@/features/shared";
 import { DataTableColumn } from "@/types/components";
 import { UI_LABELS } from "@/constants/ui";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
 interface ExtendedPaymentLedgerTableProps {
   payments: PaymentResponse[];
@@ -89,8 +90,8 @@ export function PaymentLedgerTable({
       sortKey: "amountPaid",
       align: "right",
       render: (p) => (
-        <div className="flex items-center justify-end gap-1.5 text-sm font-bold text-brand-blue group-hover:text-slate-900 transition-colors">
-          {formatCurrency(p.amountPaid)}
+        <div className="flex items-center justify-end gap-1.5 group-hover:text-slate-900 transition-colors">
+          <CurrencyDisplay amount={p.amountPaid} size="md" numberClassName="font-bold text-brand-blue" />
           <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
         </div>
       ),

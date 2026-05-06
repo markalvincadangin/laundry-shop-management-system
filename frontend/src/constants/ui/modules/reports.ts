@@ -10,7 +10,7 @@ export const reports = {
   WEEKLY: "Weekly",
   MONTHLY: "Monthly",
   YEARLY: "Yearly",
-  EXPORT_PDF: "Print Report",
+  EXPORT_PDF: "Export PDF",
   EXPORT_CSV: "Export to CSV",
   INFO_TEXT: "Insights are calculated based on settled (PAID) orders only.",
   PROCESSED_PAYMENTS: "Processed Payments",

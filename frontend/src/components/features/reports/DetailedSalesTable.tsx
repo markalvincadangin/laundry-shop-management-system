@@ -106,7 +106,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
               {isCash ? <Banknote className="h-3.5 w-3.5" /> : isGCash ? <Wallet className="h-3.5 w-3.5" /> : <CreditCard className="h-3.5 w-3.5" />}
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">{p.paymentMethod}</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-900">{p.paymentMethod}</span>
               {p.paymentReference && (
                 <span className="text-[9px] font-mono text-slate-400">Ref: {p.paymentReference}</span>
               )}
@@ -122,7 +122,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       render: (p) => (
         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
           <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">{p.receivedByUsername || 'SYSTEM'}</span>
+          <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-500">{p.receivedByUsername || 'SYSTEM'}</span>
         </div>
       ),
     },
@@ -141,31 +141,38 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
   ];
 
   return (
-    <Card className="overflow-hidden border-slate-200 bg-white shadow-sm">
-      <div className="p-6 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <Card className="overflow-hidden border-slate-200 bg-white shadow-sm print:shadow-none print:border-0">
+      <div className="p-6 border-b border-slate-100 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-brand-blue/5 border border-brand-blue/10">
             <FileText className="h-5 w-5 text-brand-blue" />
           </div>
           <div>
-            <h3 className="text-slate-900 font-extrabold tracking-tight">{UI_LABELS.modules.reports.SALES_HISTORY}</h3>
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-4 bg-brand-blue rounded-full" />
+              <h3 className="text-slate-900 font-extrabold tracking-tight">{UI_LABELS.modules.reports.SALES_HISTORY}</h3>
+            </div>
             <p className="text-xs text-slate-500 uppercase font-extrabold tracking-widest">
               {label || `Detailed breakdown for ${date}`}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 no-print">
           <Input
             placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-3.5 w-3.5" />}
-            className="w-full md:w-64 h-10 text-xs"
+            className="w-full md:w-64 h-12 text-xs bg-white shadow-inner"
           />
-          <Button variant="outline" size="sm" className="h-10 px-6 gap-2 text-xs font-extrabold uppercase tracking-widest border-slate-200 shrink-0" onClick={handleExport}>
-            <Download className="h-3.5 w-3.5" />
-            {UI_LABELS.modules.reports.EXPORT_CSV}
-          </Button>
+            <Button 
+              variant="outline" 
+              className="h-12 px-6 gap-3 text-caption font-black uppercase tracking-[0.15em] border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export shrink-0" 
+              onClick={handleExport}
+            >
+              <Download className="h-3.5 w-3.5" />
+              {UI_LABELS.modules.reports.EXPORT_CSV}
+            </Button>
         </div>
       </div>
 
@@ -191,15 +198,17 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
         </div>
       )}
 
-      <Pagination
-        currentPage={pagination.page}
-        totalPages={pagination.totalPages}
-        totalElements={pagination.totalElements}
-        pageSize={params.size}
-        onPageChange={(p) => updateParams({ page: p })}
-        onPageSizeChange={(s) => updateParams({ size: s, page: 0 })}
-        isLoading={loading}
-      />
+      <div className="no-print">
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalElements={pagination.totalElements}
+          pageSize={params.size}
+          onPageChange={(p) => updateParams({ page: p })}
+          onPageSizeChange={(s) => updateParams({ size: s, page: 0 })}
+          isLoading={loading}
+        />
+      </div>
     </Card>
   );
 }

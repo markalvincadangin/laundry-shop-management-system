@@ -24,7 +24,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         @Query("SELECT p.paymentMethod, COALESCE(SUM(p.amountPaid), 0) FROM Payment p JOIN p.order o WHERE p.paymentDate >= :from AND p.paymentDate < :to AND o.paymentStatus NOT IN ('VOIDED', 'REFUNDED') GROUP BY p.paymentMethod")
         List<Object[]> sumAmountPaidByPaymentMethodBetween(@Param("from") Instant from, @Param("to") Instant to);
 
-        @Query(value = "SELECT DATE(p.payment_date) as day, SUM(p.amount_paid) as total, COUNT(p.id) as count " +
+        @Query(value = "SELECT DATE(p.payment_date) as day, COALESCE(SUM(p.amount_paid), 0) as total, COUNT(p.id) as count " +
                         "FROM payments p " +
                         "JOIN orders o ON p.order_id = o.id " +
                         "WHERE p.payment_date >= :from AND p.payment_date < :to " +

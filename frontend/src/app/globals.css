@@ -60,29 +60,118 @@
 
 /* Print styles for order receipt (FRONT-001 §6) */
 @media print {
+  /* 1. Hide interactive/web-only elements */
   nav,
+  aside,
+  header:not(.print-only),
+  footer,
   .no-print,
-  button {
+  .no-print *,
+  button,
+  .segmented-control,
+  [role="tablist"],
+  .pagination-container {
     display: none !important;
   }
 
-  .print-receipt {
-    max-width: 80mm !important;
-    padding: 0.5rem !important;
-    border: 1px solid #000 !important;
-    box-shadow: none !important;
-    background: white !important;
-    color: black !important;
-  }
-
-  .print-receipt * {
+  /* 2. Force high-contrast, paper-friendly colors */
+  * {
     background: transparent !important;
-    color: black !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
     backdrop-filter: none !important;
+    transition: none !important;
+    animation: none !important;
   }
 
   body {
     background: white !important;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  /* 3. Layout optimizations */
+  .max-w-7xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .grid {
+    display: block !important; /* Stack by default, but we'll override for KPIs */
+  }
+
+  /* 4. KPI Card Print Optimization */
+  .kpi-grid-print {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .kpi-card-print {
+    flex: 1 !important;
+    min-width: 25% !important;
+    border: 1px solid #eee !important;
+    padding: 1rem !important;
+    page-break-inside: avoid;
+  }
+
+  /* 5. Chart Print Optimization */
+  .chart-container-print {
+    width: 100% !important;
+    height: 300px !important;
+    margin: 2rem 0 !important;
+    page-break-inside: avoid;
+  }
+
+  /* 6. Table Print Optimization */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  th, td {
+    border-bottom: 1px solid #ddd !important;
+    padding: 0.5rem !important;
+    text-align: left !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  /* 7. Typography & Spacing */
+  h1, h2, h3 {
+    margin-top: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    page-break-after: avoid;
+  }
+
+  .space-y-10 {
+    margin-top: 1rem !important;
+  }
+
+  /* 8. Specific components */
+  .print-header {
+    display: block !important;
+    margin-bottom: 2rem !important;
+  }
+
+  /* 9. Receipt specific (FRONT-001 §6) */
+  .print-receipt {
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 9pt !important;
   }
 }
 
