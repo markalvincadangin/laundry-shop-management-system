@@ -1,5 +1,6 @@
 /**
- * Phase 11 — Notifications page tests.
+ * Messaging Page Tests (v4.0)
+ * Verifies the communication ledger functionality and layout.
  */
 
 import { render, screen, waitFor } from "@testing-library/react";
@@ -7,7 +8,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
 import { clientAlertsService } from "@/services/client-alerts.service";
-import ClientAlertsPage from "@/app/(dashboard)/client-alerts/page";
+import MessagingPage from "@/app/(dashboard)/messaging/page";
 
 // Mock services
 vi.mock("@/services/client-alerts.service", () => ({
@@ -26,7 +27,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
   }),
-  usePathname: () => "/client-alerts",
+  usePathname: () => "/messaging",
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -48,12 +49,12 @@ const renderWithProvider = (ui: React.ReactElement) => {
   );
 };
 
-describe("ClientAlertsPage", () => {
+describe("MessagingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("renders page header", () => {
+  it("renders page header with standard messaging title", () => {
     vi.mocked(clientAlertsService.list).mockResolvedValue({
       content: [],
       page: 0,
@@ -63,11 +64,11 @@ describe("ClientAlertsPage", () => {
       first: true,
       last: true
     } as any);
-    renderWithProvider(<ClientAlertsPage />);
+    renderWithProvider(<MessagingPage />);
     expect(screen.getByText(new RegExp(UI_LABELS.modules.clientAlerts.TITLE, "i"))).toBeInTheDocument();
   });
 
-  it("displays alerts in the list", async () => {
+  it("displays messages in the communication ledger", async () => {
     vi.mocked(clientAlertsService.list).mockResolvedValue({
       content: [
         { 
@@ -86,14 +87,14 @@ describe("ClientAlertsPage", () => {
       last: true
     } as any);
 
-    renderWithProvider(<ClientAlertsPage />);
+    renderWithProvider(<MessagingPage />);
 
     await waitFor(() => {
       expect(screen.getByText(/Order Received/i)).toBeInTheDocument();
     });
   });
 
-  it("shows empty state when no alerts found", async () => {
+  it("shows standardized empty state when no records exist", async () => {
     vi.mocked(clientAlertsService.list).mockResolvedValue({
       content: [],
       page: 0,
@@ -104,11 +105,10 @@ describe("ClientAlertsPage", () => {
       last: true
     } as any);
 
-    renderWithProvider(<ClientAlertsPage />);
+    renderWithProvider(<MessagingPage />);
 
     await waitFor(() => {
       expect(screen.getByText(new RegExp(UI_LABELS.feedback.empty.CLIENT_ALERTS_TITLE, "i"))).toBeInTheDocument();
     });
   });
 });
-

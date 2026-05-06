@@ -47,7 +47,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
     id: "logs",
     label: "Monitoring",
     items: [
-      { href: "/client-alerts", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare },
+      { href: "/messaging", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare },
     ],
   },
   {

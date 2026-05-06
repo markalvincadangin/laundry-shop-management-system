@@ -43,10 +43,10 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
   };
 
   const ignoredKeys = ['id', 'created_at', 'updated_at', 'password_hash', 'version', 'user_id', 'customer_id', 'service_rate_id'];
-  
+
   const oldState = selected?.oldState || {};
   const newState = selected?.newState || {};
-  
+
   const allKeys = Array.from(new Set([...Object.keys(oldState), ...Object.keys(newState)]))
     .filter(k => !ignoredKeys.includes(k.toLowerCase()));
 
@@ -122,12 +122,12 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                   const oldVal = oldState[key];
                   const newVal = newState[key];
                   const hasChanged = oldVal !== newVal;
-                  
+
                   const isStatus = key.toLowerCase().includes('status');
                   const isActive = key.toLowerCase().includes('active');
 
                   return (
-                    <div 
+                    <div
                       key={key}
                       className={`grid grid-cols-2 gap-6 px-6 py-4 items-center ${hasChanged ? 'bg-brand-blue/[0.01]' : ''}`}
                     >
@@ -140,9 +140,9 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                           <ChevronRight className="h-3 w-3 text-slate-200 shrink-0" />
                           <div className="truncate">
                             {isStatus || isActive ? (
-                              <StatusBadge 
-                                variant="neutral" 
-                                label={oldVal !== undefined && oldVal !== null ? String(oldVal) : '---'} 
+                              <StatusBadge
+                                variant="neutral"
+                                label={oldVal !== undefined && oldVal !== null ? String(oldVal) : '---'}
                                 className="scale-75 origin-left opacity-50"
                               />
                             ) : (
@@ -159,9 +159,9 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                         <div className="h-4" /> {/* Spacer */}
                         <div className="truncate">
                           {isStatus || isActive ? (
-                            <StatusBadge 
-                              variant={String(newVal).toUpperCase() === 'PAID' || newVal === true || String(newVal).toUpperCase() === 'READY_FOR_PICKUP' ? "success" : "neutral"} 
-                              label={newVal !== undefined && newVal !== null ? String(newVal) : '---'} 
+                            <StatusBadge
+                              variant={String(newVal).toUpperCase() === 'PAID' || newVal === true || String(newVal).toUpperCase() === 'READY_FOR_PICKUP' ? "success" : "neutral"}
+                              label={newVal !== undefined && newVal !== null ? String(newVal) : '---'}
                               className="scale-75 origin-left"
                             />
                           ) : (
@@ -203,12 +203,6 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                 <p className="text-body-sm font-bold text-slate-700">{selected?.createdAt ? formatDateTime(selected.createdAt) : "—"}</p>
               </div>
             </div>
-          </div>
-
-          <div className="text-right shrink-0">
-            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-              Entry ID: {selected?.id}
-            </p>
           </div>
         </div>
       </div>
