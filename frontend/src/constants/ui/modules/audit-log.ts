@@ -1,6 +1,6 @@
 export const auditLog = {
   TITLE: "Audit Log",
-  SUBTITLE: "Monitor system activity and review forensic records of administrative actions.",
+  SUBTITLE: "Monitor system activity and review historical records of administrative actions.",
   AUDIT_RECORD: "Activity Overview",
   AUDIT_INSPECTION: "Activity Details",
   SYSTEM_DETAILS: "Technical Overview",

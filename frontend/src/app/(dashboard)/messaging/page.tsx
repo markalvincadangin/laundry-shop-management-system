@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { 
   MessageSquare, 
   Search, 
   RefreshCcw, 
-  Eye, 
   BadgeCheck, 
   AlertCircle,
   User,
@@ -32,12 +30,11 @@ import { ClientAlertDetailsModal } from "@/components/features/client-alerts/Cli
 import { motion } from "framer-motion";
 
 /**
- * Messaging Page (Client SMS Log) — High Fidelity (v4.0)
- * Provides a professional communication ledger for tracking customer notifications.
- * Shifted from 'Inbox' to 'Forensic Outbox' pattern for administrative clarity.
+ * Messaging Page (Communication Ledger) — High Fidelity (v5.0)
+ * Standardized with professional administrative patterns.
+ * Consolidates actions and filters for maximum spatial efficiency.
  */
 export default function MessagingPage() {
-  // Registry State Management (Centralized Architecture)
   const { 
     params, 
     searchTerm, 
@@ -49,7 +46,7 @@ export default function MessagingPage() {
   } = useRegistry({
     defaultSortBy: "createdAt",
     defaultSortDir: "desc",
-    defaultPageSize: 15
+    defaultPageSize: 20
   });
 
   const { alerts, pagination, loading, error, refresh } = useClientAlerts(params as any);
@@ -68,11 +65,11 @@ export default function MessagingPage() {
       sortable: true,
       sortKey: "referenceNumber",
       render: (n) => (
-        <div className="flex items-center gap-2 group">
+        <div className="flex items-center gap-3 group">
            <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-brand-blue/5 transition-all">
               <Hash className="h-3.5 w-3.5 text-slate-400 group-hover:text-brand-blue" />
            </div>
-           <span className="font-mono text-body-sm text-slate-900 font-bold tracking-tight">
+           <span className="font-mono text-body-sm text-slate-900 font-bold tracking-tight truncate">
              {n.referenceNumber}
            </span>
         </div>
@@ -84,14 +81,14 @@ export default function MessagingPage() {
       sortKey: "customerName",
       render: (n) => (
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200">
+          <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200">
              <User className="h-3.5 w-3.5 text-slate-400" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-body-sm text-slate-700 font-bold truncate">
               {n.customerName || "Walk-in Customer"}
             </span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-70">
               Recipient
             </span>
           </div>
@@ -101,9 +98,9 @@ export default function MessagingPage() {
     {
       header: UI_LABELS.modules.clientAlerts.MESSAGE,
       render: (n) => (
-        <div className="max-w-xs xl:max-w-md">
-           <p className="text-body-sm text-slate-500 line-clamp-1 leading-relaxed italic">
-             "{n.message}"
+        <div className="max-w-[280px] xl:max-w-md">
+           <p className="text-body-sm text-slate-500 line-clamp-1 leading-relaxed italic opacity-80">
+             &quot;{n.message}&quot;
            </p>
         </div>
       ),
@@ -117,9 +114,9 @@ export default function MessagingPage() {
         return (
           <StatusBadge 
             variant={isSent ? "success" : "error"} 
-            label={isSent ? "Message Sent" : "Delivery Failed"} 
+            label={isSent ? "MESSAGE SENT" : "DELIVERY FAILED"} 
             icon={isSent ? BadgeCheck : AlertCircle}
-            className="font-bold tracking-tight"
+            className="font-bold tracking-widest text-[9px]"
           />
         );
       },
@@ -129,11 +126,18 @@ export default function MessagingPage() {
       sortable: true,
       sortKey: "createdAt",
       render: (n) => (
-        <div className="flex items-center gap-2.5 text-slate-500">
-           <Clock className="h-3.5 w-3.5 text-slate-300" />
-           <span className="text-[11px] font-bold text-slate-400 tabular-nums uppercase tracking-tighter">
-             {formatDateTime(n.createdAt)}
-           </span>
+        <div className="flex items-center gap-3 text-slate-500">
+           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
+              <Clock className="h-3.5 w-3.5 text-slate-400" />
+           </div>
+           <div className="flex flex-col">
+             <span className="text-body-sm font-bold text-slate-700 tabular-nums">
+               {formatDateTime(n.createdAt).split(',')[0]}
+             </span>
+             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+               {formatDateTime(n.createdAt).split(',')[1]}
+             </span>
+           </div>
         </div>
       ),
     },
@@ -144,14 +148,14 @@ export default function MessagingPage() {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-10 px-4 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
+          className="h-11 px-5 gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-2xl transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
           onClick={(e) => {
             e.stopPropagation();
             handleRowClick(n);
           }}
         >
-          Details
-          <ArrowRight className="h-3.5 w-3.5" />
+          {UI_LABELS.shared.common.DETAILS}
+          <ArrowRight className="h-4 w-4" />
         </Button>
       ),
     },
@@ -164,19 +168,9 @@ export default function MessagingPage() {
         title={UI_LABELS.modules.clientAlerts.TITLE}
         subtitle={UI_LABELS.modules.clientAlerts.SUBTITLE}
         icon={MessageSquare}
-        actions={
-          <Button 
-            variant="secondary" 
-            className="h-12 px-6 gap-2 text-xs font-bold uppercase tracking-widest border-slate-200 bg-white shadow-sm"
-            onClick={() => refresh()}
-            isLoading={loading}
-          >
-            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {UI_LABELS.shared.common.REFRESH}
-          </Button>
-        }
       />
 
+      {/* ── Filter Bar with Integrated Refresh ── */}
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="w-full lg:flex-[2] lg:min-w-[280px]">
           <Input
@@ -205,6 +199,17 @@ export default function MessagingPage() {
             onChange={(e) => updateParams({ from: e.target.value, page: 0 })}
             className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
           />
+        </div>
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <Button 
+            variant="secondary" 
+            className="flex-1 lg:flex-none h-13 px-grid-6 gap-grid-2 uppercase text-[10px] tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-xl" 
+            onClick={() => refresh()}
+            isLoading={loading}
+          >
+            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            {UI_LABELS.shared.common.REFRESH}
+          </Button>
         </div>
       </FilterBar>
 
