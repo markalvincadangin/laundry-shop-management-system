@@ -496,14 +496,15 @@ export default function OrderDetailPage() {
 
       <ConfirmDialog
         isOpen={!!confirmStatusModal}
-        title={UI_LABELS.modals.confirm.TITLE}
+        title={confirmStatusModal === ORDER_STATUS.CANCELLED ? "Cancel Order?" : "Update Status?"}
         description={
           confirmStatusModal === ORDER_STATUS.CANCELLED
             ? UI_LABELS.modals.confirm.CANCEL_ORDER_DESC
             : (STATUS_TRANSITIONS[order.currentStatus as OrderStatus]?.confirm ?? "")
         }
-        confirmText={UI_LABELS.shared.buttons.CONFIRM}
+        confirmText={confirmStatusModal === ORDER_STATUS.CANCELLED ? UI_LABELS.shared.buttons.CANCEL : UI_LABELS.shared.buttons.CONFIRM}
         isDestructive={confirmStatusModal === ORDER_STATUS.CANCELLED}
+        icon={confirmStatusModal === ORDER_STATUS.CANCELLED ? ShieldAlert : ShieldCheck}
         isLoading={updating}
         onConfirm={doUpdateStatus}
         onCancel={() => setConfirmStatusModal(null)}
@@ -515,6 +516,7 @@ export default function OrderDetailPage() {
         description={UI_LABELS.modals.confirm.VOID_PAYMENT_DESC}
         confirmText={UI_LABELS.modules.payments.VOIDED}
         isDestructive={true}
+        icon={ShieldAlert}
         isLoading={isVoiding}
         onConfirm={doVoidPayment}
         onCancel={() => setConfirmVoidModal(false)}

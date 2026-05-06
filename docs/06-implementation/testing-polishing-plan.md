@@ -121,12 +121,16 @@ To keep the codebase stable while isolating module-specific polish, we will use 
 - **Git Branch:** `polish/admin-settings`
 
 **Testing & Fixing:**
-- [ ] Write negative tests ensuring `STAFF` roles cannot access `DELETE /api/v1/orders/{id}` or `PATCH /api/v1/service-rates/{id}`.
-- [ ] Ensure the UI hides "Delete" or "Edit Rates" buttons completely from Staff accounts.
+- [x] Write negative tests ensuring `STAFF` roles cannot access `DELETE /api/v1/orders/{id}` or `PATCH /api/v1/service-rates/{id}`.
+  - Done: Verified API response 403 and UI lockdown.
+- [x] Ensure the UI hides "Delete" or "Edit Rates" buttons completely from Staff accounts.
+  - Done: Enforced RBAC UI visibility for Audit Logs, Users, Rates, and Customer Deactivation.
 
 **Polishing:**
-- [ ] Standardize confirmation modals for destructive actions (e.g., deleting an order or changing base prices).
-- [ ] Add visual indicators in the Audit Log to highlight administrative overrides.
+- [x] Standardize confirmation modals for destructive actions (e.g., deleting an order or changing base prices).
+  - Done: Implemented high-fidelity `ConfirmDialog` with icon support and premium layout.
+- [x] Add visual indicators in the Audit Log to highlight administrative overrides.
+  - Done: Upgraded Audit Log with forensic inspection modal and mutation snapshots.
 
 ---
 
