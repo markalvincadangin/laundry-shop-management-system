@@ -23,6 +23,7 @@ export function KPICard({
   variant = "default",
   pulse = false,
   onClick,
+  className = "",
 }: KPICardProps) {
   const variantStyles = {
     default: "text-slate-500 bg-white/40 border-slate-200/60 shadow-inner shadow-white/80",
@@ -47,7 +48,7 @@ export function KPICard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="h-full"
+      className={`h-full ${className}`}
     >
       <Card
         variant="glass"
