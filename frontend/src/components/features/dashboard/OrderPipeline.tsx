@@ -206,8 +206,10 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
       .filter((o) => o.currentStatus === status)
       .sort((a, b) => {
         // Priority 1: Rush Orders first
-        const aIsRush = a.serviceType === 'WASH_DRY_FOLD_RUSH';
-        const bIsRush = b.serviceType === 'WASH_DRY_FOLD_RUSH';
+        // Logic aligned with Orders page: serviceName includes "Rush" or serviceRateId is 2
+        const aIsRush = a.serviceName?.includes("Rush") || (a as any).serviceRateId === 2;
+        const bIsRush = b.serviceName?.includes("Rush") || (b as any).serviceRateId === 2;
+        
         if (aIsRush && !bIsRush) return -1;
         if (!aIsRush && bIsRush) return 1;
         

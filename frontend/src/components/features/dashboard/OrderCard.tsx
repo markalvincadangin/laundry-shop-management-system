@@ -23,6 +23,7 @@ interface OrderCardProps {
  */
 export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardProps) {
   const transition = STATUS_TRANSITIONS[order.currentStatus as OrderStatus];
+  const isRush = order.serviceName?.includes("Rush") || (order as any).serviceRateId === 2;
 
   const dropOffTime = React.useMemo(() => {
     if (!order.createdAt) return null;
@@ -55,9 +56,14 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
       {/* Header: Identity & Status */}
       <div className="flex flex-col gap-3 mb-5 relative z-10">
         <div className="flex items-center justify-between gap-3">
-          <span className="px-2 py-1 rounded-md bg-slate-50 border border-slate-200/50 text-[9px] font-mono font-black text-slate-800 tracking-widest uppercase shadow-sm">
-            {order.referenceNumber}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 rounded-md bg-slate-50 border border-slate-200/50 text-[9px] font-mono font-black text-slate-800 tracking-widest uppercase shadow-sm">
+              {order.referenceNumber}
+            </span>
+            {isRush && (
+              <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px] h-auto" />
+            )}
+          </div>
           <div className="shrink-0 scale-90 origin-right">
             <StatusBadge status={order.currentStatus as OrderStatus} />
           </div>
@@ -65,7 +71,7 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
         
         <h3 className="text-[15px] font-black text-slate-900 tracking-tight line-clamp-2 break-words leading-tight flex items-center gap-2">
           {order.customerName || "Walk-in Customer"}
-          {order.serviceType === 'WASH_DRY_FOLD_RUSH' && (
+          {isRush && (
             <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" aria-label="Rush Order" />
           )}
         </h3>
