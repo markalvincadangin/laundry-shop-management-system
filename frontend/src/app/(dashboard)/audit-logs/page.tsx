@@ -187,10 +187,10 @@ export default function AuditLogPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
       <PageHeader 
+        variant="premium"
         title={UI_LABELS.modules.auditLog.TITLE}
         subtitle={UI_LABELS.modules.auditLog.SUBTITLE}
         icon={History}
-        className="mb-grid-4"
       />
 
       {/* ── Filter Bar with Glass Effect ── */}

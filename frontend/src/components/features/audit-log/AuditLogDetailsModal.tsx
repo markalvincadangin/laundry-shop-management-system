@@ -1,4 +1,7 @@
-import { Database, User, Clock, ShieldCheck, Activity, Terminal } from "lucide-react";
+"use client";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { Database, User, Clock, ShieldCheck, Activity, Terminal, ChevronRight, Fingerprint } from "lucide-react";
 import { Modal, StatusBadge } from "@/components/ui";
 import { AuditLogResponse } from "@/services/audit-log.service";
 import { formatDateTime } from "@/lib/utils";
@@ -13,6 +16,7 @@ interface AuditLogDetailsModalProps {
 /**
  * Audit Log Details Modal — High Fidelity (v4.0)
  * Provides a granular forensic inspection of system-wide entity mutations.
+ * Standardized with FRONT-001 §11.4 standards.
  */
 export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDetailsModalProps) {
   const parseSnapshot = (snapshot: string | undefined | null) => {
@@ -24,7 +28,6 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
     }
   };
 
-  // Helper to map DB keys to human labels
   const getLabel = (key: string) => {
     const map: Record<string, string> = {
       reference_number: UI_LABELS.shared.common.REFERENCE,
@@ -61,46 +64,60 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
       onClose={onClose}
       title={UI_LABELS.modules.auditLog.AUDIT_INSPECTION}
       size="lg"
-      className="rounded-[32px]"
+      className="rounded-[40px] overflow-hidden"
     >
-      <div className="p-grid-6 md:p-grid-8 space-y-grid-8">
+      <div className="p-grid-6 md:p-grid-8 space-y-grid-8 relative">
+        {/* Glow Background */}
+        <div className="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-brand-blue/5 blur-3xl opacity-40 pointer-events-none" />
+
         {/* ── Inspection Header ── */}
-        <div className="flex items-center gap-grid-6 p-grid-6 rounded-3xl bg-slate-50 border border-slate-100 shadow-inner">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-grid-6 p-grid-6 rounded-3xl bg-slate-50 border border-slate-100 shadow-inner relative z-10"
+        >
           <div className={`h-16 w-16 rounded-2xl flex items-center justify-center border-2 shadow-sm transition-all ${operationColors[op]}`}>
-            <Database className="h-8 w-8" strokeWidth={2.5} />
+            <Fingerprint className="h-8 w-8" strokeWidth={2.5} />
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
               {UI_LABELS.modules.auditLog.AUDIT_RECORD}
             </p>
-            <h4 className="text-h4 font-black text-slate-900 tracking-tight flex items-baseline gap-2 flex-wrap">
+            <h4 className="text-xl font-black text-slate-900 tracking-tight flex items-baseline gap-2 flex-wrap">
               {UI_LABELS.modules.auditLog.ACTION_MAP[selected?.operation || ''] || selected?.operation} 
               <span className="text-brand-blue">{UI_LABELS.modules.auditLog.TABLE_MAP[selected?.entityType || ''] || selected?.entityType}</span>
-              <span className="text-xs font-mono text-slate-400 font-bold bg-white px-2 py-0.5 rounded-lg border border-slate-200">
+              <span className="text-xs font-mono text-slate-400 font-black bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
                 #{selected?.entityId}
               </span>
             </h4>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Forensic Data Snapshot ── */}
-        <div className="space-y-grid-3">
+        <div className="space-y-grid-4">
           <div className="flex items-center justify-between px-grid-2">
             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-              <Activity className="h-3 w-3" />
+              <Activity className="h-3 w-3 text-brand-blue" />
               {UI_LABELS.modules.auditLog.NEW_DATA}
             </label>
-            <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/5 px-2 py-0.5 rounded-full">
+            <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/5 border border-brand-blue/10 px-3 py-1 rounded-full shadow-sm">
               Post-Mutation State
             </span>
           </div>
           
-          <div className="rounded-2xl border border-slate-200/60 overflow-hidden bg-white shadow-sm ring-1 ring-slate-900/5">
-            <div className="max-h-[320px] overflow-y-auto divide-y divide-slate-50">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-[32px] border border-slate-200/60 overflow-hidden bg-white shadow-xl shadow-slate-200/20"
+          >
+            <div className="max-h-[360px] overflow-y-auto divide-y divide-slate-50 custom-scrollbar">
               {snapshotKeys.length === 0 ? (
-                <div className="p-grid-10 text-center space-y-grid-2">
-                  <Activity className="h-10 w-10 text-slate-100 mx-auto" />
-                  <p className="text-body-sm font-bold text-slate-300 italic">No snapshot data available.</p>
+                <div className="p-grid-12 text-center space-y-grid-4">
+                  <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto border border-slate-100 border-dashed">
+                    <Database className="h-8 w-8 text-slate-200" />
+                  </div>
+                  <p className="text-body-sm font-black text-slate-300 uppercase tracking-widest">No mutation data available</p>
                 </div>
               ) : (
                 snapshotKeys.map((key, i) => {
@@ -109,12 +126,18 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                   const isActive = key.toLowerCase().includes('active');
 
                   return (
-                    <div key={key} className="flex flex-col sm:flex-row sm:items-center px-grid-5 py-grid-4 hover:bg-slate-50/50 transition-colors">
-                      <div className="w-full sm:w-1/3 text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
+                    <motion.div 
+                      key={key}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.05 * i }}
+                      className="flex flex-col sm:flex-row sm:items-center px-grid-6 py-grid-5 hover:bg-slate-50/50 transition-colors group"
+                    >
+                      <div className="w-full sm:w-1/3 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 group-hover:text-brand-blue transition-colors">
+                        <ChevronRight className="h-3 w-3 opacity-30" />
                         {getLabel(key)}
                       </div>
-                      <div className="w-full sm:w-2/3 mt-1 sm:mt-0">
+                      <div className="w-full sm:w-2/3 mt-2 sm:mt-0">
                         {isStatus || isActive ? (
                           <StatusBadge 
                             variant={String(val).toUpperCase() === 'PAID' || val === true ? "success" : "neutral"} 
@@ -122,64 +145,72 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                             className="scale-90 origin-left"
                           />
                         ) : (
-                          <span className="text-body-sm font-bold text-slate-700 break-all">
+                          <span className="text-body-sm font-bold text-slate-700 break-all bg-slate-50/50 px-2 py-1 rounded-md border border-transparent group-hover:border-slate-100 group-hover:bg-white transition-all">
                             {val !== undefined && val !== null ? String(val) : '---'}
                           </span>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* ── Metadata & Operator ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-grid-6 pt-grid-6 border-t border-slate-100">
-          <div className="space-y-grid-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner">
-                <User className="h-4.5 w-4.5 text-slate-400" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-grid-6 pt-grid-6 border-t border-slate-100 relative z-10">
+          <div className="space-y-grid-5">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100 shadow-sm text-brand-blue">
+                <User className="h-5 w-5" strokeWidth={2.5} />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{UI_LABELS.modules.auditLog.OPERATOR}</span>
-                <span className="text-body-sm font-bold text-slate-900">{selected?.actor || "Automated System"}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{UI_LABELS.modules.auditLog.OPERATOR}</span>
+                <span className="text-body-sm font-black text-slate-900">{selected?.actor || "Automated System"}</span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner">
-                <Clock className="h-4.5 w-4.5 text-slate-400" />
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center border border-slate-100 shadow-sm text-slate-400">
+                <Clock className="h-5 w-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{UI_LABELS.shared.common.TIME}</span>
-                <span className="text-body-sm font-bold text-slate-900">{selected?.createdAt ? formatDateTime(selected.createdAt) : "—"}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{UI_LABELS.shared.common.TIME}</span>
+                <span className="text-body-sm font-black text-slate-900">{selected?.createdAt ? formatDateTime(selected.createdAt) : "—"}</span>
               </div>
             </div>
           </div>
 
           {(selected?.methodName || selected?.description) && (
-            <div className="p-grid-5 rounded-2xl bg-slate-900 text-slate-50 space-y-grid-4 shadow-xl">
-              <div className="flex items-center gap-2 text-brand-blue">
-                <Terminal className="h-3.5 w-3.5" />
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">{UI_LABELS.modules.auditLog.AUDIT_METADATA}</span>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-grid-6 rounded-[32px] bg-slate-900 text-slate-50 space-y-grid-4 shadow-2xl relative overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 -mt-10 -mr-10 h-32 w-32 rounded-full bg-brand-blue/10 blur-2xl" />
+              
+              <div className="flex items-center gap-2 text-brand-blue relative z-10">
+                <Terminal className="h-4 w-4" />
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">{UI_LABELS.modules.auditLog.AUDIT_METADATA}</span>
               </div>
               
-              {selected?.methodName && (
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">{UI_LABELS.shared.common.METHOD}</span>
-                  <code className="text-xs font-mono text-emerald-400 break-all bg-slate-800/50 px-1.5 py-0.5 rounded">
-                    {selected?.methodName}
-                  </code>
-                </div>
-              )}
-              {selected?.description && (
-                <div className="space-y-1">
-                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">{UI_LABELS.shared.common.DETAILS}</span>
-                  <p className="text-xs text-slate-300 leading-relaxed italic">{selected?.description}</p>
-                </div>
-              )}
-            </div>
+              <div className="space-y-4 relative z-10">
+                {selected?.methodName && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">{UI_LABELS.shared.common.METHOD}</span>
+                    <code className="text-xs font-mono text-emerald-400 break-all bg-white/5 border border-white/10 px-3 py-2 rounded-xl block shadow-inner">
+                      {selected?.methodName}
+                    </code>
+                  </div>
+                )}
+                {selected?.description && (
+                  <div className="space-y-1.5">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block">{UI_LABELS.shared.common.DETAILS}</span>
+                    <p className="text-xs text-slate-300 leading-relaxed italic border-l-2 border-brand-blue/30 pl-3">{selected?.description}</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
         </div>
       </div>

@@ -189,6 +189,7 @@ export default function UsersPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
       <PageHeader
+        variant="premium"
         title={UI_LABELS.modules.users.TITLE}
         subtitle={UI_LABELS.modules.users.SUBTITLE}
         icon={Users}
@@ -201,7 +202,6 @@ export default function UsersPage() {
             {UI_LABELS.modules.users.CREATE}
           </Button>
         }
-        className="mb-grid-4"
       />
 
       {/* ── Filter Bar with Glass Effect ── */}

@@ -113,6 +113,8 @@ export interface PageHeaderProps {
   subtitle?: string;
   icon?: LucideIcon;
   actions?: React.ReactNode;
+  className?: string;
+  variant?: "default" | "premium";
 }
 
 export interface DataTableColumn<T> {
