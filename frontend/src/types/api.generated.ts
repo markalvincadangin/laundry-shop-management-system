@@ -392,7 +392,48 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Create service rate (Admin only)
+         * @description Creates a new service rate. Requires ADMIN role.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateServiceRateRequest"];
+                };
+            };
+            responses: {
+                /** @description Rate created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ServiceRateResponse"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden - Admin only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1789,6 +1830,17 @@ export interface components {
             pricePerExtraMinute?: number;
             isActive?: boolean;
         };
+        CreateServiceRateRequest: {
+            serviceName: string;
+            /** Format: double */
+            basePricePerLoad: number;
+            /** Format: double */
+            kgLimitPerLoad: number;
+            /** Format: double */
+            pricePerExtraMinute: number;
+            /** @default true */
+            isActive: boolean;
+        };
         CreateOrderRequest: {
             /** Format: int64 */
             customerId?: number;
@@ -2003,7 +2055,7 @@ export interface components {
             first: boolean;
             last: boolean;
         };
-        /** @description Audit record of a system action. Snapshot data includes point-in-time state. */
+        /** @description Audit record of a system action. Capture point-in-time state for forensic inspection. */
         AuditLogResponse: {
             /** Format: int64 */
             id: number;
@@ -2013,13 +2065,15 @@ export interface components {
              * @description Type of state change
              * @enum {string}
              */
-            operation: "INSERT" | "UPDATE" | "DELETE";
+            operation: "INSERT" | "UPDATE" | "DELETE" | "USER_LOGIN" | "USER_LOGOUT" | "PAYMENT_RECORD" | "ORDER_STATUS_UPDATE";
             /** @description Type of record affected (e.g., Order, Payment) */
             entityType?: string;
             /** @description Primary key of the affected record */
             entityId?: string;
-            /** @description JSON forensic snapshot of the entity state at time of action */
-            snapshot?: string;
+            /** @description Forensic snapshot of state before mutation */
+            oldState?: Record<string, never>;
+            /** @description Forensic snapshot of state after mutation */
+            newState?: Record<string, never>;
             /**
              * Format: date-time
              * @description Timestamp in UTC

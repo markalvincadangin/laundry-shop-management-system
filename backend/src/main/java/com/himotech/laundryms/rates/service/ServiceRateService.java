@@ -1,6 +1,7 @@
 package com.himotech.laundryms.rates.service;
 
 import com.himotech.laundryms.auditlog.aspect.Auditable;
+import com.himotech.laundryms.api.dto.request.CreateServiceRateRequest;
 import com.himotech.laundryms.api.dto.request.UpdateServiceRateRequest;
 import com.himotech.laundryms.config.CacheConfig;
 import com.himotech.laundryms.exception.NotFoundException;
@@ -45,6 +46,25 @@ public class ServiceRateService {
             return serviceRateRepository.findByIsActiveTrue();
         }
         return serviceRateRepository.findAll();
+    }
+
+    @Auditable(action = "RATE_CREATE", description = "Create new service rate")
+    @Transactional
+    @CacheEvict(value = CacheConfig.CACHE_SERVICE_RATES, allEntries = true)
+    public ServiceRate create(CreateServiceRateRequest request) {
+        if (serviceRateRepository.findByServiceName(request.getServiceName()).isPresent()) {
+            throw new IllegalArgumentException("Service rate with name already exists: " + request.getServiceName());
+        }
+
+        ServiceRate rate = ServiceRate.builder()
+                .serviceName(request.getServiceName())
+                .basePricePerLoad(request.getBasePricePerLoad())
+                .kgLimitPerLoad(request.getKgLimitPerLoad())
+                .pricePerExtraMinute(request.getPricePerExtraMinute())
+                .isActive(request.getIsActive() != null ? request.getIsActive() : true)
+                .build();
+
+        return serviceRateRepository.save(rate);
     }
 
     @Auditable(action = "RATE_UPDATE", description = "Update service rate pricing")

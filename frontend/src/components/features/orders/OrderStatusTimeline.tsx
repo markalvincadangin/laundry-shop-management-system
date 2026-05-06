@@ -27,14 +27,10 @@ const STATUS_LABELS: Record<string, string> = {
 function buildStatusTimestamps(logs: components["schemas"]["AuditLogResponse"][]): Map<string, string> {
   const map = new Map<string, string>();
   for (const log of logs) {
-    try {
-      const snapshot = JSON.parse(log.snapshot || "{}");
-      const newStatus = snapshot.current_status || snapshot.status;
-      if (newStatus && log.createdAt) {
-        map.set(newStatus, log.createdAt);
-      }
-    } catch {
-      // Skip invalid snapshots
+    const state = log.newState || {};
+    const newStatus = state.current_status || state.status;
+    if (newStatus && log.createdAt) {
+      map.set(newStatus, log.createdAt);
     }
   }
   return map;

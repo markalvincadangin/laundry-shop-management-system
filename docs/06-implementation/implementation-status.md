@@ -3,7 +3,7 @@
 
 > **Source of truth:** [docs/](../) — scope, user stories, business rules, NFRs, OpenAPI, ERD  
 > **Last scanned:** 2026-05-06  
-> **Last updated:** 2026-05-06 (Polished Customer & Notifications Module)  
+> **Last updated:** 2026-05-06 (Finalized Admin Security & Service Rates Polish)  
 > **Purpose:** Gap analysis of what is implemented vs. what is required per documentation
 
 ---
@@ -50,7 +50,7 @@
 | GET /api/v1/health | ✅ | See “Missing” below |
 | POST /api/v1/auth/login, logout; GET /me | ✅ | |
 | GET/POST /api/v1/customers; GET /api/v1/customers/{id} | ✅ | No PATCH customer in spec; not required for MVP |
-| GET /api/v1/service-rates, /active; PATCH /{rateId} | ✅ | |
+| GET /api/v1/service-rates, /active; POST /; PATCH /{rateId} | ✅ | Added POST for rate creation |
 | POST/GET /api/v1/orders; POST /preview; GET /stats, /{id}, /reference/{ref}; PATCH /{id}, /{id}/status | ✅ | |
 | POST/GET /api/v1/payments; GET /{paymentId} | ✅ | |
 | GET /api/v1/notifications | ✅ | |

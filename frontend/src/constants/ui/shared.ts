@@ -43,6 +43,7 @@ export const shared = {
     FAILURE: "Failure",
     UNKNOWN: "Unknown",
     WEIGHT: "Weight",
+    PLEASE_WAIT: "Please wait",
   },
 
   buttons: {
@@ -65,6 +66,7 @@ export const shared = {
     PROCEED: "Proceed",
     COPY: "Copy",
     CHANGE: "Change",
+    REGISTER: "Register",
   },
 
   status: {

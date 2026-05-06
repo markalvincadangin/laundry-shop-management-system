@@ -76,6 +76,7 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
   isLoading?: boolean;
   isDestructive?: boolean;
+  icon?: React.ElementType;
   children?: React.ReactNode;
 }
 
@@ -112,6 +113,8 @@ export interface PageHeaderProps {
   subtitle?: string;
   icon?: LucideIcon;
   actions?: React.ReactNode;
+  className?: string;
+  variant?: "default" | "premium";
 }
 
 export interface DataTableColumn<T> {
