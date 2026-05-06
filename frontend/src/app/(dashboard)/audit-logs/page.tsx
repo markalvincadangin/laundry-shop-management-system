@@ -1,7 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { History, RefreshCcw, User, Clock, Eye, Search } from "lucide-react";
+import { 
+  History, 
+  RefreshCcw, 
+  User, 
+  Clock, 
+  Eye, 
+  Search, 
+  Database, 
+  Activity, 
+  ShieldCheck,
+  ChevronRight,
+  Filter
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Button, 
   StatusBadge,
@@ -20,8 +33,9 @@ import { AuditLogResponse } from "@/services/audit-log.service";
 import { AuditLogDetailsModal } from "@/components/features/audit-log/AuditLogDetailsModal";
 
 /**
- * Audit Log Page (System Audit Trail)
- * Standardized with HCI-compliant URL sync and server-side filtering.
+ * Audit Log Page (System Audit Trail) — High Fidelity (v4.0)
+ * Provides full forensic transparency for all system mutations.
+ * Adheres to FRONT-001 §11.4 (Security & Audit Trail).
  */
 export default function AuditLogPage() {
   const { user, loading: authLoading } = useAuth();
@@ -59,11 +73,16 @@ export default function AuditLogPage() {
         if (a.operation === "DELETE") variant = "error";
 
         return (
-          <StatusBadge 
-            variant={variant} 
-            label={UI_LABELS.modules.auditLog.ACTION_MAP[a.operation || ""] || a.operation} 
-            className="w-24 justify-center"
-          />
+          <div className="flex flex-col gap-1">
+            <StatusBadge 
+              variant={variant} 
+              label={UI_LABELS.modules.auditLog.ACTION_MAP[a.operation || ""] || a.operation} 
+              className="w-24 justify-center shadow-sm"
+            />
+            <span className="text-[9px] font-black uppercase tracking-tighter text-slate-400 px-1">
+              {a.operation} OP
+            </span>
+          </div>
         );
       },
     },
@@ -72,16 +91,22 @@ export default function AuditLogPage() {
       sortable: true,
       sortKey: "entityType",
       render: (a) => (
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-            {a.entityType ? (UI_LABELS.modules.auditLog.TABLE_MAP[a.entityType] || a.entityType.replace("_", " ")) : UI_LABELS.shared.common.SYSTEM}
-          </span>
-          <span className="text-body-sm font-black text-slate-900 group-hover:text-brand-blue transition-colors">
+        <div className="flex flex-col gap-0.5 group">
+          <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-brand-blue transition-colors">
+            <Database className="h-3 w-3" />
+            <span className="text-[10px] font-black uppercase tracking-widest">
+              {a.entityType ? (UI_LABELS.modules.auditLog.TABLE_MAP[a.entityType] || a.entityType.replace("_", " ")) : UI_LABELS.shared.common.SYSTEM}
+            </span>
+          </div>
+          <span className="text-body-sm font-black text-slate-900">
             {a.entityType || UI_LABELS.shared.common.SYSTEM}
           </span>
-          <span className="text-sm font-mono text-slate-700 font-bold">
-            {UI_LABELS.shared.common.ID}: {a.entityId}
-          </span>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID:</span>
+            <span className="text-xs font-mono text-slate-600 font-bold bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
+              {a.entityId}
+            </span>
+          </div>
         </div>
       ),
     },
@@ -99,14 +124,24 @@ export default function AuditLogPage() {
           return userStr;
         };
         
+        const actorName = formatUser(a.actor);
+        const isSystem = actorName === UI_LABELS.shared.common.SYSTEM;
+
         return (
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-slate-100 flex items-center justify-center border border-slate-200">
-              <User className="h-3.5 w-3.5 text-slate-500" />
+          <div className="flex items-center gap-3">
+            <div className={`h-9 w-9 rounded-xl flex items-center justify-center border shadow-sm transition-all ${
+              isSystem ? "bg-slate-50 border-slate-100" : "bg-brand-blue/5 border-brand-blue/10"
+            }`}>
+              <User className={`h-4 w-4 ${isSystem ? "text-slate-400" : "text-brand-blue"}`} />
             </div>
-            <span className="text-sm text-slate-600 font-semibold">
-              {formatUser(a.actor)}
-            </span>
+            <div className="flex flex-col">
+              <span className={`text-body-sm font-bold ${isSystem ? "text-slate-500" : "text-slate-900"}`}>
+                {actorName}
+              </span>
+              <span className="text-[10px] font-black uppercase tracking-tighter text-slate-400">
+                {isSystem ? "Automated" : "Administrative"}
+              </span>
+            </div>
           </div>
         );
       },
@@ -116,54 +151,64 @@ export default function AuditLogPage() {
       sortable: true,
       sortKey: "createdAt",
       render: (a) => (
-        <div className="flex items-center gap-2 text-slate-400">
-          <Clock className="h-3.5 w-3.5" />
-          <span className="text-xs font-medium">
-            {formatDateTime(a.createdAt)}
-          </span>
+        <div className="flex items-center gap-2.5 text-slate-500">
+          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner">
+            <Clock className="h-3.5 w-3.5 text-slate-400" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-body-sm font-bold text-slate-700">
+              {formatDateTime(a.createdAt).split(",")[0]}
+            </span>
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {formatDateTime(a.createdAt).split(",")[1]}
+            </span>
+          </div>
         </div>
       ),
     },
     {
-      header: UI_LABELS.shared.common.ACTIONS,
+      header: "",
       align: "right",
       render: (a) => (
         <Button 
           variant="ghost" 
           size="sm"
-          className="h-9 px-3 gap-2 text-[10px] font-black uppercase tracking-tighter"
+          className="h-10 px-4 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
           onClick={() => setSelected(a)}
         >
-          <Eye className="h-3.5 w-3.5" />
+          <Activity className="h-3.5 w-3.5" />
           {UI_LABELS.shared.common.DETAILS}
+          <ChevronRight className="h-3 w-3 opacity-30" />
         </Button>
       ),
     },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-10 pb-grid-20">
+    <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
       <PageHeader 
         title={UI_LABELS.modules.auditLog.TITLE}
         subtitle={UI_LABELS.modules.auditLog.SUBTITLE}
         icon={History}
+        className="mb-grid-4"
       />
 
+      {/* ── Filter Bar with Glass Effect ── */}
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
-        <div className="w-full lg:flex-[2] lg:min-w-[200px]">
+        <div className="w-full lg:flex-[2] lg:min-w-[280px]">
           <Input
             placeholder={UI_LABELS.modules.auditLog.SEARCH_LOGS}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-14 rounded-xl border-slate-200 bg-white"
+            className="h-13 rounded-xl border-slate-200 bg-white/50 focus:bg-white transition-all shadow-sm"
           />
         </div>
-        <div className="w-full lg:flex-1 lg:min-w-[150px]">
+        <div className="w-full lg:flex-1 lg:min-w-[180px]">
           <Select
             value={params.action ?? ""}
             onChange={(e) => updateParams({ action: e.target.value, page: 0 })}
-            className="h-14 rounded-xl border-slate-200 bg-white"
+            className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
           >
             <option value="">{UI_LABELS.shared.common.ALL_ACTIONS}</option>
             <option value="INSERT">{UI_LABELS.modules.auditLog.ACTION_CREATED}</option>
@@ -173,52 +218,52 @@ export default function AuditLogPage() {
         </div>
         <div className="w-full lg:flex-1 lg:min-w-[150px]">
           <Input
-            label={UI_LABELS.shared.common.START_DATE}
             type="date"
             value={params.from ?? ""}
             onChange={(e) => updateParams({ from: e.target.value, page: 0 })}
-            className="h-14 rounded-xl border-slate-200 bg-white"
+            className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
           />
         </div>
-        <div className="w-full lg:flex-1 lg:min-w-[150px]">
-          <Input
-            label={UI_LABELS.shared.common.END_DATE}
-            type="date"
-            value={params.to ?? ""}
-            onChange={(e) => updateParams({ to: e.target.value, page: 0 })}
-            className="h-14 rounded-xl border-slate-200 bg-white"
-          />
+        <div className="flex items-center gap-2 w-full lg:w-auto">
+          <Button 
+            variant="secondary" 
+            className="flex-1 lg:flex-none h-13 px-grid-6 gap-grid-2 uppercase text-[10px] tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-xl" 
+            onClick={() => refresh()}
+            isLoading={loading}
+          >
+            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            {UI_LABELS.shared.common.REFRESH}
+          </Button>
         </div>
-        <Button 
-          variant="secondary" 
-          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 uppercase text-caption tracking-widest font-black shadow-sm border-slate-200 shrink-0"
-          onClick={() => refresh()}
-          isLoading={loading}
-        >
-          <RefreshCcw className="h-4 w-4" />
-          {UI_LABELS.shared.common.REFRESH}
-        </Button>
       </FilterBar>
 
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <div className="space-y-grid-6">
-          <DataTable
-            data={logs}
-            columns={columns}
-            loading={loading}
-            sortBy={sortBy}
-            sortDir={sortDir}
-            onSort={handleSort}
-            onRowClick={(a) => setSelected(a)}
-            emptyState={
-              <EmptyState
-                title={UI_LABELS.feedback.empty.AUDIT_LOG_TITLE}
-                description={UI_LABELS.feedback.empty.AUDIT_LOG_DESC}
-              />
-            }
-          />
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-grid-6"
+        >
+          <div className="rounded-3xl border border-slate-200/60 bg-white shadow-sm overflow-hidden">
+            <DataTable
+              data={logs}
+              columns={columns}
+              loading={loading}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSort={handleSort}
+              onRowClick={(a) => setSelected(a)}
+              emptyState={
+                <EmptyState
+                  title={UI_LABELS.feedback.empty.AUDIT_LOG_TITLE}
+                  description={UI_LABELS.feedback.empty.AUDIT_LOG_DESC}
+                  icon={<History className="h-16 w-16 text-slate-100" />}
+                />
+              }
+            />
+          </div>
+
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
@@ -228,7 +273,7 @@ export default function AuditLogPage() {
             onPageSizeChange={(newSize) => updateParams({ size: newSize, page: 0 })}
             isLoading={loading}
           />
-        </div>
+        </motion.div>
       )}
 
       {/* Details Modal */}

@@ -75,6 +75,7 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
   isLoading?: boolean;
   isDestructive?: boolean;
+  icon?: React.ElementType;
   children?: React.ReactNode;
 }
 
