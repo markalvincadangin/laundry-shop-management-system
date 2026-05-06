@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Clock, Scale, Zap, Package, Wind, FileText } from "lucide-react";
+import { ArrowRight, Clock, Scale, Zap, FileText } from "lucide-react";
 import { Card, Button, StatusBadge, Tooltip } from "@/components/ui";
 import { OrderResponse } from "@/services/orders.service";
 import { STATUS_TRANSITIONS, OrderStatus } from "@/constants/order-status";
@@ -51,17 +51,6 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
       >
         {/* Glossy Overlay */}
         <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/10 pointer-events-none" />
-
-        {/* Ambient Iconography */}
-        <div className="absolute top-[-10px] right-[-10px] opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
-          {order.serviceType === 'WASH_DRY_FOLD_RUSH' ? (
-            <Zap className="h-32 w-32 rotate-12" />
-          ) : order.serviceType === 'BLANKETS' ? (
-            <Wind className="h-32 w-32 rotate-12" />
-          ) : (
-            <Package className="h-32 w-32 rotate-12" />
-          )}
-        </div>
 
       {/* Header: Identity & Status */}
       <div className="flex flex-col gap-3 mb-5 relative z-10">
