@@ -198,32 +198,40 @@ function TrackContent() {
         >
           {/* Headline — hide when result is visible (H2: remove irrelevant info) */}
           {!hasResult && (
-            <div className="space-y-grid-4">
-              <div className="inline-flex items-center gap-grid-2 px-grid-4 py-grid-1.5 bg-brand-blue/5 rounded-full border border-brand-blue/10">
-                <ShieldCheck className="h-3.5 w-3.5 text-brand-blue" strokeWidth={2} />
-                <p className="text-caption font-bold text-brand-blue uppercase tracking-[0.3em]">
+            <div className="space-y-grid-6 animate-in fade-in slide-in-from-top-4 duration-1000">
+              <div className="inline-flex items-center gap-grid-2 px-grid-4 py-grid-1.5 bg-brand-blue/5 rounded-full border border-brand-blue/10 shadow-sm backdrop-blur-md">
+                <ShieldCheck className="h-3.5 w-3.5 text-brand-blue" strokeWidth={2.5} />
+                <p className="text-caption font-black text-brand-blue uppercase tracking-[0.3em]">
                   {UI_LABELS.portal.tracking.OFFICIAL_PORTAL}
                 </p>
               </div>
-              <h2 className="text-h1 sm:text-display font-extrabold font-display text-slate-900 tracking-tighter leading-[0.95] max-w-2xl mx-auto">
+              <h2 className="text-h1 sm:text-display font-black font-display text-slate-900 tracking-tighter leading-[0.95] max-w-2xl mx-auto drop-shadow-sm">
                 {UI_LABELS.portal.tracking.PROMPT}
               </h2>
-              <p className="text-body text-slate-500 max-w-md mx-auto leading-relaxed">
-                {UI_LABELS.portal.tracking.PROMPT}
+              <p className="text-body font-medium text-slate-500 max-w-md mx-auto leading-relaxed">
+                {UI_LABELS.portal.tracking.NOT_FOUND_DESC.split('.')[0]}. Experience the evolution of local laundry with our Real-Time Tracking.
               </p>
             </div>
           )}
 
           {/* Search form — Nielsen H5: submit disabled when result already shown for same ref */}
-          <div className="max-w-2xl mx-auto w-full group">
+          <div className="max-w-2xl mx-auto w-full group relative">
+            {/* Background glass effect blobs */}
+            {!hasResult && (
+              <>
+                <div className="absolute -top-12 -left-12 w-64 h-64 bg-brand-blue/10 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute -bottom-12 -right-12 w-64 h-64 bg-brand-cyan/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+              </>
+            )}
+            
             <form
               onSubmit={handleSubmit}
-              className="relative bg-white p-grid-2 rounded-[2.5rem] shadow-lg shadow-brand-blue/5 border border-slate-100 ring-1 ring-slate-900/5 transition-all duration-300 focus-within:shadow-brand-blue/10 focus-within:ring-2 focus-within:ring-brand-blue/20"
+              className="relative bg-white/80 backdrop-blur-xl p-grid-2 rounded-[2.5rem] shadow-2xl shadow-brand-blue/10 border border-white/50 ring-1 ring-slate-900/5 transition-all duration-300 focus-within:shadow-brand-blue/20 focus-within:ring-2 focus-within:ring-brand-blue/20"
             >
               <div className="flex flex-col sm:flex-row gap-grid-2">
                 <div className="flex-1 relative flex items-center">
                   <div className="absolute left-grid-4 p-grid-2 bg-brand-blue/5 rounded-2xl text-brand-blue transition-all group-focus-within:bg-brand-blue group-focus-within:text-white">
-                    <Search className="h-grid-5 w-grid-5" />
+                    <Search className="h-grid-5 w-grid-5" strokeWidth={2.5} />
                   </div>
                     <input
                       type="text"
@@ -242,7 +250,7 @@ function TrackContent() {
                       className="absolute right-grid-4 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
                       aria-label={UI_LABELS.shared.buttons.CANCEL}
                     >
-                      <X className="h-4 w-4" strokeWidth={2} />
+                      <X className="h-4 w-4" strokeWidth={2.5} />
                     </button>
                   )}
                 </div>
@@ -250,10 +258,10 @@ function TrackContent() {
                   type="submit"
                   isLoading={loading}
                   disabled={isAlreadyDisplayed}
-                  className="h-grid-18 min-h-[44px] px-grid-6 gap-grid-2 bg-brand-blue text-white hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 font-bold uppercase text-caption tracking-[0.2em] rounded-[1.8rem] active:scale-95 transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none disabled:cursor-default disabled:active:scale-100"
+                  className="h-grid-18 min-h-[44px] px-grid-8 gap-grid-2 bg-brand-blue text-white hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/20 font-black uppercase text-[11px] tracking-[0.25em] rounded-[1.8rem] active:scale-95 transition-all disabled:bg-slate-100 disabled:text-slate-500 disabled:shadow-none disabled:cursor-default disabled:active:scale-100"
                 >
                   {isAlreadyDisplayed ? UI_LABELS.portal.tracking.BUTTON_SHOWING : UI_LABELS.portal.tracking.BUTTON_FIND}
-                  {!isAlreadyDisplayed && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
+                  {!isAlreadyDisplayed && <ArrowRight className="h-4 w-4" strokeWidth={3} />}
                 </Button>
               </div>
             </form>
@@ -301,26 +309,37 @@ function TrackContent() {
 
         {/* Error state */}
         {error && !loading && (
-          <div className="relative p-grid-12 rounded-3xl bg-white border border-slate-100 shadow-lg shadow-slate-200/40 text-center space-y-grid-8 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden max-w-xl mx-auto">
-            <div className="h-grid-20 w-grid-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-700 ring-1 ring-rose-700/10">
-              <AlertCircle className="h-grid-10 w-grid-10" />
+          <div className="relative p-grid-12 rounded-[2.5rem] bg-white border border-slate-100 shadow-2xl shadow-slate-200/40 text-center space-y-grid-8 animate-in fade-in slide-in-from-bottom-8 duration-700 overflow-hidden max-w-xl mx-auto ring-1 ring-slate-900/5">
+            {/* Background texture for error */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(225,29,72,0.05),transparent)] pointer-events-none" />
+            
+            <div className="relative h-grid-24 w-grid-24 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-600 ring-4 ring-rose-50">
+              <AlertCircle className="h-grid-12 w-grid-12" strokeWidth={1.5} />
             </div>
-            <div className="space-y-grid-3">
-              <h3 className="text-h3 font-bold font-display text-slate-900 tracking-tight">
+            <div className="relative space-y-grid-3">
+              <h3 className="text-h3 font-black font-display text-slate-900 tracking-tight uppercase">
                 {error}
               </h3>
-              <p className="text-body-sm font-medium text-slate-500 max-w-xs mx-auto leading-relaxed">
+              <p className="text-body font-medium text-slate-500 max-w-xs mx-auto leading-relaxed">
                 {UI_LABELS.portal.tracking.NOT_FOUND_DESC}
               </p>
             </div>
-            <Button
-              variant="secondary"
-              onClick={() => handleSearch(reference)}
-              className="mx-auto h-11 min-h-[44px] px-grid-10 gap-grid-3 font-bold text-caption border-slate-200 hover:bg-slate-50 rounded-2xl transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-blue/40 focus-visible:outline-none"
-            >
-              <RefreshCcw className="h-4 w-4" strokeWidth={2} />
-              {UI_LABELS.shared.buttons.RETRY}
-            </Button>
+            <div className="relative flex flex-col items-center gap-grid-4">
+              <Button
+                variant="primary"
+                onClick={() => handleSearch(reference)}
+                className="h-12 min-h-[48px] px-grid-12 gap-grid-3 font-black text-[11px] uppercase tracking-widest bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/20 rounded-2xl transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-slate-900/40 focus-visible:outline-none"
+              >
+                <RefreshCcw className="h-4 w-4" strokeWidth={2.5} />
+                {UI_LABELS.shared.buttons.RETRY}
+              </Button>
+              <button 
+                onClick={handleTrackAnother}
+                className="text-caption font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
+              >
+                Clear Search
+              </button>
+            </div>
           </div>
         )}
 

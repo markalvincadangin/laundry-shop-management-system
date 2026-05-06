@@ -101,13 +101,20 @@ To keep the codebase stable while isolating module-specific polish, we will use 
 - **Git Branch:** `polish/customers-module`
 
 **Testing & Fixing:**
-- [ ] Test public `/track` page lookup with invalid or non-existent Reference Numbers.
-- [ ] Verify that client alert logs are created when an order enters `READY_FOR_PICKUP`.
-- [ ] Ensure customer search input in the Intake Wizard has proper debouncing.
+- [x] Test public `/track` page lookup with invalid or non-existent Reference Numbers.
+  - Validated: Hardened error states with high-fidelity cards and clear retry affordances.
+- [x] Verify that client alert logs are created when an order enters `READY_FOR_PICKUP`.
+  - Validated: `OrderStatusService` triggers alert creation; verified via `ClientAlertRepository`.
+- [x] Ensure customer search input in the Intake Wizard has proper debouncing.
+  - Validated: 500ms debounce implemented in `useCustomerLookup` hook.
 
 **Polishing:**
-- [ ] Beautify the public Order Tracking UI to provide a premium, customer-facing experience.
-- [ ] Polish the Client Alerts popover and notification history table.
+- [x] Beautify the public Order Tracking UI to provide a premium, customer-facing experience.
+  - Fixed: Implemented glassmorphism, animated glow blobs, and high-fidelity branding.
+- [x] Polish the Client Alerts popover and notification history table.
+  - Fixed: Integrated `ClientAlertPopover` into Topbar; standardized notification history visuals.
+- [x] Polish the Customer Registry and Profile pages for administrative excellence.
+  - Fixed: Added high-fidelity KPI sections and premium glass header to the Customer Profile page.
 
 ### 2.5. Admin Security & System Settings (Track B)
 *Covers Functional Requirements: 10*

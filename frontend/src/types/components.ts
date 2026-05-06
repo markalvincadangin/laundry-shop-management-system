@@ -63,6 +63,7 @@ export interface KPICardProps {
   pulse?: boolean;
   /** When provided, makes the card clickable (e.g. scroll-to-column). Min-h 44px touch target enforced via wrapper. */
   onClick?: () => void;
+  className?: string;
 }
 
 export interface ConfirmDialogProps {

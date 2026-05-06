@@ -9,6 +9,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
+import { ClientAlertPopover } from "@/features/client-alerts";
 import { TopbarProps } from "@/types/components";
 
 /**
@@ -57,6 +58,9 @@ export function Topbar({ title }: TopbarProps) {
             {today}
           </span>
         </div>
+        {/* Notification Hub */}
+        <ClientAlertPopover />
+
         {/* ── Primary CTA — New Order ── */}
         <div id="topbar-new-order-cta">
           {/* Icon-only at lg (1024–1279px) */}
