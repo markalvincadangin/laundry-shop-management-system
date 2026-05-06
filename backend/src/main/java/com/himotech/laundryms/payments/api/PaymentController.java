@@ -38,6 +38,7 @@ public class PaymentController {
             @RequestParam(required = false) Long orderId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String searchTerm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "paymentDate") String sortBy,
@@ -48,7 +49,7 @@ public class PaymentController {
                 : Sort.by(sortBy).descending().and(Sort.by("id").descending());
                 
         Pageable pageable = PageRequest.of(page, Math.min(Math.max(size, 1), 100), sort);
-        Page<Payment> paymentsPage = paymentService.findAll(orderId, from, to, pageable);
+        Page<Payment> paymentsPage = paymentService.findAll(orderId, from, to, searchTerm, pageable);
         List<PaymentResponse> content = paymentsPage.getContent().stream()
                 .map(paymentMapper::toResponse)
                 .toList();

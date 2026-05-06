@@ -56,7 +56,7 @@ export interface StatusBadgeProps {
 
 export interface KPICardProps {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
   subtitle?: string;
   icon?: React.ElementType;
   variant?: "default" | "accent" | "success" | "warning";
@@ -159,7 +159,7 @@ export interface FilterBarProps {
 
 export interface StatCardProps {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
   subtitle?: string;
   variant?: "default" | "accent" | "success" | "warning" | "danger";
   icon?: LucideIcon;
@@ -170,6 +170,7 @@ export interface RevenueChartProps {
   loading?: boolean;
   height?: number | string;
   showDetailsOnHover?: boolean;
+  onPointClick?: (point: { period: string; income: number; orders?: number; rawDate?: string }) => void;
 }
 
 export interface ProcessStepperProps {

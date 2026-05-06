@@ -3,7 +3,7 @@ import { PageHeaderProps } from "@/types/components";
 
 export function PageHeader({ title, subtitle, icon: Icon, actions }: PageHeaderProps) {
   return (
-    <div className="flex flex-col md:flex-row md:items-end justify-between gap-grid-6 mb-grid-8">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-grid-6 mb-grid-8 print:hidden">
       <div className="space-y-grid-1.5">
         <h1 className="text-display font-black tracking-tight text-slate-900 flex items-center gap-grid-3">
           {Icon && <Icon className="h-grid-8 w-grid-8 text-brand-blue" />}

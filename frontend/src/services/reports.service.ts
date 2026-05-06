@@ -18,6 +18,15 @@ export const reportsService = {
     return response;
   },
 
+  /** Retrieves daily sales aggregates for a range (Trend) */
+  async getSalesTrend(from: string, to: string): Promise<DailySalesReportResponse[]> {
+    const response = await apiClient.get<DailySalesReportResponse[]>(
+      `/v1/reports/sales/trend`,
+      { params: { from, to } }
+    );
+    return response;
+  },
+
   /** Retrieves monthly sales report (US-09) */
   async getMonthlySales(year: number, month: number): Promise<PeriodSalesReportResponse> {
     const response = await apiClient.get<PeriodSalesReportResponse>(

@@ -118,10 +118,10 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, Pageable pageable) {
+    public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, String searchTerm, Pageable pageable) {
         Instant fromTs = from != null ? from.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         Instant toTs = to != null ? to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
-        return paymentRepository.findAllFiltered(orderId, fromTs, toTs, pageable);
+        return paymentRepository.findAllFiltered(orderId, fromTs, toTs, searchTerm, pageable);
     }
 
 }

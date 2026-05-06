@@ -11,6 +11,7 @@ import {
   Zap
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { SERVICE_TYPES, ServiceType } from "@/constants/service-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_LABELS } from "@/constants/ui";
@@ -255,10 +256,11 @@ export function OrderPreview({
                 className="flex items-end justify-between"
               >
                 <div className="flex items-baseline gap-2">
-                  <h2 className="text-7xl font-display font-black text-slate-900 tracking-tighter leading-none tabular-nums">
-                    <span className="text-slate-900/40 mr-2">₱</span>
-                    {preview ? preview.grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00"}
-                  </h2>
+                  <CurrencyDisplay 
+                    amount={preview?.grandTotal ?? 0} 
+                    className="text-7xl tracking-tighter leading-none" 
+                    numberClassName="font-black"
+                  />
                 </div>
               </motion.div>
             </div>

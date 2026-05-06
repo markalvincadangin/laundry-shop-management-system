@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reports/sales")
@@ -22,6 +23,13 @@ import java.time.LocalDate;
 public class ReportsController {
 
     private final ReportService reportService;
+
+    @GetMapping("/trend")
+    public ResponseEntity<List<DailySalesReportResponse>> getTrend(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return ResponseEntity.ok(reportService.getSalesTrend(from, to));
+    }
 
     @GetMapping("/daily")
     public ResponseEntity<DailySalesReportResponse> getDaily(

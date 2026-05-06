@@ -50,7 +50,10 @@ export function Topbar({ title }: TopbarProps) {
         {/* Date chip — hidden at xl to save space, shown at 2xl */}
         <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 shadow-inner">
           <Calendar className="h-3 w-3 text-slate-400" aria-hidden="true" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap">
+          <span 
+            suppressHydrationWarning
+            className="text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap"
+          >
             {today}
           </span>
         </div>
