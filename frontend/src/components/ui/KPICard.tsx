@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card } from "./Card";
 import { UI_LABELS } from "@/constants/ui";
@@ -21,6 +23,7 @@ export function KPICard({
   variant = "default",
   pulse = false,
   onClick,
+  className = "",
 }: KPICardProps) {
   const variantStyles = {
     default: "text-slate-500 bg-white/40 border-slate-200/60 shadow-inner shadow-white/80",
@@ -45,7 +48,7 @@ export function KPICard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="h-full"
+      className={`h-full ${className}`}
     >
       <Card
         variant="glass"
@@ -75,24 +78,24 @@ export function KPICard({
         </div>
 
         <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 group-hover:text-slate-500 transition-colors">
             {title}
           </p>
           <div className="flex items-baseline gap-3">
-            <h3 className="text-3xl sm:text-4xl font-display font-black text-slate-900 tracking-tight">
+            <div className="text-3xl sm:text-4xl font-sans font-black text-slate-900 tracking-tight flex items-center gap-1">
               {value}
-            </h3>
+            </div>
             {subtitle && (
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-80">
+              <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest opacity-80 group-hover:opacity-100 transition-opacity">
                 {subtitle}
               </span>
             )}
           </div>
         </div>
 
-        {/* Decorative highlight line */}
-        <div className="relative h-2 w-full bg-slate-100/50 rounded-full overflow-hidden border border-slate-200/20 shadow-inner">
-          <div className={`absolute top-0 left-0 h-full w-12 transition-all duration-1000 group-hover:w-full ease-out ${accentColors[variant]}`} />
+        {/* Decorative highlight line (HCI: visual progress indicator) */}
+        <div className="relative h-1.5 w-full bg-slate-100/50 rounded-full overflow-hidden border border-slate-200/20">
+          <div className={`absolute top-0 left-0 h-full w-8 transition-all duration-700 group-hover:w-full ease-out ${accentColors[variant]}`} />
         </div>
       </div>
     </Card>
@@ -114,4 +117,20 @@ export function KPICard({
   }
 
   return content;
+}
+
+/**
+ * KPICardSkeleton — Loading state for KPICards.
+ */
+export function KPICardSkeleton() {
+  return (
+    <div className="h-full rounded-2xl border border-slate-200/50 bg-slate-50/50 p-8 space-y-6 animate-pulse">
+      <div className="h-12 w-12 rounded-2xl bg-slate-200" />
+      <div className="space-y-3">
+        <div className="h-2 w-24 bg-slate-200 rounded" />
+        <div className="h-10 w-32 bg-slate-300 rounded" />
+      </div>
+      <div className="h-1.5 w-full bg-slate-200 rounded-full" />
+    </div>
+  );
 }

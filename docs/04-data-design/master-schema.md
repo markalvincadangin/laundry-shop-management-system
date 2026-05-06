@@ -21,6 +21,7 @@
 |---------|------------|----------|---------|
 | 1.0     | 2026-04-25 | HIMÓTECH  | Initial baseline; standardized for JPA/PostgreSQL compatibility |
 | 2.0     | 2026-04-26 | HIMÓTECH  | Synced with V1__init.sql: added `activity_logs`, removed `order_status_logs`, added `notifications.is_read`, added `customers.is_active`, documented triggers and functions |
+| 2.1     | 2026-05-05 | HIMÓTECH  | Hardened Payments: added `payment_reference` for digital transaction tracking (GCash, Bank); consolidated into `V1__init.sql` |
 
 ---
 
@@ -136,6 +137,7 @@ To ensure seamless compatibility between the Java/JPA layer and PostgreSQL, all 
 | `received_by_user_id` | `UUID` | No | FK to users |
 | `payment_date` | `TIMESTAMP` | No | |
 | `remarks` | `TEXT` | Yes | |
+| `payment_reference` | `VARCHAR(100)` | Yes | Digital Trace ID (GCash, Bank) |
 
 ### 3.7 Notifications (`notifications`)
 | Column | Type | Nullable | Purpose |

@@ -12,7 +12,7 @@ import { Input, Button } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { ErrorState, AccessDenied } from "@/features/shared";
 import { PageHeader } from "@/components/layout";
-import { formatCurrency } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 export default function RatesPage() {
   const [mounted, setMounted] = useState(false);
 
@@ -225,7 +225,9 @@ function RateCard({
           <div className="grid gap-8 sm:grid-cols-3">
             <div className="space-y-1">
               <dt className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">{UI_LABELS.modules.rates.BASE_RATE}</dt>
-              <dd className="text-3xl font-display font-bold text-slate-900 tracking-tighter">{formatCurrency(rate.basePricePerLoad)}</dd>
+              <dd className="text-3xl tracking-tighter">
+                <CurrencyDisplay amount={rate.basePricePerLoad} className="font-bold text-slate-900" />
+              </dd>
               <p className="text-xs uppercase font-bold tracking-tight text-brand-cyan-dark mt-1">Per {rate.kgLimitPerLoad}{UI_LABELS.shared.units.WEIGHT.toLowerCase()} load</p>
             </div>
             <div className="space-y-1">
@@ -235,7 +237,9 @@ function RateCard({
             </div>
             <div className="space-y-1">
               <dt className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">{UI_LABELS.modules.rates.EXTRA_TIME_SURCHARGE}</dt>
-              <dd className="text-3xl font-display font-bold text-slate-900 tracking-tighter">{formatCurrency(rate.pricePerExtraMinute)}</dd>
+              <dd className="text-3xl tracking-tighter">
+                <CurrencyDisplay amount={rate.pricePerExtraMinute} className="font-bold text-slate-900" />
+              </dd>
               <p className="text-xs uppercase font-bold tracking-tight text-amber-600 mt-1">{UI_LABELS.modules.rates.PER_MINUTE}</p>
             </div>
           </div>

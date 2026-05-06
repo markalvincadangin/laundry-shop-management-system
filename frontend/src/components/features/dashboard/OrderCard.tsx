@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ArrowRight, Clock, Scale, Zap, Package, Wind, FileText } from "lucide-react";
-import { Card, Button, StatusBadge } from "@/components/ui";
+import { Card, Button, StatusBadge, Tooltip } from "@/components/ui";
 import { OrderResponse } from "@/services/orders.service";
 import { STATUS_TRANSITIONS, OrderStatus } from "@/constants/order-status";
 import { motion, AnimatePresence } from "framer-motion";
@@ -49,11 +49,11 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
           isUrgent ? "border-l-[6px] border-l-emerald-500 ring-1 ring-emerald-500/10 shadow-lg shadow-emerald-500/5" : "hover:translate-y-[-6px]"
         }`}
       >
-        {/* Service Type Icon Overlay (§1.4) */}
+        {/* Service Type Icon Overlay — decorative ambient icon per order type */}
         <div className="absolute top-[-10px] right-[-10px] opacity-[0.03] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
-          {order.serviceType === 'rush' ? (
+          {order.serviceType === 'WASH_DRY_FOLD_RUSH' ? (
             <Zap className="h-32 w-32 rotate-12" />
-          ) : order.serviceType === 'blanket' ? (
+          ) : order.serviceType === 'BLANKETS' ? (
             <Wind className="h-32 w-32 rotate-12" />
           ) : (
             <Package className="h-32 w-32 rotate-12" />
@@ -73,8 +73,8 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
         {/* HCI: Name gets full width to prevent truncation */}
         <h3 className="text-[16px] font-black text-slate-900 tracking-tight line-clamp-2 break-words font-display leading-tight flex items-center gap-2">
           {order.customerName || "Walk-in Customer"}
-          {order.serviceType === 'rush' && (
-            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" />
+          {order.serviceType === 'WASH_DRY_FOLD_RUSH' && (
+            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" aria-label="Rush Order" />
           )}
         </h3>
       </div>
@@ -115,20 +115,22 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
 
       {/* Staff Action: One-Tap Advance Lifecycle */}
       {transition && (
-        <Button
-          onClick={() => onAdvance(order.id!, transition.next)}
-          disabled={isLoading}
-          variant="primary"
-          size="md"
-          className={`w-full text-[11px] font-bold uppercase tracking-[0.15em] h-12 gap-3 transition-all active:scale-[0.98] rounded-xl shadow-xl shadow-brand-blue/10 font-display ${
-            isUrgent
-              ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
-              : "bg-brand-blue hover:bg-brand-blue/90"
-          }`}
-        >
-          {transition.label}
-          <ArrowRight className="h-4 w-4 group-hover:translate-x-1.5 transition-transform" />
-        </Button>
+        <Tooltip content={`Advance to ${transition.next.replace(/_/g, ' ')}`} position="top">
+          <Button
+            onClick={() => onAdvance(order.id!, transition.next)}
+            disabled={isLoading}
+            variant="primary"
+            size="md"
+            className={`w-full text-[11px] font-bold uppercase tracking-[0.15em] h-12 gap-3 transition-all active:scale-[0.98] rounded-xl shadow-xl shadow-brand-blue/10 font-display ${
+              isUrgent
+                ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20"
+                : "bg-brand-blue hover:bg-brand-blue/90"
+            }`}
+          >
+            {transition.label}
+            <ArrowRight className="h-4 w-4 group-hover:translate-x-1.5 transition-transform" />
+          </Button>
+        </Tooltip>
       )}
       </Card>
     </motion.div>

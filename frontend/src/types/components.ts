@@ -56,13 +56,14 @@ export interface StatusBadgeProps {
 
 export interface KPICardProps {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
   subtitle?: string;
   icon?: React.ElementType;
   variant?: "default" | "accent" | "success" | "warning";
   pulse?: boolean;
   /** When provided, makes the card clickable (e.g. scroll-to-column). Min-h 44px touch target enforced via wrapper. */
   onClick?: () => void;
+  className?: string;
 }
 
 export interface ConfirmDialogProps {
@@ -160,7 +161,7 @@ export interface FilterBarProps {
 
 export interface StatCardProps {
   title: string;
-  value: string | number;
+  value: React.ReactNode;
   subtitle?: string;
   variant?: "default" | "accent" | "success" | "warning" | "danger";
   icon?: LucideIcon;
@@ -171,6 +172,7 @@ export interface RevenueChartProps {
   loading?: boolean;
   height?: number | string;
   showDetailsOnHover?: boolean;
+  onPointClick?: (point: { period: string; income: number; orders?: number; rawDate?: string }) => void;
 }
 
 export interface ProcessStepperProps {
@@ -215,7 +217,7 @@ export interface PaymentLedgerTableProps {
 }
 
 export interface OrderIntakeFormProps {
-  staffUserId: string | null;
+  createdByUserId: string | null;
   onSuccess?: () => void;
   isModal?: boolean;
 }
@@ -240,6 +242,17 @@ export interface ActivityItemProps {
 export interface TopbarProps {
   /** Page title rendered in the topbar left zone. */
   title: string;
+}
+
+export interface OrderPreviewProps {
+  customerName?: string;
+  serviceType: string;
+  weightKg: number;
+  extraMinutes: number;
+  notes?: string;
+  addOns?: Array<{ name: string; price: number; quantity: number }>;
+  preview: components["schemas"]["OrderPreviewResponse"] | null;
+  loading?: boolean;
 }
 
 

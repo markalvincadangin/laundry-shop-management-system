@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OrderPipeline } from "@/features/dashboard";
 import { SectionHeader, ErrorState } from "@/features/shared";
 import { PageHeader } from "@/components/layout";
-import { KPICard } from "@/components/ui";
+import { KPICard, CurrencyDisplay } from "@/components/ui";
 import { PaymentActionModal } from "@/components/features/payments";
 import { UI_LABELS } from "@/constants/ui";
 import { useOrders } from "@/hooks/useOrders";
@@ -106,7 +106,7 @@ export default function Home() {
               {user?.role === "ADMIN" && (
                 <KPICard
                   title={UI_LABELS.modules.dashboard.KPI_TODAYS_SALES}
-                  value={formatCurrency(stats.todaysRevenue != null ? Number(stats.todaysRevenue) : 0)}
+                  value={<CurrencyDisplay amount={stats.todaysRevenue != null ? Number(stats.todaysRevenue) : 0} size="xl" />}
                   subtitle={UI_LABELS.modules.dashboard.AWAITING_PAYMENT}
                   icon={PhilippinePeso}
                   variant="warning"

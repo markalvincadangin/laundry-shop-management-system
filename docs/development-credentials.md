@@ -38,8 +38,7 @@ The seed users are created by Flyway migration `V2__seed_users.sql` only when al
 2. `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD_HASH` are set
 3. `SEED_STAFF_USERNAME` and `SEED_STAFF_PASSWORD_HASH` are set
 
-Example configuration in `backend/.env`:
-
+Example configuration in the root `.env` file:
 ```
 SPRING_PROFILES_ACTIVE=dev
 SEED_ADMIN_USERNAME=Admin
@@ -71,5 +70,5 @@ If you need to create or rotate development passwords:
 
    > **Note**: We use BCrypt cost factor 10 for development to speed up test execution and development workflows. Production deployments should use higher cost factors (12-14) for better security.
 
-2. Set generated hashes in `backend/.env` using `SEED_ADMIN_PASSWORD_HASH` and `SEED_STAFF_PASSWORD_HASH`
+2. Set generated hashes in the root `.env` file using `SEED_ADMIN_PASSWORD_HASH` and `SEED_STAFF_PASSWORD_HASH`
 3. Keep plaintext passwords out of source control and documentation

@@ -7,7 +7,8 @@ import { type PaymentResponse } from "@/services/payments.service";
 import { DataTable, EmptyState } from "@/features/shared";
 import { DataTableColumn } from "@/types/components";
 import { UI_LABELS } from "@/constants/ui";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 
 interface ExtendedPaymentLedgerTableProps {
   payments: PaymentResponse[];
@@ -67,11 +68,38 @@ export function PaymentLedgerTable({
       header: UI_LABELS.shared.common.METHOD,
       sortable: true,
       sortKey: "paymentMethod",
-      render: (p) => (
-        <span className="text-xs font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600">
-          {p.paymentMethod === "BANK_TRANSFER" ? UI_LABELS.modules.payments.METHOD_BANK : p.paymentMethod === "GCASH" ? UI_LABELS.modules.payments.METHOD_GCASH : UI_LABELS.modules.payments.METHOD_CASH}
-        </span>
-      ),
+      render: (p) => {
+        const method = p.paymentMethod;
+        const labels = {
+          CASH: { 
+            label: UI_LABELS.modules.payments.METHOD_CASH, 
+            class: "bg-emerald-50 text-emerald-700 border-emerald-100",
+            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" />
+          },
+          GCASH: { 
+            label: UI_LABELS.modules.payments.METHOD_GCASH, 
+            class: "bg-sky-50 text-sky-700 border-sky-100",
+            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-sky-500 mr-2" />
+          },
+          BANK_TRANSFER: { 
+            label: UI_LABELS.modules.payments.METHOD_BANK, 
+            class: "bg-indigo-50 text-indigo-700 border-indigo-100",
+            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-indigo-500 mr-2" />
+          }
+        };
+        const config = labels[method as keyof typeof labels] || { 
+          label: method, 
+          class: "bg-slate-50 text-slate-700 border-slate-100",
+          icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-slate-500 mr-2" />
+        };
+        
+        return (
+          <span className={`inline-flex items-center text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm ${config.class}`}>
+            {config.icon}
+            {config.label}
+          </span>
+        );
+      },
     },
     {
       header: UI_LABELS.shared.common.TOTAL,
@@ -79,8 +107,8 @@ export function PaymentLedgerTable({
       sortKey: "amountPaid",
       align: "right",
       render: (p) => (
-        <div className="flex items-center justify-end gap-1.5 text-sm font-bold text-brand-blue group-hover:text-slate-900 transition-colors">
-          {formatCurrency(p.amountPaid)}
+        <div className="flex items-center justify-end gap-1.5 group-hover:text-slate-900 transition-colors">
+          <CurrencyDisplay amount={p.amountPaid} size="md" numberClassName="font-bold text-brand-blue" />
           <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
         </div>
       ),

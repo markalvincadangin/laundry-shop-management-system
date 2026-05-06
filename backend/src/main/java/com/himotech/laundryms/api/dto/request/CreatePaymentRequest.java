@@ -21,4 +21,6 @@ public class CreatePaymentRequest {
     private PaymentMethod paymentMethod = PaymentMethod.CASH;
 
     private UUID receivedByUserId;
+
+    private String paymentReference;
 }

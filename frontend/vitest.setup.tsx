@@ -29,3 +29,19 @@ vi.mock("recharts", async () => {
     ),
   };
 });
+
+// Mock framer-motion to bypass animation internals in tests
+vi.mock("framer-motion", () => ({
+  motion: {
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+    section: ({ children, ...props }: any) => <section {...props}>{children}</section>,
+    nav: ({ children, ...props }: any) => <nav {...props}>{children}</nav>,
+    p: ({ children, ...props }: any) => <p {...props}>{children}</p>,
+    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    h1: ({ children, ...props }: any) => <h1 {...props}>{children}</h1>,
+    h2: ({ children, ...props }: any) => <h2 {...props}>{children}</h2>,
+    h3: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
+  },
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
