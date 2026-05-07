@@ -247,7 +247,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-4">
-          <Button variant="outline" className="h-12 px-6 gap-2 border-slate-200 text-xs font-extrabold uppercase tracking-widest" onClick={() => setShowReceiptModal(true)}>
+          <Button variant="outline" className="h-12 px-6 border-slate-200 text-xs font-extrabold uppercase tracking-widest" onClick={() => setShowReceiptModal(true)}>
             <Eye className="h-4 w-4" />
             {UI_LABELS.modules.orders.VIEW_RECEIPT}
           </Button>
@@ -255,7 +255,7 @@ export default function OrderDetailPage() {
             <Button
               variant="outline"
               onClick={() => setConfirmVoidModal(true)}
-              className="h-12 px-8 gap-2 border-rose-200 text-rose-600 hover:bg-rose-50 uppercase font-extrabold text-xs tracking-widest shadow-sm"
+              className="h-12 px-8 border-rose-200 text-rose-600 hover:bg-rose-50 uppercase font-extrabold text-xs tracking-widest shadow-sm"
             >
               <ShieldAlert className="h-4 w-4" />
               {UI_LABELS.modules.payments.VOIDED}
@@ -263,7 +263,7 @@ export default function OrderDetailPage() {
           ) : (
             !order.paymentStatus || order.paymentStatus === PAYMENT_STATUS.UNPAID ? (
               <Link href={`/orders/${order.id}/pay`}>
-                <Button className="h-12 px-8 gap-2 bg-brand-blue text-white shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 active:scale-95 transition-all uppercase font-extrabold text-xs tracking-widest">
+                <Button className="h-12 px-8 bg-brand-blue text-white shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 active:scale-95 transition-all uppercase font-extrabold text-xs tracking-widest">
                   <CreditCard className="h-4 w-4" />
                   {UI_LABELS.modules.payments.RECORD_PAYMENT}
                 </Button>

@@ -901,11 +901,11 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
               {stepIndex < steps.length - 1 ? (
                 <>
                   {UI_LABELS.shared.buttons.NEXT}
-                  <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                  <CheckCircle2 className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   {UI_LABELS.forms.intake.SUBMIT_BUTTON}
                 </>
               )}

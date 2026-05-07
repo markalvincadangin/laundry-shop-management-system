@@ -251,7 +251,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
               onClick={handleDownload}
               isLoading={downloading}
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4" />
               Save
             </Button>
 
@@ -261,7 +261,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
               className="flex-[2] h-14 uppercase tracking-widest font-black text-[10px] rounded-2xl bg-slate-900 hover:bg-slate-800"
               onClick={handlePrint}
             >
-              <Printer className="h-5 w-5 mr-2" />
+              <Printer className="h-5 w-5" />
               Print
             </Button>
           </div>

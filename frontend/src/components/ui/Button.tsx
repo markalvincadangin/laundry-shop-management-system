@@ -15,7 +15,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-black uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-offset-0 touch-manipulation rounded-2xl gap-grid-5";
+      "inline-flex items-center justify-center font-black uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-offset-0 touch-manipulation rounded-2xl gap-grid-2";
 
     const variants = {
       primary: "bg-brand-blue text-white hover:bg-brand-blue/90 hover:shadow-xl hover:shadow-brand-blue/20 active:scale-95 focus:ring-brand-blue/10 shadow-lg shadow-brand-blue/10 border-b-4 border-black/10",
@@ -27,10 +27,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      xs: "text-[9px] px-grid-3.5 py-grid-1.5 min-h-[34px] rounded-xl gap-grid-2.5",
-      sm: "text-[9px] px-grid-4 py-grid-2 min-h-[38px] rounded-xl gap-grid-3.5",
+      xs: "text-[9px] px-grid-3.5 py-grid-1.5 min-h-[34px] rounded-xl gap-grid-1.5",
+      sm: "text-[9px] px-grid-4 py-grid-2 min-h-[38px] rounded-xl gap-grid-1.5",
       md: "text-[10px] px-grid-7 py-grid-3 min-h-[52px]", // Aligned with 52px Input/Select standard
-      lg: "text-[12px] px-grid-10 py-grid-4 min-h-[56px] tracking-[0.25em] gap-grid-6",
+      lg: "text-[12px] px-grid-10 py-grid-4 min-h-[56px] tracking-[0.25em] gap-grid-2.5",
       icon: "p-2.5 min-h-[48px] min-w-[48px]",
     };
 
@@ -53,7 +53,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               : leftIcon}
           </span>
         )}
-        <span className="relative z-10 leading-none flex items-center pt-[1px]">
+        <span className="relative z-10 leading-none flex items-center pt-[1px] gap-grid-2">
           {children}
         </span>
         {!isLoading && rightIcon && (
