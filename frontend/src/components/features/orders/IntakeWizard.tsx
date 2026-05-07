@@ -743,11 +743,11 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                             <div className="space-y-2">
                               <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/30 block">Grand Total</span>
                               <div className="flex items-baseline">
-                                <CurrencyDisplay 
-                                  amount={pricing.preview?.grandTotal} 
+                                <CurrencyDisplay
+                                  amount={pricing.preview?.grandTotal}
                                   size="xl"
-                                  className="text-9xl text-white"
-                                  symbolClassName="text-brand-cyan/80 mr-6"
+                                  className="text-7xl md:text-8xl text-white"
+                                  symbolClassName="text-brand-cyan/80 mr-3"
                                   numberClassName="font-display font-black tracking-tighter leading-none"
                                 />
                               </div>
@@ -837,13 +837,13 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                                       >
                                         <div className="space-y-3">
                                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">
-                                            Reference Number / Trace ID
+                                            Reference Number
                                           </label>
                                           <div className="relative group">
                                             <CreditCard className="h-4 w-4 text-white/20 group-focus-within:text-brand-cyan absolute left-6 top-1/2 -translate-y-1/2 transition-colors" />
                                             <input
                                               type="text"
-                                              placeholder="Enter GCash/Bank Ref #"
+                                              placeholder="Enter Reference Number"
                                               value={referenceNumber}
                                               onChange={(e) => setReferenceNumber(e.target.value)}
                                               className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-14 pr-6 text-sm font-bold placeholder:text-white/20 focus:bg-white/10 focus:border-brand-cyan transition-all outline-none"

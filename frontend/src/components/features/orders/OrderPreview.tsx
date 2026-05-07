@@ -269,7 +269,7 @@ export function OrderPreview({
                   <CurrencyDisplay 
                     amount={preview?.grandTotal ?? 0} 
                     size="xl"
-                    className="text-8xl tracking-tighter leading-none" 
+                    className="text-6xl md:text-7xl tracking-tighter leading-none" 
                     numberClassName="font-black"
                   />
                 </div>

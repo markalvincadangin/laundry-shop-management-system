@@ -33,14 +33,12 @@ import {
   type UpdateOrderRequest,
 } from "@/services/orders.service";
 import type { components } from "@/types/api.generated";
-import { StatusBadge } from "@/components/ui";
+import { StatusBadge, CurrencyDisplay, Button, Input } from "@/components/ui";
 import { paymentsService } from "@/services/payments.service";
 import { OrderStatusTimeline } from "@/features/orders/OrderStatusTimeline";
 import { ClaimStub } from "@/features/orders/ClaimStub";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui";
-import { Input } from "@/components/ui";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ProcessStepper } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
@@ -438,7 +436,7 @@ export default function OrderDetailPage() {
                     <CurrencyDisplay 
                       amount={order.grandTotal} 
                       size="xl"
-                      className="text-8xl text-brand-blue"
+                      className="text-7xl text-brand-blue"
                       symbolClassName="text-brand-blue/40 mr-2"
                       numberClassName="font-display font-black tracking-tighter"
                     />
