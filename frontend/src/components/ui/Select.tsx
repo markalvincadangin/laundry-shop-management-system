@@ -45,7 +45,7 @@ export function Select({
         <select
           id={selectId}
           className={`
-            w-full h-[52px] appearance-none rounded-2xl border px-grid-4 text-body font-medium
+            w-full h-[52px] appearance-none rounded-2xl border px-grid-4 text-body font-medium leading-none
             focus:outline-none transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
             ${variants[variant]}
             ${className}
@@ -54,12 +54,12 @@ export function Select({
         >
           {children}
         </select>
-        <div className="pointer-events-none absolute right-4.5 top-1/2 -translate-y-1/2 transition-all duration-300 group-focus-within:rotate-180 group-focus-within:text-brand-blue">
-          <ChevronDown className="h-5 w-5 opacity-60" />
+        <div className="pointer-events-none absolute right-4.5 top-1/2 -translate-y-1/2 transition-all duration-300 group-focus-within:rotate-180 group-focus-within:text-brand-blue flex items-center justify-center">
+          <ChevronDown className="h-5 w-5 opacity-50 stroke-[2.25]" />
         </div>
       </div>
       {isInvalid && (
-        <p className="mt-2 text-[11px] font-black uppercase tracking-widest text-error-700 ml-1.5" role="alert">
+        <p className="mt-2 text-[11px] font-black uppercase tracking-widest text-error-700 ml-1.5 leading-none" role="alert">
           {error}
         </p>
       )}

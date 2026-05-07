@@ -41,13 +41,27 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading && (
-          <span className="mr-2 inline-flex items-center">
+          <span className="mr-2.5 inline-flex items-center shrink-0">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           </span>
         )}
-        {!isLoading && leftIcon && <span className="mr-2 opacity-80 transition-transform group-hover:scale-110">{leftIcon}</span>}
-        <span className="relative z-10">{children}</span>
-        {!isLoading && rightIcon && <span className="ml-2 opacity-80 transition-transform group-hover:scale-110">{rightIcon}</span>}
+        {!isLoading && leftIcon && (
+          <span className="mr-2.5 inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
+            {React.isValidElement(leftIcon) 
+              ? React.cloneElement(leftIcon as React.ReactElement, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
+              : leftIcon}
+          </span>
+        )}
+        <span className="relative z-10 leading-none flex items-center pt-[1px]">
+          {children}
+        </span>
+        {!isLoading && rightIcon && (
+          <span className="ml-2.5 inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
+            {React.isValidElement(rightIcon) 
+              ? React.cloneElement(rightIcon as React.ReactElement, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
+              : rightIcon}
+          </span>
+        )}
       </button>
     );
   }

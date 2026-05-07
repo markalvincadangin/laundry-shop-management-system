@@ -40,11 +40,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-invalid={isInvalid}
             className={`
-              block w-full rounded-2xl border px-grid-4 py-grid-3.5 outline-none transition-all duration-300 min-h-[52px] font-medium text-body
+              block w-full rounded-2xl border px-grid-4 py-grid-3.5 outline-none transition-all duration-300 min-h-[52px] font-medium text-body leading-none
               ${variants[variant]} 
               ${icon ? "pl-12" : ""} 
               ${rightElement ? "pr-12" : ""} 
               ${className}
+              placeholder:text-slate-400/80
             `}
             {...props}
             value={props.value ?? (('value' in props) ? "" : undefined)}
@@ -56,23 +57,25 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }}
           />
           {icon && (
-            <div className="pointer-events-none absolute left-4.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-blue">
-              {React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5" })}
+            <div className="pointer-events-none absolute left-4.5 top-1/2 -translate-y-1/2 text-slate-400/70 transition-colors group-focus-within:text-brand-blue flex items-center justify-center">
+              {React.isValidElement(icon) 
+                ? React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5 stroke-[2.25]" }) 
+                : icon}
             </div>
           )}
           {rightElement && (
-            <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center">
               {rightElement}
             </div>
           )}
         </div>
         {isInvalid && (
-          <p className="mt-2 text-[11px] font-black uppercase tracking-widest text-error-700 ml-1.5" role="alert">
+          <p className="mt-2 text-[11px] font-black uppercase tracking-widest text-error-700 ml-1.5 leading-none" role="alert">
             {error}
           </p>
         )}
         {!isInvalid && hint && (
-          <p className="mt-2 text-[10px] text-slate-400 font-black uppercase tracking-widest ml-1.5 opacity-70">
+          <p className="mt-2 text-[10px] text-slate-400 font-black uppercase tracking-widest ml-1.5 opacity-70 leading-none">
             {hint}
           </p>
         )}
