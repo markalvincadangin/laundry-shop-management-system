@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { User, Calendar, ArrowUpRight } from "lucide-react";
+import { User, Calendar, ArrowUpRight, Hash, Banknote, Wallet, CreditCard, ShieldCheck } from "lucide-react";
 import { type PaymentResponse } from "@/services/payments.service";
 import { DataTable, EmptyState } from "@/features/shared";
 import { DataTableColumn } from "@/types/components";
@@ -20,8 +20,9 @@ interface ExtendedPaymentLedgerTableProps {
 }
 
 /**
- * Payment Ledger Table
+ * Payment Ledger Table — High Fidelity (v5.0)
  * Standardized with sortable headers for financial transparency.
+ * v4.0 Consistency Pass: Premium iconography, refined typography, and native DataTable container.
  */
 export function PaymentLedgerTable({ 
   payments, 
@@ -37,9 +38,18 @@ export function PaymentLedgerTable({
       sortable: true,
       sortKey: "order.referenceNumber",
       render: (p) => (
-        <Link href={`/orders/${p.orderId}`} onClick={(e) => e.stopPropagation()} className="text-sm font-bold text-slate-900 hover:text-brand-blue transition-colors font-mono">
-          {p.orderReferenceNumber ?? `#${p.orderId}`}
-        </Link>
+        <div className="flex items-center gap-3 group/ref">
+          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/ref:bg-brand-blue/5 transition-all">
+            <Hash className="h-3.5 w-3.5 text-slate-400 group-hover/ref:text-brand-blue" />
+          </div>
+          <Link 
+            href={`/orders/${p.orderId}`} 
+            onClick={(e) => e.stopPropagation()} 
+            className="text-body-sm font-black text-slate-900 font-mono tracking-tighter hover:text-brand-blue transition-colors"
+          >
+            {p.orderReferenceNumber ?? `#${p.orderId}`}
+          </Link>
+        </div>
       ),
     },
     {
@@ -47,9 +57,11 @@ export function PaymentLedgerTable({
       sortable: true,
       sortKey: "order.customer.lastName",
       render: (p) => (
-        <div className="flex items-center gap-2">
-           <User className="h-3.5 w-3.5 text-slate-400" />
-           <span className="text-sm text-slate-700 font-bold">{p.customerName ?? "Anonymous"}</span>
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 shadow-inner">
+            <User className="h-3.5 w-3.5 text-slate-400" />
+          </div>
+          <span className="text-body-sm text-slate-700 font-bold">{p.customerName ?? "Anonymous"}</span>
         </div>
       ),
     },
@@ -58,9 +70,11 @@ export function PaymentLedgerTable({
       sortable: true,
       sortKey: "paymentDate",
       render: (p) => (
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-          <Calendar className="h-3.5 w-3.5 text-slate-400" />
-          {formatDate(p.paymentDate)}
+        <div className="flex items-center gap-3 text-body-sm font-medium text-slate-500">
+          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
+            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+          </div>
+          <span className="font-bold">{formatDate(p.paymentDate)}</span>
         </div>
       ),
     },
@@ -69,35 +83,20 @@ export function PaymentLedgerTable({
       sortable: true,
       sortKey: "paymentMethod",
       render: (p) => {
-        const method = p.paymentMethod;
-        const labels = {
-          CASH: { 
-            label: UI_LABELS.modules.payments.METHOD_CASH, 
-            class: "bg-emerald-50 text-emerald-700 border-emerald-100",
-            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-2" />
-          },
-          GCASH: { 
-            label: UI_LABELS.modules.payments.METHOD_GCASH, 
-            class: "bg-sky-50 text-sky-700 border-sky-100",
-            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-sky-500 mr-2" />
-          },
-          BANK_TRANSFER: { 
-            label: UI_LABELS.modules.payments.METHOD_BANK, 
-            class: "bg-indigo-50 text-indigo-700 border-indigo-100",
-            icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-indigo-500 mr-2" />
-          }
-        };
-        const config = labels[method as keyof typeof labels] || { 
-          label: method, 
-          class: "bg-slate-50 text-slate-700 border-slate-100",
-          icon: <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-slate-500 mr-2" />
-        };
+        const isCash = p.paymentMethod === "CASH";
+        const isGCash = p.paymentMethod === "GCASH";
         
         return (
-          <span className={`inline-flex items-center text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border shadow-sm ${config.class}`}>
-            {config.icon}
-            {config.label}
-          </span>
+          <div className="flex items-center gap-3">
+            <div className={`h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm ${
+              isCash ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 
+              isGCash ? 'bg-blue-50 border-blue-100 text-blue-600' : 
+              'bg-purple-50 border-purple-100 text-purple-600'
+            }`}>
+              {isCash ? <Banknote className="h-4 w-4" /> : isGCash ? <Wallet className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900">{p.paymentMethod}</span>
+          </div>
         );
       },
     },
@@ -107,9 +106,9 @@ export function PaymentLedgerTable({
       sortKey: "amountPaid",
       align: "right",
       render: (p) => (
-        <div className="flex items-center justify-end gap-1.5 group-hover:text-slate-900 transition-colors">
-          <CurrencyDisplay amount={p.amountPaid} size="md" numberClassName="font-bold text-brand-blue" />
-          <ArrowUpRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
+        <div className="flex items-center justify-end gap-2 group-hover:translate-x-1 transition-transform duration-300">
+          <CurrencyDisplay amount={p.amountPaid} size="sm" numberClassName="font-black text-slate-900" />
+          <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
         </div>
       ),
     },

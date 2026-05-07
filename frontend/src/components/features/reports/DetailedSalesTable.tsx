@@ -115,11 +115,10 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
         const isGCash = p.paymentMethod === "GCASH";
         return (
           <div className="flex items-center gap-3">
-            <div className={`h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm ${
-              isCash ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 
-              isGCash ? 'bg-blue-50 border-blue-100 text-blue-600' : 
-              'bg-purple-50 border-purple-100 text-purple-600'
-            }`}>
+            <div className={`h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm ${isCash ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                isGCash ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                  'bg-purple-50 border-purple-100 text-purple-600'
+              }`}>
               {isCash ? <Banknote className="h-4 w-4" /> : isGCash ? <Wallet className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
             </div>
             <div className="flex flex-col">
@@ -133,7 +132,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       },
     },
     {
-      header: "PROCESSOR",
+      header: "PROCESSED BY",
       sortable: true,
       sortKey: "receivedByUsername",
       render: (p) => (
@@ -179,9 +178,9 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             icon={<Search className="h-4 w-4 text-brand-blue" />}
             className="w-full md:w-80 h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           />
-          <Button 
-            variant="outline" 
-            className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 rounded-xl" 
+          <Button
+            variant="outline"
+            className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 rounded-xl"
             onClick={handleExport}
           >
             <Download className="h-4 w-4" />
@@ -203,7 +202,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
         />
 
         {payments.length > 0 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-grid-6 bg-white border border-slate-200/60 rounded-[2rem] px-grid-10 py-grid-8 flex items-center justify-between shadow-xl shadow-slate-200/20 group/total"
