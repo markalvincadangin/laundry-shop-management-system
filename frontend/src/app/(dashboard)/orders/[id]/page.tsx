@@ -23,7 +23,8 @@ import {
   Phone,
   Copy,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api-client";
@@ -400,6 +401,17 @@ export default function OrderDetailPage() {
                     <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{order.createdByUsername || "System Agent"}</p>
                   </div>
                 </div>
+
+                {order.notes && (
+                  <div className="space-y-3 pt-6 border-t border-slate-100">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2">
+                      <FileText className="h-3 w-3" /> {UI_LABELS.modules.orders.SPECIAL_INSTRUCTIONS}
+                    </p>
+                    <p className="text-sm font-medium text-slate-600 bg-brand-blue/5 p-5 rounded-2xl border border-brand-blue/10 italic leading-relaxed break-words whitespace-pre-wrap">
+                      &quot;{order.notes}&quot;
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-4 pt-8 border-t border-slate-100">
                   <div className="flex justify-between items-center text-sm">

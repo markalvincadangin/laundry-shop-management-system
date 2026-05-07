@@ -81,7 +81,7 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent }: OrderCardPr
       {order.notes && (
         <div className="mb-5 p-2.5 rounded-xl bg-amber-50/50 border border-amber-100/50 flex items-start gap-2 relative z-10">
           <FileText className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-[10px] font-bold text-amber-800 leading-tight line-clamp-2 italic opacity-80">
+          <p className="text-[10px] font-bold text-amber-800 leading-tight line-clamp-2 italic opacity-80 break-words whitespace-pre-wrap">
             {order.notes}
           </p>
         </div>
