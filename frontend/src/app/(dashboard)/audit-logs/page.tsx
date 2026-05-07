@@ -180,11 +180,11 @@ export default function AuditLogPage() {
         <Button 
           variant="ghost" 
           size="xs"
-          className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
+          className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
           onClick={() => setSelected(a)}
+          title={UI_LABELS.shared.common.DETAILS}
         >
           <Eye className="h-4 w-4" />
-          {UI_LABELS.shared.common.DETAILS}
         </Button>
       ),
     },

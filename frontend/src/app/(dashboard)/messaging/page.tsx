@@ -13,7 +13,8 @@ import {
   ArrowRight,
   Send,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from "lucide-react";
 import { 
   Button, 
@@ -151,20 +152,20 @@ export default function MessagingPage() {
       ),
     },
     {
-      header: "",
+      header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (n) => (
         <Button 
           variant="ghost" 
-          size="sm" 
-          className="h-11 px-5 gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-2xl transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
+          size="xs" 
+          className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
           onClick={(e) => {
             e.stopPropagation();
             handleRowClick(n);
           }}
+          title={UI_LABELS.shared.common.DETAILS}
         >
-          {UI_LABELS.shared.common.DETAILS}
-          <ArrowRight className="h-4 w-4" />
+          <Eye className="h-4 w-4" />
         </Button>
       ),
     },

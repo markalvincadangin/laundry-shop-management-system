@@ -199,10 +199,10 @@ export default function OrdersPage() {
           <Button
             variant="ghost"
             size="xs"
-            className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+            className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+            title={UI_LABELS.shared.common.DETAILS}
           >
             <Eye className="h-4 w-4" />
-            {UI_LABELS.shared.common.DETAILS}
           </Button>
         </Link>
       ),

@@ -7,7 +7,7 @@ import {
   RefreshCcw, 
   ShieldCheck, 
   ShieldAlert,
-  Edit2,
+  Settings2,
   Power,
   Search,
   Shield,
@@ -164,10 +164,10 @@ export default function UsersPage() {
               variant="ghost" 
               size="xs" 
               onClick={() => handleEdit(u)}
-              className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+              className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+              title={UI_LABELS.shared.buttons.EDIT}
             >
-              <Edit2 className="h-3.5 w-3.5" />
-              {UI_LABELS.shared.buttons.EDIT}
+              <Settings2 className="h-4 w-4" />
             </Button>
             <div className="w-px h-4 bg-slate-100 mx-3" />
             <Button 
