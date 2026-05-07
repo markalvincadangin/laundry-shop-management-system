@@ -67,6 +67,7 @@ export const shared = {
     COPY: "Copy",
     CHANGE: "Change",
     REGISTER: "Register",
+    EXPORT_PDF: "Export PDF",
   },
 
   status: {

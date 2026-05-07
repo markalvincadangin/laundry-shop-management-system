@@ -259,7 +259,7 @@ export default function ReportsPage() {
                 ) : (
                   <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
                 )}
-                {isExporting ? "Exporting..." : UI_LABELS.modules.reports.EXPORT_PDF}
+                {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
               <SegmentedControl
                 options={[

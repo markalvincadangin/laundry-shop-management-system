@@ -35,7 +35,7 @@ export function Select({
       {label && (
         <label 
           htmlFor={selectId}
-          className={`mb-2.5 block text-[10px] font-black uppercase tracking-[0.2em] ml-1.5 transition-colors group-focus-within:text-brand-blue ${variant === "glass" ? "text-slate-400" : "text-slate-500"}`}
+          className={`mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] ml-1.5 transition-colors group-focus-within:text-brand-blue ${variant === "glass" ? "text-slate-400" : "text-slate-500"}`}
         >
           {label}
           {props.required && <span className="text-error-700 ml-1" aria-hidden="true">*</span>}
@@ -45,7 +45,7 @@ export function Select({
         <select
           id={selectId}
           className={`
-            w-full h-[52px] appearance-none rounded-2xl border px-grid-4 text-body font-medium leading-none
+            w-full h-[52px] appearance-none rounded-2xl border pl-grid-4 pr-grid-12 text-body font-medium leading-none
             focus:outline-none transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
             ${variants[variant]}
             ${className}
@@ -54,7 +54,7 @@ export function Select({
         >
           {children}
         </select>
-        <div className="pointer-events-none absolute right-4.5 top-1/2 -translate-y-1/2 transition-all duration-300 group-focus-within:rotate-180 group-focus-within:text-brand-blue flex items-center justify-center">
+        <div className="pointer-events-none absolute right-grid-4 top-1/2 -translate-y-1/2 transition-all duration-300 group-focus-within:rotate-180 group-focus-within:text-brand-blue flex items-center justify-center">
           <ChevronDown className="h-5 w-5 opacity-50 stroke-[2.25]" />
         </div>
       </div>

@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import {
   FileText,
-  Download,
+  FileDown,
   User,
   ShieldCheck,
   Hash,
@@ -192,14 +192,14 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="w-full md:w-80 h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+            className="w-full md:w-80 h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
           <Button
             variant="outline"
-            className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 rounded-xl"
+            className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 rounded-2xl group/export"
             onClick={handleExport}
           >
-            <Download className="h-4 w-4" />
+            <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
             {UI_LABELS.modules.reports.EXPORT_CSV}
           </Button>
         </div>

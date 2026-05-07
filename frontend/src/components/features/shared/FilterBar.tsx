@@ -22,7 +22,7 @@ export function FilterBar({ children, title }: FilterBarProps) {
           </h3>
         </div>
       )}
-      <div className="p-grid-8 flex flex-wrap items-end gap-grid-6">
+      <div className="p-grid-8 flex flex-wrap items-end gap-grid-4">
         {children}
       </div>
     </motion.div>

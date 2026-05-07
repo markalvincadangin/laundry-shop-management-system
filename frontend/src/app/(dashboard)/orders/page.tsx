@@ -236,7 +236,7 @@ export default function OrdersPage() {
                 ) : (
                   <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
                 )}
-                {isExporting ? "Exporting..." : "Export Registry"}
+                {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
               <Button 
                 variant="primary" 

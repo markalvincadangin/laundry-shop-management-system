@@ -163,7 +163,7 @@ export default function PaymentsPage() {
                 ) : (
                   <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
                 )}
-                {isExporting ? "Exporting..." : UI_LABELS.modules.payments.EXPORT}
+                {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
             </div>
           }
