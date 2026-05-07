@@ -232,8 +232,8 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             <CurrencyDisplay
               amount={payments.reduce((sum, p) => sum + (p.amountPaid ?? 0), 0)}
               size="xl"
-              className="text-slate-900 group-hover/total:scale-105 transition-transform duration-500"
-              numberClassName="font-black"
+              className="text-5xl text-slate-900 group-hover/total:scale-105 transition-transform duration-500"
+              numberClassName="font-black tracking-tighter"
             />
           </motion.div>
         )}

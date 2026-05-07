@@ -435,12 +435,13 @@ export default function OrderDetailPage() {
                       <span className="text-2xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none block">{UI_LABELS.shared.common.TOTAL}</span>
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] block ml-1">{UI_LABELS.modules.orders.PAYMENT_TIMING}</span>
                     </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-display font-black text-brand-blue/40 leading-none">₱</span>
-                      <span className="text-6xl font-display font-black text-brand-blue tracking-tighter tabular-nums leading-none">
-                        {order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                    </div>
+                    <CurrencyDisplay 
+                      amount={order.grandTotal} 
+                      size="xl"
+                      className="text-8xl text-brand-blue"
+                      symbolClassName="text-brand-blue/40 mr-2"
+                      numberClassName="font-display font-black tracking-tighter"
+                    />
                   </div>
                 </div>
               </div>

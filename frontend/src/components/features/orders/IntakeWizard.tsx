@@ -745,8 +745,9 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                               <div className="flex items-baseline">
                                 <CurrencyDisplay 
                                   amount={pricing.preview?.grandTotal} 
-                                  className="text-8xl text-white"
-                                  symbolClassName="text-brand-cyan/80 mr-4"
+                                  size="xl"
+                                  className="text-9xl text-white"
+                                  symbolClassName="text-brand-cyan/80 mr-6"
                                   numberClassName="font-display font-black tracking-tighter leading-none"
                                 />
                               </div>

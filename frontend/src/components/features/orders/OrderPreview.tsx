@@ -268,7 +268,8 @@ export function OrderPreview({
                 <div className="flex items-baseline gap-2">
                   <CurrencyDisplay 
                     amount={preview?.grandTotal ?? 0} 
-                    className="text-7xl tracking-tighter leading-none" 
+                    size="xl"
+                    className="text-8xl tracking-tighter leading-none" 
                     numberClassName="font-black"
                   />
                 </div>
