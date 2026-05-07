@@ -71,16 +71,14 @@ export function KPICard({
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-slate-500 transition-colors">
             {title}
           </p>
-          <div className="flex items-baseline gap-grid-4">
-            <div className="text-4xl sm:text-5xl font-sans font-black text-slate-900 tracking-tighter flex items-center gap-1 group-hover:scale-[1.02] transition-transform duration-500 origin-left">
-              {value}
-            </div>
-            {subtitle && (
-              <span className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                {subtitle}
-              </span>
-            )}
+          <div className="text-4xl sm:text-5xl font-sans font-black text-slate-900 tracking-tighter flex items-center gap-1 group-hover:scale-[1.02] transition-transform duration-500 origin-left">
+            {value}
           </div>
+          {subtitle && (
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100 transition-opacity leading-tight max-w-[80%]">
+              {subtitle}
+            </p>
+          )}
         </div>
 
         {/* Decorative highlight line (HCI: visual progress indicator) */}
