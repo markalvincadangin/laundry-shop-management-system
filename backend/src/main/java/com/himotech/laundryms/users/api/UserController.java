@@ -29,10 +29,20 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public org.springframework.data.domain.Page<UserResponse> getAllUsers(
+    public com.himotech.laundryms.api.dto.response.PageResponse<UserResponse> getAllUsers(
             @org.springframework.web.bind.annotation.RequestParam(required = false) String q,
-            @org.springframework.data.web.PageableDefault(size = 20, sort = "username") org.springframework.data.domain.Pageable pageable) {
-        return userService.searchUsers(q, pageable);
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "username") String sortBy,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "asc") String sortDir) {
+        
+        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase("desc") 
+                ? org.springframework.data.domain.Sort.by(sortBy).descending() 
+                : org.springframework.data.domain.Sort.by(sortBy).ascending();
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        
+        org.springframework.data.domain.Page<UserResponse> result = userService.searchUsers(q, pageable);
+        return com.himotech.laundryms.api.dto.response.PageResponse.of(result);
     }
 
     @PostMapping

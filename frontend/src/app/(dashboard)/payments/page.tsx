@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  CreditCard, 
-  Search, 
+import {
+  CreditCard,
+  Search,
   RefreshCcw,
   Loader2,
   FileDown,
@@ -34,26 +34,26 @@ export default function PaymentsPage() {
   const { user, loading: authLoading } = useAuth();
 
   // Registry State Management (Centralized Architecture)
-  const { 
-    params, 
-    sortBy, 
-    sortDir, 
-    searchTerm, 
-    setSearchTerm, 
-    updateParams, 
-    handleSort 
+  const {
+    params,
+    sortBy,
+    sortDir,
+    searchTerm,
+    setSearchTerm,
+    updateParams,
+    handleSort
   } = useRegistry({
     defaultSortBy: "paymentDate",
     defaultSortDir: "desc",
     defaultPageSize: 15
   });
 
-  const { 
+  const {
     payments,
     loading,
     error,
-    pagination, 
-    refresh 
+    pagination,
+    refresh
   } = usePayments(params as any);
 
   const [selectedPayment, setSelectedPayment] = useState<PaymentResponse | null>(null);
@@ -62,31 +62,31 @@ export default function PaymentsPage() {
 
   const handleExportPDF = async () => {
     if (isExporting || payments.length === 0) return;
-    
+
     setIsExporting(true);
     try {
       const totalAmount = payments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
-      
+
       const pdfData = {
         title: "FINANCIAL TRANSACTION LEDGER",
-        period: params.from && params.to 
+        period: params.from && params.to
           ? `${params.from} to ${params.to}`
           : params.from || params.to || "All Time",
         kpis: [
-          { 
-            label: "Total Collected", 
-            value: `PHP ${totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`, 
-            subtitle: "Aggregated Revenue" 
+          {
+            label: "Total Collected",
+            value: `PHP ${totalAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+            subtitle: "Aggregated Revenue"
           },
-          { 
-            label: "Transaction Count", 
-            value: pagination.totalElements.toString(), 
-            subtitle: "Processed Payments" 
+          {
+            label: "Transaction Count",
+            value: pagination.totalElements.toString(),
+            subtitle: "Processed Payments"
           },
-          { 
-            label: "Average Payment", 
-            value: `PHP ${(totalAmount / (payments.length || 1)).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`, 
-            subtitle: "Per Customer" 
+          {
+            label: "Average Payment",
+            value: `PHP ${(totalAmount / (payments.length || 1)).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+            subtitle: "Per Customer"
           }
         ],
         table: {
@@ -109,7 +109,7 @@ export default function PaymentsPage() {
 
       const doc = <ReportDocument data={pdfData as any} />;
       const blob = await pdf(doc).toBlob();
-      
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -144,16 +144,16 @@ export default function PaymentsPage() {
       <PrintHeader module="Financial Transaction Ledger" />
 
       <div className="no-print">
-        <PageHeader 
+        <PageHeader
           variant="premium"
           title={UI_LABELS.layout.nav.PAYMENTS}
           subtitle={UI_LABELS.modules.payments.SUBTITLE}
           icon={CreditCard}
           actions={
             <div className="no-print">
-              <Button 
-                variant="outline" 
-                className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl" 
+              <Button
+                variant="outline"
+                className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl"
                 onClick={handleExportPDF}
                 disabled={isExporting || loading}
               >
@@ -170,32 +170,32 @@ export default function PaymentsPage() {
       </div>
 
       {/* Snapshot KPIs */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-grid-6 kpi-grid-print no-print"
       >
-        <KPICard 
-          title="Session Revenue" 
-          value={<div className="font-black"><CurrencyDisplay amount={currentViewTotal} size="xl" /></div>} 
-          subtitle="Revenue in current view" 
-          icon={Wallet} 
-          variant="accent" 
+        <KPICard
+          title="Session Revenue"
+          value={<div className="font-black"><CurrencyDisplay amount={currentViewTotal} size="xl" /></div>}
+          subtitle="Revenue in current view"
+          icon={Wallet}
+          variant="accent"
         />
-        <KPICard 
-          title="Record Count" 
-          value={pagination.totalElements} 
-          subtitle="Total transactions found" 
-          icon={Hash} 
-          variant="default" 
+        <KPICard
+          title="Record Count"
+          value={pagination.totalElements}
+          subtitle="Total transactions found"
+          icon={Hash}
+          variant="default"
         />
-        <KPICard 
-          title="Active Load" 
-          value={payments.length} 
-          subtitle="Showing on this page" 
-          icon={Database} 
-          variant="success" 
+        <KPICard
+          title="Active Load"
+          value={payments.length}
+          subtitle="Showing on this page"
+          icon={Database}
+          variant="success"
         />
       </motion.div>
 
@@ -211,21 +211,21 @@ export default function PaymentsPage() {
             />
           </div>
           <div className="w-full lg:flex-1 lg:min-w-[180px]">
-            <Input 
-              label={UI_LABELS.shared.common.START_DATE} 
-              type="date" 
-              value={params.from ?? ""} 
-              onChange={(e) => updateParams({ from: e.target.value || undefined, page: 0 })} 
-              className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm" 
+            <Input
+              label={UI_LABELS.shared.common.START_DATE}
+              type="date"
+              value={params.from ?? ""}
+              onChange={(e) => updateParams({ from: e.target.value || undefined, page: 0 })}
+              className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm"
             />
           </div>
           <div className="w-full lg:flex-1 lg:min-w-[180px]">
-            <Input 
-              label={UI_LABELS.shared.common.END_DATE} 
-              type="date" 
-              value={params.to ?? ""} 
-              onChange={(e) => updateParams({ to: e.target.value || undefined, page: 0 })} 
-              className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm" 
+            <Input
+              label={UI_LABELS.shared.common.END_DATE}
+              type="date"
+              value={params.to ?? ""}
+              onChange={(e) => updateParams({ to: e.target.value || undefined, page: 0 })}
+              className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm"
             />
           </div>
           <Button variant="secondary" className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 shadow-sm font-black uppercase text-caption tracking-widest rounded-2xl" onClick={() => refresh()}>
@@ -238,7 +238,7 @@ export default function PaymentsPage() {
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -254,7 +254,7 @@ export default function PaymentsPage() {
           />
 
           <div className="no-print">
-            <Pagination 
+            <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
               totalElements={pagination.totalElements}
@@ -267,7 +267,7 @@ export default function PaymentsPage() {
         </motion.div>
       )}
 
-      <PaymentDetailsModal 
+      <PaymentDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         payment={selectedPayment}

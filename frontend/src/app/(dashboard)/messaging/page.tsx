@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  MessageSquare, 
-  Search, 
-  RefreshCcw, 
-  BadgeCheck, 
+import {
+  MessageSquare,
+  Search,
+  RefreshCcw,
+  BadgeCheck,
   AlertCircle,
   User,
   Hash,
@@ -16,8 +16,8 @@ import {
   AlertTriangle,
   Eye
 } from "lucide-react";
-import { 
-  Button, 
+import {
+  Button,
   StatusBadge,
   Input,
   Select,
@@ -41,11 +41,11 @@ import { motion } from "framer-motion";
  * v4.0 Consistency Pass: Premium PageHeader, standardized grid width, and refined spacing.
  */
 export default function MessagingPage() {
-  const { 
-    params, 
-    searchTerm, 
-    setSearchTerm, 
-    updateParams, 
+  const {
+    params,
+    searchTerm,
+    setSearchTerm,
+    updateParams,
     handleSort,
     sortBy,
     sortDir
@@ -76,12 +76,12 @@ export default function MessagingPage() {
       sortKey: "order.referenceNumber",
       render: (n) => (
         <div className="flex items-center gap-3 group">
-           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-brand-blue/5 transition-all">
-              <Hash className="h-3.5 w-3.5 text-slate-400 group-hover:text-brand-blue" />
-           </div>
-           <span className="font-mono text-body-sm text-slate-900 font-bold tracking-tight truncate">
-             {n.referenceNumber}
-           </span>
+          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-brand-blue/5 transition-all">
+            <Hash className="h-3.5 w-3.5 text-slate-400 group-hover:text-brand-blue" />
+          </div>
+          <span className="font-mono text-body-sm text-slate-900 font-bold tracking-tight truncate">
+            {n.referenceNumber}
+          </span>
         </div>
       ),
     },
@@ -92,7 +92,7 @@ export default function MessagingPage() {
       render: (n) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200">
-             <User className="h-3.5 w-3.5 text-slate-400" />
+            <User className="h-3.5 w-3.5 text-slate-400" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-body-sm text-slate-700 font-bold truncate">
@@ -109,9 +109,9 @@ export default function MessagingPage() {
       header: UI_LABELS.modules.clientAlerts.MESSAGE,
       render: (n) => (
         <div className="max-w-[280px] xl:max-w-md">
-           <p className="text-body-sm text-slate-500 line-clamp-1 leading-relaxed italic opacity-80">
-             &quot;{n.message}&quot;
-           </p>
+          <p className="text-body-sm text-slate-500 line-clamp-1 leading-relaxed italic opacity-80">
+            &quot;{n.message}&quot;
+          </p>
         </div>
       ),
     },
@@ -122,9 +122,9 @@ export default function MessagingPage() {
       render: (n) => {
         const isSent = n.status === "SENT";
         return (
-          <StatusBadge 
-            variant={isSent ? "success" : "error"} 
-            label={isSent ? "MESSAGE SENT" : "DELIVERY FAILED"} 
+          <StatusBadge
+            variant={isSent ? "success" : "error"}
+            label={isSent ? "MESSAGE SENT" : "DELIVERY FAILED"}
             icon={isSent ? BadgeCheck : AlertCircle}
             className="font-bold tracking-widest text-[9px]"
           />
@@ -137,17 +137,17 @@ export default function MessagingPage() {
       sortKey: "createdAt",
       render: (n) => (
         <div className="flex items-center gap-3 text-slate-500">
-           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
-              <Clock className="h-3.5 w-3.5 text-slate-400" />
-           </div>
-           <div className="flex flex-col">
-             <span className="text-body-sm font-bold text-slate-700 tabular-nums">
-               {formatDateTime(n.createdAt).split(',')[0]}
-             </span>
-             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-               {formatDateTime(n.createdAt).split(',')[1]}
-             </span>
-           </div>
+          <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
+            <Clock className="h-3.5 w-3.5 text-slate-400" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-body-sm font-bold text-slate-700 tabular-nums">
+              {formatDateTime(n.createdAt).split(',')[0]}
+            </span>
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+              {formatDateTime(n.createdAt).split(',')[1]}
+            </span>
+          </div>
         </div>
       ),
     },
@@ -155,9 +155,9 @@ export default function MessagingPage() {
       header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (n) => (
-        <Button 
-          variant="ghost" 
-          size="xs" 
+        <Button
+          variant="ghost"
+          size="xs"
           className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
           onClick={(e) => {
             e.stopPropagation();
@@ -173,7 +173,7 @@ export default function MessagingPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
-      <PageHeader 
+      <PageHeader
         variant="premium"
         title={UI_LABELS.modules.clientAlerts.TITLE}
         subtitle={UI_LABELS.modules.clientAlerts.SUBTITLE}
@@ -181,7 +181,7 @@ export default function MessagingPage() {
       />
 
       {/* Snapshot KPIs */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -222,9 +222,9 @@ export default function MessagingPage() {
             className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
-        <Button 
-          variant="secondary" 
-          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-2xl" 
+        <Button
+          variant="secondary"
+          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-2xl"
           onClick={() => refresh()}
         >
           <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -235,7 +235,7 @@ export default function MessagingPage() {
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -269,7 +269,7 @@ export default function MessagingPage() {
         </motion.div>
       )}
 
-      <ClientAlertDetailsModal 
+      <ClientAlertDetailsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         notification={selectedNotification}

@@ -38,7 +38,7 @@ export function useUsers(params: any = { page: 0, size: 20 }) {
     loading, 
     error: isError ? (error as any).message : null, 
     pagination: {
-      page: data?.number ?? 0,
+      page: data?.page ?? 0,
       totalPages: data?.totalPages ?? 0,
       totalElements: data?.totalElements ?? 0,
     },

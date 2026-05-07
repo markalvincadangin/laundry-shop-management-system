@@ -107,7 +107,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       ),
     },
     {
-      header: "METHOD",
+      header: UI_LABELS.shared.common.METHOD,
       sortable: true,
       sortKey: "paymentMethod",
       render: (p) => {
@@ -117,7 +117,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
           <div className="flex items-center gap-3">
             <div className={`h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm ${isCash ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
                 isGCash ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                  'bg-purple-50 border-purple-100 text-purple-600'
+                   'bg-purple-50 border-purple-100 text-purple-600'
               }`}>
               {isCash ? <Banknote className="h-4 w-4" /> : isGCash ? <Wallet className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
             </div>
@@ -132,7 +132,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       },
     },
     {
-      header: "PROCESSED BY",
+      header: UI_LABELS.shared.common.PROCESSED_BY,
       sortable: true,
       sortKey: "receivedBy.username",
       render: (p) => (

@@ -54,6 +54,12 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final Random random = new Random(42);
 
+    @Value("${flyway.placeholders.seed_admin_username:admin}")
+    private String seedAdminUsername;
+
+    @Value("${flyway.placeholders.seed_staff_username:staff}")
+    private String seedStaffUsername;
+
     @Override
     @Transactional
     public void run(String... args) {
@@ -65,12 +71,13 @@ public class DemoDataSeeder implements CommandLineRunner {
         log.info("[DemoDataSeeder] Starting demo data seeding...");
 
         ServiceRate rate = resolveServiceRate();
-        User admin = fetchUser("admin");
-        User staff = fetchUser("staff");
+        User admin = fetchUser(seedAdminUsername);
+        User staff = fetchUser(seedStaffUsername);
         List<Customer> customers = seedCustomers();
         seedOrdersAndPayments(customers, rate, admin, staff);
 
-        log.info("[DemoDataSeeder] Done. Seeded {} customers and 40 orders linked to users 'admin' and 'staff'.", customers.size());
+        log.info("[DemoDataSeeder] Done. Seeded {} customers and 40 orders linked to users '{}' and '{}'.", 
+                customers.size(), seedAdminUsername, seedStaffUsername);
     }
 
     private User fetchUser(String username) {
