@@ -110,7 +110,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
         <div className="space-y-1 text-[10px]">
           <div className="flex justify-between leading-tight">
             <span className="flex-1 pr-2">
-              {order.totalLoads} LOAD(S) @ {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}KG
+              {order.totalLoads} {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS} @ {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}KG
               <br />
               <span className="text-[9px]">{order.serviceType?.replace(/_/g, " ")}</span>
             </span>

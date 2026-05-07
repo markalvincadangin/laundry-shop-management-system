@@ -30,7 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ordersService } from "@/services/orders.service";
 import { paymentsService } from "@/services/payments.service";
 import { PaymentMethod } from "@/constants/order-status";
-import { Card, CardContent, Input, Button, Select } from "@/components/ui";
+import { Card, CardContent, Input, Button, Select, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useCustomerLookup } from "@/hooks/useCustomerLookup";
@@ -743,10 +743,12 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                             <div className="space-y-2">
                               <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/30 block">Grand Total</span>
                               <div className="flex items-baseline">
-                                <span className="text-8xl font-display font-black tracking-tighter leading-none tabular-nums text-white">
-                                  <span className="text-brand-cyan/80 mr-4">₱</span>
-                                  {pricing.preview?.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}
-                                </span>
+                                <CurrencyDisplay 
+                                  amount={pricing.preview?.grandTotal} 
+                                  className="text-8xl text-white"
+                                  symbolClassName="text-brand-cyan/80 mr-4"
+                                  numberClassName="font-display font-black tracking-tighter leading-none"
+                                />
                               </div>
                             </div>
                           </div>

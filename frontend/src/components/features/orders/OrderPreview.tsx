@@ -166,7 +166,13 @@ export function OrderPreview({
                             <span className="flex items-center gap-2">
                               {a.name} <span className="text-[10px] opacity-60 font-mono">(x{a.quantity})</span>
                             </span>
-                            <span className="font-mono">{formatCurrency(a.price * a.quantity)}</span>
+                            <CurrencyDisplay 
+                              amount={a.price * a.quantity} 
+                              size="sm" 
+                              tabular={true}
+                              className="text-brand-blue"
+                              numberClassName="font-mono"
+                            />
                           </div>
                         ))}
                       </div>
@@ -205,9 +211,11 @@ export function OrderPreview({
                           {preview.totalLoads} {preview.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS}
                         </span>
                       </span>
-                      <span className="font-mono font-black text-slate-900 tabular-nums text-base">
-                        {formatCurrency(preview.baseAmount)}
-                      </span>
+                      <CurrencyDisplay 
+                        amount={preview.baseAmount} 
+                        size="md"
+                        numberClassName="font-mono font-black"
+                      />
                     </div>
 
                     {preview.extraMinutesAmount > 0 && (
@@ -215,12 +223,14 @@ export function OrderPreview({
                         <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors">
                           {UI_LABELS.modules.orders.EXTRA_TIME_FEE}
                           <span className="text-[10px] font-mono font-black uppercase text-slate-400 ml-2 bg-slate-100 px-1.5 py-0.5 rounded">
-                            {extraMinutes}{UI_LABELS.shared.units.TIME}
+                            {extraMinutes} {UI_LABELS.shared.units.TIME}
                           </span>
                         </span>
-                        <span className="font-mono font-black text-slate-900 tabular-nums text-base">
-                          {formatCurrency(preview.extraMinutesAmount)}
-                        </span>
+                        <CurrencyDisplay 
+                          amount={preview.extraMinutesAmount} 
+                          size="md"
+                          numberClassName="font-mono font-black"
+                        />
                       </div>
                     )}
                   </div>
