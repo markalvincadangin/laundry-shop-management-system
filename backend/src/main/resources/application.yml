@@ -66,9 +66,6 @@ logging:
         SQL: debug
 
 app:
-  seed:
-    admin-password: ${APP_SEED_ADMIN_PASSWORD:}
-    staff-password: ${APP_SEED_STAFF_PASSWORD:}
   security:
     cookie-name: access_token
     allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}

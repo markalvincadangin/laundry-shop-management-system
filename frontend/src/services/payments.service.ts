@@ -9,7 +9,7 @@ export type PaymentListParams = {
   orderId?: number;
   from?: string;
   to?: string;
-  searchTerm?: string;
+  q?: string;
   page?: number;
   size?: number;
   sortBy?: string;

@@ -29,8 +29,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<UserResponse> getAllUsers() {
-        return userService.getAllUsers();
+    public org.springframework.data.domain.Page<UserResponse> getAllUsers(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String q,
+            @org.springframework.data.web.PageableDefault(size = 20, sort = "username") org.springframework.data.domain.Pageable pageable) {
+        return userService.searchUsers(q, pageable);
     }
 
     @PostMapping

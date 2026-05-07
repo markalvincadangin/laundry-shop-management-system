@@ -52,14 +52,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final OrderRepository orderRepository;
     private final ServiceRateRepository serviceRateRepository;
     private final PaymentRepository paymentRepository;
-    private final PasswordEncoder passwordEncoder;
     private final Random random = new Random(42);
-
-    @Value("${app.seed.admin-password:}")
-    private String adminPassword;
-
-    @Value("${app.seed.staff-password:}")
-    private String staffPassword;
 
     @Override
     @Transactional
@@ -69,48 +62,22 @@ public class DemoDataSeeder implements CommandLineRunner {
             return;
         }
 
-        if (adminPassword == null || adminPassword.isBlank() || staffPassword == null || staffPassword.isBlank()) {
-            log.warn("[DemoDataSeeder] Seed passwords not provided (app.seed.admin-password, app.seed.staff-password) — skipping demo data seeding.");
-            return;
-        }
-
         log.info("[DemoDataSeeder] Starting demo data seeding...");
 
         ServiceRate rate = resolveServiceRate();
-        User admin = seedAdminUser();
-        User staff = seedStaffUser();
+        User admin = fetchUser("admin");
+        User staff = fetchUser("staff");
         List<Customer> customers = seedCustomers();
         seedOrdersAndPayments(customers, rate, admin, staff);
 
-        log.info("[DemoDataSeeder] Done. Seeded 2 users, {} customers, 40 orders.", customers.size());
+        log.info("[DemoDataSeeder] Done. Seeded {} customers and 40 orders linked to users 'admin' and 'staff'.", customers.size());
     }
 
-    private User seedAdminUser() {
-        return userRepository.findByUsername("admin").orElseGet(() -> {
-            log.info("[DemoDataSeeder] Creating admin user...");
-            return userRepository.save(User.builder()
-                    .username("admin")
-                    .passwordHash(passwordEncoder.encode(adminPassword))
-                    .role(UserRole.ADMIN)
-                    .firstName("Faith")
-                    .lastName("Laundry")
-                    .isActive(true)
-                    .build());
-        });
-    }
-
-    private User seedStaffUser() {
-        return userRepository.findByUsername("staff").orElseGet(() -> {
-            log.info("[DemoDataSeeder] Creating staff user...");
-            return userRepository.save(User.builder()
-                    .username("staff")
-                    .passwordHash(passwordEncoder.encode(staffPassword))
-                    .role(UserRole.STAFF)
-                    .firstName("Ana")
-                    .lastName("Reyes")
-                    .isActive(true)
-                    .build());
-        });
+    private User fetchUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException(
+                        "[DemoDataSeeder] Required seed user '" + username + "' not found. " +
+                        "Ensure V2__seed_users.sql has run and credentials are set in .env."));
     }
 
     private ServiceRate resolveServiceRate() {

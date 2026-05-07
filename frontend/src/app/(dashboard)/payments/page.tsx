@@ -45,8 +45,7 @@ export default function PaymentsPage() {
   } = useRegistry({
     defaultSortBy: "paymentDate",
     defaultSortDir: "desc",
-    defaultPageSize: 15,
-    searchParamKey: "orderId"
+    defaultPageSize: 15
   });
 
   const { 

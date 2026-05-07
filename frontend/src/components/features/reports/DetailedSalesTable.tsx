@@ -48,8 +48,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
   const { payments, loading, pagination } = usePayments({
     ...params,
     from: from || date,
-    to: to || date,
-    ...(searchTerm ? { searchTerm } : {})
+    to: to || date
   });
 
   const handleExport = () => {

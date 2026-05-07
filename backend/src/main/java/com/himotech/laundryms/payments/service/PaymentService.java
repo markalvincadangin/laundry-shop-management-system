@@ -118,10 +118,19 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, String searchTerm, Pageable pageable) {
+    public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, String q, Pageable pageable) {
         Instant fromTs = from != null ? from.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         Instant toTs = to != null ? to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
-        return paymentRepository.findAllFiltered(orderId, fromTs, toTs, searchTerm, pageable);
+        
+        org.springframework.data.jpa.domain.Specification<Payment> spec = 
+            com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(
+                orderId, 
+                fromTs, 
+                toTs, 
+                q
+            );
+            
+        return paymentRepository.findAll(spec, pageable);
     }
 
 }

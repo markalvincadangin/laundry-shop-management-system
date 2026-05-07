@@ -29,6 +29,12 @@ public final class OrderSpecification {
             Instant toTs,
             String q) {
         return (root, query, cb) -> {
+            // Performance Optimization: Eagerly fetch Customer to prevent N+1 issues in registries
+            // We skip fetch for count queries (Long.class) to prevent JPA exceptions
+            if (Long.class != query.getResultType()) {
+                root.fetch("customer", jakarta.persistence.criteria.JoinType.LEFT);
+            }
+
             List<Predicate> predicates = new ArrayList<>();
             if (status != null) {
                 predicates.add(cb.equal(root.get("currentStatus"), status));
@@ -47,7 +53,9 @@ public final class OrderSpecification {
                 Predicate searchPredicate = cb.or(
                         cb.like(cb.lower(root.get("referenceNumber")), searchPattern),
                         cb.like(cb.lower(root.get("customer").get("firstName")), searchPattern),
-                        cb.like(cb.lower(root.get("customer").get("lastName")), searchPattern)
+                        cb.like(cb.lower(root.get("customer").get("lastName")), searchPattern),
+                        cb.like(cb.lower(cb.concat(cb.concat(root.get("customer").get("firstName"), " "), root.get("customer").get("lastName"))), searchPattern),
+                        cb.like(cb.lower(cb.concat(cb.concat(root.get("customer").get("lastName"), " "), root.get("customer").get("firstName"))), searchPattern)
                 );
                 predicates.add(searchPredicate);
             }

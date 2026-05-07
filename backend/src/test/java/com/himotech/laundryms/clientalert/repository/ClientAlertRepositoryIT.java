@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.C;
 
 import java.math.BigDecimal;
 import java.time.Instant;

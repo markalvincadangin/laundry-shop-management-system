@@ -3,6 +3,7 @@ package com.himotech.laundryms.users.repository;
 import com.himotech.laundryms.common.enums.UserRole;
 import com.himotech.laundryms.users.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -13,7 +14,7 @@ import java.util.UUID;
  * Provides database access for user authentication and management.
  */
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
     /**
      * Finds a user by their unique username.

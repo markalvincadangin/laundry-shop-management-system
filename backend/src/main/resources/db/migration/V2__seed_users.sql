@@ -15,15 +15,15 @@ INSERT INTO users (first_name, last_name, username, password_hash, role, is_acti
 SELECT first_name, last_name, username, password_hash, role, is_active
 FROM (
     SELECT
-        'System' AS first_name,
-        'Admin'  AS last_name,
+        'Faith' AS first_name,
+        'Laundry'  AS last_name,
                 '${seed_admin_username}'  AS username,
                 '${seed_admin_password_hash}' AS password_hash,
         'ADMIN' AS role,
         TRUE AS is_active
     UNION ALL
     SELECT
-        'System' AS first_name,
+        'Faith' AS first_name,
         'Staff'  AS last_name,
                 '${seed_staff_username}'  AS username,
                 '${seed_staff_password_hash}' AS password_hash,

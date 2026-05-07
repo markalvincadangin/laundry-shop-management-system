@@ -1000,12 +1000,16 @@ export interface paths {
             parameters: {
                 query?: {
                     orderId?: number;
+                    /** @description Search by reference number, customer name, or transaction ID */
+                    q?: string;
                     /** @description Start date (inclusive) */
                     from?: string;
                     /** @description End date (inclusive) */
                     to?: string;
                     page?: number;
                     size?: number;
+                    sortBy?: string;
+                    sortDir?: "asc" | "desc";
                 };
                 header?: never;
                 path?: never;
@@ -1184,26 +1188,37 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List client alerts
-         * @description Returns all client alerts ordered by createdAt descending (staff view).
-         *     Supports: US-10. Enforces: BR-ALERT-01.
+         * List or search client alerts
+         * @description Returns client alerts with pagination and optional filters.
+         *     Ordered by createdAt descending by default.
+         *     Supports: US-10.
          */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Search by message, reference number, or customer name */
+                    q?: string;
+                    status?: "PENDING" | "SENT" | "FAILED";
+                    from?: string;
+                    to?: string;
+                    page?: number;
+                    size?: number;
+                    sortBy?: string;
+                    sortDir?: "asc" | "desc";
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Client alerts list */
+                /** @description Paginated client alerts list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ClientAlertResponse"][];
+                        "application/json": components["schemas"]["ClientAlertPageResponse"];
                     };
                 };
             };
@@ -1294,14 +1309,22 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List audit logs
-         * @description Returns forensic audit logs of system mutations (Admin only). Snapshot data includes point-in-time state. Sorted by createdAt descending (UTC).
+         * List or search audit logs
+         * @description Returns forensic audit logs of system mutations (Admin only).
          */
         get: {
             parameters: {
                 query?: {
+                    /** @description Search by table name, record ID, or user */
+                    q?: string;
+                    /** @description Filter by action type (e.g., ORDER_CREATE) */
+                    action?: string;
+                    from?: string;
+                    to?: string;
                     page?: number;
                     size?: number;
+                    sortBy?: string;
+                    sortDir?: "asc" | "desc";
                 };
                 header?: never;
                 path?: never;
@@ -1343,27 +1366,34 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List all users
-         * @description Returns a complete list of all staff and admin accounts.
+         * List or search users
+         * @description Returns a complete list of all staff and admin accounts with pagination.
          *     Requires ADMIN role.
          *     Supports: US-11 (Admin audit & directory view).
          */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Search by username, firstName, or lastName */
+                    q?: string;
+                    page?: number;
+                    size?: number;
+                    sortBy?: string;
+                    sortDir?: "asc" | "desc";
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description List of users */
+                /** @description Paginated users list */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["UserResponse"][];
+                        "application/json": components["schemas"]["UserPageResponse"];
                     };
                 };
                 /** @description Forbidden - Admin only */
@@ -2029,6 +2059,15 @@ export interface components {
             /** Format: date-time */
             sentAt?: string;
         };
+        ClientAlertPageResponse: {
+            content: components["schemas"]["ClientAlertResponse"][];
+            page: number;
+            size: number;
+            totalElements: number;
+            totalPages: number;
+            first: boolean;
+            last: boolean;
+        };
         DailySalesReportResponse: {
             /** Format: date */
             date: string;
@@ -2109,6 +2148,15 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        UserPageResponse: {
+            content: components["schemas"]["UserResponse"][];
+            page: number;
+            size: number;
+            totalElements: number;
+            totalPages: number;
+            first: boolean;
+            last: boolean;
         };
     };
     responses: never;

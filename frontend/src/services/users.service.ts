@@ -28,7 +28,7 @@ export interface UpdateUserRequest {
 }
 
 export const usersService = {
-  getAll: () => apiClient.get<UserResponse[]>("/v1/users"),
+  getAll: (params?: any) => apiClient.get<any>("/v1/users", { params }),
   create: (data: CreateUserRequest) => apiClient.post<UserResponse>("/v1/users", data),
   update: (id: string, data: UpdateUserRequest) => apiClient.patch<UserResponse>(`/v1/users/${id}`, data),
   toggleStatus: (id: string) => apiClient.patch(`/v1/users/${id}/toggle-status`, {}),
