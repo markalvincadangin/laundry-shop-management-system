@@ -59,7 +59,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {icon && (
             <div className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-blue flex items-center justify-center transition-colors">
               {React.isValidElement(icon) 
-                ? React.cloneElement(icon as React.ReactElement, { className: "h-[18px] w-[18px] stroke-[2.5]" }) 
+                ? React.cloneElement(icon as React.ReactElement<any>, { className: "h-[18px] w-[18px] stroke-[2.5]" }) 
                 : icon}
             </div>
           )}

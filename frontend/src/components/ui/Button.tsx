@@ -48,7 +48,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {!isLoading && leftIcon && (
           <span className="inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
             {React.isValidElement(leftIcon) 
-              ? React.cloneElement(leftIcon as React.ReactElement, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
+              ? React.cloneElement(leftIcon as React.ReactElement<any>, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
               : leftIcon}
           </span>
         )}
@@ -58,7 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {!isLoading && rightIcon && (
           <span className="inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
             {React.isValidElement(rightIcon) 
-              ? React.cloneElement(rightIcon as React.ReactElement, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
+              ? React.cloneElement(rightIcon as React.ReactElement<any>, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
               : rightIcon}
           </span>
         )}
