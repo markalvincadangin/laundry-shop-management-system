@@ -41,12 +41,6 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
       { href: "/overview", label: UI_LABELS.layout.nav.DASHBOARD, icon: LayoutGrid },
       { href: "/orders", label: UI_LABELS.layout.nav.ORDERS, icon: ClipboardList },
       { href: "/customers", label: UI_LABELS.layout.nav.CUSTOMERS, icon: Users },
-    ],
-  },
-  {
-    id: "logs",
-    label: "Monitoring",
-    items: [
       { href: "/messaging", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare },
     ],
   },
