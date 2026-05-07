@@ -36,5 +36,5 @@ export const orders = {
   CUSTOMER: "Customer",
   AWAITING_DATA: "Awaiting data...",
   SYNCING: "Syncing...",
-  TOTAL_PAYABLE: "Total Payable",
+  TOTAL: "Total",
 } as const;

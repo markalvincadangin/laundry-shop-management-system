@@ -139,7 +139,6 @@ export function OrderPreview({
                   {notes && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 opacity-50">
-                        <FileText className="h-4 w-4 text-slate-900" />
                         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-900">
                           {UI_LABELS.modules.orders.SPECIAL_INSTRUCTIONS}
                         </span>
@@ -166,9 +165,9 @@ export function OrderPreview({
                             <span className="flex items-center gap-2">
                               {a.name} <span className="text-[10px] opacity-60 font-mono">(x{a.quantity})</span>
                             </span>
-                            <CurrencyDisplay 
-                              amount={a.price * a.quantity} 
-                              size="sm" 
+                            <CurrencyDisplay
+                              amount={a.price * a.quantity}
+                              size="sm"
                               tabular={true}
                               className="text-brand-blue"
                               numberClassName="font-mono"
@@ -211,8 +210,8 @@ export function OrderPreview({
                           {preview.totalLoads} {preview.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS}
                         </span>
                       </span>
-                      <CurrencyDisplay 
-                        amount={preview.baseAmount} 
+                      <CurrencyDisplay
+                        amount={preview.baseAmount}
                         size="md"
                         numberClassName="font-mono font-black"
                       />
@@ -226,8 +225,8 @@ export function OrderPreview({
                             {extraMinutes} {UI_LABELS.shared.units.TIME}
                           </span>
                         </span>
-                        <CurrencyDisplay 
-                          amount={preview.extraMinutesAmount} 
+                        <CurrencyDisplay
+                          amount={preview.extraMinutesAmount}
                           size="md"
                           numberClassName="font-mono font-black"
                         />
@@ -255,7 +254,7 @@ export function OrderPreview({
 
               <div className="flex items-center justify-between mb-4 mt-6">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
-                  {UI_LABELS.modules.orders.TOTAL_PAYABLE}
+                  {UI_LABELS.modules.orders.TOTAL}
                 </span>
               </div>
 
@@ -266,10 +265,10 @@ export function OrderPreview({
                 className="flex items-end justify-between"
               >
                 <div className="flex items-baseline gap-2">
-                  <CurrencyDisplay 
-                    amount={preview?.grandTotal ?? 0} 
+                  <CurrencyDisplay
+                    amount={preview?.grandTotal ?? 0}
                     size="xl"
-                    className="text-6xl md:text-7xl tracking-tighter leading-none" 
+                    className="text-6xl md:text-7xl tracking-tighter leading-none"
                     numberClassName="font-black"
                   />
                 </div>

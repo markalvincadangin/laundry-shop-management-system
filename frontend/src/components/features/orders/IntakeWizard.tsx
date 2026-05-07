@@ -686,7 +686,12 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                               </div>
                               <div>
                                 <span className="block text-sm font-black text-slate-900 uppercase tracking-tight">{field.name}</span>
-                                <span className="block text-xs font-black text-brand-blue mt-0.5 tabular-nums tracking-wide">₱{Number(field.price).toFixed(2)}</span>
+                                <CurrencyDisplay 
+                                  amount={Number(field.price)} 
+                                  size="sm" 
+                                  className="text-brand-blue" 
+                                  numberClassName="font-black tracking-wide" 
+                                />
                               </div>
                             </div>
                             <button
