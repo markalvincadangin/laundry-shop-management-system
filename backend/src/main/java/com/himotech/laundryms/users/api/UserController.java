@@ -17,7 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.himotech.laundryms.api.dto.response.PageResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.UUID;
 
 @RestController
@@ -29,20 +34,20 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public com.himotech.laundryms.api.dto.response.PageResponse<UserResponse> getAllUsers(
-            @org.springframework.web.bind.annotation.RequestParam(required = false) String q,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "0") int page,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "20") int size,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "username") String sortBy,
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "asc") String sortDir) {
+    public PageResponse<UserResponse> getAllUsers(
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "username") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
         
-        org.springframework.data.domain.Sort sort = sortDir.equalsIgnoreCase("desc") 
-                ? org.springframework.data.domain.Sort.by(sortBy).descending() 
-                : org.springframework.data.domain.Sort.by(sortBy).ascending();
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sort);
+        Sort sort = sortDir.equalsIgnoreCase("desc") 
+                ? Sort.by(sortBy).descending() 
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
         
-        org.springframework.data.domain.Page<UserResponse> result = userService.searchUsers(q, pageable);
-        return com.himotech.laundryms.api.dto.response.PageResponse.of(result);
+        Page<UserResponse> result = userService.searchUsers(q, pageable);
+        return PageResponse.of(result);
     }
 
     @PostMapping
