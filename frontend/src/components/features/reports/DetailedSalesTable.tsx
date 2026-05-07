@@ -6,11 +6,6 @@ import {
   FileText,
   Download,
   User,
-  ArrowUpRight,
-  Search,
-  CreditCard,
-  Wallet,
-  Banknote,
   ShieldCheck,
   Hash,
   Eye
@@ -150,9 +145,8 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       sortKey: "amountPaid",
       align: "right",
       render: (p) => (
-        <div className="flex items-center justify-end gap-2 group-hover:translate-x-1 transition-transform">
+        <div className="flex items-center justify-end">
           <CurrencyDisplay amount={p.amountPaid} size="sm" numberClassName="text-slate-900 font-black" />
-          <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
         </div>
       ),
     },

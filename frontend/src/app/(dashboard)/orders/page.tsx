@@ -9,7 +9,6 @@ import {
   CheckCircle,
   CreditCard,
   Plus,
-  ArrowUpRight,
   User,
   Package,
   ClipboardList,
@@ -185,9 +184,8 @@ export default function OrdersPage() {
       sortKey: "grandTotal",
       align: "right",
       render: (order) => (
-        <div className="flex items-center justify-end gap-1.5 group-hover:text-brand-blue transition-colors">
+        <div className="flex items-center justify-end">
           <CurrencyDisplay amount={order.grandTotal} size="md" numberClassName="font-black text-slate-900" />
-          <ArrowUpRight className="h-3.5 w-3.5 opacity-20 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
         </div>
       ),
     },

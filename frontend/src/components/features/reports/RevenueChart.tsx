@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion } from "framer-motion";
-import { ArrowUpRight, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { RevenueChartProps } from "@/types/components";
 import { Card, CardHeader, CardTitle, CardContent, ChartSkeleton } from "@/components/ui";
@@ -158,9 +158,6 @@ export function RevenueChart({
                           <div className="space-y-3">
                             <div className="flex items-center gap-3">
                               <CurrencyDisplay amount={Number(point.income)} size="lg" className="text-slate-900 tracking-tight font-black" />
-                              <div className="p-1.5 rounded-lg bg-brand-blue/5 text-brand-blue">
-                                <ArrowUpRight className="h-4 w-4" />
-                              </div>
                             </div>
                             {point.orders !== undefined && (
                                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">

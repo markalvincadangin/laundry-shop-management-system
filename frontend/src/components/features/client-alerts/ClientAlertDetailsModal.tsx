@@ -9,7 +9,6 @@ import {
   Smartphone,
   Hash,
   Clock,
-  ArrowUpRight,
   ShieldCheck
 } from "lucide-react";
 import { Modal, Button, StatusBadge } from "@/components/ui";
@@ -121,7 +120,6 @@ export function ClientAlertDetailsModal({ isOpen, onClose, notification }: Clien
                 >
                   <Eye className="h-4 w-4" />
                   Inspect Linked Order
-                  <ArrowUpRight className="h-4 w-4 opacity-50" />
                 </Button>
               </Link>
             )}

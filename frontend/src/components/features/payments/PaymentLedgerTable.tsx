@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { User, Calendar, ArrowUpRight, Hash, Banknote, Wallet, CreditCard, ShieldCheck, Eye } from "lucide-react";
+import { User, Calendar, Hash, Banknote, Wallet, CreditCard, ShieldCheck, Eye } from "lucide-react";
 import { type PaymentResponse } from "@/services/payments.service";
 import { DataTable, EmptyState } from "@/features/shared";
 import { DataTableColumn } from "@/types/components";
@@ -107,9 +107,8 @@ export function PaymentLedgerTable({
       sortKey: "amountPaid",
       align: "right",
       render: (p) => (
-        <div className="flex items-center justify-end gap-2 group-hover:translate-x-1 transition-transform duration-300">
+        <div className="flex items-center justify-end">
           <CurrencyDisplay amount={p.amountPaid} size="sm" numberClassName="font-black text-slate-900" />
-          <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
         </div>
       ),
     },
