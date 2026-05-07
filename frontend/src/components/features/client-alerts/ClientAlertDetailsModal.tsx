@@ -8,8 +8,7 @@ import {
   Eye,
   Smartphone,
   Hash,
-  Clock,
-  ShieldCheck
+  Clock
 } from "lucide-react";
 import { Modal, Button, StatusBadge } from "@/components/ui";
 import { ClientAlertResponse } from "@/services/client-alerts.service";

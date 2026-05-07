@@ -161,8 +161,14 @@ export default function OrdersPage() {
       header: UI_LABELS.shared.common.DETAILS,
       render: (order) => (
         <div className="flex items-center gap-3 text-[11px] text-slate-500 font-medium">
-          <span className="flex items-center gap-1.5"><Package className="h-3.5 w-3.5 opacity-60" /> {order.totalLoads} {UI_LABELS.shared.units.LOADS}</span>
-          <span className="flex items-center gap-1.5 tabular-nums"><Activity className="h-3.5 w-3.5 opacity-60" /> {formatWeight(order.weightKg)}</span>
+          <span className="flex items-center gap-1.5">
+            <Package className="h-3.5 w-3.5 opacity-60" /> 
+            {order.totalLoads} {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS}
+          </span>
+          <span className="flex items-center gap-1.5 tabular-nums">
+            <Activity className="h-3.5 w-3.5 opacity-60" /> 
+            {formatWeight(order.weightKg)}
+          </span>
         </div>
       ),
     },
