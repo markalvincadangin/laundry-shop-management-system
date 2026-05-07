@@ -376,7 +376,7 @@ export default function OrderDetailPage() {
                       <Package className="h-3 w-3" /> {UI_LABELS.modules.orders.LOADS}
                     </p>
                     <p className="text-xl font-black text-slate-900 font-mono tabular-nums">
-                      {order.totalLoads} 
+                      {order.totalLoads}
                       <span className="text-xs opacity-40 font-bold uppercase font-sans tracking-widest ml-1">
                         {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS}
                       </span>
@@ -450,10 +450,9 @@ export default function OrderDetailPage() {
                   <div className="flex justify-between items-end pt-10 mt-6 border-t-2 border-slate-900/5">
                     <div className="space-y-1">
                       <span className="text-2xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none block">{UI_LABELS.shared.common.TOTAL}</span>
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] block ml-1">{UI_LABELS.modules.orders.PAYMENT_TIMING}</span>
                     </div>
-                    <CurrencyDisplay 
-                      amount={order.grandTotal} 
+                    <CurrencyDisplay
+                      amount={order.grandTotal}
                       size="xl"
                       className="text-7xl text-brand-blue"
                       symbolClassName="text-brand-blue/40 mr-2"

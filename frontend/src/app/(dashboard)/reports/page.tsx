@@ -4,13 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
-  TrendingUp,
-  Info,
-  Banknote,
-  ShoppingBag,
   Calculator,
   Loader2,
-  FileDown
+  FileDown,
+  BarChart3,
+  Coins,
+  PackageCheck
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { pdf } from "@react-pdf/renderer";
@@ -246,7 +245,7 @@ export default function ReportsPage() {
           variant="premium"
           title={UI_LABELS.layout.nav.REPORTS}
           subtitle={UI_LABELS.modules.reports.SUBTITLE}
-          icon={TrendingUp}
+          icon={BarChart3}
           actions={
             <div className="flex items-center gap-grid-4">
               <Button 
@@ -298,8 +297,8 @@ export default function ReportsPage() {
               </>
             ) : (
               <>
-                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Banknote} variant="accent" />
-                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={ShoppingBag} variant="success" />
+                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Coins} variant="accent" />
+                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={PackageCheck} variant="success" />
                 <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<div className="font-black"><CurrencyDisplay amount={avgOrderValue} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={Calculator} variant="default" />
               </>
             )}
@@ -385,7 +384,9 @@ export default function ReportsPage() {
                   )}
                   <div className="flex items-start gap-grid-4 p-grid-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 shadow-sm relative overflow-hidden group/info">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full -mr-12 -mt-12 group-hover/info:scale-110 transition-transform duration-700" />
-                    <Info className="h-5 w-5 text-brand-blue shrink-0 mt-1 relative z-10" />
+                    <div className="h-10 w-10 shrink-0 bg-white rounded-xl shadow-sm border border-brand-blue/10 flex items-center justify-center relative z-10">
+                      <BarChart3 className="h-5 w-5 text-brand-blue" />
+                    </div>
                     <p className="text-body-sm text-slate-600 font-medium leading-relaxed italic relative z-10">
                       {UI_LABELS.modules.reports.INFO_TEXT}
                     </p>

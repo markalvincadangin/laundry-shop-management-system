@@ -7,8 +7,9 @@ import {
   RefreshCcw,
   Loader2,
   FileDown,
-  TrendingUp,
-  Activity,
+  Wallet,
+  Hash,
+  Database,
   History
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -180,21 +181,21 @@ export default function PaymentsPage() {
           title="Session Revenue" 
           value={<div className="font-black"><CurrencyDisplay amount={currentViewTotal} size="xl" /></div>} 
           subtitle="Revenue in current view" 
-          icon={TrendingUp} 
+          icon={Wallet} 
           variant="accent" 
         />
         <KPICard 
           title="Record Count" 
           value={pagination.totalElements} 
           subtitle="Total transactions found" 
-          icon={History} 
+          icon={Hash} 
           variant="default" 
         />
         <KPICard 
           title="Active Load" 
           value={payments.length} 
           subtitle="Showing on this page" 
-          icon={Activity} 
+          icon={Database} 
           variant="success" 
         />
       </motion.div>

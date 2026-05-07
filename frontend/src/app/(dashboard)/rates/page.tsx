@@ -9,7 +9,7 @@ import {
   WashingMachine,
   Banknote,
   Edit3,
-  Settings2
+  Tag
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRates } from "@/hooks/useRates";
@@ -48,7 +48,7 @@ function RatesLoading() {
       <PageHeader
         title={UI_LABELS.layout.nav.RATES}
         subtitle={UI_LABELS.modules.rates.SUBTITLE}
-        icon={Settings2}
+        icon={Tag}
       />
       <div className="space-y-grid-6">
         <CardSkeleton />
@@ -78,7 +78,7 @@ function RatesContent() {
         variant="premium"
         title={UI_LABELS.modules.rates.TITLE}
         subtitle={UI_LABELS.modules.rates.SUBTITLE}
-        icon={Edit3}
+        icon={Tag}
         actions={
           <Button 
             onClick={() => {
