@@ -6,20 +6,20 @@ import {
   RefreshCcw, 
   User, 
   Clock, 
-  Eye, 
   Search, 
   Database, 
   Activity, 
   ShieldCheck,
-  ChevronRight,
-  Filter
+  ShieldAlert,
+  Server
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Button, 
   StatusBadge,
   Input,
-  Select
+  Select,
+  KPICard
 } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,9 +33,10 @@ import { AuditLogResponse } from "@/services/audit-log.service";
 import { AuditLogDetailsModal } from "@/components/features/audit-log/AuditLogDetailsModal";
 
 /**
- * Audit Log Page (System Audit Trail) — High Fidelity (v4.0)
+ * Audit Log Page (System Audit Trail) — High Fidelity (v5.0)
  * Provides full forensic transparency for all system mutations.
  * Adheres to FRONT-001 §11.4 (Security & Audit Trail).
+ * v4.0 Consistency Pass: Premium PageHeader, standardized grid width, and refined spacing.
  */
 export default function AuditLogPage() {
   const { user, loading: authLoading } = useAuth();
@@ -189,7 +190,7 @@ export default function AuditLogPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
+    <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
       <PageHeader 
         variant="premium"
         title={UI_LABELS.modules.auditLog.TITLE}
@@ -197,7 +198,19 @@ export default function AuditLogPage() {
         icon={History}
       />
 
-      {/* ── Filter Bar with Glass Effect ── */}
+      {/* Snapshot KPIs */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-grid-6"
+      >
+        <KPICard title="Total Logs" value={pagination.totalElements} subtitle="Historical Registry" icon={History} variant="default" />
+        <KPICard title="Sys Operations" value={logs.filter(l => l.actor === 'anonymous' || l.actor === 'system').length} subtitle="Automated Processes" icon={Server} variant="accent" />
+        <KPICard title="Security Actions" value={logs.filter(l => l.operation?.includes('USER')).length} subtitle="Identity & Access" icon={ShieldCheck} variant="success" />
+      </motion.div>
+
+      {/* ── Filter Bar ── */}
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="w-full lg:flex-[2] lg:min-w-[280px]">
           <Input
@@ -205,14 +218,14 @@ export default function AuditLogPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 focus:bg-white transition-all shadow-sm"
+            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <div className="w-full lg:flex-1 lg:min-w-[180px]">
           <Select
             value={params.action ?? ""}
             onChange={(e) => updateParams({ action: e.target.value, page: 0 })}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
+            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           >
             <option value="">{UI_LABELS.shared.common.ALL_ACTIONS}</option>
             <option value="INSERT">{UI_LABELS.modules.auditLog.ACTION_CREATED}</option>
@@ -225,20 +238,17 @@ export default function AuditLogPage() {
             type="date"
             value={params.from ?? ""}
             onChange={(e) => updateParams({ from: e.target.value, page: 0 })}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
+            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           />
         </div>
-        <div className="flex items-center gap-2 w-full lg:w-auto">
-          <Button 
-            variant="secondary" 
-            className="flex-1 lg:flex-none h-13 px-grid-6 gap-grid-2 uppercase text-[10px] tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-xl" 
-            onClick={() => refresh()}
-            isLoading={loading}
-          >
-            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {UI_LABELS.shared.common.REFRESH}
-          </Button>
-        </div>
+        <Button 
+          variant="secondary" 
+          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-xl" 
+          onClick={() => refresh()}
+        >
+          <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          {UI_LABELS.shared.common.REFRESH}
+        </Button>
       </FilterBar>
 
       {error ? (
@@ -247,26 +257,25 @@ export default function AuditLogPage() {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="space-y-grid-6"
         >
-          <div className="rounded-3xl border border-slate-200/60 bg-white shadow-sm overflow-hidden">
-            <DataTable
-              data={logs}
-              columns={columns}
-              loading={loading}
-              sortBy={sortBy}
-              sortDir={sortDir}
-              onSort={handleSort}
-              onRowClick={(a) => setSelected(a)}
-              emptyState={
-                <EmptyState
-                  title={UI_LABELS.feedback.empty.AUDIT_LOG_TITLE}
-                  description={UI_LABELS.feedback.empty.AUDIT_LOG_DESC}
-                  icon={<History className="h-16 w-16 text-slate-100" />}
-                />
-              }
-            />
-          </div>
+          <DataTable
+            data={logs}
+            columns={columns}
+            loading={loading}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+            onRowClick={(a) => setSelected(a)}
+            emptyState={
+              <EmptyState
+                title={UI_LABELS.feedback.empty.AUDIT_LOG_TITLE}
+                description={UI_LABELS.feedback.empty.AUDIT_LOG_DESC}
+                icon={<History className="h-16 w-16 text-slate-100" />}
+              />
+            }
+          />
 
           <Pagination
             currentPage={pagination.page}

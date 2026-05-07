@@ -1,47 +1,40 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useState } from "react";
 import { 
   CreditCard, 
-  Calendar, 
-  ArrowUpRight, 
-  User, 
   Search, 
-  Download,
   RefreshCcw,
   Loader2,
-  FileDown
+  FileDown,
+  TrendingUp,
+  Activity,
+  History
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { pdf } from "@react-pdf/renderer";
 import { ReportDocument } from "@/components/features/shared/ReportDocument";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePayments } from "@/hooks/usePayments";
 import { useRegistry } from "@/hooks/useRegistry";
 import { PaymentResponse } from "@/services/payments.service";
-import { Button, Input, KPICard } from "@/components/ui";
-import { DataTable, FilterBar, Pagination, AccessDenied, EmptyState, ErrorState, LoadingState } from "@/features/shared";
+import { Button, Input, KPICard, CurrencyDisplay } from "@/components/ui";
+import { FilterBar, Pagination, AccessDenied, EmptyState, ErrorState, LoadingState } from "@/features/shared";
 import { PageHeader, PrintHeader } from "@/components/layout";
-import { PaymentLedgerTable, PaymentActionModal, PaymentDetailsModal } from "@/features/payments";
+import { PaymentLedgerTable, PaymentDetailsModal } from "@/features/payments";
 import { UI_LABELS } from "@/constants/ui";
-import { DataTableColumn } from "@/types/components";
 
 /**
- * Payments Page (Financial Registry)
+ * Payments Page (Financial Registry) — High Fidelity (v5.0)
  * Standardized with URL sync, sorting, and server-side filtering.
+ * v4.0 Consistency Pass: Premium PageHeader, consistent grid width, and refined spacing.
  */
 export default function PaymentsPage() {
   const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   // Registry State Management (Centralized Architecture)
   const { 
     params, 
-    page, 
-    size,
     sortBy, 
     sortDir, 
     searchTerm, 
@@ -143,12 +136,16 @@ export default function PaymentsPage() {
     return <AccessDenied />;
   }
 
+  // Calculated Metrics for the current view
+  const currentViewTotal = payments.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-10 pb-grid-20">
+    <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
       <PrintHeader module="Financial Transaction Ledger" />
 
       <div className="no-print">
         <PageHeader 
+          variant="premium"
           title={UI_LABELS.layout.nav.PAYMENTS}
           subtitle={UI_LABELS.modules.payments.SUBTITLE}
           icon={CreditCard}
@@ -156,7 +153,7 @@ export default function PaymentsPage() {
             <div className="no-print">
               <Button 
                 variant="outline" 
-                className="h-12 px-grid-6 gap-grid-2 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50" 
+                className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl" 
                 onClick={handleExportPDF}
                 disabled={isExporting || loading}
               >
@@ -172,6 +169,36 @@ export default function PaymentsPage() {
         />
       </div>
 
+      {/* Snapshot KPIs */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-grid-6 kpi-grid-print no-print"
+      >
+        <KPICard 
+          title="Session Revenue" 
+          value={<div className="font-black"><CurrencyDisplay amount={currentViewTotal} size="xl" /></div>} 
+          subtitle="Revenue in current view" 
+          icon={TrendingUp} 
+          variant="accent" 
+        />
+        <KPICard 
+          title="Record Count" 
+          value={pagination.totalElements} 
+          subtitle="Total transactions found" 
+          icon={History} 
+          variant="default" 
+        />
+        <KPICard 
+          title="Active Load" 
+          value={payments.length} 
+          subtitle="Showing on this page" 
+          icon={Activity} 
+          variant="success" 
+        />
+      </motion.div>
+
       <div className="no-print">
         <FilterBar title={UI_LABELS.shared.common.FILTER}>
           <div className="w-full lg:flex-[2] lg:min-w-[240px]">
@@ -180,7 +207,7 @@ export default function PaymentsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4 text-brand-blue" />}
-              className="h-14 rounded-xl border-slate-200 bg-white"
+              className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
             />
           </div>
           <div className="w-full lg:flex-1 lg:min-w-[180px]">
@@ -189,7 +216,7 @@ export default function PaymentsPage() {
               type="date" 
               value={params.from ?? ""} 
               onChange={(e) => updateParams({ from: e.target.value || undefined, page: 0 })} 
-              className="border-slate-200 bg-white h-14" 
+              className="border-slate-200 bg-white h-14 rounded-xl shadow-sm" 
             />
           </div>
           <div className="w-full lg:flex-1 lg:min-w-[180px]">
@@ -198,11 +225,11 @@ export default function PaymentsPage() {
               type="date" 
               value={params.to ?? ""} 
               onChange={(e) => updateParams({ to: e.target.value || undefined, page: 0 })} 
-              className="border-slate-200 bg-white h-14" 
+              className="border-slate-200 bg-white h-14 rounded-xl shadow-sm" 
             />
           </div>
-          <Button variant="secondary" className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 shadow-sm font-black uppercase text-caption tracking-widest" onClick={() => refresh()}>
-            <RefreshCcw className="h-4 w-4" />
+          <Button variant="secondary" className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 shadow-sm font-black uppercase text-caption tracking-widest rounded-xl" onClick={() => refresh()}>
+            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {UI_LABELS.shared.common.REFRESH}
           </Button>
         </FilterBar>
@@ -211,7 +238,12 @@ export default function PaymentsPage() {
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <div className="space-y-grid-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-grid-6"
+        >
           <PaymentLedgerTable
             payments={payments}
             loading={loading}
@@ -232,7 +264,7 @@ export default function PaymentsPage() {
               isLoading={loading}
             />
           </div>
-        </div>
+        </motion.div>
       )}
 
       <PaymentDetailsModal 

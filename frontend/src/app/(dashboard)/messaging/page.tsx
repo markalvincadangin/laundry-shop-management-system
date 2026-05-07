@@ -10,13 +10,17 @@ import {
   User,
   Hash,
   Clock,
-  ArrowRight
+  ArrowRight,
+  Send,
+  CheckCircle2,
+  AlertTriangle
 } from "lucide-react";
 import { 
   Button, 
   StatusBadge,
   Input,
-  Select 
+  Select,
+  KPICard
 } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { DataTable, EmptyState, Pagination, FilterBar, ErrorState } from "@/features/shared";
@@ -33,6 +37,7 @@ import { motion } from "framer-motion";
  * Messaging Page (Communication Ledger) — High Fidelity (v5.0)
  * Standardized with professional administrative patterns.
  * Consolidates actions and filters for maximum spatial efficiency.
+ * v4.0 Consistency Pass: Premium PageHeader, standardized grid width, and refined spacing.
  */
 export default function MessagingPage() {
   const { 
@@ -58,6 +63,10 @@ export default function MessagingPage() {
     setSelectedNotification(notification);
     setIsModalOpen(true);
   };
+
+  const sentCount = alerts.filter(a => a.status === "SENT").length;
+  const failedCount = alerts.filter(a => a.status === "FAILED").length;
+  const deliveryRate = alerts.length > 0 ? Math.round((sentCount / alerts.length) * 100) : 100;
 
   const columns: DataTableColumn<ClientAlertResponse>[] = [
     {
@@ -162,7 +171,7 @@ export default function MessagingPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
+    <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
       <PageHeader 
         variant="premium"
         title={UI_LABELS.modules.clientAlerts.TITLE}
@@ -170,7 +179,19 @@ export default function MessagingPage() {
         icon={MessageSquare}
       />
 
-      {/* ── Filter Bar with Integrated Refresh ── */}
+      {/* Snapshot KPIs */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-grid-6"
+      >
+        <KPICard title="Total Logged" value={pagination.totalElements} subtitle="Communication Ledger" icon={Send} variant="default" />
+        <KPICard title="Delivery Rate" value={`${deliveryRate}%`} subtitle="Successful Dispatch" icon={CheckCircle2} variant="success" />
+        <KPICard title="Failed Alerts" value={failedCount} subtitle="Manual Action Required" icon={AlertTriangle} variant="warning" />
+      </motion.div>
+
+      {/* ── Filter Bar ── */}
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="w-full lg:flex-[2] lg:min-w-[280px]">
           <Input
@@ -178,14 +199,14 @@ export default function MessagingPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 focus:bg-white transition-all shadow-sm"
+            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <div className="w-full lg:flex-1 lg:min-w-[180px]">
           <Select
             value={params.status ?? ""}
             onChange={(e) => updateParams({ status: e.target.value, page: 0 })}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
+            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           >
             <option value="">All Delivery Statuses</option>
             <option value="SENT">Sent Successfully</option>
@@ -197,20 +218,17 @@ export default function MessagingPage() {
             type="date"
             value={params.from ?? ""}
             onChange={(e) => updateParams({ from: e.target.value, page: 0 })}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 shadow-sm"
+            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
           />
         </div>
-        <div className="flex items-center gap-2 w-full lg:w-auto">
-          <Button 
-            variant="secondary" 
-            className="flex-1 lg:flex-none h-13 px-grid-6 gap-grid-2 uppercase text-[10px] tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-xl" 
-            onClick={() => refresh()}
-            isLoading={loading}
-          >
-            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {UI_LABELS.shared.common.REFRESH}
-          </Button>
-        </div>
+        <Button 
+          variant="secondary" 
+          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-xl" 
+          onClick={() => refresh()}
+        >
+          <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          {UI_LABELS.shared.common.REFRESH}
+        </Button>
       </FilterBar>
 
       {error ? (
@@ -219,26 +237,25 @@ export default function MessagingPage() {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="space-y-grid-6"
         >
-          <div className="rounded-3xl border border-slate-200/60 bg-white shadow-sm overflow-hidden">
-            <DataTable
-              data={alerts}
-              columns={columns}
-              loading={loading}
-              sortBy={sortBy}
-              sortDir={sortDir}
-              onSort={handleSort}
-              onRowClick={handleRowClick}
-              emptyState={
-                <EmptyState
-                  title={UI_LABELS.feedback.empty.CLIENT_ALERTS_TITLE}
-                  description={UI_LABELS.feedback.empty.CLIENT_ALERTS_DESC}
-                  icon={<MessageSquare className="h-16 w-16 text-slate-100" />}
-                />
-              }
-            />
-          </div>
+          <DataTable
+            data={alerts}
+            columns={columns}
+            loading={loading}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+            onRowClick={handleRowClick}
+            emptyState={
+              <EmptyState
+                title={UI_LABELS.feedback.empty.CLIENT_ALERTS_TITLE}
+                description={UI_LABELS.feedback.empty.CLIENT_ALERTS_DESC}
+                icon={<MessageSquare className="h-16 w-16 text-slate-100" />}
+              />
+            }
+          />
           <Pagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
