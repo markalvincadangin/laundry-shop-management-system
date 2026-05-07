@@ -43,19 +43,42 @@ import { formatDate } from "@/lib/utils";
  */
 export default function UsersPage() {
   const { user: currentUser, loading: authLoading } = useAuth();
-  const { users, pagination, loading, refresh, toggleStatus } = useUsers();
+  const { users, loading, refresh, toggleStatus } = useUsers();
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  
+
+  // Registry State Management (Centralized Architecture)
+  const { 
+    params, 
+    sortBy, 
+    sortDir, 
+    searchTerm, 
+    setSearchTerm, 
+    updateParams, 
+    handleSort 
+  } = useRegistry({
+    defaultSortBy: "username",
+    defaultSortDir: "asc",
+    defaultPageSize: 20
+  });
+
   // Status Confirmation State
   const [confirmStatusUser, setConfirmStatusUser] = useState<UserResponse | null>(null);
 
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users
+    .filter(u => 
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.lastName.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const fieldA = a[sortBy as keyof UserResponse];
+      const fieldB = b[sortBy as keyof UserResponse];
+      
+      if (fieldA === fieldB) return 0;
+      const comparison = String(fieldA).localeCompare(String(fieldB));
+      return sortDir === "asc" ? comparison : -comparison;
+    });
 
   const adminCount = users.filter(u => u.role === "ADMIN").length;
   const activeCount = users.filter(u => u.isActive).length;
@@ -93,6 +116,8 @@ export default function UsersPage() {
   const columns: DataTableColumn<UserResponse>[] = [
     {
       header: UI_LABELS.modules.users.USERNAME,
+      sortable: true,
+      sortKey: "username",
       render: (u) => (
         <div className="flex items-center gap-grid-4 group">
           <Avatar 
@@ -113,6 +138,8 @@ export default function UsersPage() {
     },
     {
       header: UI_LABELS.shared.common.ROLE,
+      sortable: true,
+      sortKey: "role",
       render: (u) => (
         <div className="flex items-center gap-2">
           <div className={`h-6 w-6 rounded-lg flex items-center justify-center border ${
@@ -132,6 +159,8 @@ export default function UsersPage() {
     },
     {
       header: UI_LABELS.shared.common.STATUS,
+      sortable: true,
+      sortKey: "isActive",
       render: (u) => (
         <StatusBadge 
           variant={u.isActive ? "success" : "neutral"} 
@@ -143,6 +172,8 @@ export default function UsersPage() {
     },
     {
       header: UI_LABELS.shared.common.DATE,
+      sortable: true,
+      sortKey: "createdAt",
       render: (u) => (
         <div className="flex items-center gap-3 text-slate-500">
           <div className="flex flex-col">
@@ -249,10 +280,13 @@ export default function UsersPage() {
         transition={{ delay: 0.2 }}
         className="space-y-grid-6"
       >
-        <DataTable
-          data={filteredUsers}
-          columns={columns}
-          loading={loading}
+          <DataTable
+            data={filteredUsers.slice(params.page * params.size, (params.page + 1) * params.size)}
+            columns={columns}
+            loading={loading}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
           emptyState={
             <EmptyState
               title={UI_LABELS.modules.users.EMPTY_TITLE}
@@ -263,12 +297,12 @@ export default function UsersPage() {
         />
 
         <Pagination
-          currentPage={pagination.page}
-          totalPages={Math.ceil(filteredUsers.length / 20) || 1}
+          currentPage={params.page}
+          totalPages={Math.ceil(filteredUsers.length / params.size) || 1}
           totalElements={filteredUsers.length}
-          pageSize={20}
-          onPageChange={() => {}} // User list is usually small
-          onPageSizeChange={() => {}}
+          pageSize={params.size}
+          onPageChange={(page) => updateParams({ page })}
+          onPageSizeChange={(newSize) => updateParams({ size: newSize, page: 0 })}
           isLoading={loading}
         />
       </motion.div>

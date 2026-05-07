@@ -78,7 +78,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     {
       header: UI_LABELS.shared.common.REFERENCE,
       sortable: true,
-      sortKey: "orderReferenceNumber",
+      sortKey: "order.referenceNumber",
       render: (p) => (
         <div className="flex items-center gap-3 group/ref">
           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/ref:bg-brand-blue/5 transition-all">
@@ -93,7 +93,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     {
       header: UI_LABELS.shared.common.CUSTOMER,
       sortable: true,
-      sortKey: "customerName",
+      sortKey: "order.customer.lastName",
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 shadow-inner">
@@ -135,7 +135,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     {
       header: "PROCESSED BY",
       sortable: true,
-      sortKey: "receivedByUsername",
+      sortKey: "receivedBy.username",
       render: (p) => (
         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-all duration-300">
           <ShieldCheck className="h-3.5 w-3.5 text-brand-blue" />

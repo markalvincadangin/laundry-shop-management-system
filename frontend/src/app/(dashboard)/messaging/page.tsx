@@ -73,7 +73,7 @@ export default function MessagingPage() {
     {
       header: UI_LABELS.shared.common.ORDER_NUMBER,
       sortable: true,
-      sortKey: "referenceNumber",
+      sortKey: "order.referenceNumber",
       render: (n) => (
         <div className="flex items-center gap-3 group">
            <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-brand-blue/5 transition-all">
@@ -88,7 +88,7 @@ export default function MessagingPage() {
     {
       header: UI_LABELS.shared.common.CUSTOMER,
       sortable: true,
-      sortKey: "customerName",
+      sortKey: "order.customer.lastName",
       render: (n) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200">

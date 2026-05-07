@@ -275,7 +275,7 @@ export default function OrdersPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4 text-brand-blue" />}
-              className="h-14 rounded-2xl border-slate-200 bg-white"
+              className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
             />
           </div>
           <div className="flex-1 min-w-[180px]">
@@ -283,7 +283,7 @@ export default function OrdersPage() {
               label={UI_LABELS.shared.common.STATUS}
               value={params.status ?? ""}
               onChange={(e) => updateParams({ status: e.target.value || undefined })}
-              className="border-slate-200 bg-white"
+              className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
             >
               <option value="">{UI_LABELS.shared.common.ALL_STATUSES}</option>
               <option value="RECEIVED">{UI_LABELS.shared.status.RECEIVED}</option>
@@ -300,7 +300,7 @@ export default function OrdersPage() {
               label={UI_LABELS.layout.nav.PAYMENTS}
               value={params.paymentStatus ?? ""}
               onChange={(e) => updateParams({ paymentStatus: e.target.value || undefined })}
-              className="border-slate-200 bg-white"
+              className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
             >
               <option value="">{UI_LABELS.shared.common.ALL_PAYMENTS}</option>
               <option value="UNPAID">{UI_LABELS.shared.status.UNPAID}</option>
@@ -308,10 +308,10 @@ export default function OrdersPage() {
             </Select>
           </div>
           <div className="flex-1 min-w-[180px]">
-            <Input label={UI_LABELS.shared.common.START_DATE} type="date" value={params.from ?? ""} onChange={(e) => updateParams({ from: e.target.value || undefined })} className="border-slate-200 bg-white" />
+            <Input label={UI_LABELS.shared.common.START_DATE} type="date" value={params.from ?? ""} onChange={(e) => updateParams({ from: e.target.value || undefined })} className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm" />
           </div>
           <div className="flex-1 min-w-[180px]">
-            <Input label={UI_LABELS.shared.common.END_DATE} type="date" value={params.to ?? ""} onChange={(e) => updateParams({ to: e.target.value || undefined })} className="border-slate-200 bg-white" />
+            <Input label={UI_LABELS.shared.common.END_DATE} type="date" value={params.to ?? ""} onChange={(e) => updateParams({ to: e.target.value || undefined })} className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm" />
           </div>
           <Button variant="secondary" className="h-14 px-grid-8 gap-grid-2 uppercase text-caption tracking-widest font-black shadow-sm border-slate-200 rounded-2xl" onClick={() => refresh()}>
             <RefreshCcw className="h-4 w-4" />
