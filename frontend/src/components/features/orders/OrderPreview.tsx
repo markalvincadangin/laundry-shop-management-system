@@ -143,9 +143,8 @@ export function OrderPreview({
                           {UI_LABELS.modules.orders.SPECIAL_INSTRUCTIONS}
                         </span>
                       </div>
-                      <div className="relative pl-6">
-                        <div className="absolute left-6 top-0 bottom-0 w-1 bg-brand-blue/20 rounded-full" />
-                        <p className="text-xs font-medium text-slate-500 italic pl-4 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
+                      <div className="pl-6">
+                        <p className="text-xs font-medium text-slate-500 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 break-words whitespace-pre-wrap">
                           &quot;{notes}&quot;
                         </p>
                       </div>
