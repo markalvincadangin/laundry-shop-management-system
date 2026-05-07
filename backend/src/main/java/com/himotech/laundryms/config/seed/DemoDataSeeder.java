@@ -16,7 +16,6 @@ import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -42,8 +41,6 @@ import java.util.Random;
 @Slf4j
 public class DemoDataSeeder implements CommandLineRunner {
 
-    private static final String ADDON_DETERGENT = "Detergent (Ariel)";
-    private static final String ADDON_FABCON = "Fabric Conditioner (Downy)";
     private static final DateTimeFormatter REF_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final UserRepository userRepository;
