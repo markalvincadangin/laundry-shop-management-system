@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,12 +53,6 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final PaymentRepository paymentRepository;
     private final Random random = new Random(42);
 
-    @Value("${flyway.placeholders.seed_admin_username:admin}")
-    private String seedAdminUsername;
-
-    @Value("${flyway.placeholders.seed_staff_username:staff}")
-    private String seedStaffUsername;
-
     @Override
     @Transactional
     public void run(String... args) {
@@ -71,20 +64,16 @@ public class DemoDataSeeder implements CommandLineRunner {
         log.info("[DemoDataSeeder] Starting demo data seeding...");
 
         ServiceRate rate = resolveServiceRate();
-        User admin = fetchUser(seedAdminUsername);
-        User staff = fetchUser(seedStaffUsername);
+        User admin = userRepository.findFirstByRole(UserRole.ADMIN)
+                .orElseThrow(() -> new IllegalStateException("[DemoDataSeeder] No ADMIN user found for seeding."));
+        User staff = userRepository.findFirstByRole(UserRole.STAFF)
+                .orElseThrow(() -> new IllegalStateException("[DemoDataSeeder] No STAFF user found for seeding."));
+        
         List<Customer> customers = seedCustomers();
         seedOrdersAndPayments(customers, rate, admin, staff);
 
-        log.info("[DemoDataSeeder] Done. Seeded {} customers and 40 orders linked to users '{}' and '{}'.", 
-                customers.size(), seedAdminUsername, seedStaffUsername);
-    }
-
-    private User fetchUser(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException(
-                        "[DemoDataSeeder] Required seed user '" + username + "' not found. " +
-                        "Ensure V2__seed_users.sql has run and credentials are set in .env."));
+        log.info("[DemoDataSeeder] Done. Seeded {} customers and 40 orders linked to Admin/Staff roles.", 
+                customers.size());
     }
 
     private ServiceRate resolveServiceRate() {
@@ -131,12 +120,13 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new Scenario(OrderStatus.RELEASED, true));
 
         int orderCounter = 1000;
-        for (Scenario scenario : scenarios) {
-            LocalDate baseDate = LocalDate.now().minusDays(random.nextInt(5));
+        for (int i = 0; i < 40; i++) {
+            Scenario scenario = scenarios.get(random.nextInt(scenarios.size()));
+            LocalDate baseDate = LocalDate.now().minusDays(random.nextInt(15));
             Instant createdAt = baseDate.atStartOfDay(ZoneOffset.UTC).toInstant();
             User createdBy = (random.nextInt(10) < 8) ? staff : admin;
 
-            BigDecimal weightKg = BigDecimal.valueOf(5.0 + random.nextDouble() * 5.0).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal weightKg = BigDecimal.valueOf(3.0 + random.nextDouble() * 12.0).setScale(2, RoundingMode.HALF_UP);
             int totalLoads = (int) Math.ceil(weightKg.doubleValue() / rate.getKgLimitPerLoad().doubleValue());
             BigDecimal baseAmount = rate.getBasePricePerLoad().multiply(BigDecimal.valueOf(totalLoads));
             BigDecimal grandTotal = baseAmount;
