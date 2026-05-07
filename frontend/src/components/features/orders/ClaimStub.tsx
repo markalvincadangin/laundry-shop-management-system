@@ -65,104 +65,105 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
       style={{ width: isPrint ? "100%" : "auto" }}
     >
       {/* ── HEADER ── */}
-      <div className="text-center space-y-1 pb-4 border-b-2 border-black">
-        <h1 className="text-2xl font-black tracking-tighter uppercase leading-none">
+      <div className="text-center space-y-2 pb-6 border-b-2 border-black">
+        <h1 className="text-3xl font-black tracking-tight uppercase leading-none">
           {UI_LABELS.meta.APP_NAME}
         </h1>
-        <div className="text-[10px] font-bold uppercase leading-tight">
+        <div className="text-[10px] font-bold uppercase leading-tight tracking-wide">
           <p>SITIO ILAYA, TABUC SUBA, JARO, ILOILO CITY</p>
           <p>+63 929 155 4954</p>
         </div>
       </div>
 
       {/* ── REFERENCE BLOCK ── */}
-      <div className="py-6 text-center space-y-2 border-b-2 border-black bg-black text-white -mx-0">
-        <div className="text-[10px] font-black uppercase tracking-[0.4em]">
+      <div className="py-8 text-center space-y-2 border-b-2 border-black bg-black text-white -mx-0">
+        <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-80">
           CLAIM STUB
         </div>
-        <div className="text-2xl font-black tracking-tight leading-none">
+        <div className="text-3xl font-black tracking-tight leading-none">
           {order.referenceNumber}
         </div>
       </div>
 
       {/* ── CORE DETAILS (Monospace Alignment) ── */}
-      <div className="py-4 space-y-2 border-b border-black text-[11px] font-bold uppercase">
+      <div className="py-6 space-y-3 border-b border-black text-[11px] font-bold uppercase">
         {[
           { label: "CUSTOMER", value: order.customerName || "WALK-IN" },
           { label: "RECEIVED", value: `${formatDate(order.createdAt!)} ${formatTime(order.createdAt!)}` },
           { label: "READY BY", value: formatDate(new Date(new Date(order.createdAt!).getTime() + 24 * 60 * 60 * 1000).toISOString()) },
           { label: "STAFF", value: order.createdByUsername || "ADMIN" },
         ].map((row, i) => (
-          <div key={i} className="flex justify-between items-start gap-2">
-            <span className="whitespace-nowrap">{row.label}:</span>
+          <div key={i} className="flex justify-between items-start gap-4">
+            <span className="whitespace-nowrap text-slate-900">{row.label}:</span>
             <span className="text-right flex-1">{row.value}</span>
           </div>
         ))}
       </div>
 
       {/* ── SERVICE BREAKDOWN ── */}
-      <div className="py-4 border-b border-black space-y-3">
-        <div className="flex justify-between text-[11px] font-black">
+      <div className="py-6 border-b border-black space-y-4">
+        <div className="flex justify-between text-[11px] font-black tracking-widest border-b border-black pb-1">
           <span>ITEM / SERVICE</span>
           <span>PRICE</span>
         </div>
 
-        <div className="space-y-1 text-[10px]">
+        <div className="space-y-2 text-[11px]">
           <div className="flex justify-between leading-tight">
             <span className="flex-1 pr-2">
-              {order.totalLoads} {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS} @ {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}KG
-              <br />
-              <span className="text-[9px]">{order.serviceType?.replace(/_/g, " ")}</span>
+              <span className="font-black text-xs block mb-0.5">
+                {order.totalLoads} {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS} @ {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}KG
+              </span>
+              <span className="text-[10px] font-medium opacity-70">{order.serviceType?.replace(/_/g, " ")}</span>
             </span>
-            <span className="whitespace-nowrap">{formatCurrency(order.baseAmount)}</span>
+            <span className="whitespace-nowrap font-black">{formatCurrency(order.baseAmount)}</span>
           </div>
 
           {(order.extraMinutes ?? 0) > 0 && (
-            <div className="flex justify-between">
-              <span>EXTRA DRYING ({order.extraMinutes} MINS)</span>
+            <div className="flex justify-between font-bold">
+              <span>EXTRA MINUTES ({order.extraMinutes} MINS)</span>
               <span>{formatCurrency(order.extraMinutesAmount)}</span>
             </div>
           )}
 
           {order.addOns && order.addOns.length > 0 ? (
-            <div className="pt-2 mt-2 border-t border-dashed border-slate-300">
-              <span className="text-[9px] font-black uppercase text-slate-500 block mb-1">Add-ons</span>
+            <div className="pt-3 mt-2 border-t border-dashed border-black">
+              <span className="text-[10px] font-black uppercase block mb-1">Add-ons</span>
               {order.addOns.map((a, i) => (
-                <div key={i} className="flex justify-between italic text-[10px]">
+                <div key={i} className="flex justify-between italic text-[11px] font-medium">
                   <span>{a.name} (X{a.quantity})</span>
                   <span>{formatCurrency((a.price || 0) * (a.quantity || 1))}</span>
                 </div>
               ))}
             </div>
           ) : (order.addonsTotalAmount ?? 0) > 0 ? (
-            <div className="pt-2 mt-2 border-t border-dashed border-slate-300 flex justify-between text-[10px]">
-              <span className="font-black uppercase text-slate-500">Add-ons Total</span>
-              <span>{formatCurrency(order.addonsTotalAmount)}</span>
+            <div className="pt-3 mt-2 border-t border-dashed border-black flex justify-between text-[11px]">
+              <span className="font-black uppercase">Add-ons Total</span>
+              <span className="font-bold">{formatCurrency(order.addonsTotalAmount)}</span>
             </div>
           ) : null}
         </div>
       </div>
 
       {/* ── TOTALS ── */}
-      <div className="py-4 space-y-2">
-        <div className="flex justify-between text-[11px] font-bold text-slate-600">
+      <div className="py-6 space-y-3">
+        <div className="flex justify-between text-[11px] font-bold">
           <span>SUBTOTAL:</span>
           <span>{formatCurrency((order.baseAmount || 0) + (order.extraMinutesAmount || 0) + (order.addonsTotalAmount || 0))}</span>
         </div>
-        <div className="flex justify-between text-lg font-black border-t-2 border-black pt-2">
-          <span className="tracking-tighter uppercase">Grand Total:</span>
-          <span>{formatCurrency(order.grandTotal)}</span>
+        <div className="flex justify-between text-xl font-black border-t-2 border-black pt-4">
+          <span className="tracking-tight uppercase">Grand Total:</span>
+          <span className="text-2xl">{formatCurrency(order.grandTotal)}</span>
         </div>
 
-        <div className="pt-2 space-y-1 text-[10px] font-bold uppercase tracking-tight">
+        <div className="pt-4 space-y-2 text-[11px] font-bold uppercase tracking-tight">
           <div className="flex justify-between">
             <span>PAYMENT STATUS:</span>
-            <span className={order.paymentStatus === "PAID" ? "text-slate-900" : "text-slate-500"}>
+            <span className="font-black">
               {order.paymentStatus === "PAID" ? "FULLY PAID" : "UNPAID"}
             </span>
           </div>
 
-          <div className="flex justify-between border-t border-dashed border-slate-300 pt-1 font-black text-xs bg-slate-50 px-1 rounded mt-1">
+          <div className="flex justify-between border-t border-dashed border-black pt-2 font-black text-sm bg-slate-50 px-2 py-1 rounded mt-2">
             <span>BALANCE DUE:</span>
             <span>{formatCurrency(order.paymentStatus === "PAID" ? 0 : order.grandTotal)}</span>
           </div>
@@ -170,10 +171,10 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
       </div>
 
       {/* ── LEGAL & TERMS ── */}
-      <div className="pt-2 text-[8px] font-bold leading-normal text-justify uppercase space-y-3">
-        <div className="border-t border-black pt-2">
-          <p className="font-black text-center mb-1">TERMS AND CONDITIONS</p>
-          <ol className="list-decimal pl-4 space-y-1">
+      <div className="pt-6 text-[9px] font-bold leading-relaxed text-justify uppercase space-y-4">
+        <div className="border-t-2 border-black pt-4">
+          <p className="font-black text-center text-xs mb-2">TERMS AND CONDITIONS</p>
+          <ol className="list-decimal pl-5 space-y-2">
             <li>PRESENT THIS STUB TO CLAIM LAUNDRY. NO STUB, NO RELEASE.</li>
             <li>NOT RESPONSIBLE FOR COLOR BLEED, SHRINKAGE, OR BUTTON LOSS.</li>
             <li>LIABILITY FOR LOST ITEMS IS LIMITED TO 3X THE SERVICE FEE.</li>
@@ -184,20 +185,20 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
         </div>
 
         {/* ── CUSTOMER SIGNATURE ── */}
-        <div className="pt-10 space-y-2">
-          <div className="border-b border-black w-full" />
-          <p className="text-center font-black">CUSTOMER SIGNATURE</p>
+        <div className="pt-14 space-y-3">
+          <div className="border-b-2 border-black w-full" />
+          <p className="text-center font-black text-[10px]">CUSTOMER SIGNATURE</p>
         </div>
 
         {/* ── FOOTER ── */}
-        <div className="pt-6 text-center space-y-4">
+        <div className="pt-10 text-center space-y-6">
           <div className="flex flex-col items-center justify-center">
-            <div className="bg-white p-2 rounded">
+            <div className="bg-white p-2 border border-black rounded">
               <Barcode
                 value={order.referenceNumber}
-                width={1.2}
-                height={40}
-                fontSize={10}
+                width={1.5}
+                height={50}
+                fontSize={12}
                 margin={0}
                 background="transparent"
                 format="CODE128"
@@ -205,7 +206,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
             </div>
           </div>
 
-          <div className="text-[10px] font-black tracking-tight pt-2 border-t border-slate-100">
+          <div className="text-[11px] font-black tracking-tight pt-4 border-t border-black">
             THANK YOU FOR TRUSTING<br />
             FAITH LAUNDRY SHOP!
           </div>
