@@ -78,7 +78,7 @@ describe("CustomersPage", () => {
     renderWithProvider(<CustomersPage />);
 
     expect(screen.getByRole("heading", { name: new RegExp(UI_LABELS.layout.nav.CUSTOMERS, "i") })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(new RegExp(UI_LABELS.shared.common.SEARCH_PLACEHOLDER, "i"))).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(new RegExp(UI_LABELS.modules.customers.SEARCH_CUSTOMERS, "i"))).toBeInTheDocument();
   });
 
   it("displays customers in the table", async () => {
@@ -121,7 +121,7 @@ describe("CustomersPage", () => {
 
     renderWithProvider(<CustomersPage />);
 
-    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.shared.common.SEARCH_PLACEHOLDER, "i"));
+    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.modules.customers.SEARCH_CUSTOMERS, "i"));
     fireEvent.change(searchInput, { target: { value: "Mark" } });
 
     // Wait for debounce

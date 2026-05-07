@@ -1,6 +1,7 @@
 export const users = {
   TITLE: "Staff Management",
   SUBTITLE: "Manage system access and roles.",
+  SEARCH_USERS: "Search by name or username...",
   CREATE: "Onboard Staff",
   MODIFY: "Modify Profile",
   CREATE_USER: "Onboard Staff",

@@ -2,6 +2,7 @@ export const clientAlerts = {
   TITLE: "Messaging",
   EMPTY_TITLE: "No Recent Messages",
   SUBTITLE: "Track and manage client SMS notifications.",
+  SEARCH_MESSAGES: "Search by order # or message...",
   MESSAGE: "Message",
   STATUS: "Status",
   LOGGED_AT: "Sent At",

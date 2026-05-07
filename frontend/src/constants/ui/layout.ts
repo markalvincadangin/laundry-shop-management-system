@@ -1,5 +1,6 @@
 export const layout = {
   nav: {
+    HOME: "Home",
     DASHBOARD: "Dashboard",
     ORDERS: "Orders",
     CUSTOMERS: "Customers",

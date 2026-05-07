@@ -26,69 +26,14 @@ import { StatusBadge, Card, Button } from "@/components/ui";
 import { ProcessStepper } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
 import { ORDER_STATUS, type OrderStatus } from "@/constants/order-status";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import { toast } from "sonner";
+import { PublicTopNav } from "@/components/layout";
 
 const STATUS_MESSAGES: Record<string, string> = UI_LABELS.portal.tracking.STATUS_MSG;
 
 // States where order is at terminal/pickup — show bell icon instead of alert
 const PICKUP_STATES = [ORDER_STATUS.READY_FOR_PICKUP, ORDER_STATUS.RELEASED];
-
-/**
- * Public Top Navigation
- * Simple persistent branding + support contact + help link.
- * Post-query: the search X button is sufficient — no redundant "Track Another" in nav.
- * Adheres to FRONT-001 §2.4.2.
- */
-function TopNav() {
-  return (
-    <nav className="bg-white/90 backdrop-blur-xl border-b border-slate-100 px-grid-8 h-grid-24 flex items-center justify-between sticky top-0 z-50">
-      <Link href="/" className="flex items-center gap-grid-4 group">
-        <div className="relative h-grid-12 w-grid-12 bg-white rounded-2xl shadow-sm border border-slate-100 p-1 transition-all group-hover:scale-105 duration-300 group-hover:shadow-lg group-hover:shadow-brand-blue/10">
-          <Image
-            src="/branding/logo.svg"
-            alt={UI_LABELS.meta.APP_NAME}
-            fill
-            className="object-contain"
-          />
-        </div>
-        <div className="flex flex-col">
-          <h1 className="text-h3 font-semibold font-display text-slate-900 tracking-tight leading-none group-hover:text-brand-blue transition-colors duration-300">
-            {UI_LABELS.meta.APP_NAME}
-          </h1>
-          <div className="flex items-center gap-grid-2 mt-grid-1">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-700 opacity-60" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-700" />
-            </span>
-            <p className="text-caption font-bold text-slate-500 uppercase tracking-[0.25em]">
-              {UI_LABELS.portal.tracking.TITLE}
-            </p>
-          </div>
-        </div>
-      </Link>
-
-      <div className="flex items-center gap-grid-6">
-        <div className="hidden md:flex flex-col items-end">
-          <p className="text-caption font-bold text-slate-400 uppercase tracking-widest">
-            {UI_LABELS.portal.tracking.SUPPORT_LABEL}
-          </p>
-          <p className="text-caption font-semibold text-slate-900">
-            {UI_LABELS.portal.tracking.SUPPORT_PHONE}
-          </p>
-        </div>
-        <div className="hidden md:block h-grid-8 w-px bg-slate-200" />
-        <Link
-          href="#"
-          className="flex text-caption font-bold text-brand-blue uppercase tracking-widest hover:bg-brand-blue/5 px-grid-5 py-grid-2.5 rounded-xl transition-all items-center gap-grid-2 min-h-[44px]"
-        >
-          <HelpCircle className="h-grid-4 w-grid-4" strokeWidth={2} />
-          {UI_LABELS.shared.common.HELP}
-        </Link>
-      </div>
-    </nav>
-  );
-}
 
 /**
  * TrackContent: Core tracking portal with full HCI audit applied.
@@ -176,12 +121,12 @@ function TrackContent() {
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
-      <TopNav />
+      <PublicTopNav variant="tracking" />
 
       {/* ───────────────── HERO / SEARCH HUB ───────────────── */}
       {/* HCI H2: Collapse hero when a result is displayed to reclaim vertical space above fold */}
       <section
-        className={`relative px-grid-8 lg:px-grid-12 flex flex-col items-center transition-all duration-700 ${hasResult ? "pt-grid-8 pb-grid-6" : "pt-grid-16 pb-grid-16"
+        className={`relative px-grid-8 lg:px-grid-12 flex flex-col items-center transition-all duration-700 ${hasResult ? "pt-32 pb-grid-6" : "pt-40 pb-grid-16"
           }`}
       >
         {/* Subtle brand gradient behind hero — purely decorative, pointer-events off */}
@@ -370,22 +315,17 @@ function TrackContent() {
                     </div>
                     <div className="flex items-center gap-grid-2 mt-0.5">
                       <Clock className="h-3 w-3 text-slate-400" />
-                      <p className="text-caption font-bold text-slate-400 uppercase tracking-widest">
-                        {UI_LABELS.portal.tracking.RECEIVED_ON} {formatDate(order.createdAt!)}
+                      <p className="text-caption font-bold text-slate-500 uppercase tracking-widest">
+                        {UI_LABELS.portal.tracking.RECEIVED_ON} {formatDateTime(order.createdAt!)}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col items-start sm:items-end gap-1">
-                  <p className="text-caption font-bold text-slate-400 uppercase tracking-widest">
-                    {UI_LABELS.shared.common.STATUS}
-                  </p>
-                  <StatusBadge
-                    status={order.currentStatus as OrderStatus}
-                    className="h-10 px-grid-6 text-caption font-bold"
-                  />
-                </div>
+                <StatusBadge
+                  status={order.currentStatus as OrderStatus}
+                  className="h-10 px-grid-6 text-caption font-bold"
+                />
               </div>
 
               {/* Card Body — strict 8px grid: py-grid-8 (32px), space-y-grid-8 (32px) between sections */}
@@ -417,25 +357,32 @@ function TrackContent() {
                 </div>
 
                 {/* Order summary meta — simplified for privacy */}
-                <div className="grid grid-cols-2 gap-grid-6 pt-grid-4 border-t border-slate-100">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-grid-6 pt-grid-4 border-t border-slate-100">
                   <div className="space-y-1.5">
-                    <p className="text-caption font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-caption font-bold text-slate-500 uppercase tracking-widest">
                       {UI_LABELS.portal.tracking.RECEIVED_ON}
                     </p>
                     <p className="text-body font-bold text-slate-900">
-                      {formatDate(order.createdAt!)}
+                      {formatDateTime(order.createdAt!)}
                     </p>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-caption font-bold text-slate-400 uppercase tracking-widest">
-                      {UI_LABELS.portal.tracking.VERIFIED_DATA}
+                    <p className="text-caption font-bold text-slate-500 uppercase tracking-widest">
+                      {UI_LABELS.shared.common.WEIGHT}
                     </p>
                     <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="h-4 w-4 text-emerald-700" strokeWidth={2} />
-                      <p className="text-caption font-bold text-emerald-700 uppercase tracking-tight">
-                        {UI_LABELS.portal.tracking.VERIFIED_DATA}
+                      <p className="text-body font-bold text-slate-900">
+                        {order.weightKg ?? 0} {UI_LABELS.units.WEIGHT}
                       </p>
                     </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-caption font-bold text-slate-500 uppercase tracking-widest">
+                      {UI_LABELS.units.LOADS}
+                    </p>
+                    <p className="text-body font-bold text-slate-900">
+                      {order.totalLoads ?? 1} {UI_LABELS.units.LOADS}
+                    </p>
                   </div>
                 </div>
 

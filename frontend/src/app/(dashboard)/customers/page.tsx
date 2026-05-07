@@ -7,13 +7,11 @@ import {
   Search,
   Phone,
   Plus,
-  ArrowRight,
   RefreshCcw,
   Eye,
   PlusCircle,
   Settings2,
   Calendar,
-  Filter,
   UserPlus
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -36,9 +34,10 @@ import { DataTableColumn } from "@/types/components";
 import type { components } from "@/types/api.generated";
 
 /**
- * Customers Registry Page — High Fidelity (v4.0)
+ * Customers Registry Page — High Fidelity (v5.0)
  * Centralized hub for customer management. 
  * Adheres to FRONT-001 §11.3 (Data Management Pattern).
+ * v4.0 Consistency Pass: Premium PageHeader, consistent grid width, and refined spacing.
  */
 export default function CustomersPage() {
   const router = useRouter();
@@ -46,8 +45,6 @@ export default function CustomersPage() {
   // Registry State Management (Centralized Architecture)
   const {
     params,
-    page,
-    size,
     sortBy,
     sortDir,
     searchTerm,
@@ -131,55 +128,58 @@ export default function CustomersPage() {
       header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (c) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end">
           <Link href={`/customers/${c.id}`} onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-9 px-3 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
+              size="xs"
+              className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+              title={UI_LABELS.shared.common.DETAILS}
             >
-              <Eye className="h-3.5 w-3.5" />
-              {UI_LABELS.shared.common.DETAILS}
+              <Eye className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="w-px h-4 bg-slate-100 mx-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedCustomer(c);
-              setIsEditModalOpen(true);
-            }}
-            title={UI_LABELS.modules.customers.EDIT_PROFILE}
-          >
-            <Settings2 className="h-4 w-4" />
-          </Button>
-          <Link href={`/orders?new=true&customerId=${c.id}`} onClick={(e) => e.stopPropagation()}>
+          <div className="w-px h-4 bg-slate-100 mx-3" />
+          <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
-              size="sm"
-              className="h-9 w-9 p-0 text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
-              title={UI_LABELS.forms.intake.TITLE}
+              size="xs"
+              className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedCustomer(c);
+                setIsEditModalOpen(true);
+              }}
+              title={UI_LABELS.modules.customers.EDIT_PROFILE}
             >
-              <PlusCircle className="h-4 w-4" />
+              <Settings2 className="h-4 w-4" />
             </Button>
-          </Link>
+            <Link href={`/orders?new=true&customerId=${c.id}`} onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="w-9 p-0 text-brand-blue hover:bg-brand-blue/5 transition-all"
+                title={UI_LABELS.forms.intake.TITLE}
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
+    <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
       <PageHeader
+        variant="premium"
         title={UI_LABELS.layout.nav.CUSTOMERS}
         subtitle={UI_LABELS.modules.customers.SUBTITLE}
         icon={Users}
         actions={
           <Button
-            className="h-13 px-grid-8 gap-grid-2 bg-brand-blue shadow-lg shadow-brand-blue/25 uppercase text-[11px] font-black tracking-widest hover:bg-brand-blue/90 active:scale-95 transition-all rounded-xl"
+            className="h-14 px-grid-8 gap-grid-2 bg-brand-blue shadow-lg shadow-brand-blue/25 uppercase text-caption font-black tracking-widest hover:bg-brand-blue/90 active:scale-95 transition-all rounded-xl"
             onClick={() => {
               setSelectedCustomer(null);
               setIsEditModalOpen(true);
@@ -194,11 +194,11 @@ export default function CustomersPage() {
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="w-full lg:flex-[2] lg:min-w-[280px]">
           <Input
-            placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
+            placeholder={UI_LABELS.modules.customers.SEARCH_CUSTOMERS}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 focus:bg-white transition-all shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <div className="w-full lg:flex-1 lg:min-w-[180px]">
@@ -206,7 +206,7 @@ export default function CustomersPage() {
             label={UI_LABELS.shared.common.STATUS}
             value={params.isActive ?? ""}
             onChange={(e) => updateParams({ isActive: e.target.value || undefined, page: 0 })}
-            className="border-slate-200 bg-white/50 h-13 rounded-xl shadow-sm"
+            className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm"
           >
             <option value="">{UI_LABELS.shared.common.ALL_STATUSES}</option>
             <option value="true">{UI_LABELS.shared.common.ACTIVE}</option>
@@ -216,7 +216,7 @@ export default function CustomersPage() {
         <div className="flex items-center gap-2 w-full lg:w-auto">
           <Button 
             variant="secondary" 
-            className="flex-1 lg:flex-none h-13 px-grid-6 gap-grid-2 uppercase text-[10px] tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-xl" 
+            className="flex-1 lg:flex-none h-14 px-grid-6 gap-grid-2 uppercase text-caption tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-2xl" 
             onClick={() => refresh()}
           >
             <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -231,38 +231,37 @@ export default function CustomersPage() {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="space-y-grid-6"
         >
-          <div className="rounded-3xl border border-slate-200/60 bg-white shadow-sm overflow-hidden">
-            <DataTable
-              data={customers}
-              columns={columns}
-              loading={loading}
-              sortBy={sortBy}
-              sortDir={sortDir}
-              onSort={handleSort}
-              onRowClick={handleRowClick}
-              emptyState={
-                <EmptyState
-                  title={UI_LABELS.feedback.empty.CUSTOMERS_TITLE}
-                  description={params.q ? UI_LABELS.feedback.empty.GENERIC_DESC : UI_LABELS.feedback.empty.CUSTOMERS_DESC}
-                  action={
-                    <Button 
-                      variant="secondary" 
-                      className="h-12 px-grid-8 gap-grid-2 font-black uppercase text-[10px] tracking-widest border-slate-200 shadow-sm rounded-xl"
-                      onClick={() => {
-                        setSelectedCustomer(null);
-                        setIsEditModalOpen(true);
-                      }}
-                    >
-                      <UserPlus className="h-5 w-5" />
-                      {UI_LABELS.modules.customers.REGISTER_NEW}
-                    </Button>
-                  }
-                />
-              }
-            />
-          </div>
+          <DataTable
+            data={customers}
+            columns={columns}
+            loading={loading}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSort={handleSort}
+            onRowClick={handleRowClick}
+            emptyState={
+              <EmptyState
+                title={UI_LABELS.feedback.empty.CUSTOMERS_TITLE}
+                description={params.q ? UI_LABELS.feedback.empty.GENERIC_DESC : UI_LABELS.feedback.empty.CUSTOMERS_DESC}
+                action={
+                  <Button 
+                    variant="secondary" 
+                    className="h-12 px-grid-8 gap-grid-2 font-black uppercase text-[10px] tracking-widest border-slate-200 shadow-sm rounded-xl"
+                    onClick={() => {
+                      setSelectedCustomer(null);
+                      setIsEditModalOpen(true);
+                    }}
+                  >
+                    <UserPlus className="h-5 w-5" />
+                    {UI_LABELS.modules.customers.REGISTER_NEW}
+                  </Button>
+                }
+              />
+            }
+          />
 
           <Pagination
             currentPage={pagination.page}

@@ -23,7 +23,8 @@ import {
   Phone,
   Copy,
   Check,
-  ShieldCheck
+  ShieldCheck,
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { ApiError } from "@/lib/api-client";
@@ -33,14 +34,12 @@ import {
   type UpdateOrderRequest,
 } from "@/services/orders.service";
 import type { components } from "@/types/api.generated";
-import { StatusBadge } from "@/components/ui";
+import { StatusBadge, CurrencyDisplay, Button, Input } from "@/components/ui";
 import { paymentsService } from "@/services/payments.service";
 import { OrderStatusTimeline } from "@/features/orders/OrderStatusTimeline";
 import { ClaimStub } from "@/features/orders/ClaimStub";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui";
-import { Input } from "@/components/ui";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ProcessStepper } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
@@ -249,7 +248,7 @@ export default function OrderDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-4">
-          <Button variant="outline" className="h-12 px-6 gap-2 border-slate-200 text-xs font-extrabold uppercase tracking-widest" onClick={() => setShowReceiptModal(true)}>
+          <Button variant="outline" className="h-12 px-6 border-slate-200 text-xs font-extrabold uppercase tracking-widest" onClick={() => setShowReceiptModal(true)}>
             <Eye className="h-4 w-4" />
             {UI_LABELS.modules.orders.VIEW_RECEIPT}
           </Button>
@@ -257,7 +256,7 @@ export default function OrderDetailPage() {
             <Button
               variant="outline"
               onClick={() => setConfirmVoidModal(true)}
-              className="h-12 px-8 gap-2 border-rose-200 text-rose-600 hover:bg-rose-50 uppercase font-extrabold text-xs tracking-widest shadow-sm"
+              className="h-12 px-8 border-rose-200 text-rose-600 hover:bg-rose-50 uppercase font-extrabold text-xs tracking-widest shadow-sm"
             >
               <ShieldAlert className="h-4 w-4" />
               {UI_LABELS.modules.payments.VOIDED}
@@ -265,7 +264,7 @@ export default function OrderDetailPage() {
           ) : (
             !order.paymentStatus || order.paymentStatus === PAYMENT_STATUS.UNPAID ? (
               <Link href={`/orders/${order.id}/pay`}>
-                <Button className="h-12 px-8 gap-2 bg-brand-blue text-white shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 active:scale-95 transition-all uppercase font-extrabold text-xs tracking-widest">
+                <Button className="h-12 px-8 bg-brand-blue text-white shadow-lg shadow-brand-blue/20 hover:bg-brand-blue/90 active:scale-95 transition-all uppercase font-extrabold text-xs tracking-widest">
                   <CreditCard className="h-4 w-4" />
                   {UI_LABELS.modules.payments.RECORD_PAYMENT}
                 </Button>
@@ -376,7 +375,12 @@ export default function OrderDetailPage() {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
                       <Package className="h-3 w-3" /> {UI_LABELS.modules.orders.LOADS}
                     </p>
-                    <p className="text-xl font-black text-slate-900 font-mono tabular-nums">{order.totalLoads} <span className="text-xs opacity-40 font-bold uppercase font-sans tracking-widest">{UI_LABELS.modules.orders.LOADS}</span></p>
+                    <p className="text-xl font-black text-slate-900 font-mono tabular-nums">
+                      {order.totalLoads}
+                      <span className="text-xs opacity-40 font-bold uppercase font-sans tracking-widest ml-1">
+                        {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS}
+                      </span>
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
@@ -388,7 +392,14 @@ export default function OrderDetailPage() {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
                       <Calendar className="h-3 w-3" /> {UI_LABELS.shared.common.DATE}
                     </p>
-                    <p className="text-sm font-black text-slate-900 tabular-nums">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}</p>
+                    <div className="space-y-1">
+                      <p className="text-sm font-black text-slate-900 tracking-tight">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "—"}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleTimeString(undefined, { timeStyle: 'short' }) : ""}
+                      </p>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
@@ -397,6 +408,17 @@ export default function OrderDetailPage() {
                     <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{order.createdByUsername || "System Agent"}</p>
                   </div>
                 </div>
+
+                {order.notes && (
+                  <div className="space-y-3 pt-6 border-t border-slate-100">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2">
+                      <FileText className="h-3 w-3" /> {UI_LABELS.modules.orders.SPECIAL_INSTRUCTIONS}
+                    </p>
+                    <p className="text-sm font-medium text-slate-600 bg-brand-blue/5 p-5 rounded-2xl border border-brand-blue/10 italic leading-relaxed break-words whitespace-pre-wrap">
+                      &quot;{order.notes}&quot;
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-4 pt-8 border-t border-slate-100">
                   <div className="flex justify-between items-center text-sm">
@@ -425,14 +447,17 @@ export default function OrderDetailPage() {
                       <span className="font-black text-slate-900 tabular-nums">{UI_LABELS.units.PRICE_SYMBOL}{order.addonsTotalAmount?.toFixed(2)}</span>
                     </div>
                   ) : null}
-                  <div className="flex justify-between items-center pt-10 mt-6 border-t-2 border-slate-900/5">
-                    <span className="text-2xl font-display font-black text-slate-900 uppercase tracking-tighter">{UI_LABELS.shared.common.TOTAL}</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-display font-black text-brand-blue/40 leading-none">₱</span>
-                      <span className="text-6xl font-display font-black text-brand-blue tracking-tighter tabular-nums leading-none">
-                        {order.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
+                  <div className="flex justify-between items-end pt-10 mt-6 border-t-2 border-slate-900/5">
+                    <div className="space-y-1">
+                      <span className="text-2xl font-display font-black text-slate-900 uppercase tracking-tighter leading-none block">{UI_LABELS.shared.common.TOTAL}</span>
                     </div>
+                    <CurrencyDisplay
+                      amount={order.grandTotal}
+                      size="xl"
+                      className="text-7xl text-brand-blue"
+                      symbolClassName="text-brand-blue/40 mr-2"
+                      numberClassName="font-display font-black tracking-tighter"
+                    />
                   </div>
                 </div>
               </div>

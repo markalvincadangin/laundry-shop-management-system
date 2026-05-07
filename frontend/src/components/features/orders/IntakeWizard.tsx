@@ -30,7 +30,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ordersService } from "@/services/orders.service";
 import { paymentsService } from "@/services/payments.service";
 import { PaymentMethod } from "@/constants/order-status";
-import { Card, CardContent, Input, Button, Select } from "@/components/ui";
+import { Card, CardContent, Input, Button, Select, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useCustomerLookup } from "@/hooks/useCustomerLookup";
@@ -686,7 +686,12 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                               </div>
                               <div>
                                 <span className="block text-sm font-black text-slate-900 uppercase tracking-tight">{field.name}</span>
-                                <span className="block text-xs font-black text-brand-blue mt-0.5 tabular-nums tracking-wide">₱{Number(field.price).toFixed(2)}</span>
+                                <CurrencyDisplay 
+                                  amount={Number(field.price)} 
+                                  size="sm" 
+                                  className="text-brand-blue" 
+                                  numberClassName="font-black tracking-wide" 
+                                />
                               </div>
                             </div>
                             <button
@@ -743,10 +748,13 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                             <div className="space-y-2">
                               <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/30 block">Grand Total</span>
                               <div className="flex items-baseline">
-                                <span className="text-8xl font-display font-black tracking-tighter leading-none tabular-nums text-white">
-                                  <span className="text-brand-cyan/80 mr-4">₱</span>
-                                  {pricing.preview?.grandTotal?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || "0.00"}
-                                </span>
+                                <CurrencyDisplay
+                                  amount={pricing.preview?.grandTotal}
+                                  size="xl"
+                                  className="text-7xl md:text-8xl text-white"
+                                  symbolClassName="text-brand-cyan/80 mr-3"
+                                  numberClassName="font-display font-black tracking-tighter leading-none"
+                                />
                               </div>
                             </div>
                           </div>
@@ -834,13 +842,13 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                                       >
                                         <div className="space-y-3">
                                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">
-                                            Reference Number / Trace ID
+                                            Reference Number
                                           </label>
                                           <div className="relative group">
                                             <CreditCard className="h-4 w-4 text-white/20 group-focus-within:text-brand-cyan absolute left-6 top-1/2 -translate-y-1/2 transition-colors" />
                                             <input
                                               type="text"
-                                              placeholder="Enter GCash/Bank Ref #"
+                                              placeholder="Enter Reference Number"
                                               value={referenceNumber}
                                               onChange={(e) => setReferenceNumber(e.target.value)}
                                               className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-14 pr-6 text-sm font-bold placeholder:text-white/20 focus:bg-white/10 focus:border-brand-cyan transition-all outline-none"
@@ -893,11 +901,11 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
               {stepIndex < steps.length - 1 ? (
                 <>
                   {UI_LABELS.shared.buttons.NEXT}
-                  <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform" />
+                  <CheckCircle2 className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   {UI_LABELS.forms.intake.SUBMIT_BUTTON}
                 </>
               )}

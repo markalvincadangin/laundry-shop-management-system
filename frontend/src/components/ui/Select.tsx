@@ -5,8 +5,9 @@ import { ChevronDown } from "lucide-react";
 import { SelectProps } from "@/types/components";
 
 /**
- * Standardized Select Atom
+ * Standardized Select Atom — v5.0 Premium
  * Adheres to FRONT-001 §5.2 and §1.6 (Constraint-based Input)
+ * Hardened with 2xl radius, glassmorphism enhancements, and premium shadows.
  */
 export function Select({
   label,
@@ -17,30 +18,35 @@ export function Select({
   children,
   ...props
 }: SelectProps) {
-  const variants = {
-    default: "border-slate-200 bg-white text-slate-900",
-    glass: "border-slate-200/60 bg-white/70 text-slate-900 shadow-sm backdrop-blur-md",
-  };
-
+  const isInvalid = Boolean(error);
   const selectId = React.useId();
 
+  const variants = {
+    default: isInvalid
+      ? "border-error-700 bg-error-50/50 text-slate-900 focus:ring-4 focus:ring-error-700/10"
+      : "border-slate-200 bg-white text-slate-900 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 shadow-sm shadow-slate-200/20",
+    glass: isInvalid
+      ? "border-error-700/50 bg-error-50/20 backdrop-blur-xl focus:ring-4 focus:ring-error-700/10"
+      : "border-slate-200/60 bg-white/70 backdrop-blur-xl text-slate-900 focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 shadow-inner shadow-slate-100/50",
+  };
+
   return (
-    <div className={`space-y-2 ${containerClassName}`}>
+    <div className={`w-full group ${containerClassName}`}>
       {label && (
         <label 
           htmlFor={selectId}
-          className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1 block"
+          className={`mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] ml-1.5 transition-colors group-focus-within:text-brand-blue ${variant === "glass" ? "text-slate-400" : "text-slate-500"}`}
         >
           {label}
+          {props.required && <span className="text-error-700 ml-1" aria-hidden="true">*</span>}
         </label>
       )}
       <div className="relative group">
         <select
           id={selectId}
           className={`
-            w-full h-14 appearance-none rounded-xl border px-4 text-sm font-medium
-            focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan/20 focus:outline-none 
-            transition-all disabled:opacity-50 disabled:cursor-not-allowed
+            w-full h-[52px] appearance-none rounded-2xl border pl-grid-4 pr-grid-12 text-body font-medium leading-none
+            focus:outline-none transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed
             ${variants[variant]}
             ${className}
           `}
@@ -48,15 +54,12 @@ export function Select({
         >
           {children}
         </select>
-        <ChevronDown 
-          className={`
-            absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-transform group-focus-within:rotate-180
-            ${variant === "glass" ? "text-slate-400" : "text-slate-500"}
-          `} 
-        />
+        <div className="pointer-events-none absolute right-grid-4 top-1/2 -translate-y-1/2 transition-all duration-300 group-focus-within:rotate-180 group-focus-within:text-brand-blue flex items-center justify-center">
+          <ChevronDown className="h-5 w-5 opacity-50 stroke-[2.25]" />
+        </div>
       </div>
-      {error && (
-        <p className="text-[10px] font-bold text-error-400 ml-1 uppercase tracking-widest animate-in fade-in slide-in-from-top-1">
+      {isInvalid && (
+        <p className="mt-2 text-[11px] font-black uppercase tracking-widest text-error-700 ml-1.5 leading-none" role="alert">
           {error}
         </p>
       )}

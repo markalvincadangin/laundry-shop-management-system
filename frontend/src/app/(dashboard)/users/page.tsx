@@ -7,12 +7,13 @@ import {
   RefreshCcw, 
   ShieldCheck, 
   ShieldAlert,
-  Edit2,
+  Settings2,
   Power,
   Search,
-  ChevronRight,
   Shield,
-  Activity
+  Activity,
+  UserCheck,
+  ShieldHalf
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +24,8 @@ import {
   Avatar,
   Input,
   TableSkeleton,
-  ConfirmDialog
+  ConfirmDialog,
+  KPICard
 } from "@/components/ui";
 import { DataTable, EmptyState, AccessDenied, FilterBar, Pagination } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
@@ -34,13 +36,14 @@ import { UserModal } from "@/components/features/users/UserModal";
 import { formatDate } from "@/lib/utils";
 
 /**
- * Staff Management Page — High Fidelity (v4.0)
+ * Staff Management Page — High Fidelity (v5.0)
  * Allows Admins to onboard, modify, and deactivate staff accounts.
  * Adheres to FRONT-001 §7 and §3.1.6.
+ * v4.0 Consistency Pass: Premium PageHeader, consistent grid width, and refined spacing.
  */
 export default function UsersPage() {
   const { user: currentUser, loading: authLoading } = useAuth();
-  const { users, pagination, loading, error, refresh, toggleStatus } = useUsers();
+  const { users, pagination, loading, refresh, toggleStatus } = useUsers();
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,9 +57,12 @@ export default function UsersPage() {
     u.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const adminCount = users.filter(u => u.role === "ADMIN").length;
+  const activeCount = users.filter(u => u.isActive).length;
+
   if (authLoading) {
     return (
-      <div className="max-w-7xl mx-auto space-y-grid-10 pb-grid-20 px-4 md:px-0">
+      <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
         <PageHeader title={UI_LABELS.modules.users.TITLE} subtitle={UI_LABELS.modules.users.SUBTITLE} icon={Users} />
         <TableSkeleton rows={5} />
       </div>
@@ -147,31 +153,31 @@ export default function UsersPage() {
       ),
     },
     {
-      header: "",
+      header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (u) => {
         const isSelf = currentUser?.userId === u.id;
         
         return (
-          <div className="flex items-center justify-end gap-grid-2">
+          <div className="flex items-center justify-end">
             <Button 
               variant="ghost" 
-              size="sm" 
+              size="xs" 
               onClick={() => handleEdit(u)}
-              className="h-10 px-3 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
+              className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+              title={UI_LABELS.shared.buttons.EDIT}
             >
-              <Edit2 className="h-3.5 w-3.5" />
-              {UI_LABELS.shared.buttons.EDIT}
+              <Settings2 className="h-4 w-4" />
             </Button>
-            <div className="w-px h-4 bg-slate-100 mx-1" />
+            <div className="w-px h-4 bg-slate-100 mx-3" />
             <Button 
               variant="ghost" 
-              size="sm" 
+              size="xs" 
               disabled={isSelf}
               onClick={() => setConfirmStatusUser(u)}
-              className={`h-10 w-10 p-0 transition-all rounded-xl ${
+              className={`w-9 p-0 transition-all ${
                 isSelf 
-                  ? "opacity-20 cursor-not-allowed" 
+                  ? "opacity-20 cursor-not-allowed text-slate-200" 
                   : u.isActive 
                     ? "text-rose-400 hover:text-rose-600 hover:bg-rose-50" 
                     : "text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"
@@ -187,7 +193,7 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-grid-8 pb-grid-20 px-4 md:px-0">
+    <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
       <PageHeader
         variant="premium"
         title={UI_LABELS.modules.users.TITLE}
@@ -195,7 +201,7 @@ export default function UsersPage() {
         icon={Users}
         actions={
           <Button 
-            className="h-13 px-grid-8 gap-grid-3 bg-brand-blue shadow-lg shadow-brand-blue/25 uppercase font-black text-[11px] tracking-widest active:scale-95 transition-all rounded-xl"
+            className="h-14 px-grid-8 gap-grid-3 bg-brand-blue shadow-lg shadow-brand-blue/25 uppercase font-black text-caption tracking-widest active:scale-95 transition-all rounded-xl"
             onClick={handleCreate}
           >
             <UserPlus className="h-5 w-5" />
@@ -204,22 +210,33 @@ export default function UsersPage() {
         }
       />
 
-      {/* ── Filter Bar with Glass Effect ── */}
+      {/* Snapshot KPIs */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-grid-6"
+      >
+        <KPICard title="Total Staff" value={users.length} subtitle="Onboarded Accounts" icon={Users} variant="default" />
+        <KPICard title="Administrators" value={adminCount} subtitle="Full Access Control" icon={ShieldHalf} variant="accent" />
+        <KPICard title="Active Status" value={activeCount} subtitle="Currently Authorized" icon={UserCheck} variant="success" />
+      </motion.div>
+
+      {/* ── Filter Bar ── */}
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="flex-[3] min-w-[300px]">
           <Input
-            placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
+            placeholder={UI_LABELS.modules.users.SEARCH_USERS}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-13 rounded-xl border-slate-200 bg-white/50 focus:bg-white transition-all shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <Button 
           variant="secondary" 
-          className="h-13 px-grid-8 gap-grid-2 border-slate-200 bg-white text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-xl"
+          className="h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-2xl"
           onClick={() => refresh()}
-          isLoading={loading}
         >
           <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           {UI_LABELS.shared.common.REFRESH}
@@ -229,29 +246,28 @@ export default function UsersPage() {
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
         className="space-y-grid-6"
       >
-        <div className="rounded-3xl border border-slate-200/60 bg-white shadow-sm overflow-hidden">
-          <DataTable
-            data={filteredUsers}
-            columns={columns}
-            loading={loading}
-            emptyState={
-              <EmptyState
-                title={UI_LABELS.modules.users.EMPTY_TITLE}
-                description={UI_LABELS.modules.users.EMPTY_DESC}
-                icon={<Users className="h-16 w-16 text-slate-100" />}
-              />
-            }
-          />
-        </div>
+        <DataTable
+          data={filteredUsers}
+          columns={columns}
+          loading={loading}
+          emptyState={
+            <EmptyState
+              title={UI_LABELS.modules.users.EMPTY_TITLE}
+              description={UI_LABELS.modules.users.EMPTY_DESC}
+              icon={<Users className="h-16 w-16 text-slate-100" />}
+            />
+          }
+        />
 
         <Pagination
           currentPage={pagination.page}
           totalPages={Math.ceil(filteredUsers.length / 20) || 1}
           totalElements={filteredUsers.length}
           pageSize={20}
-          onPageChange={() => {}} // User list is usually small, but keeping standard
+          onPageChange={() => {}} // User list is usually small
           onPageSizeChange={() => {}}
           isLoading={loading}
         />

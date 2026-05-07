@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import { PageHeaderProps } from "@/types/components";
 
 /**
- * PageHeader — High Fidelity (v4.0)
+ * PageHeader — High Fidelity — v5.0
  * Standardized header for all dashboard pages.
- * Supports 'premium' variant with glassmorphism and animated glows.
+ * Supports 'premium' variant with glassmorphism, 2.5rem radius, and animated glows.
+ * v4.0 Consistency Pass: Standardized radius and enhanced visual depth.
  */
 export function PageHeader({ title, subtitle, icon: Icon, actions, className, variant = "default" }: PageHeaderProps) {
   if (variant === "premium") {
@@ -13,32 +14,47 @@ export function PageHeader({ title, subtitle, icon: Icon, actions, className, va
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`relative overflow-hidden rounded-3xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-grid-6 md:p-grid-8 shadow-sm mb-grid-10 ${className || ""}`}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className={`relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white shadow-2xl shadow-slate-200/20 p-grid-8 md:p-grid-10 mb-grid-12 ${className || ""}`}
       >
-        {/* Glow Blobs */}
-        <div className="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-brand-blue/5 blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-64 w-64 rounded-full bg-indigo-500/5 blur-3xl opacity-60" />
+        {/* Animated Glow Blobs */}
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 0]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute top-0 right-0 -mt-20 -mr-20 h-80 w-80 rounded-full bg-brand-blue/10 blur-[80px] opacity-60" 
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.3, 1],
+            rotate: [0, -90, 0]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-indigo-500/10 blur-[80px] opacity-60" 
+        />
 
-        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-grid-6">
-          <div className="flex items-center gap-grid-6">
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-grid-8">
+          <div className="flex items-center gap-grid-8">
             {Icon && (
-              <div className="h-16 w-16 rounded-2xl bg-white/80 shadow-sm border border-slate-100 flex items-center justify-center transition-transform hover:scale-105">
-                <Icon className="h-8 w-8 text-brand-blue" />
+              <div className="h-20 w-20 rounded-[28px] bg-white shadow-xl shadow-brand-blue/5 border-2 border-slate-50 flex items-center justify-center transition-all duration-500 hover:scale-105 hover:rotate-3 group">
+                <Icon className="h-10 w-10 text-brand-blue transition-transform group-hover:scale-110" strokeWidth={2.5} />
               </div>
             )}
-            <div className="space-y-1">
-              <h1 className="text-display md:text-[32px] text-slate-900 tracking-tight leading-none font-black">
+            <div className="space-y-grid-2">
+              <h1 className="text-display md:text-5xl text-slate-900 tracking-tighter leading-none font-black">
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-body-sm font-black text-slate-500 uppercase tracking-[0.2em] opacity-80 leading-relaxed">
+                <p className="text-body-sm font-black text-slate-400 uppercase tracking-[0.25em] opacity-80 leading-relaxed">
                   {subtitle}
                 </p>
               )}
             </div>
           </div>
           {actions && (
-            <div className="flex items-center gap-grid-3">
+            <div className="flex items-center gap-grid-4">
               {actions}
             </div>
           )}
@@ -48,20 +64,24 @@ export function PageHeader({ title, subtitle, icon: Icon, actions, className, va
   }
 
   return (
-    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-grid-6 mb-grid-8 print:hidden ${className || ""}`}>
-      <div className="space-y-grid-1.5">
-        <h1 className="text-display font-black tracking-tight text-slate-900 flex items-center gap-grid-3">
-          {Icon && <Icon className="h-grid-8 w-grid-8 text-brand-blue" />}
+    <div className={`flex flex-col md:flex-row md:items-end justify-between gap-grid-6 mb-grid-10 print:hidden ${className || ""}`}>
+      <div className="space-y-grid-2">
+        <h1 className="text-display md:text-4xl font-black tracking-tight text-slate-900 flex items-center gap-grid-4">
+          {Icon && (
+            <div className="h-12 w-12 rounded-xl bg-brand-blue/5 flex items-center justify-center border border-brand-blue/10">
+              <Icon className="h-7 w-7 text-brand-blue" />
+            </div>
+          )}
           {title}
         </h1>
         {subtitle && (
-          <p className="text-body text-slate-500 font-bold uppercase tracking-widest opacity-80">
+          <p className="text-body-sm text-slate-500 font-black uppercase tracking-[0.2em] opacity-70">
             {subtitle}
           </p>
         )}
       </div>
       {actions && (
-        <div className="flex items-center gap-grid-3">
+        <div className="flex items-center gap-grid-4">
           {actions}
         </div>
       )}

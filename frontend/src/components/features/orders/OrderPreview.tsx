@@ -139,14 +139,12 @@ export function OrderPreview({
                   {notes && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 opacity-50">
-                        <FileText className="h-4 w-4 text-slate-900" />
                         <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-900">
                           {UI_LABELS.modules.orders.SPECIAL_INSTRUCTIONS}
                         </span>
                       </div>
-                      <div className="relative pl-6">
-                        <div className="absolute left-6 top-0 bottom-0 w-1 bg-brand-blue/20 rounded-full" />
-                        <p className="text-xs font-bold text-slate-600 italic pl-4 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
+                      <div className="pl-6">
+                        <p className="text-xs font-medium text-slate-500 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 break-words whitespace-pre-wrap">
                           &quot;{notes}&quot;
                         </p>
                       </div>
@@ -162,11 +160,20 @@ export function OrderPreview({
                       </div>
                       <div className="pl-6 space-y-2">
                         {addOns.map((a, i) => (
-                          <div key={i} className="flex justify-between items-center text-xs text-brand-blue font-bold italic bg-brand-blue/5 px-3 py-2 rounded-xl border border-brand-blue/5">
-                            <span className="flex items-center gap-2">
-                              {a.name} <span className="text-[10px] opacity-60 font-mono">(x{a.quantity})</span>
+                          <div key={i} className="flex justify-between items-center text-sm group/line cursor-default py-1">
+                            <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors flex items-center gap-2">
+                              <PlusCircle className="h-3 w-3 text-brand-blue/40" />
+                              {a.name}
+                              <span className="text-[9px] font-mono font-black uppercase text-brand-blue bg-brand-blue/5 px-1.5 py-0.5 rounded">
+                                x{a.quantity}
+                              </span>
                             </span>
-                            <span className="font-mono">{formatCurrency(a.price * a.quantity)}</span>
+                            <CurrencyDisplay
+                              amount={a.price * a.quantity}
+                              size="md"
+                              tabular={true}
+                              numberClassName="font-mono font-black"
+                            />
                           </div>
                         ))}
                       </div>
@@ -205,9 +212,11 @@ export function OrderPreview({
                           {preview.totalLoads} {preview.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS}
                         </span>
                       </span>
-                      <span className="font-mono font-black text-slate-900 tabular-nums text-base">
-                        {formatCurrency(preview.baseAmount)}
-                      </span>
+                      <CurrencyDisplay
+                        amount={preview.baseAmount}
+                        size="md"
+                        numberClassName="font-mono font-black"
+                      />
                     </div>
 
                     {preview.extraMinutesAmount > 0 && (
@@ -215,12 +224,14 @@ export function OrderPreview({
                         <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors">
                           {UI_LABELS.modules.orders.EXTRA_TIME_FEE}
                           <span className="text-[10px] font-mono font-black uppercase text-slate-400 ml-2 bg-slate-100 px-1.5 py-0.5 rounded">
-                            {extraMinutes}{UI_LABELS.shared.units.TIME}
+                            {extraMinutes} {UI_LABELS.shared.units.TIME}
                           </span>
                         </span>
-                        <span className="font-mono font-black text-slate-900 tabular-nums text-base">
-                          {formatCurrency(preview.extraMinutesAmount)}
-                        </span>
+                        <CurrencyDisplay
+                          amount={preview.extraMinutesAmount}
+                          size="md"
+                          numberClassName="font-mono font-black"
+                        />
                       </div>
                     )}
                   </div>
@@ -245,7 +256,7 @@ export function OrderPreview({
 
               <div className="flex items-center justify-between mb-4 mt-6">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
-                  {UI_LABELS.modules.orders.TOTAL_PAYABLE}
+                  {UI_LABELS.modules.orders.TOTAL}
                 </span>
               </div>
 
@@ -256,9 +267,10 @@ export function OrderPreview({
                 className="flex items-end justify-between"
               >
                 <div className="flex items-baseline gap-2">
-                  <CurrencyDisplay 
-                    amount={preview?.grandTotal ?? 0} 
-                    className="text-7xl tracking-tighter leading-none" 
+                  <CurrencyDisplay
+                    amount={preview?.grandTotal ?? 0}
+                    size="xl"
+                    className="text-6xl md:text-7xl tracking-tighter leading-none"
                     numberClassName="font-black"
                   />
                 </div>

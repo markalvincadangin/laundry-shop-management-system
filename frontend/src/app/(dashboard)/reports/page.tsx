@@ -4,14 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
-  TrendingUp,
-  Info,
-  Banknote,
-  ShoppingBag,
   Calculator,
-  Download,
   Loader2,
-  FileDown
+  FileDown,
+  BarChart3,
+  Coins,
+  PackageCheck
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { pdf } from "@react-pdf/renderer";
@@ -37,11 +35,16 @@ import { SectionHeader, ErrorState, AccessDenied, LoadingState } from "@/feature
 const RevenueChart = dynamic(() => import("@/components/features/reports/RevenueChart").then(m => m.RevenueChart), { ssr: false });
 const DetailedSalesTable = dynamic(() => import("@/components/features/reports/DetailedSalesTable").then(m => m.DetailedSalesTable), { ssr: false });
 import { UI_LABELS } from "@/constants/ui";
-import { formatDate, formatCurrency } from "@/lib/utils";
 
 type ChartPoint = { period: string; income: number; orders: number; rawDate: string };
 type Tab = "daily" | "monthly" | "yearly";
 
+/**
+ * Reports Registry Page — High Fidelity (v5.0)
+ * Forensic reporting suite for operational and financial analysis.
+ * Adheres to FRONT-001 Design Standards.
+ * v4.0 Consistency Pass: Premium PageHeader, consistent grid width, and refined spacing.
+ */
 export default function ReportsPage() {
   const { user, loading: authLoading } = useAuth();
   const [tab, setTab] = useState<Tab>("daily");
@@ -124,7 +127,6 @@ export default function ReportsPage() {
         d.setDate(from.getDate() + i);
         const dStr = d.toISOString().split('T')[0];
         const dayData = data.find(item => item.date === dStr);
-
 
         points.push({
           period: d.toLocaleString("en-US", { weekday: "short", day: "numeric" }),
@@ -232,7 +234,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 pb-20">
+    <div className="max-w-[1600px] mx-auto space-y-grid-12 pb-grid-20 px-4 xl:px-0">
       <PrintHeader 
         module="Sales Performance Report" 
         period={`${tab.toUpperCase()} — ${tab === 'daily' ? date : tab === 'monthly' ? `${year}-${month}` : year}`} 
@@ -240,14 +242,15 @@ export default function ReportsPage() {
 
       <div className="no-print">
         <PageHeader
+          variant="premium"
           title={UI_LABELS.layout.nav.REPORTS}
           subtitle={UI_LABELS.modules.reports.SUBTITLE}
-          icon={TrendingUp}
+          icon={BarChart3}
           actions={
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-grid-4">
               <Button 
                 variant="outline" 
-                className="h-12 px-6 gap-3 text-caption font-black uppercase tracking-[0.15em] border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50" 
+                className="h-14 px-grid-6 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl" 
                 onClick={handleExportPDF}
                 disabled={isExporting || loading}
               >
@@ -256,7 +259,7 @@ export default function ReportsPage() {
                 ) : (
                   <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
                 )}
-                {isExporting ? "Exporting..." : UI_LABELS.modules.reports.EXPORT_PDF}
+                {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
               <SegmentedControl
                 options={[
@@ -278,10 +281,14 @@ export default function ReportsPage() {
           reset={() => tab === "daily" ? fetchDailyReport() : tab === "monthly" ? fetchMonthlyReport() : fetchYearlyReport()}
         />
       ) : (
-        <>
+        <div className="space-y-grid-16">
           {/* Key Metrics */}
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 kpi-grid-print">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-grid-6 kpi-grid-print"
+          >
             {loading ? (
               <>
                 <KPICardSkeleton />
@@ -290,40 +297,20 @@ export default function ReportsPage() {
               </>
             ) : (
               <>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                  className="kpi-card-print"
-                >
-                  <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" />} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Banknote} variant="accent" />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="kpi-card-print"
-                >
-                  <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={ShoppingBag} variant="success" />
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="kpi-card-print"
-                >
-                  <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<CurrencyDisplay amount={avgOrderValue} size="xl" />} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={Calculator} variant="default" />
-                </motion.div>
+                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Coins} variant="accent" />
+                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={PackageCheck} variant="success" />
+                <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<div className="font-black"><CurrencyDisplay amount={avgOrderValue} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={Calculator} variant="default" />
               </>
             )}
-          </div>
+          </motion.div>
 
           {/* Forensic Breakdown by Method (Daily only) */}
           {tab === "daily" && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-grid-4"
             >
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => (
@@ -331,11 +318,13 @@ export default function ReportsPage() {
                 ))
               ) : report?.revenueByMethod && Object.keys(report.revenueByMethod).length > 0 ? (
                 Object.entries(report.revenueByMethod).map(([method, amount]) => (
-                  <div key={method} className="bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 flex flex-col gap-2 shadow-sm hover:border-brand-blue/30 transition-all group">
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-slate-400 group-hover:text-brand-blue transition-colors">
+                  <div key={method} className="bg-white/40 backdrop-blur-md border border-slate-200/60 rounded-2xl p-grid-6 flex flex-col gap-2 shadow-sm hover:border-brand-blue/30 transition-all group">
+                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400 group-hover:text-brand-blue transition-colors">
                       {method.replace(/_/g, ' ')}
                     </p>
-                    <CurrencyDisplay amount={amount} size="md" className="text-slate-900 font-bold" />
+                    <div className="font-bold">
+                       <CurrencyDisplay amount={amount} size="md" />
+                    </div>
                   </div>
                 ))
               ) : null}
@@ -343,31 +332,31 @@ export default function ReportsPage() {
           )}
 
           {/* Selection & Chart Section */}
-          <div className="grid lg:grid-cols-12 gap-8 items-start">
-            <div className="lg:col-span-4 space-y-6 no-print">
-              <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
-                <CardHeader className="border-b border-slate-100 bg-slate-50">
-                  <CardTitle className="text-slate-900 text-sm font-extrabold uppercase tracking-widest">
+          <div className="grid lg:grid-cols-12 gap-grid-8 items-start">
+            <div className="lg:col-span-4 space-y-grid-6 no-print">
+              <Card variant="glass" className="bg-white/40 border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden rounded-[2.5rem]">
+                <CardHeader className="border-b border-slate-200/40 bg-white/70 backdrop-blur-md px-grid-8 py-grid-6">
+                  <CardTitle className="text-slate-900 text-[12px] font-black uppercase tracking-[0.2em]">
                     {UI_LABELS.modules.reports.PERIOD_SELECTION}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-8 space-y-8">
+                <CardContent className="p-grid-8 space-y-grid-8">
                   {tab === "daily" && (
                     <Input
                       label={UI_LABELS.modules.reports.SELECT_DATE}
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="border-slate-200 bg-white h-14"
+                      className="border-slate-200 bg-white h-14 rounded-2xl"
                     />
                   )}
                   {tab === "monthly" && (
-                    <div className="grid gap-6">
+                    <div className="grid gap-grid-6">
                       <Select
                         label={UI_LABELS.modules.reports.MONTH}
                         value={month}
                         onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-                        className="border-slate-200 bg-white"
+                        className="border-slate-200 bg-white h-14 rounded-2xl"
                       >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                           <option key={m} value={m}>
@@ -380,7 +369,7 @@ export default function ReportsPage() {
                         type="number"
                         value={year}
                         onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                        className="border-slate-200 bg-white h-14"
+                        className="border-slate-200 bg-white h-14 rounded-2xl"
                       />
                     </div>
                   )}
@@ -390,13 +379,15 @@ export default function ReportsPage() {
                       type="number"
                       value={year}
                       onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                      className="border-slate-200 bg-white h-14"
+                      className="border-slate-200 bg-white h-14 rounded-2xl"
                     />
                   )}
-                  <div className="flex items-start gap-4 p-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 shadow-sm relative overflow-hidden group/info">
+                  <div className="flex items-start gap-grid-4 p-grid-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 shadow-sm relative overflow-hidden group/info">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-brand-blue/5 rounded-full -mr-12 -mt-12 group-hover/info:scale-110 transition-transform duration-700" />
-                    <Info className="h-5 w-5 text-brand-blue shrink-0 mt-1 relative z-10" />
-                    <p className="text-xs text-slate-600 font-medium leading-relaxed italic relative z-10">
+                    <div className="h-10 w-10 shrink-0 bg-white rounded-xl shadow-sm border border-brand-blue/10 flex items-center justify-center relative z-10">
+                      <BarChart3 className="h-5 w-5 text-brand-blue" />
+                    </div>
+                    <p className="text-body-sm text-slate-600 font-medium leading-relaxed italic relative z-10">
                       {UI_LABELS.modules.reports.INFO_TEXT}
                     </p>
                   </div>
@@ -418,30 +409,32 @@ export default function ReportsPage() {
               />
             </div>
           </div>
-        </>
-      )}
 
-      {/* Sales History */}
-      <div id="sales-history-section" className="space-y-6 pt-8 border-t border-slate-100">
-        <SectionHeader title={UI_LABELS.modules.reports.SALES_HISTORY} className="mb-6" />
-        {tab === "daily" && (
-          <DetailedSalesTable date={date} />
-        )}
-        {tab === "monthly" && (
-          <DetailedSalesTable
-            from={`${year}-${String(month).padStart(2, '0')}-01`}
-            to={`${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`}
-            label={`Detailed breakdown for ${new Date(year, month - 1).toLocaleString("default", { month: "long" })} ${year}`}
-          />
-        )}
-        {tab === "yearly" && (
-          <DetailedSalesTable
-            from={`${year}-01-01`}
-            to={`${year}-12-31`}
-            label={`Detailed breakdown for Full Year ${year}`}
-          />
-        )}
-      </div>
+          {/* Sales History */}
+          <div id="sales-history-section" className="space-y-grid-8 pt-grid-12 border-t border-slate-200/60">
+            <div className="px-1">
+               <SectionHeader title={UI_LABELS.modules.reports.SALES_HISTORY} className="mb-6" />
+            </div>
+            {tab === "daily" && (
+              <DetailedSalesTable date={date} />
+            )}
+            {tab === "monthly" && (
+              <DetailedSalesTable
+                from={`${year}-${String(month).padStart(2, '0')}-01`}
+                to={`${year}-${String(month).padStart(2, '0')}-${new Date(year, month, 0).getDate()}`}
+                label={`Detailed breakdown for ${new Date(year, month - 1).toLocaleString("default", { month: "long" })} ${year}`}
+              />
+            )}
+            {tab === "yearly" && (
+              <DetailedSalesTable
+                from={`${year}-01-01`}
+                to={`${year}-12-31`}
+                label={`Detailed breakdown for Full Year ${year}`}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
