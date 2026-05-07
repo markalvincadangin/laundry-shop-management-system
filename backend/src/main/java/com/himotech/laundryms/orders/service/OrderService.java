@@ -91,7 +91,9 @@ public class OrderService {
                 request.getCreatedByUserId(),
                 request.getWeightKg(),
                 request.getExtraMinutes() != null ? request.getExtraMinutes() : 0,
-                addOns
+                addOns,
+                request.getServiceType(),
+                request.getNotes()
         );
         
         return create(command);
@@ -150,7 +152,8 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException("Customer not found: " + command.customerId()));
         User createdBy = userRepository.findById(command.createdByUserId())
                 .orElseThrow(() -> new NotFoundException("User not found: " + command.createdByUserId()));
-        ServiceRate rate = serviceRateService.getActiveRate();
+        
+        ServiceRate rate = resolveRate(command.serviceType());
 
         if (command.weightKg() == null || command.weightKg().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Weight must be greater than 0");
@@ -197,6 +200,7 @@ public class OrderService {
                 .grandTotal(grandTotal)
                 .currentStatus(OrderStatus.RECEIVED)   // BR-OL-02
                 .paymentStatus(PaymentStatus.UNPAID)
+                .notes(command.notes())
                 .build();
 
         for (CreateOrderCommand.AddOnItem item : addOnList) {
@@ -228,7 +232,7 @@ public class OrderService {
      */
     @Transactional(readOnly = true)
     public OrderPreviewResponse preview(OrderPreviewRequest request) {
-        ServiceRate rate = serviceRateService.getActiveRate();
+        ServiceRate rate = resolveRate(request.getServiceType());
 
         if (request.getWeightKg() == null || request.getWeightKg().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Weight must be greater than 0");
@@ -328,11 +332,16 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
-        if (order.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new IllegalArgumentException("Cannot update order: already paid");
-        }
-        if (order.getCurrentStatus() == OrderStatus.RELEASED) {
-            throw new IllegalArgumentException("Cannot update order: already released");
+        var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            if (order.getPaymentStatus() == PaymentStatus.PAID) {
+                throw new IllegalArgumentException("Cannot update order: already paid. Only Administrators can modify completed transactions.");
+            }
+            if (order.getCurrentStatus() == OrderStatus.RELEASED) {
+                throw new IllegalArgumentException("Cannot update order: already released. Only Administrators can modify completed transactions.");
+            }
         }
 
         int newExtraMinutes = request.getExtraMinutes() != null ? request.getExtraMinutes() : order.getExtraMinutes();
@@ -402,6 +411,26 @@ public class OrderService {
         java.time.Instant toTs = to != null ? to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
         var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs, q);
         return orderRepository.findAll(spec, pageable);
+    }
+
+    private ServiceRate resolveRate(String serviceType) {
+        if (serviceType == null) return serviceRateService.getActiveRate();
+        
+        String dbName = switch (serviceType) {
+            case "WASH_DRY_FOLD_RUSH" -> "Rush Wash";
+            case "BLANKETS" -> "Blankets";
+            default -> "Standard Wash";
+        };
+        
+        return serviceRateService.getByName(dbName);
+    }
+
+    @Auditable(action = "ORDER_DELETE", description = "Delete laundry order")
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
+        orderRepository.delete(order);
     }
 
 }

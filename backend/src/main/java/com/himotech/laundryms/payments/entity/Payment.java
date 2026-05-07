@@ -44,5 +44,8 @@ public class Payment {
 
     @Column(columnDefinition = "TEXT")
     private String remarks;
+
+    @Column(name = "payment_reference", length = 100)
+    private String paymentReference;
 }
 

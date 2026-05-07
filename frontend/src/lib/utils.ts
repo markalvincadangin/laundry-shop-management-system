@@ -5,8 +5,11 @@ import { UI_LABELS } from "@/constants/ui";
  * Example: 120 -> ₱120.00
  */
 export const formatCurrency = (amount: number | undefined | null): string => {
-  if (amount === undefined || amount === null) return `${UI_LABELS.units.PRICE_SYMBOL}0.00`;
-  return `${UI_LABELS.units.PRICE_SYMBOL}${amount.toFixed(2)}`;
+  const value = amount ?? 0;
+  return `${UI_LABELS.units.PRICE_SYMBOL}${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 };
 
 export const formatDate = (date: string | Date | undefined | null): string => {

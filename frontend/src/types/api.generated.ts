@@ -392,7 +392,48 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        /**
+         * Create service rate (Admin only)
+         * @description Creates a new service rate. Requires ADMIN role.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateServiceRateRequest"];
+                };
+            };
+            responses: {
+                /** @description Rate created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ServiceRateResponse"];
+                    };
+                };
+                /** @description Validation error */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden - Admin only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1652,6 +1693,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/sales/trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Sales trend report
+         * @description Returns a list of daily sales aggregates (income, orders) for a given range.
+         *     Max range is 31 days.
+         *     Requires ADMIN role.
+         */
+        get: {
+            parameters: {
+                query: {
+                    from: string;
+                    to: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sales trend */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DailySalesReportResponse"][];
+                    };
+                };
+                /** @description Forbidden - Admin only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1738,6 +1830,17 @@ export interface components {
             pricePerExtraMinute?: number;
             isActive?: boolean;
         };
+        CreateServiceRateRequest: {
+            serviceName: string;
+            /** Format: double */
+            basePricePerLoad: number;
+            /** Format: double */
+            kgLimitPerLoad: number;
+            /** Format: double */
+            pricePerExtraMinute: number;
+            /** @default true */
+            isActive: boolean;
+        };
         CreateOrderRequest: {
             /** Format: int64 */
             customerId?: number;
@@ -1765,6 +1868,7 @@ export interface components {
             weightKg: number;
             /** @default 0 */
             extraMinutes: number;
+            serviceType?: string;
             initialAddOns?: components["schemas"]["AddOnInput"][];
         };
         OrderPreviewResponse: {
@@ -1883,6 +1987,8 @@ export interface components {
              * @description Optional — overridden by JWT principal when authenticated.
              */
             receivedByUserId?: string;
+            /** @description Reference / Transaction ID for non-cash payments (GCash, Bank). */
+            paymentReference?: string;
         };
         PaymentResponse: {
             /** Format: int64 */
@@ -1901,6 +2007,8 @@ export interface components {
             /** Format: date-time */
             paymentDate: string;
             remarks?: string;
+            /** @description Reference / Transaction ID for digital payments. */
+            paymentReference?: string;
         };
         ClientAlertResponse: {
             /** Format: int64 */
@@ -1927,6 +2035,10 @@ export interface components {
             /** Format: double */
             totalIncome: number;
             paidOrdersCount: number;
+            /** @description Revenue breakdown by payment method. */
+            revenueByMethod?: {
+                [key: string]: number;
+            };
         };
         PeriodSalesReportResponse: {
             period: string;
@@ -1943,7 +2055,7 @@ export interface components {
             first: boolean;
             last: boolean;
         };
-        /** @description Audit record of a system action. Snapshot data includes point-in-time state. */
+        /** @description Audit record of a system action. Capture point-in-time state for forensic inspection. */
         AuditLogResponse: {
             /** Format: int64 */
             id: number;
@@ -1953,13 +2065,15 @@ export interface components {
              * @description Type of state change
              * @enum {string}
              */
-            operation: "INSERT" | "UPDATE" | "DELETE";
+            operation: "INSERT" | "UPDATE" | "DELETE" | "USER_LOGIN" | "USER_LOGOUT" | "PAYMENT_RECORD" | "ORDER_STATUS_UPDATE";
             /** @description Type of record affected (e.g., Order, Payment) */
             entityType?: string;
             /** @description Primary key of the affected record */
             entityId?: string;
-            /** @description JSON forensic snapshot of the entity state at time of action */
-            snapshot?: string;
+            /** @description Forensic snapshot of state before mutation */
+            oldState?: Record<string, never>;
+            /** @description Forensic snapshot of state after mutation */
+            newState?: Record<string, never>;
             /**
              * Format: date-time
              * @description Timestamp in UTC

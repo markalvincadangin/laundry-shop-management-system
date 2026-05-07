@@ -1,5 +1,6 @@
 package com.himotech.laundryms.rates.api;
 
+import com.himotech.laundryms.api.dto.request.CreateServiceRateRequest;
 import com.himotech.laundryms.api.dto.request.UpdateServiceRateRequest;
 import com.himotech.laundryms.api.dto.response.ServiceRateResponse;
 import com.himotech.laundryms.api.mapper.ServiceRateMapper;
@@ -7,6 +8,7 @@ import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,14 @@ public class ServiceRatesController {
     public ResponseEntity<ServiceRateResponse> getActive() {
         ServiceRate rate = serviceRateService.getActiveRate();
         return ResponseEntity.ok(serviceRateMapper.toResponse(rate));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ServiceRateResponse> create(
+            @Valid @RequestBody CreateServiceRateRequest request) {
+        ServiceRate rate = serviceRateService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(serviceRateMapper.toResponse(rate));
     }
 
     @PatchMapping("/{rateId}")

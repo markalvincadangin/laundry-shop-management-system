@@ -23,7 +23,9 @@ import {
 } from "lucide-react";
 import { UI_LABELS } from "@/constants/ui";
 import { Button, Card } from "@/components/ui";
+import { PublicTopNav } from "@/components/layout";
 import { toast } from "sonner";
+import { useRates } from "@/hooks/useRates";
 
 /**
  * Faith Laundry Shop — Official Business Portal v13.0
@@ -38,6 +40,12 @@ import { toast } from "sonner";
 export default function LandingPage() {
   const [trackingId, setTrackingId] = useState("");
   const router = useRouter();
+  const { rates, loading: ratesLoading } = useRates();
+
+  // Find the primary/standard rate (Standard Wash first, then first active)
+  const primaryRate = rates.find(r => r.isActive && r.serviceName?.toLowerCase().includes("standard")) || rates.find(r => r.isActive);
+  const displayPrice = primaryRate?.basePricePerLoad ?? 140;
+  const displayWeight = primaryRate?.kgLimitPerLoad ?? 8;
 
   const handleTrack = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -53,40 +61,7 @@ export default function LandingPage() {
     <div className="relative flex-1 flex flex-col bg-neutral-50 selection:bg-brand-blue/10 selection:text-brand-blue overflow-x-hidden font-sans">
 
       {/* ── STICKY NAVIGATION ── § FRONT-001 Compliant */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] h-20 bg-white/95 backdrop-blur-2xl border-b border-slate-200/60 flex items-center px-grid-6 shadow-sm">
-        <div className="container mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-grid-4 group">
-            <div className="relative h-12 w-12 bg-white rounded-lg flex items-center justify-center p-1.5 shadow-sm border border-slate-100 transition-all duration-500 group-hover:scale-110">
-              <Image
-                src="/branding/logo.svg"
-                alt={UI_LABELS.meta.APP_NAME}
-                width={32}
-                height={32}
-                className="object-contain"
-                priority
-              />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-h3 font-black font-display text-brand-blue tracking-tighter uppercase">
-                {UI_LABELS.meta.APP_NAME}
-              </span>
-              {/* <span className="text-caption font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                {UI_LABELS.meta.APP_TAGLINE}
-              </span> */}
-            </div>
-          </Link>
-
-          <div className="hidden sm:flex items-center gap-grid-8 h-full">
-            <Link href="/track" className="text-caption font-bold text-slate-500 hover:text-brand-blue transition-colors uppercase tracking-widest">
-              {UI_LABELS.layout.nav.TRACK_ORDER}
-            </Link>
-            <div className="h-4 w-px bg-slate-200" />
-            <Link href="/login" className="text-caption font-bold text-slate-400 hover:text-brand-blue transition-colors uppercase tracking-widest">
-              {UI_LABELS.layout.nav.STAFF_LOGIN}
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <PublicTopNav variant="landing" />
 
       {/* ── HERO SECTION: PROPORTIONAL BALANCE ── */}
       <section className="relative min-h-[80vh] flex flex-col pt-32 pb-grid-24 bg-white">
@@ -108,36 +83,42 @@ export default function LandingPage() {
                     <span className="ml-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{UI_LABELS.portal.landing.CUSTOMER_RATING}</span>
                   </div>
                 </div>
-                  {UI_LABELS.portal.landing.HERO_TITLE_1} <br />{UI_LABELS.portal.landing.HERO_TITLE_2} <span className="text-brand-blue">{UI_LABELS.portal.landing.HERO_TITLE_3}</span>
+                <h1 className="text-h1 sm:text-display font-black font-display text-slate-900 uppercase tracking-tighter leading-[0.95] drop-shadow-sm">
+                  {UI_LABELS.portal.landing.HERO_TITLE_1} <br />
+                  {UI_LABELS.portal.landing.HERO_TITLE_2} <span className="text-brand-blue">{UI_LABELS.portal.landing.HERO_TITLE_3}</span>
+                </h1>
+                <p className="text-body font-medium text-slate-500 max-w-lg leading-relaxed">
                   {UI_LABELS.portal.landing.HERO_SUBTITLE}
+                </p>
               </div>
 
               {/* TRACKING FORM: High Affordance, Proportional Size */}
               <div className="relative max-w-lg group mt-grid-8">
-                <div className="absolute -inset-1 bg-gradient-to-r from-brand-blue/5 to-brand-cyan/5 rounded-2xl blur-sm opacity-75" />
+                <div className="absolute -inset-2 bg-gradient-to-r from-brand-blue/10 to-brand-cyan/10 rounded-[2.5rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
                 <form
                   onSubmit={handleTrack}
-                  className="relative flex items-center bg-white border border-slate-200 rounded-xl p-grid-1.5 shadow-lg focus-within:ring-2 focus-within:ring-brand-blue/10 transition-all"
+                  className="relative flex items-center bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-[2rem] p-grid-2 shadow-2xl shadow-brand-blue/5 focus-within:ring-2 focus-within:ring-brand-blue/20 transition-all duration-300"
                 >
-                  <div className="flex-1 flex items-center px-grid-4 gap-grid-3">
-                    <Search className="h-5 w-5 text-slate-400" />
+                  <div className="flex-1 flex items-center px-grid-4 gap-grid-4">
+                    <div className="p-grid-2 bg-brand-blue/5 rounded-2xl text-brand-blue group-focus-within:bg-brand-blue group-focus-within:text-white transition-all duration-300">
+                      <Search className="h-grid-5 w-grid-5" strokeWidth={2.5} />
+                    </div>
                     <input
                       type="text"
                       value={trackingId}
                       onChange={(e) => setTrackingId(e.target.value)}
                       placeholder={UI_LABELS.portal.tracking.PLACEHOLDER}
-                      className="w-full h-11 bg-transparent text-sm font-mono font-bold focus:outline-none placeholder:text-slate-400 placeholder:font-sans uppercase tracking-widest text-slate-900"
+                      className="w-full bg-transparent border-none focus:ring-0 text-body font-black text-slate-900 placeholder:text-slate-400 tracking-[0.1em] uppercase"
                     />
                   </div>
                   <Button
                     type="submit"
-                    className="h-11 px-grid-6 gap-grid-2 rounded-lg text-xs font-bold uppercase tracking-widest bg-brand-blue shadow-md"
+                    className="h-grid-14 px-grid-8 rounded-[1.4rem] bg-brand-blue text-white hover:bg-brand-blue/90 shadow-lg shadow-brand-blue/10 uppercase text-[10px] font-black tracking-widest active:scale-95 transition-all"
                   >
-                    {UI_LABELS.portal.tracking.BUTTON_FIND}
-                    <ArrowRight className="h-4 w-4" />
+                    {UI_LABELS.portal.tracking.TITLE}
                   </Button>
                 </form>
-                <p className="mt-grid-3 text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-grid-4">
+                <p className="mt-grid-4 text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] ml-grid-4 opacity-70">
                   {UI_LABELS.portal.landing.TRACKING_HINT}
                 </p>
               </div>
@@ -147,7 +128,7 @@ export default function LandingPage() {
             <div className="lg:col-span-5 relative hidden lg:block">
               <div className="relative h-[520px] w-full rounded-[3rem] overflow-hidden shadow-xl ring-1 ring-slate-100">
                 <Image
-                  src="/images/shop-trust-grounded.png"
+                  src="/images/hero-premium.png"
                   alt={UI_LABELS.meta.APP_NAME}
                   fill
                   className="object-cover"
@@ -173,7 +154,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-grid-6">
           <div className="flex flex-wrap justify-between items-center gap-grid-6 opacity-80">
             {[
-              { icon: MapPin, text: "Ilaya, Tabuc Suba Jaro, Iloilo City" },
+              { icon: MapPin, text: "Sitio Ilaya, Tabuc Suba Jaro, Iloilo City" },
               { icon: Clock, text: "Mon — Sat: 8:00 AM - 7:00 PM" },
               { icon: ShieldCheck, text: UI_LABELS.portal.tracking.VERIFIED_DATA },
               { icon: Phone, text: UI_LABELS.portal.tracking.SUPPORT_PHONE },
@@ -195,7 +176,9 @@ export default function LandingPage() {
             <h2 className="text-h1 font-black font-display text-slate-900 uppercase tracking-tighter leading-[1.1]">
               {UI_LABELS.portal.landing.COMMITMENT_H1}
             </h2>
+            <p className="text-body font-medium text-slate-500 max-w-lg mx-auto leading-relaxed">
               {UI_LABELS.portal.landing.COMMITMENT_DESC}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-grid-8 max-w-6xl mx-auto">
@@ -235,7 +218,12 @@ export default function LandingPage() {
                 <h2 className="text-h1 font-black font-display text-slate-900 uppercase tracking-tighter leading-[1.1]">
                   {UI_LABELS.portal.landing.PRICING_H1}
                 </h2>
-                  {UI_LABELS.portal.landing.PRICING_DESC}
+                <p className="text-body font-medium text-slate-500 max-w-lg leading-relaxed">
+                  {ratesLoading
+                    ? 'Fetching latest rates...'
+                    : `We keep it simple. ${UI_LABELS.units.PRICE_SYMBOL}${displayPrice} covers a standard ${displayWeight} kg basket—perfect for your weekly wash.`
+                  }
+                </p>
               </div>
 
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-grid-6 pt-grid-4">
@@ -249,7 +237,12 @@ export default function LandingPage() {
                     <div className="h-5 w-5 bg-emerald-50 rounded-md flex items-center justify-center shrink-0 border border-emerald-100">
                       <Check className="h-3 w-3 text-emerald-700" strokeWidth={3} />
                     </div>
-                    {item}
+                    {i === 0
+                      ? `Up to ${displayWeight}kg per load`
+                      : i === 2
+                        ? `Strict ${displayWeight}kg Limit per Machine Load`
+                        : item
+                    }
                   </li>
                 ))}
               </ul>
@@ -259,11 +252,15 @@ export default function LandingPage() {
               <Card className="p-grid-10 bg-white border-brand-blue/10 shadow-xl rounded-[2.5rem] text-center space-y-grid-8 relative overflow-hidden group border-none">
                 <div className="space-y-grid-2 pt-grid-4">
                   <span className="text-caption font-black text-slate-400 uppercase tracking-widest">{UI_LABELS.portal.landing.PRICING_CARD_TITLE}</span>
-                  <div className="flex items-center justify-center gap-grid-2">
-                    <span className="text-h3 font-black text-slate-900 mt-2">{UI_LABELS.units.PRICE_SYMBOL}</span>
-                    <span className="text-display sm:text-8xl font-black font-display text-brand-blue tracking-tighter">120</span>
+                  <div className="flex items-baseline justify-center gap-grid-2">
+                    <span className="text-4xl font-black text-slate-900 mb-2 opacity-60">{UI_LABELS.units.PRICE_SYMBOL}</span>
+                    <span className={`text-display sm:text-8xl font-black font-display text-brand-blue tracking-tighter transition-all duration-500 ${ratesLoading ? 'opacity-20 animate-pulse' : 'opacity-100'}`}>
+                      {displayPrice}
+                    </span>
                   </div>
-                  <p className="text-body-sm font-bold text-slate-500 uppercase tracking-widest">{UI_LABELS.portal.landing.PRICING_CARD_SUB}</p>
+                  <p className="text-body-sm font-bold text-slate-500 uppercase tracking-widest">
+                    {ratesLoading ? 'Loading Current Rates...' : `Per ${displayWeight}${UI_LABELS.shared.units.WEIGHT.toLowerCase()} load`}
+                  </p>
                 </div>
                 <div className="h-px w-full bg-slate-100" />
 
@@ -304,7 +301,9 @@ export default function LandingPage() {
                   </span>
                 </div>
               </div>
+              <p className="text-[11px] font-medium text-slate-500 leading-relaxed max-w-[240px]">
                 {UI_LABELS.portal.landing.HERO_SUBTITLE}
+              </p>
             </div>
 
             {/* Info Section: 8 Columns */}
@@ -318,7 +317,7 @@ export default function LandingPage() {
                 </div>
                 <div className="text-body-sm text-slate-400 font-medium leading-relaxed pl-grid-13">
                   <p className="text-white font-bold mb-1">{UI_LABELS.meta.APP_NAME}</p>
-                  Ilaya, Tabuc Suba Jaro,<br />
+                  Sitio Ilaya, Tabuc Suba Jaro,<br />
                   Iloilo City, 5000 Philippines
                   <a
                     href="https://maps.app.goo.gl/aGSZK68CCE3JVQaM9"
@@ -379,7 +378,7 @@ function FeatureCard({ icon: Icon, title, desc, color }: any) {
       </div>
       <div className="space-y-grid-3 text-left">
         <h3 className="text-h3 font-black font-display text-slate-900 tracking-tight">{title}</h3>
-        <p className="text-body-sm text-slate-600 leading-relaxed font-semibold">{desc}</p>
+        <p className="text-body-sm text-slate-600 leading-relaxed font-medium">{desc}</p>
       </div>
     </Card>
   );

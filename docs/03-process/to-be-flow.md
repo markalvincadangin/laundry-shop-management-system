@@ -75,7 +75,7 @@ Reporting
 2. Staff or Admin records: laundry weight (kg), extra minutes (if any), optional add-ons.
 3. System automatically:
    - Calculates total loads (8 kg per load)
-   - Computes base amount (₱120 per load)
+   - Computes base amount (₱140 per load)
    - Computes extra minute charge (₱1 per minute beyond 45 minutes per load)
    - Computes add-ons total and grand total
    - Generates unique reference number

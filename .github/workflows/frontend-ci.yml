@@ -8,16 +8,36 @@ on:
       - ".github/workflows/frontend-ci.yml"
   pull_request:
     branches: [ "develop", "main" ]
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Path Filter
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/frontend-ci.yml'
+
   lint-build:
+    needs: check-changes
+    if: needs.check-changes.outputs.frontend == 'true' || github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_API_URL: http://localhost:8080/api

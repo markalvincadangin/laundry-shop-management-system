@@ -133,7 +133,7 @@ class PaymentControllerTest {
             PaymentResponse response = PaymentResponse.builder().id(1L).build();
             Page<Payment> page = new PageImpl<>(List.of(payment), PageRequest.of(0, 20), 1);
 
-            when(paymentService.findAll(any(), any(), any(), any(Pageable.class))).thenReturn(page);
+            when(paymentService.findAll(any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
             when(paymentMapper.toResponse(payment)).thenReturn(response);
 
             mockMvc.perform(get("/api/v1/payments"))

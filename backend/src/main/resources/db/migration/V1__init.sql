@@ -122,6 +122,7 @@ CREATE TABLE IF NOT EXISTS orders (
     grand_total           DECIMAL(10,2) NOT NULL,
     current_status     VARCHAR(30) NOT NULL DEFAULT 'RECEIVED',
     payment_status     VARCHAR(30) NOT NULL DEFAULT 'UNPAID',
+    notes              VARCHAR(500),
     created_at         TIMESTAMP NOT NULL DEFAULT now(),
     updated_at         TIMESTAMP NOT NULL DEFAULT now(),
     CONSTRAINT ck_order_reference_format CHECK (reference_number ~ '^LDR-[0-9]{8}-[0-9]{4}$'),
@@ -154,6 +155,7 @@ CREATE TABLE IF NOT EXISTS payments (
     received_by_user_id UUID NOT NULL REFERENCES users(id),
     payment_date        TIMESTAMP NOT NULL DEFAULT now(),
     remarks             TEXT,
+    payment_reference   VARCHAR(100),
     CONSTRAINT ck_payment_amount_positive CHECK (amount_paid > 0)
 );
 
@@ -199,8 +201,23 @@ INSERT INTO service_rates (
     is_active
 ) VALUES (
     'Standard Wash',
-    120.00,
+    140.00,
     8.00,
     1.00,
     TRUE
-) ON CONFLICT (service_name) DO NOTHING;
+),
+(
+    'Rush Wash',
+    160.00,
+    8.00,
+    1.50,
+    TRUE
+),
+(
+    'Blankets',
+    200.00,
+    8.00,
+    1.00,
+    TRUE
+)
+ON CONFLICT (service_name) DO NOTHING;

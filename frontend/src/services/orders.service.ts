@@ -5,6 +5,12 @@ import { OrderStatus } from "@/constants/order-status";
 export type OrderResponse = components["schemas"]["OrderResponse"] & {
   customerName?: string;
   contactNumber?: string;
+  basePricePerLoad?: number;
+  kgLimitPerLoad?: number;
+  pricePerExtraMinute?: number;
+  serviceType?: string;
+  serviceName?: string;
+  notes?: string;
 };
 
 export type OrderPageResponse = components["schemas"]["OrderPageResponse"] & {

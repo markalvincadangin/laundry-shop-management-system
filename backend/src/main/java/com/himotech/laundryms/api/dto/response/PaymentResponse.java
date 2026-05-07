@@ -22,4 +22,5 @@ public class PaymentResponse {
     private String receivedByUsername;
     private Instant paymentDate;
     private String remarks;
+    private String paymentReference;
 }

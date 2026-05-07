@@ -55,10 +55,10 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final Random random = new Random(42);
 
-    @Value("${app.seed.admin-password:admin123}")
+    @Value("${app.seed.admin-password:}")
     private String adminPassword;
 
-    @Value("${app.seed.staff-password:staff123}")
+    @Value("${app.seed.staff-password:}")
     private String staffPassword;
 
     @Override
@@ -66,6 +66,11 @@ public class DemoDataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (customerRepository.count() > 0) {
             log.info("[DemoDataSeeder] Data already present — skipping.");
+            return;
+        }
+
+        if (adminPassword == null || adminPassword.isBlank() || staffPassword == null || staffPassword.isBlank()) {
+            log.warn("[DemoDataSeeder] Seed passwords not provided (app.seed.admin-password, app.seed.staff-password) — skipping demo data seeding.");
             return;
         }
 

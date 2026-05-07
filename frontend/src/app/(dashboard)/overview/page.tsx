@@ -7,20 +7,24 @@ import {
   Package,
   TrendingUp,
   PhilippinePeso,
+  Zap,
+  RefreshCcw,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { OrderPipeline } from "@/features/dashboard";
 import { SectionHeader, ErrorState } from "@/features/shared";
 import { PageHeader } from "@/components/layout";
-import { KPICard } from "@/components/ui";
+import { KPICard, CurrencyDisplay, Button } from "@/components/ui";
 import { PaymentActionModal } from "@/components/features/payments";
 import { UI_LABELS } from "@/constants/ui";
 import { useOrders } from "@/hooks/useOrders";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 /**
- * Dashboard (Home) — v3.0
+ * Dashboard (Home) — High-Fidelity v5.0
  * FRONT-001 §11: Command Center layout.
+ * Reimagined with premium aesthetics, dynamic visual hierarchy, and glassmorphism.
  */
 export default function Home() {
   const { user } = useAuth();
@@ -67,26 +71,40 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto pb-16 space-y-8">
-      <h2 className="sr-only">
-        {UI_LABELS.modules.dashboard.ACCESSIBILITY_TITLE}
-      </h2>
-
+    <div className="max-w-[1600px] mx-auto pb-grid-20 space-y-grid-12 px-4 xl:px-0">
       <PageHeader
+        variant="premium"
         title={UI_LABELS.layout.nav.DASHBOARD}
-        subtitle={`${UI_LABELS.modules.dashboard.SUBTITLE} ${formatDate(new Date())}`}
+        subtitle={formatDate(new Date())}
         icon={LayoutGrid}
+        actions={
+          <Button 
+            variant="secondary" 
+            size="md" 
+            className="h-12 px-grid-6 gap-grid-2 uppercase text-[10px] tracking-widest font-black border-slate-200/60 bg-white/50 backdrop-blur-md shadow-sm hover:bg-white transition-all rounded-xl" 
+            onClick={() => refresh()}
+            isLoading={loading}
+          >
+            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            {UI_LABELS.shared.common.REFRESH}
+          </Button>
+        }
       />
 
       {error ? (
         <ErrorState error={error} reset={() => refresh()} />
       ) : (
-        <>
+        <div className="space-y-grid-16">
           {/* ── KPI Row ── §11.2 ────────────────────────────────────────── */}
           {stats && (
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-2 xl:grid-cols-4 gap-grid-6"
+            >
               <KPICard
-                title={UI_LABELS.modules.dashboard.KPI_ACTIVE_LOADS}
+                title={stats.inProgress === 1 ? "Active Load" : UI_LABELS.modules.dashboard.KPI_ACTIVE_LOADS}
                 value={stats.inProgress}
                 subtitle={UI_LABELS.modules.dashboard.CURR_PROCESSING}
                 icon={Activity}
@@ -94,7 +112,7 @@ export default function Home() {
                 pulse
               />
               <KPICard
-                title={UI_LABELS.modules.dashboard.KPI_READY_PICKUP}
+                title={stats.readyForPickup === 1 ? "Ready Order" : UI_LABELS.modules.dashboard.KPI_READY_PICKUP}
                 value={stats.readyForPickup}
                 subtitle={UI_LABELS.modules.dashboard.WAITING_CUST}
                 icon={Package}
@@ -102,7 +120,7 @@ export default function Home() {
                 onClick={handleReadyKPIClick}
               />
               <KPICard
-                title={UI_LABELS.modules.dashboard.KPI_TODAYS_ORDERS}
+                title={stats.todaysOrders === 1 ? "New Order" : UI_LABELS.modules.dashboard.KPI_TODAYS_ORDERS}
                 value={stats.todaysOrders}
                 subtitle={UI_LABELS.modules.dashboard.CREATED_TODAY}
                 icon={TrendingUp}
@@ -110,31 +128,48 @@ export default function Home() {
               {user?.role === "ADMIN" && (
                 <KPICard
                   title={UI_LABELS.modules.dashboard.KPI_TODAYS_SALES}
-                  value={formatCurrency(stats.todaysRevenue != null ? Number(stats.todaysRevenue) : 0)}
+                  value={<div className="font-black"><CurrencyDisplay amount={stats.todaysRevenue != null ? Number(stats.todaysRevenue) : 0} size="xl" /></div>}
                   subtitle={UI_LABELS.modules.dashboard.AWAITING_PAYMENT}
                   icon={PhilippinePeso}
                   variant="warning"
                 />
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* ── 5-Column Order Pipeline ── §11.3 ───────────────────────── */}
-          <div className="space-y-4">
-            <div className="flex flex-col gap-1">
-              <SectionHeader title={UI_LABELS.modules.dashboard.QUEUE_TITLE} viewAllHref="/orders" />
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+          <div className="space-y-grid-8">
+            <div className="flex flex-col gap-grid-2 px-1">
+              <div className="flex items-center gap-grid-3">
+                 <div className="h-10 w-10 rounded-xl bg-brand-blue/8 flex items-center justify-center border border-brand-blue/10 shadow-sm shadow-brand-blue/5">
+                    <Zap className="h-5 w-5 text-brand-blue animate-pulse" />
+                 </div>
+                 <SectionHeader 
+                    title={UI_LABELS.modules.dashboard.QUEUE_TITLE} 
+                    viewAllHref="/orders" 
+                    className="flex-1"
+                 />
+              </div>
+              <p className="text-body-sm font-black text-slate-400 uppercase tracking-[0.2em] ml-13 opacity-70">
                 {UI_LABELS.modules.dashboard.QUEUE_SUBTITLE}
               </p>
             </div>
-            <OrderPipeline
-              orders={orders}
-              onAdvance={handleAdvance}
-              loading={loading}
-              readyColumnRef={readyColumnRef}
-            />
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="rounded-[3.5rem] border border-slate-200/50 bg-white/40 backdrop-blur-2xl shadow-2xl shadow-slate-200/50 overflow-hidden"
+            >
+              <OrderPipeline
+                orders={orders}
+                onAdvance={handleAdvance}
+                loading={loading}
+                readyColumnRef={readyColumnRef}
+              />
+            </motion.div>
           </div>
-        </>
+        </div>
       )}
 
       <PaymentActionModal

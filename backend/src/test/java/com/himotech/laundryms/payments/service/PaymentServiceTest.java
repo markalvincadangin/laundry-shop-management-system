@@ -114,7 +114,7 @@ class PaymentServiceTest {
         @DisplayName("Should save payment with correct method and remarks")
         void create_ShouldSavePayment_WithMethodAndRemarks() {
             var command = TestDataBuilders.recordPaymentCommand(
-                    ORDER_ID, GRAND_TOTAL, PaymentMethod.GCASH, USER_ID, "Paid via GCash"
+                    ORDER_ID, GRAND_TOTAL, PaymentMethod.GCASH, USER_ID, "Paid via GCash", "GCASH-REF-123"
             );
 
             Payment result = paymentService.create(command);

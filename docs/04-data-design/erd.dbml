@@ -43,7 +43,7 @@ Table activity_logs {
 Table service_rates {
   id int [pk, increment]
   service_name varchar [default: 'Standard Wash', note: 'Standard Wash-Dry-Fold']
-  base_price_per_load decimal(10,2) [default: 120.00, note: 'BR-PR-01: ₱120 per load']
+  base_price_per_load decimal(10,2) [default: 140.00, note: 'BR-PR-01: ₱140 per load']
   kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: 8 kg limit per load']
   price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: ₱1 per extra minute']
   is_active boolean [default: true]
@@ -114,6 +114,7 @@ Table orders {
   // Status
   current_status varchar [not null, default: 'RECEIVED', note: 'BR-OL-03']
   payment_status varchar [not null, default: 'UNPAID', note: 'BR-PAY-04']
+  notes varchar(500) [null, note: 'Special instructions']
 
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_orders_updated_at trigger']

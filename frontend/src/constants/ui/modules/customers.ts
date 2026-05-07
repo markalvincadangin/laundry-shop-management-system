@@ -1,8 +1,10 @@
 export const customers = {
   TITLE: "Customers",
-  SUBTITLE: "Search for customer information.",
+  SUBTITLE: "Onboard and manage your laundry shop clients.",
+  SEARCH_CUSTOMERS: "Search by name or contact...",
+  DETAILS: "Customer Details",
   REGISTRY: "Customer Registry",
-  REGISTER_NEW: "Register New Customer",
+  REGISTER_NEW: "New Customer",
   EDIT_PROFILE: "Edit Profile",
   TOTAL_ORDERS: "Lifetime Orders",
   LIFETIME_VALUE: "Total Revenue",

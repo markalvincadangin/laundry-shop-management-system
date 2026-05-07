@@ -10,22 +10,18 @@ import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { UI_LABELS } from "@/constants/ui";
 import { NAVIGATION_GROUPS } from "@/config/navigation";
-import { useClientAlerts } from "@/hooks/useClientAlerts";
 import { Tooltip } from "@/components/ui";
 
 /**
- * Sidebar — v3.2
+ * Sidebar — v4.0
  * Supports collapsible states for maximized workspace.
  * FRONT-001 §11.1.
+ * Standardized for professional administrative navigation.
  */
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { isSidebarCollapsed, toggleSidebar } = useLayout();
-  const { alerts: notifications } = useClientAlerts();
-  const notificationCount = notifications.length;
-
-  if (!user) return null;
 
   return (
     <aside 
@@ -81,7 +77,7 @@ export function Sidebar() {
       <div className="flex-1 flex flex-col px-3 py-6 overflow-y-auto custom-scrollbar overflow-x-hidden">
         <nav className="flex-1 flex flex-col gap-8">
           {NAVIGATION_GROUPS.map((group) => {
-            const isGroupRestricted = group.role === "ADMIN" && user.role !== "ADMIN";
+            const isGroupRestricted = group.role === "ADMIN" && user?.role !== "ADMIN";
             if (isGroupRestricted) return null;
 
             return (
@@ -101,7 +97,6 @@ export function Sidebar() {
                     pathname === item.href || 
                     (item.href !== "/" && pathname?.startsWith(item.href));
                   const Icon = item.icon;
-                  const isNotification = item.href === "/client-alerts";
 
                   const navItemContent = (
                     <Link
@@ -124,13 +119,6 @@ export function Sidebar() {
                         }`}
                       >
                         <Icon className="h-4 w-4" strokeWidth={isActive ? 2.5 : 2} />
-                        
-                        {/* Notification badge */}
-                        {isNotification && notificationCount > 0 && !isActive && (
-                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[8px] font-black text-white ring-2 ring-neutral-50">
-                            {notificationCount > 9 ? "9+" : notificationCount}
-                          </span>
-                        )}
                       </div>
 
                       {/* Label */}
@@ -166,22 +154,22 @@ export function Sidebar() {
         isSidebarCollapsed ? "flex flex-col items-center gap-4" : ""
       }`}>
         <div className={`flex items-center gap-3 px-2 mb-2 ${isSidebarCollapsed ? "justify-center" : ""}`}>
-          <Tooltip content={user.username} position="right" disabled={!isSidebarCollapsed}>
+          <Tooltip content={user?.username || "Loading..."} position="right" disabled={!isSidebarCollapsed}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue to-blue-700 text-white shadow-md shadow-brand-blue/20">
               <span className="text-[11px] font-black">
-                {user.username.substring(0, 2).toUpperCase()}
+                {user?.username ? user.username.substring(0, 2).toUpperCase() : "..."}
               </span>
             </div>
           </Tooltip>
           {!isSidebarCollapsed && (
             <div className="flex flex-col min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
               <span className="truncate text-[12px] font-black text-slate-900 leading-tight">
-                {user.username}
+                {user?.username || "Loading..."}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                  {user.role}
+                  {user?.role || "..."}
                 </span>
               </div>
             </div>

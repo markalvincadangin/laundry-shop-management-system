@@ -26,4 +26,7 @@ public class CreateOrderRequest {
 
     @Valid
     private List<AddOnInput> initialAddOns;
+
+    private String serviceType;
+    private String notes;
 }

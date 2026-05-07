@@ -160,7 +160,7 @@ describe("OrdersPage", () => {
 
     renderWithProvider(<OrdersPage />);
 
-    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.shared.common.SEARCH_PLACEHOLDER, "i"));
+    const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.modules.orders.SEARCH_ORDERS, "i"));
     fireEvent.change(searchInput, { target: { value: "ORD-123" } });
 
     // Wait for debounce (400ms in component)

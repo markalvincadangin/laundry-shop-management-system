@@ -23,7 +23,7 @@
 
 ### BR-PR-01 – Base Load Pricing
 
-**Rule:** One (1) load costs **₱120** and covers up to **8 kg**.  
+**Rule:** One (1) load costs **₱140** and covers up to **8 kg**.  
 **Condition:** Order creation or price computation.  
 **System Behavior:** Apply base price per load.  
 **Constraint:** Reject order if weight is missing or invalid.  

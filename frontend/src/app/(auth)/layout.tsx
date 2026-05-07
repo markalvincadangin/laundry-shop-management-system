@@ -9,28 +9,28 @@ export default function AuthLayout({
   return (
     <div className="relative flex min-h-screen bg-white overflow-hidden">
       {/* ── Left Side: Brand & Visuals (Desktop only) ── */}
-      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-neutral-900 text-white overflow-hidden">
+      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between p-16 bg-slate-950 text-white overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
             src="/premium_laundry_auth_bg_1777211779874.png"
             alt="Faith Laundry Premium Service"
             fill
-            className="object-cover opacity-50 scale-110 animate-pulse-slow"
+            className="object-cover opacity-30 scale-105 animate-pulse-slow"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-tr from-brand-blue/80 via-neutral-900/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/90 via-slate-950/70 to-slate-950" />
         </div>
 
         {/* Content Overlay */}
         <div className="relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-xl bg-white p-2 shadow-2xl shadow-white/10 ring-1 ring-white/20">
+          <div className="flex items-center gap-grid-4">
+            <div className="h-14 w-14 rounded-2xl bg-white p-2.5 shadow-2xl shadow-white/10 ring-1 ring-white/20">
               <Image
                 src="/branding/logo.svg"
                 alt="Logo"
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="object-contain"
               />
             </div>
@@ -38,25 +38,25 @@ export default function AuthLayout({
               <h2 className="text-xl font-display font-black tracking-tight uppercase leading-none">
                 {UI_LABELS.meta.APP_NAME}
               </h2>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-brand-cyan/80 mt-1">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-cyan/80 mt-1.5">
                 {UI_LABELS.meta.APP_TAGLINE}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 max-w-lg">
-          <h3 className="text-5xl font-display font-black tracking-tighter leading-[0.95] mb-6">
+        <div className="relative z-10">
+          <h3 className="text-6xl font-display font-black tracking-tighter leading-[0.9] mb-8 animate-in fade-in slide-in-from-left duration-1000">
             ELEVATING THE <br />
-            <span className="text-brand-cyan">LAUNDRY EXPERIENCE</span>
+            <span className="text-brand-cyan">LAUNDRY <br /> EXPERIENCE</span>
           </h3>
-          <p className="text-sm font-medium text-slate-300 leading-relaxed max-w-md">
+          <p className="text-base font-medium text-slate-300 leading-relaxed max-w-md opacity-90">
             Streamlining every load, wash, and fold with professional-grade management tools. 
             Designed for the modern garment care professional.
           </p>
         </div>
 
-        <div className="relative z-10 text-[10px] font-black uppercase tracking-widest text-slate-500">
+        <div className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 opacity-60">
           &copy; {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} &bull; {UI_LABELS.meta.AGENCY}
         </div>
       </div>

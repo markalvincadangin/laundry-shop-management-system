@@ -5,13 +5,15 @@ import { Sidebar, MobileNav, AuthGuard, Topbar } from "@/components/layout";
 import { LoadingState } from "@/features/shared";
 import { MeshBackground } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
-import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePathname, useRouter } from "next/navigation";
 import { useLayout } from "@/contexts/LayoutContext";
+import { useEffect } from "react";
 
 /**
- * DashboardLayout — v3.2
+ * DashboardLayout — v3.5 (Security Hardened)
  * Standardized shell for the Faith Laundry Command Center.
- * Supports collapsible sidebar for maximized horizontal workspace.
+ * Handles top-level stacking context for the AuthGuard to prevent Sidebar leakage.
  */
 const PAGE_TITLES: Record<string, string> = {
   "/overview": UI_LABELS.modules.dashboard.TITLE,
@@ -21,7 +23,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/reports": UI_LABELS.layout.nav.REPORTS,
   "/rates": UI_LABELS.layout.nav.RATES,
   "/users": UI_LABELS.layout.nav.USERS,
-  "/client-alerts": UI_LABELS.modules.clientAlerts.TITLE,
+  "/messaging": UI_LABELS.modules.clientAlerts.TITLE,
 };
 
 function getPageTitle(pathname: string): string {
@@ -40,8 +42,17 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { isSidebarCollapsed } = useLayout();
+  const { user, loading } = useAuth();
   const title = getPageTitle(pathname ?? "/");
+
+  // Prevent sidebar/layout rendering if session is invalid or loading
+  // This ensures the LoadingState (rendered via AuthGuard) covers the entire screen
+  // by being at the root of the stacking context.
+  if (loading || !user) {
+    return <LoadingState fullPage />;
+  }
 
   return (
     <div className="relative flex flex-col lg:flex-row min-h-screen bg-neutral-50 transition-all duration-300">

@@ -17,12 +17,16 @@ public class OrderResponse {
     private String referenceNumber;
     private Long customerId;
     private String customerName;
+    private String contactNumber;
     private String createdByUserId;
     private String createdByUsername;
     private Integer serviceRateId;
     private Double weightKg;
     private Integer totalLoads;
+    private Double basePricePerLoad;
+    private Double kgLimitPerLoad;
     private Integer extraMinutes;
+    private Double pricePerExtraMinute;
     private Double baseAmount;
     private Double extraMinutesAmount;
     private Double addonsTotalAmount;
@@ -31,6 +35,7 @@ public class OrderResponse {
     private String paymentStatus;
     private Instant createdAt;
     private Instant updatedAt;
+    private String notes;
     private List<AddOnResponse> addOns;
     private List<AuditLogResponse> auditLogs;
 }

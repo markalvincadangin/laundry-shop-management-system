@@ -238,6 +238,29 @@ paths:
                 items:
                   $ref: "#/components/schemas/ServiceRateResponse"
 
+    post:
+      summary: Create service rate (Admin only)
+      description: |
+        Creates a new service rate. Requires ADMIN role.
+      tags: [ServiceRates]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateServiceRateRequest"
+      responses:
+        "201":
+          description: Rate created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceRateResponse"
+        "400":
+          description: Validation error
+        "403":
+          description: Forbidden - Admin only
+
   /api/v1/service-rates/active:
     get:
       summary: Get active service rate
@@ -914,6 +937,35 @@ paths:
         "403":
           description: Forbidden - Admin only
 
+  /api/v1/reports/sales/trend:
+    get:
+      summary: Sales trend report
+      description: |
+        Returns a list of daily sales aggregates (income, orders) for a given range.
+        Max range is 31 days.
+        Requires ADMIN role.
+      tags: [Reports]
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Sales trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailySalesReportResponse"
+        "403":
+          description: Forbidden - Admin only
+
 components:
   schemas:
     # -------------------------
@@ -1038,6 +1090,16 @@ components:
         pricePerExtraMinute: { type: number, format: double }
         isActive: { type: boolean }
 
+    CreateServiceRateRequest:
+      type: object
+      properties:
+        serviceName: { type: string }
+        basePricePerLoad: { type: number, format: double }
+        kgLimitPerLoad: { type: number, format: double }
+        pricePerExtraMinute: { type: number, format: double }
+        isActive: { type: boolean, default: true }
+      required: [serviceName, basePricePerLoad, kgLimitPerLoad, pricePerExtraMinute]
+
     # -------------------------
     # ORDERS
     # -------------------------
@@ -1072,6 +1134,7 @@ components:
       properties:
         weightKg: { type: number, format: double }
         extraMinutes: { type: integer, default: 0 }
+        serviceType: { type: string }
         initialAddOns:
           type: array
           items:
@@ -1218,6 +1281,9 @@ components:
           type: string
           format: uuid
           description: "Optional — overridden by JWT principal when authenticated."
+        paymentReference:
+          type: string
+          description: "Reference / Transaction ID for non-cash payments (GCash, Bank)."
       required: [orderId, amountPaid]
 
     PaymentResponse:
@@ -1233,6 +1299,7 @@ components:
         receivedByUsername: { type: string, description: "Username of the staff who received the payment" }
         paymentDate: { type: string, format: date-time }
         remarks: { type: string }
+        paymentReference: { type: string, description: "Reference / Transaction ID for digital payments." }
       required: [id, orderId, amountPaid, paymentMethod, paymentDate]
 
     # -------------------------
@@ -1263,6 +1330,12 @@ components:
         date: { type: string, format: date }
         totalIncome: { type: number, format: double }
         paidOrdersCount: { type: integer }
+        revenueByMethod:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+          description: "Revenue breakdown by payment method."
       required: [date, totalIncome, paidOrdersCount]
 
     PeriodSalesReportResponse:
@@ -1293,14 +1366,18 @@ components:
 
     AuditLogResponse:
       type: object
-      description: Audit record of a system action. Snapshot data includes point-in-time state.
+      description: Audit record of a system action. Capture point-in-time state for forensic inspection.
       properties:
         id: { type: integer, format: int64 }
         actor: { type: string, description: "Username who performed the action" }
-        operation: { type: string, enum: [INSERT, UPDATE, DELETE], description: "Type of state change" }
+        operation: 
+          type: string
+          enum: [INSERT, UPDATE, DELETE, USER_LOGIN, USER_LOGOUT, PAYMENT_RECORD, ORDER_STATUS_UPDATE]
+          description: "Type of state change"
         entityType: { type: string, description: "Type of record affected (e.g., Order, Payment)" }
         entityId: { type: string, description: "Primary key of the affected record" }
-        snapshot: { type: string, description: "JSON forensic snapshot of the entity state at time of action" }
+        oldState: { type: object, description: "Forensic snapshot of state before mutation" }
+        newState: { type: object, description: "Forensic snapshot of state after mutation" }
         createdAt: { type: string, format: date-time, description: "Timestamp in UTC" }
         methodName: { type: string, description: "System method intercepted for this audit" }
         description: { type: string, description: "Human-readable description of the audit event" }

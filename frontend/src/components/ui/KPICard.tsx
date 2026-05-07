@@ -1,16 +1,15 @@
+"use client";
+
 import React from "react";
 import { Card } from "./Card";
 import { UI_LABELS } from "@/constants/ui";
 import { KPICardProps } from "@/types/components";
+import { motion } from "framer-motion";
 
 /**
- * KPICard — High-impact metric display for dashboard and registries.
+ * KPICard — High-impact metric display for dashboard and registries — v5.0
  * FRONT-001 §5.3, §11.2.
- *
- * v3.0 additions:
- *  - onClick prop: makes the card an interactive target (e.g. "Ready for Pickup" scrolls pipeline).
- *    When provided, renders as a <button> with cursor-pointer + hover:ring-2 focus treatment.
- *    Meets 44px min touch target via the existing p-grid-8 padding.
+ * Hardened with premium glassmorphism and enhanced container radius (2.5rem).
  */
 export function KPICard({
   title,
@@ -20,72 +19,85 @@ export function KPICard({
   variant = "default",
   pulse = false,
   onClick,
+  className = "",
 }: KPICardProps) {
   const variantStyles = {
-    default: "text-slate-400 bg-neutral-50 border-slate-200",
-    accent:  "text-brand-blue bg-brand-blue/5 border-brand-blue/10",
-    success: "text-success-700 bg-success-100 border-success-700/10",
-    warning: "text-warning-700 bg-warning-100 border-warning-700/10",
+    default: "text-slate-500 bg-white/40 border-slate-200/60 shadow-inner shadow-white/80",
+    accent:  "text-brand-blue bg-brand-blue/8 border-brand-blue/20 shadow-inner shadow-brand-blue/10",
+    success: "text-emerald-600 bg-emerald-50/80 border-emerald-500/20 shadow-inner shadow-emerald-400/10",
+    warning: "text-amber-600 bg-amber-50/80 border-amber-500/20 shadow-inner shadow-amber-400/10",
   };
 
   const accentColors = {
-    default: "bg-slate-200",
-    accent:  "bg-brand-blue",
-    success: "bg-success-700",
-    warning: "bg-warning-700",
+    default: "bg-slate-300",
+    accent:  "bg-gradient-to-r from-brand-blue to-blue-600",
+    success: "bg-gradient-to-r from-emerald-500 to-teal-500",
+    warning: "bg-gradient-to-r from-amber-500 to-orange-500",
   };
 
   const interactiveClasses = onClick
-    ? "cursor-pointer hover:ring-2 hover:ring-brand-blue/20 hover:ring-offset-2 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:ring-offset-2"
+    ? "cursor-pointer hover:translate-y-[-4px] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand-blue/10 focus:ring-offset-0"
     : "";
 
   const content = (
     <Card
       variant="glass"
-      className={`group transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-slate-200/60 overflow-hidden ${interactiveClasses}`}
+      className={`group relative h-full overflow-hidden transition-all duration-500 rounded-[2.5rem] border-slate-200/50 shadow-2xl shadow-slate-200/40 ${interactiveClasses} ${className}`}
     >
-      <div className="p-4 sm:p-grid-8 space-y-4 sm:space-y-grid-6">
+      {/* Glossy Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/20 pointer-events-none" />
+      
+      <div className="relative p-grid-8 sm:p-grid-10 space-y-grid-8">
         <div className="flex items-center justify-between">
           {Icon && (
-            <div className={`p-grid-4 rounded-2xl border transition-all duration-500 group-hover:scale-110 shadow-sm ${variantStyles[variant]}`}>
-              <Icon className="h-6 w-6" />
+            <div className={`flex h-14 w-14 items-center justify-center rounded-[20px] border-2 transition-all duration-500 group-hover:scale-110 shadow-sm ${variantStyles[variant]}`}>
+              <Icon className="h-7 w-7" strokeWidth={2.5} />
             </div>
           )}
           {pulse && (
-            <div className="flex items-center gap-grid-3 px-3 py-1.5 rounded-full bg-brand-blue/5 border border-brand-blue/10">
+            <div className="flex items-center gap-grid-2.5 px-grid-4 py-grid-2 rounded-full bg-brand-blue/8 border border-brand-blue/20 backdrop-blur-sm shadow-sm shadow-brand-blue/10">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-blue opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-blue" />
               </span>
-              <span className="text-caption font-black uppercase tracking-widest text-brand-blue">
+              <span className="text-[9px] font-black uppercase tracking-[0.25em] text-brand-blue">
                 {UI_LABELS.shared.common.LIVE}
               </span>
             </div>
           )}
         </div>
 
-        <div className="space-y-grid-1">
-          <p className="text-caption font-black uppercase tracking-[0.2em] text-slate-500">
+        <div className="space-y-grid-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-slate-500 transition-colors">
             {title}
           </p>
-          <div className="flex items-baseline gap-grid-2 sm:gap-grid-3">
-            <h3 className="text-2xl sm:text-display font-display font-black text-slate-900 tracking-tighter">
-              {value}
-            </h3>
-            {subtitle && (
-              <span className="text-caption text-slate-500 font-bold uppercase tracking-tight opacity-80">
-                {subtitle}
-              </span>
-            )}
+          <div className="text-4xl sm:text-5xl font-sans font-black text-slate-900 tracking-tighter flex items-center gap-1 group-hover:scale-[1.02] transition-transform duration-500 origin-left">
+            {value}
           </div>
+          {subtitle && (
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] opacity-70 group-hover:opacity-100 transition-opacity leading-tight max-w-[80%]">
+              {subtitle}
+            </p>
+          )}
         </div>
 
-        {/* Decorative highlight line */}
-        <div className="relative h-1.5 w-full bg-neutral-50 rounded-full overflow-hidden border border-slate-100/50 shadow-inner">
-          <div className={`absolute top-0 left-0 h-full w-16 transition-all duration-700 group-hover:w-full ${accentColors[variant]}`} />
+        {/* Decorative highlight line (HCI: visual progress indicator) */}
+        <div className="relative h-2 w-full bg-slate-100/50 rounded-full overflow-hidden border border-slate-200/20">
+          <div className={`absolute top-0 left-0 h-full w-12 transition-all duration-1000 group-hover:w-full ease-out ${accentColors[variant]}`} />
         </div>
       </div>
     </Card>
+  );
+
+  const motionWrapper = (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="h-full"
+    >
+      {content}
+    </motion.div>
   );
 
   // Wrap in button when onClick is provided for semantic accessibility + keyboard support
@@ -94,13 +106,29 @@ export function KPICard({
       <button
         type="button"
         onClick={onClick}
-        className="block w-full text-left rounded-[inherit] focus:outline-none"
-        aria-label={`${title}: ${value}. Click to highlight in pipeline.`}
+        className="block w-full text-left rounded-[2.5rem] focus:outline-none"
+        aria-label={`${title}: ${value}. Click for details.`}
       >
-        {content}
+        {motionWrapper}
       </button>
     );
   }
 
-  return content;
+  return motionWrapper;
+}
+
+/**
+ * KPICardSkeleton — Loading state for KPICards.
+ */
+export function KPICardSkeleton() {
+  return (
+    <div className="h-full rounded-[2.5rem] border border-slate-200/50 bg-white/50 p-grid-10 space-y-grid-8 animate-pulse shadow-sm">
+      <div className="h-14 w-14 rounded-[20px] bg-slate-100" />
+      <div className="space-y-grid-3">
+        <div className="h-2 w-24 bg-slate-100 rounded" />
+        <div className="h-12 w-32 bg-slate-200 rounded-lg" />
+      </div>
+      <div className="h-2 w-full bg-slate-100 rounded-full" />
+    </div>
+  );
 }

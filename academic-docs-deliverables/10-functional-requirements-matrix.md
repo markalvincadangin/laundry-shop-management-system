@@ -28,7 +28,7 @@
 | **4** | ✔ | Link payment records directly to the specific laundry order to clearly indicate whether an order is "Paid" or "Unpaid" before staff release the items to the customer. |
 | **5** | ✔ | Reproduce (display and print) a transaction claim stub containing the customer's name, order weight, total price, and expected pickup date. |
 | **6** | ✔ | Reproduce (display and print) a dashboard or list showing all current orders, specifically filtering those that are pending, processing, or ready for pickup. |
-| **7** | | Highlight or provide visual alerts for "Rush Orders" to help staff prioritize processing and prevent delays. |
+| **7** | ✔ | Highlight or provide visual alerts for "Rush Orders" to help staff prioritize processing and prevent delays. |
 | **8** | ✔ | Reproduce (display and print) daily and monthly sales reports summarizing total income and the number of transactions processed. |
 | **9** | ✔ | Automatically assign a unique transaction ID to every laundry order to prevent the mixing or misidentification of customers' clothes. |
-| **10** | | Restrict the ability to modify or delete completed transactions and payment records to the Admin/manager account only. |
+| **10** | ✔ | Restrict the ability to modify or delete completed transactions and payment records to the Admin/manager account only. |

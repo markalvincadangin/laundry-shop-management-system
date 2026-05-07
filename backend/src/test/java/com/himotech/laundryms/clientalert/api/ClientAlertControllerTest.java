@@ -1,6 +1,5 @@
 package com.himotech.laundryms.clientalert.api;
 
-import com.himotech.laundryms.clientalert.api.ClientAlertResponse;
 import com.himotech.laundryms.exception.GlobalExceptionHandler;
 import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import org.junit.jupiter.api.DisplayName;

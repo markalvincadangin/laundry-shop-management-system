@@ -7,8 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Calendar } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
-import { NewOrderSideSheet } from "@/components/features/orders";
-import { ClientAlertPopover } from "@/features/client-alerts/ClientAlertPopover";
 import { Button } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { TopbarProps } from "@/types/components";
@@ -22,16 +20,11 @@ export function Topbar({ title }: TopbarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { stats } = useOrders({ size: 1 });
-  const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
 
-  // Listen for ?new=true to trigger the side sheet (§10)
+  // Listen for ?new=true to navigate to the new order page (§10)
   useEffect(() => {
     if (searchParams.get("new") === "true") {
-      setIsNewOrderOpen(true);
-      // Clean up the URL after opening
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("new");
-      router.replace(`?${params.toString()}`, { scroll: false });
+      router.push("/orders/new");
     }
   }, [searchParams, router]);
 
@@ -57,19 +50,18 @@ export function Topbar({ title }: TopbarProps) {
         {/* Date chip — hidden at xl to save space, shown at 2xl */}
         <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 shadow-inner">
           <Calendar className="h-3 w-3 text-slate-400" aria-hidden="true" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap">
+          <span 
+            suppressHydrationWarning
+            className="text-[10px] font-black uppercase tracking-widest text-slate-500 whitespace-nowrap"
+          >
             {today}
           </span>
         </div>
-
-        {/* Actionable Alerts Popover */}
-        <ClientAlertPopover />
-
         {/* ── Primary CTA — New Order ── */}
         <div id="topbar-new-order-cta">
           {/* Icon-only at lg (1024–1279px) */}
           <button
-            onClick={() => setIsNewOrderOpen(true)}
+            onClick={() => router.push("/orders/new")}
             className="xl:hidden flex h-9 w-9 items-center justify-center rounded-xl bg-brand-blue text-white shadow-md shadow-brand-blue/25 hover:bg-brand-blue/90 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:ring-offset-2"
             aria-label={UI_LABELS.layout.nav.INTAKE}
             title={UI_LABELS.layout.nav.INTAKE}
@@ -83,18 +75,12 @@ export function Topbar({ title }: TopbarProps) {
             size="md"
             leftIcon={<Plus className="h-4 w-4" />}
             className="hidden xl:inline-flex whitespace-nowrap"
-            onClick={() => setIsNewOrderOpen(true)}
+            onClick={() => router.push("/orders/new")}
           >
             {UI_LABELS.layout.nav.INTAKE}
           </Button>
         </div>
       </div>
-
-      <NewOrderSideSheet
-        isOpen={isNewOrderOpen}
-        onClose={() => setIsNewOrderOpen(false)}
-        staffUserId={user?.userId ?? null}
-      />
     </header>
   );
 }

@@ -27,14 +27,10 @@ const STATUS_LABELS: Record<string, string> = {
 function buildStatusTimestamps(logs: components["schemas"]["AuditLogResponse"][]): Map<string, string> {
   const map = new Map<string, string>();
   for (const log of logs) {
-    try {
-      const snapshot = JSON.parse(log.snapshot || "{}");
-      const newStatus = snapshot.current_status || snapshot.status;
-      if (newStatus && log.createdAt) {
-        map.set(newStatus, log.createdAt);
-      }
-    } catch {
-      // Skip invalid snapshots
+    const state = log.newState || {};
+    const newStatus = state.current_status || state.status;
+    if (newStatus && log.createdAt) {
+      map.set(newStatus, log.createdAt);
     }
   }
   return map;
@@ -70,22 +66,22 @@ export function OrderStatusTimeline({
             role="listitem"
           >
             <div className="flex flex-col items-center">
-              <div
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
-                  isPast
-                    ? "bg-brand-blue text-white shadow-md shadow-brand-blue/10"
-                    : isCurrent
-                      ? "bg-white text-brand-blue ring-4 ring-brand-blue/10 shadow-lg shadow-brand-blue/20 scale-110"
-                      : "border border-slate-200 bg-slate-50 text-slate-300"
-                }`}
-                aria-current={isCurrent ? "step" : undefined}
-              >
-                {isPast || (isCurrent && status === "RELEASED") ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  index + 1
-                )}
-              </div>
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-black transition-all duration-300 tabular-nums ${
+                    isPast
+                      ? "bg-brand-blue text-white shadow-md shadow-brand-blue/10"
+                      : isCurrent
+                        ? "bg-white text-brand-blue ring-4 ring-brand-blue/10 shadow-lg shadow-brand-blue/20 scale-110"
+                        : "border border-slate-200 bg-slate-50 text-slate-300"
+                  }`}
+                  aria-current={isCurrent ? "step" : undefined}
+                >
+                  {isPast || (isCurrent && status === "RELEASED") ? (
+                    <Check className="h-4 w-4" strokeWidth={3} />
+                  ) : (
+                    index + 1
+                  )}
+                </div>
               {index < ORDER_STATUS_FLOW.length - 1 && (
                 <div
                   className={`mt-1 h-8 w-0.5 flex-1 transition-colors duration-300 ${
@@ -97,7 +93,7 @@ export function OrderStatusTimeline({
             </div>
             <div className="flex-1 pb-6">
               <p
-                className={`text-sm font-extrabold uppercase tracking-widest transition-colors duration-300 ${
+                className={`text-[10px] font-black uppercase tracking-[0.2em] transition-colors duration-300 ${
                   isCurrent
                     ? "text-brand-blue"
                     : isPast
@@ -107,7 +103,7 @@ export function OrderStatusTimeline({
               >
                 {label}
               </p>
-              <p className="mt-1 text-xs font-medium text-slate-500">
+              <p className="mt-1 text-[11px] font-bold text-slate-500 font-mono tabular-nums">
                 {timestamp
                   ? new Date(timestamp).toLocaleString("en-PH", {
                       timeZone: "Asia/Manila",

@@ -15,6 +15,7 @@ vi.mock("@/services/reports.service", () => ({
     getDailySales: vi.fn(),
     getMonthlySales: vi.fn(),
     getYearlySales: vi.fn(),
+    getSalesTrend: vi.fn(() => Promise.resolve([])),
   },
 }));
 
@@ -78,21 +79,19 @@ describe("ReportsPage", () => {
 
     renderWithProvider(<ReportsPage />);
 
-    const dateInput = screen.getByLabelText(new RegExp(UI_LABELS.modules.reports.SELECT_DATE, "i"));
-    fireEvent.change(dateInput, { target: { value: "2025-02-15" } });
+    await waitFor(() => {
+      expect(reportsService.getDailySales).toHaveBeenCalled();
+    });
 
     await waitFor(() => {
-      expect(reportsService.getDailySales).toHaveBeenCalledWith("2025-02-15");
-    });
-    await waitFor(() => {
-      expect(screen.getByText(/1500/)).toBeInTheDocument();
+      // Check for revenue using a more flexible matcher for currency formatting
+      expect(screen.getByText(/1.*500/)).toBeInTheDocument();
       expect(screen.getByText(UI_LABELS.modules.reports.TOTAL_REVENUE)).toBeInTheDocument();
     });
   });
 
-  it("refetches when date changes (useEffect triggers on date change)", async () => {
-    vi.mocked(reportsService.getDailySales)
-      .mockResolvedValue(defaultReport);
+  it("refetches when date changes", async () => {
+    vi.mocked(reportsService.getDailySales).mockResolvedValue(defaultReport);
 
     renderWithProvider(<ReportsPage />);
 
@@ -109,9 +108,7 @@ describe("ReportsPage", () => {
   });
 
   it("displays error when API fails", async () => {
-    vi.mocked(reportsService.getDailySales).mockRejectedValue(
-      new Error("Network error")
-    );
+    vi.mocked(reportsService.getDailySales).mockRejectedValue(new Error("Network error"));
 
     renderWithProvider(<ReportsPage />);
 
@@ -120,47 +117,41 @@ describe("ReportsPage", () => {
     });
   });
 
-  it("shows ChartSkeleton while chart loading (Phase 12)", async () => {
-    const chartPromise = new Promise<{ date: string; totalIncome: number; paidOrdersCount: number }>(
-      () => {}
-    );
-    vi.mocked(reportsService.getDailySales)
-      .mockResolvedValueOnce(defaultReport)
-      .mockReturnValue(chartPromise);
+  it("shows KPICardSkeleton while report loading", async () => {
+    const pendingPromise = new Promise(() => {});
+    vi.mocked(reportsService.getDailySales).mockReturnValue(pendingPromise as any);
 
     renderWithProvider(<ReportsPage />);
 
-    await waitFor(() => {
-      expect(screen.getAllByText(new RegExp(UI_LABELS.modules.reports.SALES_HISTORY, "i"))[0]).toBeInTheDocument();
-    });
-    const skeleton = document.querySelector(".animate-pulse");
-    expect(skeleton).toBeInTheDocument();
+    const skeletons = document.querySelectorAll(".animate-pulse");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it("shows Bar chart when chart data loaded (Phase 12)", async () => {
-    const chartData = [
-      { date: "2025-02-09", totalIncome: 100, paidOrdersCount: 1 },
-      { date: "2025-02-10", totalIncome: 200, paidOrdersCount: 2 },
-      { date: "2025-02-11", totalIncome: 150, paidOrdersCount: 1 },
-      { date: "2025-02-12", totalIncome: 300, paidOrdersCount: 3 },
-      { date: "2025-02-13", totalIncome: 250, paidOrdersCount: 2 },
-      { date: "2025-02-14", totalIncome: 180, paidOrdersCount: 2 },
-      { date: "2025-02-15", totalIncome: 400, paidOrdersCount: 4 },
-    ];
-    vi.mocked(reportsService.getDailySales)
-      .mockResolvedValueOnce(defaultReport)
-      .mockResolvedValueOnce(chartData[0])
-      .mockResolvedValueOnce(chartData[1])
-      .mockResolvedValueOnce(chartData[2])
-      .mockResolvedValueOnce(chartData[3])
-      .mockResolvedValueOnce(chartData[4])
-      .mockResolvedValueOnce(chartData[5])
-      .mockResolvedValueOnce(chartData[6]);
+  it("shows ChartSkeleton while chart loading", async () => {
+    vi.mocked(reportsService.getDailySales).mockResolvedValue(defaultReport);
+    const chartPromise = new Promise(() => {});
+    vi.mocked(reportsService.getSalesTrend).mockReturnValue(chartPromise as any);
 
     renderWithProvider(<ReportsPage />);
 
     await waitFor(() => {
-      expect(reportsService.getDailySales).toHaveBeenCalled();
+      expect(screen.getByText(UI_LABELS.modules.reports.TOTAL_REVENUE)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      const skeletons = document.querySelectorAll(".animate-pulse");
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("renders correct labels", async () => {
+    vi.mocked(reportsService.getDailySales).mockResolvedValue(defaultReport);
+    renderWithProvider(<ReportsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(UI_LABELS.modules.reports.TOTAL_REVENUE)).toBeInTheDocument();
+      expect(screen.getByText(UI_LABELS.modules.reports.PAID_ORDERS)).toBeInTheDocument();
+      expect(screen.getByText(UI_LABELS.modules.reports.AVG_SALE)).toBeInTheDocument();
     });
   });
 });

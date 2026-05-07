@@ -18,13 +18,11 @@
 
 ## 2. Environment Variables
 
-Configuration is **per component**. Create env files by copying from the corresponding `.env.example` in each folder:
+Configuration is centralized in a **single `.env` file** at the root of the project.
 
 | File | Purpose |
 |------|---------|
-| `docker/.env.docker` | Docker Compose (DB credentials, port). Copy from `docker/.env.example`. |
-| `backend/.env` | Spring Boot (DB URL, JWT, CORS). Copy from `backend/.env.example`. |
-| `frontend/.env.local` | Next.js (API URL). Copy from `frontend/.env.example`. |
+| `.env` | Unified configuration (DB credentials, JWT secrets, App settings). Copy from `.env.example`. |
 
 **Key variables:**
 
@@ -46,28 +44,28 @@ Run the entire stack (PostgreSQL + Backend + Frontend):
 
 ```bash
 # From project root
-docker compose -f docker/docker-compose.yml --env-file docker/.env.docker --profile fullstack up -d
+docker compose up -d
 
 # View logs
-docker compose -f docker/docker-compose.yml logs -f
+docker compose logs -f
 ```
 
 **Access:**
-- Frontend: http://localhost:3001
-- Backend API: http://localhost:8081/api
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8080/api
 
 **Stop:**
 ```bash
-docker compose --profile fullstack down
+docker compose down
 ```
 
 ---
 
 ## 4. Docker Compose — Database: PostgreSQL 16 via Docker Compose
 
-- **Configuration:** `.env` (backend), `.env.local` (frontend) — gitignored; use `.env.example` as template
-- **Secrets:** Never committed; JWT secret, DB credentials in `docker/.env.docker`
-- **Orchestration:** `docker compose --profile fullstack up -d`
+- **Configuration:** `.env` — gitignored; use `.env.example` as template
+- **Secrets:** Never committed; JWT secret, DB credentials in `.env`
+- **Orchestration:** `docker compose up -d`
 
 ---
 
@@ -168,24 +166,19 @@ Backups are saved as `laundry_db_YYYYMMDD_HHMMSS.sql.gz`.
 
 **Backup script — environment variables**
 
-The project uses **per-component** env files (`docker/.env.docker`, `backend/.env`, `frontend/.env.local`). The backup scripts expect database credentials in one of these ways:
+The backup scripts expect database credentials and will automatically load them from the **project root `.env`** file.
 
-1. **Project root `.env`** — If you create a root `.env` with `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`, the scripts will load it automatically.
-2. **Export before running** — Source the same values you use for the backend:
-   ```bash
-   # Linux/macOS (using backend/.env)
-   set -a && . backend/.env && set +a
-   ./scripts/backup-database.sh /path/to/backups
-   ```
-   Or with Docker env:
-   ```bash
-   set -a && . docker/.env.docker && set +a
-   ./scripts/backup-database.sh /path/to/backups
-   ```
-   On Windows PowerShell, set `$env:DB_HOST`, `$env:DB_PORT`, etc. from `backend\.env` or `docker\.env.docker` before running the script.
-3. **Docker-only path** — If the script runs inside a host that has no `.env` but the database runs in Docker, the script can use Docker exec and will use `DB_USER`, `DB_NAME` from the environment you set; ensure `DB_PASSWORD` is set if the container expects it (scripts use defaults for host/port when using Docker exec).
+If you need to run the script from an environment without the `.env` file (like a cron job), you can source the variables directly:
 
-Use the same `DB_*` values as your running backend (e.g. from `backend/.env` or `docker/.env.docker`) so the backup connects to the correct database.
+```bash
+# Linux/macOS
+set -a && . /path/to/project/.env && set +a
+./scripts/backup-database.sh /path/to/backups
+```
+
+On Windows PowerShell, the script `backup-database.ps1` will automatically look for `.env` in the root folder, or you can pass variables manually (e.g., `$env:DB_PASSWORD="..."`).
+
+**Docker-only path** — If the script runs inside a host that has no `.env` but the database runs in Docker, the script can use Docker exec and will use `DB_USER`, `DB_NAME` from the environment you set; ensure `DB_PASSWORD` is set if the container expects it.
 
 ### 6.5 Restore from Backup
 
