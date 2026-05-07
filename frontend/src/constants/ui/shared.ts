@@ -20,7 +20,6 @@ export const shared = {
     CONTACT: "Contact",
     REFERENCE: "Reference",
     AMOUNT_DUE: "Amount Due",
-    METHOD: "Method",
     USER: "User",
     STAFF: "Staff",
     ADMIN: "Admin",
@@ -44,6 +43,9 @@ export const shared = {
     UNKNOWN: "Unknown",
     WEIGHT: "Weight",
     PLEASE_WAIT: "Please wait",
+    PROCESSED_BY: "Processed By",
+    RECEIVED_BY: "Received By",
+    METHOD: "Method",
   },
 
   buttons: {

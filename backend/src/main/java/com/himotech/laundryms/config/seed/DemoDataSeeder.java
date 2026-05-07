@@ -16,10 +16,8 @@ import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +41,6 @@ import java.util.Random;
 @Slf4j
 public class DemoDataSeeder implements CommandLineRunner {
 
-    private static final String ADDON_DETERGENT = "Detergent (Ariel)";
-    private static final String ADDON_FABCON = "Fabric Conditioner (Downy)";
     private static final DateTimeFormatter REF_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final UserRepository userRepository;
@@ -52,14 +48,7 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final OrderRepository orderRepository;
     private final ServiceRateRepository serviceRateRepository;
     private final PaymentRepository paymentRepository;
-    private final PasswordEncoder passwordEncoder;
     private final Random random = new Random(42);
-
-    @Value("${app.seed.admin-password:}")
-    private String adminPassword;
-
-    @Value("${app.seed.staff-password:}")
-    private String staffPassword;
 
     @Override
     @Transactional
@@ -69,48 +58,19 @@ public class DemoDataSeeder implements CommandLineRunner {
             return;
         }
 
-        if (adminPassword == null || adminPassword.isBlank() || staffPassword == null || staffPassword.isBlank()) {
-            log.warn("[DemoDataSeeder] Seed passwords not provided (app.seed.admin-password, app.seed.staff-password) — skipping demo data seeding.");
-            return;
-        }
-
         log.info("[DemoDataSeeder] Starting demo data seeding...");
 
         ServiceRate rate = resolveServiceRate();
-        User admin = seedAdminUser();
-        User staff = seedStaffUser();
+        User admin = userRepository.findFirstByRole(UserRole.ADMIN)
+                .orElseThrow(() -> new IllegalStateException("[DemoDataSeeder] No ADMIN user found for seeding."));
+        User staff = userRepository.findFirstByRole(UserRole.STAFF)
+                .orElseThrow(() -> new IllegalStateException("[DemoDataSeeder] No STAFF user found for seeding."));
+        
         List<Customer> customers = seedCustomers();
         seedOrdersAndPayments(customers, rate, admin, staff);
 
-        log.info("[DemoDataSeeder] Done. Seeded 2 users, {} customers, 40 orders.", customers.size());
-    }
-
-    private User seedAdminUser() {
-        return userRepository.findByUsername("admin").orElseGet(() -> {
-            log.info("[DemoDataSeeder] Creating admin user...");
-            return userRepository.save(User.builder()
-                    .username("admin")
-                    .passwordHash(passwordEncoder.encode(adminPassword))
-                    .role(UserRole.ADMIN)
-                    .firstName("Faith")
-                    .lastName("Laundry")
-                    .isActive(true)
-                    .build());
-        });
-    }
-
-    private User seedStaffUser() {
-        return userRepository.findByUsername("staff").orElseGet(() -> {
-            log.info("[DemoDataSeeder] Creating staff user...");
-            return userRepository.save(User.builder()
-                    .username("staff")
-                    .passwordHash(passwordEncoder.encode(staffPassword))
-                    .role(UserRole.STAFF)
-                    .firstName("Ana")
-                    .lastName("Reyes")
-                    .isActive(true)
-                    .build());
-        });
+        log.info("[DemoDataSeeder] Done. Seeded {} customers and 40 orders linked to Admin/Staff roles.", 
+                customers.size());
     }
 
     private ServiceRate resolveServiceRate() {
@@ -157,12 +117,13 @@ public class DemoDataSeeder implements CommandLineRunner {
                 new Scenario(OrderStatus.RELEASED, true));
 
         int orderCounter = 1000;
-        for (Scenario scenario : scenarios) {
-            LocalDate baseDate = LocalDate.now().minusDays(random.nextInt(5));
+        for (int i = 0; i < 40; i++) {
+            Scenario scenario = scenarios.get(random.nextInt(scenarios.size()));
+            LocalDate baseDate = LocalDate.now().minusDays(random.nextInt(15));
             Instant createdAt = baseDate.atStartOfDay(ZoneOffset.UTC).toInstant();
             User createdBy = (random.nextInt(10) < 8) ? staff : admin;
 
-            BigDecimal weightKg = BigDecimal.valueOf(5.0 + random.nextDouble() * 5.0).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal weightKg = BigDecimal.valueOf(3.0 + random.nextDouble() * 12.0).setScale(2, RoundingMode.HALF_UP);
             int totalLoads = (int) Math.ceil(weightKg.doubleValue() / rate.getKgLimitPerLoad().doubleValue());
             BigDecimal baseAmount = rate.getBasePricePerLoad().multiply(BigDecimal.valueOf(totalLoads));
             BigDecimal grandTotal = baseAmount;

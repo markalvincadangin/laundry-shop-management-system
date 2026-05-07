@@ -48,8 +48,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
   const { payments, loading, pagination } = usePayments({
     ...params,
     from: from || date,
-    to: to || date,
-    ...(searchTerm ? { searchTerm } : {})
+    to: to || date
   });
 
   const handleExport = () => {
@@ -78,7 +77,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     {
       header: UI_LABELS.shared.common.REFERENCE,
       sortable: true,
-      sortKey: "orderReferenceNumber",
+      sortKey: "order.referenceNumber",
       render: (p) => (
         <div className="flex items-center gap-3 group/ref">
           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/ref:bg-brand-blue/5 transition-all">
@@ -93,7 +92,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     {
       header: UI_LABELS.shared.common.CUSTOMER,
       sortable: true,
-      sortKey: "customerName",
+      sortKey: "order.customer.lastName",
       render: (p) => (
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center border border-slate-200 shadow-inner">
@@ -108,7 +107,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       ),
     },
     {
-      header: "METHOD",
+      header: UI_LABELS.shared.common.METHOD,
       sortable: true,
       sortKey: "paymentMethod",
       render: (p) => {
@@ -118,7 +117,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
           <div className="flex items-center gap-3">
             <div className={`h-8 w-8 rounded-lg flex items-center justify-center border shadow-sm ${isCash ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
                 isGCash ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                  'bg-purple-50 border-purple-100 text-purple-600'
+                   'bg-purple-50 border-purple-100 text-purple-600'
               }`}>
               {isCash ? <Banknote className="h-4 w-4" /> : isGCash ? <Wallet className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
             </div>
@@ -133,9 +132,9 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       },
     },
     {
-      header: "PROCESSED BY",
+      header: UI_LABELS.shared.common.PROCESSED_BY,
       sortable: true,
-      sortKey: "receivedByUsername",
+      sortKey: "receivedBy.username",
       render: (p) => (
         <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-all duration-300">
           <ShieldCheck className="h-3.5 w-3.5 text-brand-blue" />

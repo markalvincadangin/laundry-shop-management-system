@@ -27,7 +27,15 @@ public class AuditLogService {
 
     @Transactional(readOnly = true)
     public Page<AuditLogResponse> search(String q, String action, Instant from, Instant to, Pageable pageable) {
-        Page<AuditLog> logs = auditLogRepository.search(q, action, from, to, pageable);
+        org.springframework.data.jpa.domain.Specification<AuditLog> spec = 
+            com.himotech.laundryms.auditlog.repository.AuditLogSpecification.filterBy(
+                q, 
+                action, 
+                from, 
+                to
+            );
+            
+        Page<AuditLog> logs = auditLogRepository.findAll(spec, pageable);
         return logs.map(this::toResponse);
     }
 

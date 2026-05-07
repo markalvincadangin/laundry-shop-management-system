@@ -67,7 +67,7 @@ export default function AuditLogPage() {
     {
       header: UI_LABELS.modules.auditLog.ACTION,
       sortable: true,
-      sortKey: "operation",
+      sortKey: "actionType",
       render: (a) => {
         const op = a.operation as string;
         let variant: "neutral" | "success" | "warning" | "error" | "primary" | "action" = "neutral";
@@ -93,7 +93,7 @@ export default function AuditLogPage() {
     {
       header: UI_LABELS.modules.auditLog.ENTITY,
       sortable: true,
-      sortKey: "entityType",
+      sortKey: "tableName",
       render: (a) => {
         const moduleName = a.entityType ? (UI_LABELS.modules.auditLog.TABLE_MAP[a.entityType] || a.entityType.replace(/_/g, " ")) : UI_LABELS.shared.common.SYSTEM;
         const hasId = a.entityId && a.entityId !== "N/A";
@@ -120,7 +120,7 @@ export default function AuditLogPage() {
     {
       header: UI_LABELS.modules.auditLog.OPERATOR,
       sortable: true,
-      sortKey: "actor",
+      sortKey: "userId",
       render: (a) => {
         const formatUser = (userStr?: string) => {
           if (!userStr || userStr === "anonymous") return UI_LABELS.shared.common.SYSTEM;

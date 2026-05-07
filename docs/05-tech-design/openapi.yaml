@@ -601,6 +601,10 @@ paths:
           name: orderId
           schema: { type: integer, format: int64 }
         - in: query
+          name: q
+          schema: { type: string }
+          description: Search by reference number, customer name, or transaction ID
+        - in: query
           name: from
           schema: { type: string, format: date }
           description: Start date (inclusive)
@@ -614,6 +618,12 @@ paths:
         - in: query
           name: size
           schema: { type: integer, default: 20 }
+        - in: query
+          name: sortBy
+          schema: { type: string, default: paymentDate }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: desc }
       responses:
         "200":
           description: Paginated payments list
@@ -701,20 +711,45 @@ paths:
   # -------------------------
   /api/v1/client-alerts:
     get:
-      summary: List client alerts
+      summary: List or search client alerts
       description: |
-        Returns all client alerts ordered by createdAt descending (staff view).
-        Supports: US-10. Enforces: BR-ALERT-01.
+        Returns client alerts with pagination and optional filters.
+        Ordered by createdAt descending by default.
+        Supports: US-10.
       tags: [ClientAlerts]
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by message, reference number, or customer name
+        - in: query
+          name: status
+          schema: { type: string, enum: [PENDING, SENT, FAILED] }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 15 }
+        - in: query
+          name: sortBy
+          schema: { type: string, default: createdAt }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: desc }
       responses:
         "200":
-          description: Client alerts list
+          description: Paginated client alerts list
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ClientAlertResponse"
+                $ref: "#/components/schemas/ClientAlertPageResponse"
 
   /api/v1/client-alerts/{id}/read:
     patch:
@@ -742,16 +777,36 @@ paths:
   # -------------------------
   /api/v1/audit-logs:
     get:
-      summary: List audit logs
-      description: Returns forensic audit logs of system mutations (Admin only). Snapshot data includes point-in-time state. Sorted by createdAt descending (UTC).
+      summary: List or search audit logs
+      description: Returns forensic audit logs of system mutations (Admin only).
       tags: [AuditLog]
       parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by table name, record ID, or user
+        - in: query
+          name: action
+          schema: { type: string }
+          description: Filter by action type (e.g., ORDER_CREATE)
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
         - in: query
           name: page
           schema: { type: integer, default: 0 }
         - in: query
           name: size
           schema: { type: integer, default: 20 }
+        - in: query
+          name: sortBy
+          schema: { type: string, default: createdAt }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: desc }
       responses:
         "200":
           description: OK
@@ -767,21 +822,36 @@ paths:
   # -------------------------
   /api/v1/users:
     get:
-      summary: List all users
+      summary: List or search users
       description: |
-        Returns a complete list of all staff and admin accounts.
+        Returns a complete list of all staff and admin accounts with pagination.
         Requires ADMIN role.
         Supports: US-11 (Admin audit & directory view).
       tags: [Users]
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by username, firstName, or lastName
+        - in: query
+          name: page
+          schema: { type: integer, default: 0 }
+        - in: query
+          name: size
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: sortBy
+          schema: { type: string, default: username }
+        - in: query
+          name: sortDir
+          schema: { type: string, enum: [asc, desc], default: asc }
       responses:
         "200":
-          description: List of users
+          description: Paginated users list
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserResponse"
+                $ref: "#/components/schemas/UserPageResponse"
         "403":
           description: Forbidden - Admin only
 
@@ -1321,6 +1391,21 @@ components:
         sentAt: { type: string, format: date-time }
       required: [id, orderId, customerId, message, status]
 
+    ClientAlertPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClientAlertResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]
+
     # -------------------------
     # REPORTS
     # -------------------------
@@ -1419,3 +1504,18 @@ components:
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
       required: [id, username, role, firstName, lastName, isActive, createdAt, updatedAt]
+
+    UserPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponse"
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+      required: [content, page, size, totalElements, totalPages, first, last]

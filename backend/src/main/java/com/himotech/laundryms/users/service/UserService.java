@@ -29,6 +29,13 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<UserResponse> searchUsers(String q, org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.jpa.domain.Specification<User> spec = 
+            com.himotech.laundryms.users.repository.UserSpecification.filterBy(q);
+        return userRepository.findAll(spec, pageable).map(this::mapToResponse);
+    }
+
     @Auditable(action = "USER_CREATE", description = "Create new system user")
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {

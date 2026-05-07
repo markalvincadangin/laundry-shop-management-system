@@ -37,10 +37,19 @@ public class ClientAlertService {
 
     /**
      * Searches client alerts for the registry.
+     * Uses ClientAlertSpecification for dynamic criteria-based filtering.
      */
     @Transactional(readOnly = true)
     public Page<ClientAlertResponse> search(String q, ClientAlertStatus status, Instant from, Instant to, Pageable pageable) {
-        Page<ClientAlert> alerts = clientAlertRepository.search(q, status, from, to, pageable);
+        org.springframework.data.jpa.domain.Specification<ClientAlert> spec = 
+            com.himotech.laundryms.clientalert.repository.ClientAlertSpecification.filterBy(
+                q, 
+                status, 
+                from, 
+                to
+            );
+            
+        Page<ClientAlert> alerts = clientAlertRepository.findAll(spec, pageable);
         return alerts.map(clientAlertMapper::toResponse);
     }
 

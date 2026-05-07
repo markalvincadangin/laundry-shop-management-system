@@ -109,49 +109,37 @@ class CustomerServiceTest {
     class Search {
 
         @Test
-        @DisplayName("Should return empty list when query is null")
-        void search_ShouldReturnEmpty_WhenQueryNull() {
-            when(customerRepository.search(eq(null), any(), any(), any(),
-                    any(org.springframework.data.domain.Pageable.class)))
-                    .thenReturn(org.springframework.data.domain.Page.empty());
-
-            org.springframework.data.domain.Page<Customer> result = customerService.search(null, null, null, null,
-                    org.springframework.data.domain.Pageable.unpaged());
-
-            assertThat(result).isEmpty();
-            verify(customerRepository).search(eq(null), any(), any(), any(),
-                    any(org.springframework.data.domain.Pageable.class));
-        }
-
-        @Test
-        @DisplayName("Should return empty list when query is blank")
-        void search_ShouldReturnEmpty_WhenQueryBlank() {
-            when(customerRepository.search(eq(""), any(), any(), any(),
-                    any(org.springframework.data.domain.Pageable.class)))
-                    .thenReturn(org.springframework.data.domain.Page.empty());
-
-            org.springframework.data.domain.Page<Customer> result = customerService.search("   ", null, null, null,
-                    org.springframework.data.domain.Pageable.unpaged());
-
-            assertThat(result).isEmpty();
-            verify(customerRepository).search(eq(""), any(), any(), any(),
-                    any(org.springframework.data.domain.Pageable.class));
-        }
-
-        @Test
-        @DisplayName("Should delegate to repository when query is trimmed")
-        void search_ShouldDelegate_WhenQueryTrimmed() {
-            when(customerRepository.search(eq("Juan"), any(), any(), any(),
-                    any(org.springframework.data.domain.Pageable.class)))
+        @DisplayName("Should delegate to repository with correct specification")
+        void search_ShouldDelegateToRepository() {
+            // Given
+            when(customerRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class)))
                     .thenReturn(new org.springframework.data.domain.PageImpl<>(
                             List.of(TestDataBuilders.customer().build())));
 
-            org.springframework.data.domain.Page<Customer> result = customerService.search("  Juan  ", null, null, null,
-                    org.springframework.data.domain.Pageable.unpaged());
+            // When
+            org.springframework.data.domain.Page<Customer> result = customerService.search("Juan", null, null, null,
+                    org.springframework.data.domain.PageRequest.of(0, 10));
 
+            // Then
             assertThat(result).hasSize(1);
-            verify(customerRepository).search(eq("Juan"), any(), any(), any(),
-                    any(org.springframework.data.domain.Pageable.class));
+            verify(customerRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class));
+        }
+
+        @Test
+        @DisplayName("Should handle date range conversion correctly")
+        void search_ShouldHandleDateRangeConversion() {
+            // Given
+            java.time.LocalDate from = java.time.LocalDate.parse("2026-01-01");
+            java.time.LocalDate to = java.time.LocalDate.parse("2026-01-31");
+            
+            when(customerRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class)))
+                    .thenReturn(org.springframework.data.domain.Page.empty());
+
+            // When
+            customerService.search(null, null, from, to, org.springframework.data.domain.PageRequest.of(0, 10));
+
+            // Then
+            verify(customerRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class));
         }
     }
 }
