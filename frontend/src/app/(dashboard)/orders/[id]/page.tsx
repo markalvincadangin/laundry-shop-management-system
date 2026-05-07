@@ -390,9 +390,11 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
-                      <Calendar className="h-3 w-3" /> {UI_LABELS.shared.common.DATE}
+                      <Calendar className="h-3 w-3" /> {UI_LABELS.shared.common.DATE} & {UI_LABELS.shared.common.TIME}
                     </p>
-                    <p className="text-sm font-black text-slate-900 tabular-nums">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}</p>
+                    <p className="text-sm font-black text-slate-900 tabular-nums">
+                      {order.createdAt ? new Date(order.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : "—"}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
