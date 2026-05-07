@@ -203,7 +203,7 @@ export default function PaymentsPage() {
         <FilterBar title={UI_LABELS.shared.common.FILTER}>
           <div className="w-full lg:flex-[2] lg:min-w-[240px]">
             <Input
-              placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
+              placeholder={UI_LABELS.modules.payments.SEARCH_PAYMENTS}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4 text-brand-blue" />}

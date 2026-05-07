@@ -135,7 +135,7 @@ export default function CustomersPage() {
               size="xs"
               className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
             >
-              <Eye className="h-3.5 w-3.5" />
+              <Eye className="h-4 w-4" />
               {UI_LABELS.shared.common.DETAILS}
             </Button>
           </Link>
@@ -194,7 +194,7 @@ export default function CustomersPage() {
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="w-full lg:flex-[2] lg:min-w-[280px]">
           <Input
-            placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
+            placeholder={UI_LABELS.modules.customers.SEARCH_CUSTOMERS}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}

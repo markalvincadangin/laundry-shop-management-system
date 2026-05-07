@@ -1,6 +1,7 @@
 export const payments = {
   TITLE: "Payments",
-  SUBTITLE: "History of payments received.",
+  SUBTITLE: "Monitor financial inflows and process payment records.",
+  SEARCH_PAYMENTS: "Search by reference # or customer...",
   LEDGER: "Payment Ledger",
   EXPORT: "Save as List",
   METHOD_CASH: "Cash",

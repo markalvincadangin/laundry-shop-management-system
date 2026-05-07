@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   FileText,
   Download,
@@ -11,7 +12,8 @@ import {
   Wallet,
   Banknote,
   ShieldCheck,
-  Hash
+  Hash,
+  Eye
 } from "lucide-react";
 import { type PaymentResponse } from "@/services/payments.service";
 import { Button, Input, CurrencyDisplay } from "@/components/ui";
@@ -152,6 +154,22 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
           <CurrencyDisplay amount={p.amountPaid} size="sm" numberClassName="text-slate-900 font-black" />
           <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
         </div>
+      ),
+    },
+    {
+      header: UI_LABELS.shared.common.ACTIONS,
+      align: "right",
+      render: (p) => (
+        <Link href={`/orders/${p.orderId}`} onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+          >
+            <Eye className="h-4 w-4" />
+            {UI_LABELS.shared.common.DETAILS}
+          </Button>
+        </Link>
       ),
     },
   ];

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { User, Calendar, ArrowUpRight, Hash, Banknote, Wallet, CreditCard, ShieldCheck } from "lucide-react";
+import { User, Calendar, ArrowUpRight, Hash, Banknote, Wallet, CreditCard, ShieldCheck, Eye } from "lucide-react";
 import { type PaymentResponse } from "@/services/payments.service";
 import { DataTable, EmptyState } from "@/features/shared";
 import { DataTableColumn } from "@/types/components";
@@ -110,6 +110,22 @@ export function PaymentLedgerTable({
           <CurrencyDisplay amount={p.amountPaid} size="sm" numberClassName="font-black text-slate-900" />
           <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-brand-blue transition-colors" />
         </div>
+      ),
+    },
+    {
+      header: UI_LABELS.shared.common.ACTIONS,
+      align: "right",
+      render: (p) => (
+        <Link href={`/orders/${p.orderId}`} onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+          >
+            <Eye className="h-4 w-4" />
+            {UI_LABELS.shared.common.DETAILS}
+          </Button>
+        </Link>
       ),
     },
   ];

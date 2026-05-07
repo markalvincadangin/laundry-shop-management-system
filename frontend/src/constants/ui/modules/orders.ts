@@ -2,6 +2,7 @@ export const orders = {
   TITLE: "Orders",
   CREATE_TITLE: "New Order",
   SUBTITLE: "Manage current laundry orders.",
+  SEARCH_ORDERS: "Search by reference # or customer...",
   HISTORY: "Order History",
   DETAILS: "Order Details",
   WEIGHT: "Weight",

@@ -182,7 +182,7 @@ export default function AuditLogPage() {
           className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
           onClick={() => setSelected(a)}
         >
-          <Activity className="h-4 w-4" />
+          <Eye className="h-4 w-4" />
           {UI_LABELS.shared.common.DETAILS}
         </Button>
       ),

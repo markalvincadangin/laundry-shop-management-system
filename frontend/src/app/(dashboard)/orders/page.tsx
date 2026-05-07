@@ -16,7 +16,8 @@ import {
   Search,
   RefreshCcw,
   Loader2,
-  FileDown
+  FileDown,
+  Eye
 } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import { ReportDocument } from "@/components/features/shared/ReportDocument";
@@ -190,6 +191,22 @@ export default function OrdersPage() {
         </div>
       ),
     },
+    {
+      header: UI_LABELS.shared.common.ACTIONS,
+      align: "right",
+      render: (order) => (
+        <Link href={`/orders/${order.id}`} onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="xs"
+            className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+          >
+            <Eye className="h-4 w-4" />
+            {UI_LABELS.shared.common.DETAILS}
+          </Button>
+        </Link>
+      ),
+    },
   ];
 
   return (
@@ -250,7 +267,7 @@ export default function OrdersPage() {
         <FilterBar title={UI_LABELS.shared.common.FILTER}>
           <div className="flex-[2] min-w-[240px]">
             <Input
-              placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
+              placeholder={UI_LABELS.modules.orders.SEARCH_ORDERS}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4 text-brand-blue" />}
