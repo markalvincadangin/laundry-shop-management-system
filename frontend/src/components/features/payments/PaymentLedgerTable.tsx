@@ -9,6 +9,7 @@ import { DataTableColumn } from "@/types/components";
 import { UI_LABELS } from "@/constants/ui";
 import { formatDate } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
+import { Button } from "@/components/ui";
 
 interface ExtendedPaymentLedgerTableProps {
   payments: PaymentResponse[];

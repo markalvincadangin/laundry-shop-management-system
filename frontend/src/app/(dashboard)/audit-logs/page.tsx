@@ -11,7 +11,8 @@ import {
   Activity, 
   ShieldCheck,
   ShieldAlert,
-  Server
+  Server,
+  Eye
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { 
