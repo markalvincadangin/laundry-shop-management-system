@@ -145,7 +145,7 @@ export function OrderPreview({
                       </div>
                       <div className="relative pl-6">
                         <div className="absolute left-6 top-0 bottom-0 w-1 bg-brand-blue/20 rounded-full" />
-                        <p className="text-xs font-bold text-slate-600 italic pl-4 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
+                        <p className="text-xs font-medium text-slate-500 italic pl-4 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
                           &quot;{notes}&quot;
                         </p>
                       </div>
@@ -161,16 +161,19 @@ export function OrderPreview({
                       </div>
                       <div className="pl-6 space-y-2">
                         {addOns.map((a, i) => (
-                          <div key={i} className="flex justify-between items-center text-xs text-brand-blue font-bold italic bg-brand-blue/5 px-3 py-2 rounded-xl border border-brand-blue/5">
-                            <span className="flex items-center gap-2">
-                              {a.name} <span className="text-[10px] opacity-60 font-mono">(x{a.quantity})</span>
+                          <div key={i} className="flex justify-between items-center text-sm group/line cursor-default py-1">
+                            <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors flex items-center gap-2">
+                              <PlusCircle className="h-3 w-3 text-brand-blue/40" />
+                              {a.name}
+                              <span className="text-[9px] font-mono font-black uppercase text-brand-blue bg-brand-blue/5 px-1.5 py-0.5 rounded">
+                                x{a.quantity}
+                              </span>
                             </span>
                             <CurrencyDisplay
                               amount={a.price * a.quantity}
-                              size="sm"
+                              size="md"
                               tabular={true}
-                              className="text-brand-blue"
-                              numberClassName="font-mono"
+                              numberClassName="font-mono font-black"
                             />
                           </div>
                         ))}
