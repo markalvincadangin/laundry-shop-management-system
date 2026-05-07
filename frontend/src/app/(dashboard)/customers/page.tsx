@@ -198,7 +198,7 @@ export default function CustomersPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <div className="w-full lg:flex-1 lg:min-w-[180px]">
@@ -206,7 +206,7 @@ export default function CustomersPage() {
             label={UI_LABELS.shared.common.STATUS}
             value={params.isActive ?? ""}
             onChange={(e) => updateParams({ isActive: e.target.value || undefined, page: 0 })}
-            className="border-slate-200 bg-white h-14 rounded-xl shadow-sm"
+            className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm"
           >
             <option value="">{UI_LABELS.shared.common.ALL_STATUSES}</option>
             <option value="true">{UI_LABELS.shared.common.ACTIVE}</option>
@@ -216,7 +216,7 @@ export default function CustomersPage() {
         <div className="flex items-center gap-2 w-full lg:w-auto">
           <Button 
             variant="secondary" 
-            className="flex-1 lg:flex-none h-14 px-grid-6 gap-grid-2 uppercase text-caption tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-xl" 
+            className="flex-1 lg:flex-none h-14 px-grid-6 gap-grid-2 uppercase text-caption tracking-widest font-black border-slate-200 bg-white shadow-sm hover:bg-slate-50 rounded-2xl" 
             onClick={() => refresh()}
           >
             <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

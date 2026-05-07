@@ -347,7 +347,7 @@ export default function ReportsPage() {
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="border-slate-200 bg-white h-14 rounded-xl"
+                      className="border-slate-200 bg-white h-14 rounded-2xl"
                     />
                   )}
                   {tab === "monthly" && (
@@ -356,7 +356,7 @@ export default function ReportsPage() {
                         label={UI_LABELS.modules.reports.MONTH}
                         value={month}
                         onChange={(e) => setMonth(parseInt(e.target.value, 10))}
-                        className="border-slate-200 bg-white h-14 rounded-xl"
+                        className="border-slate-200 bg-white h-14 rounded-2xl"
                       >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                           <option key={m} value={m}>
@@ -369,7 +369,7 @@ export default function ReportsPage() {
                         type="number"
                         value={year}
                         onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                        className="border-slate-200 bg-white h-14 rounded-xl"
+                        className="border-slate-200 bg-white h-14 rounded-2xl"
                       />
                     </div>
                   )}
@@ -379,7 +379,7 @@ export default function ReportsPage() {
                       type="number"
                       value={year}
                       onChange={(e) => setYear(parseInt(e.target.value, 10))}
-                      className="border-slate-200 bg-white h-14 rounded-xl"
+                      className="border-slate-200 bg-white h-14 rounded-2xl"
                     />
                   )}
                   <div className="flex items-start gap-grid-4 p-grid-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 shadow-sm relative overflow-hidden group/info">

@@ -275,7 +275,7 @@ export default function OrdersPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4 text-brand-blue" />}
-              className="h-14 rounded-xl border-slate-200 bg-white"
+              className="h-14 rounded-2xl border-slate-200 bg-white"
             />
           </div>
           <div className="flex-1 min-w-[180px]">
@@ -313,7 +313,7 @@ export default function OrdersPage() {
           <div className="flex-1 min-w-[180px]">
             <Input label={UI_LABELS.shared.common.END_DATE} type="date" value={params.to ?? ""} onChange={(e) => updateParams({ to: e.target.value || undefined })} className="border-slate-200 bg-white" />
           </div>
-          <Button variant="secondary" className="h-14 px-grid-8 gap-grid-2 uppercase text-caption tracking-widest font-black shadow-sm border-slate-200" onClick={() => refresh()}>
+          <Button variant="secondary" className="h-14 px-grid-8 gap-grid-2 uppercase text-caption tracking-widest font-black shadow-sm border-slate-200 rounded-2xl" onClick={() => refresh()}>
             <RefreshCcw className="h-4 w-4" />
             {UI_LABELS.shared.common.REFRESH}
           </Button>

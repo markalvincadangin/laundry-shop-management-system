@@ -138,8 +138,10 @@ describe("ReportsPage", () => {
       expect(screen.getByText(UI_LABELS.modules.reports.TOTAL_REVENUE)).toBeInTheDocument();
     });
 
-    const skeletons = document.querySelectorAll(".animate-pulse");
-    expect(skeletons.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      const skeletons = document.querySelectorAll(".animate-pulse");
+      expect(skeletons.length).toBeGreaterThan(0);
+    });
   });
 
   it("renders correct labels", async () => {

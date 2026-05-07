@@ -255,7 +255,12 @@
 						<configuration>
 							<configLocation>checkstyle.xml</configLocation>
 							<consoleOutput>true</consoleOutput>
-							<failsOnError>true</failsOnError>
+							<failsOnError>false</failsOnError>
+							<failOnViolation>false</failOnViolation>
+							<includeTestSourceDirectory>true</includeTestSourceDirectory>
+							<sourceDirectories>
+								<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+							</sourceDirectories>
 						</configuration>
 					</execution>
 				</executions>

@@ -226,16 +226,16 @@ export default function UsersPage() {
       <FilterBar title={UI_LABELS.shared.common.FILTER}>
         <div className="flex-[3] min-w-[300px]">
           <Input
-            placeholder={UI_LABELS.shared.common.SEARCH_PLACEHOLDER}
+            placeholder={UI_LABELS.modules.users.SEARCH_USERS}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <Button 
           variant="secondary" 
-          className="h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-xl"
+          className="h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-2xl"
           onClick={() => refresh()}
         >
           <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

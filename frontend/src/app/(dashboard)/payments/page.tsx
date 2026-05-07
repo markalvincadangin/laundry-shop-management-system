@@ -208,7 +208,7 @@ export default function PaymentsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               icon={<Search className="h-4 w-4 text-brand-blue" />}
-              className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+              className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
             />
           </div>
           <div className="w-full lg:flex-1 lg:min-w-[180px]">
@@ -217,7 +217,7 @@ export default function PaymentsPage() {
               type="date" 
               value={params.from ?? ""} 
               onChange={(e) => updateParams({ from: e.target.value || undefined, page: 0 })} 
-              className="border-slate-200 bg-white h-14 rounded-xl shadow-sm" 
+              className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm" 
             />
           </div>
           <div className="w-full lg:flex-1 lg:min-w-[180px]">
@@ -226,10 +226,10 @@ export default function PaymentsPage() {
               type="date" 
               value={params.to ?? ""} 
               onChange={(e) => updateParams({ to: e.target.value || undefined, page: 0 })} 
-              className="border-slate-200 bg-white h-14 rounded-xl shadow-sm" 
+              className="border-slate-200 bg-white h-14 rounded-2xl shadow-sm" 
             />
           </div>
-          <Button variant="secondary" className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 shadow-sm font-black uppercase text-caption tracking-widest rounded-xl" onClick={() => refresh()}>
+          <Button variant="secondary" className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 shadow-sm font-black uppercase text-caption tracking-widest rounded-2xl" onClick={() => refresh()}>
             <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             {UI_LABELS.shared.common.REFRESH}
           </Button>

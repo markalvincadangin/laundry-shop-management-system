@@ -219,14 +219,14 @@ export default function AuditLogPage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={<Search className="h-4 w-4 text-brand-blue" />}
-            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <div className="w-full lg:flex-1 lg:min-w-[180px]">
           <Select
             value={params.action ?? ""}
             onChange={(e) => updateParams({ action: e.target.value, page: 0 })}
-            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           >
             <option value="">{UI_LABELS.shared.common.ALL_ACTIONS}</option>
             <option value="INSERT">{UI_LABELS.modules.auditLog.ACTION_CREATED}</option>
@@ -239,12 +239,12 @@ export default function AuditLogPage() {
             type="date"
             value={params.from ?? ""}
             onChange={(e) => updateParams({ from: e.target.value, page: 0 })}
-            className="h-14 rounded-xl border-slate-200 bg-white shadow-sm"
+            className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
           />
         </div>
         <Button 
           variant="secondary" 
-          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-xl" 
+          className="w-full lg:w-auto h-14 px-grid-8 gap-grid-2 border-slate-200 bg-white text-caption font-black uppercase tracking-widest shadow-sm hover:bg-slate-50 rounded-2xl" 
           onClick={() => refresh()}
         >
           <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
