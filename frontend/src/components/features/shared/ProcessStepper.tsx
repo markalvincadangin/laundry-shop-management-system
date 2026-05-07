@@ -78,7 +78,9 @@ export function ProcessStepper({
                 </motion.div>
               ) : isCurrent ? (
                 <div className="relative">
-                   <div className="absolute inset-0 bg-brand-blue rounded-full animate-ping opacity-10" />
+                   {step.status !== "RELEASED" && (
+                     <div className="absolute inset-0 bg-brand-blue rounded-full animate-ping opacity-10" />
+                   )}
                    {step.status === "RELEASED" ? (
                      <CheckCircle2 className={size === "xs" ? "h-2 w-2" : size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"} />
                    ) : (
