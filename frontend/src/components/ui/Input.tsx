@@ -40,12 +40,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-invalid={isInvalid}
             className={`
-              block w-full rounded-2xl border px-grid-4 py-grid-3.5 outline-none transition-all duration-300 min-h-[52px] font-medium text-body leading-none
+              block w-full rounded-2xl border px-grid-4 py-grid-3.5 outline-none transition-all duration-300 min-h-[52px] font-medium text-body
               ${variants[variant]} 
               ${icon ? "pl-12" : ""} 
               ${rightElement ? "pr-12" : ""} 
               ${className}
-              placeholder:text-slate-400/80
+              placeholder:text-slate-400 placeholder:font-medium
             `}
             {...props}
             value={props.value ?? (('value' in props) ? "" : undefined)}
@@ -57,9 +57,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             }}
           />
           {icon && (
-            <div className="pointer-events-none absolute left-4.5 top-1/2 -translate-y-1/2 text-slate-400/70 transition-colors group-focus-within:text-brand-blue flex items-center justify-center">
+            <div className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-blue flex items-center justify-center transition-colors">
               {React.isValidElement(icon) 
-                ? React.cloneElement(icon as React.ReactElement, { className: "h-5 w-5 stroke-[2.25]" }) 
+                ? React.cloneElement(icon as React.ReactElement, { className: "h-[18px] w-[18px] stroke-[2.5]" }) 
                 : icon}
             </div>
           )}

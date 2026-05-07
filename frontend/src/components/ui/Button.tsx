@@ -46,7 +46,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           </span>
         )}
         {!isLoading && leftIcon && (
-          <span className="mr-2.5 inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
+          <span className="mr-3.5 inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
             {React.isValidElement(leftIcon) 
               ? React.cloneElement(leftIcon as React.ReactElement, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
               : leftIcon}
@@ -56,7 +56,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           {children}
         </span>
         {!isLoading && rightIcon && (
-          <span className="ml-2.5 inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
+          <span className="ml-3.5 inline-flex items-center justify-center shrink-0 opacity-80 group-hover:scale-110 transition-all duration-300">
             {React.isValidElement(rightIcon) 
               ? React.cloneElement(rightIcon as React.ReactElement, { className: "h-[1.1em] w-[1.1em] stroke-[2.5]" }) 
               : rightIcon}
