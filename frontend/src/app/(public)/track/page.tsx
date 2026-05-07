@@ -53,7 +53,7 @@ function TopNav() {
           />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-h3 font-semibold font-display text-slate-900 tracking-tight leading-none group-hover:text-brand-blue transition-colors duration-300">
+          <h1 className="text-h3 font-black font-display text-brand-blue tracking-tighter uppercase leading-none group-hover:opacity-80 transition-opacity duration-300">
             {UI_LABELS.meta.APP_NAME}
           </h1>
           <div className="flex items-center gap-grid-2 mt-grid-1">

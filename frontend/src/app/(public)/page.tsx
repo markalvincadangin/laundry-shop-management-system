@@ -108,8 +108,13 @@ export default function LandingPage() {
                     <span className="ml-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{UI_LABELS.portal.landing.CUSTOMER_RATING}</span>
                   </div>
                 </div>
-                  {UI_LABELS.portal.landing.HERO_TITLE_1} <br />{UI_LABELS.portal.landing.HERO_TITLE_2} <span className="text-brand-blue">{UI_LABELS.portal.landing.HERO_TITLE_3}</span>
+                <h1 className="text-h1 sm:text-display font-black font-display text-slate-900 uppercase tracking-tighter leading-[0.95] drop-shadow-sm">
+                  {UI_LABELS.portal.landing.HERO_TITLE_1} <br />
+                  {UI_LABELS.portal.landing.HERO_TITLE_2} <span className="text-brand-blue">{UI_LABELS.portal.landing.HERO_TITLE_3}</span>
+                </h1>
+                <p className="text-body font-medium text-slate-500 max-w-lg leading-relaxed">
                   {UI_LABELS.portal.landing.HERO_SUBTITLE}
+                </p>
               </div>
 
               {/* TRACKING FORM: High Affordance, Proportional Size */}
@@ -147,7 +152,7 @@ export default function LandingPage() {
             <div className="lg:col-span-5 relative hidden lg:block">
               <div className="relative h-[520px] w-full rounded-[3rem] overflow-hidden shadow-xl ring-1 ring-slate-100">
                 <Image
-                  src="/images/shop-trust-grounded.png"
+                  src="/images/hero-premium.png"
                   alt={UI_LABELS.meta.APP_NAME}
                   fill
                   className="object-cover"
@@ -195,7 +200,9 @@ export default function LandingPage() {
             <h2 className="text-h1 font-black font-display text-slate-900 uppercase tracking-tighter leading-[1.1]">
               {UI_LABELS.portal.landing.COMMITMENT_H1}
             </h2>
+            <p className="text-body font-medium text-slate-500 max-w-lg mx-auto leading-relaxed">
               {UI_LABELS.portal.landing.COMMITMENT_DESC}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-grid-8 max-w-6xl mx-auto">
@@ -235,7 +242,9 @@ export default function LandingPage() {
                 <h2 className="text-h1 font-black font-display text-slate-900 uppercase tracking-tighter leading-[1.1]">
                   {UI_LABELS.portal.landing.PRICING_H1}
                 </h2>
+                <p className="text-body font-medium text-slate-500 max-w-lg leading-relaxed">
                   {UI_LABELS.portal.landing.PRICING_DESC}
+                </p>
               </div>
 
               <ul className="grid grid-cols-1 sm:grid-cols-2 gap-grid-6 pt-grid-4">
@@ -304,7 +313,9 @@ export default function LandingPage() {
                   </span>
                 </div>
               </div>
-                {UI_LABELS.portal.landing.HERO_SUBTITLE}
+                <p className="text-[11px] font-medium text-slate-500 leading-relaxed max-w-[240px]">
+                  {UI_LABELS.portal.landing.HERO_SUBTITLE}
+                </p>
             </div>
 
             {/* Info Section: 8 Columns */}
