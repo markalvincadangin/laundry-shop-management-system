@@ -8,7 +8,11 @@ import {
   User,
   ShieldCheck,
   Hash,
-  Eye
+  Eye,
+  Banknote,
+  Wallet,
+  CreditCard,
+  Search
 } from "lucide-react";
 import { type PaymentResponse } from "@/services/payments.service";
 import { Button, Input, CurrencyDisplay } from "@/components/ui";
