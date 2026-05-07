@@ -153,31 +153,31 @@ export default function UsersPage() {
       ),
     },
     {
-      header: "",
+      header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (u) => {
         const isSelf = currentUser?.userId === u.id;
         
         return (
-          <div className="flex items-center justify-end gap-grid-2">
+          <div className="flex items-center justify-end">
             <Button 
               variant="ghost" 
-              size="sm" 
+              size="xs" 
               onClick={() => handleEdit(u)}
-              className="h-10 px-3 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
+              className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
             >
               <Edit2 className="h-3.5 w-3.5" />
               {UI_LABELS.shared.buttons.EDIT}
             </Button>
-            <div className="w-px h-4 bg-slate-100 mx-1" />
+            <div className="w-px h-4 bg-slate-100 mx-3" />
             <Button 
               variant="ghost" 
-              size="sm" 
+              size="xs" 
               disabled={isSelf}
               onClick={() => setConfirmStatusUser(u)}
-              className={`h-10 w-10 p-0 transition-all rounded-xl ${
+              className={`w-9 p-0 transition-all ${
                 isSelf 
-                  ? "opacity-20 cursor-not-allowed" 
+                  ? "opacity-20 cursor-not-allowed text-slate-200" 
                   : u.isActive 
                     ? "text-rose-400 hover:text-rose-600 hover:bg-rose-50" 
                     : "text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50"

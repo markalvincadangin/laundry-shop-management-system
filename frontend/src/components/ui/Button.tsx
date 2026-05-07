@@ -27,8 +27,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
+      xs: "text-[9px] px-grid-3.5 py-grid-1.5 min-h-[34px] rounded-xl gap-grid-2.5",
       sm: "text-[9px] px-grid-4 py-grid-2 min-h-[38px] rounded-xl gap-grid-3.5",
-      md: "text-[10px] px-grid-7 py-grid-3 min-h-[50px]", // Increased padding and height
+      md: "text-[10px] px-grid-7 py-grid-3 min-h-[52px]", // Aligned with 52px Input/Select standard
       lg: "text-[12px] px-grid-10 py-grid-4 min-h-[56px] tracking-[0.25em] gap-grid-6",
       icon: "p-2.5 min-h-[48px] min-w-[48px]",
     };

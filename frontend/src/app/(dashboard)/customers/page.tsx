@@ -128,41 +128,43 @@ export default function CustomersPage() {
       header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (c) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end">
           <Link href={`/customers/${c.id}`} onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
-              size="sm"
-              className="h-9 px-3 gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
+              size="xs"
+              className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
             >
               <Eye className="h-3.5 w-3.5" />
               {UI_LABELS.shared.common.DETAILS}
             </Button>
           </Link>
-          <div className="w-px h-4 bg-slate-100 mx-1" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedCustomer(c);
-              setIsEditModalOpen(true);
-            }}
-            title={UI_LABELS.modules.customers.EDIT_PROFILE}
-          >
-            <Settings2 className="h-4 w-4" />
-          </Button>
-          <Link href={`/orders?new=true&customerId=${c.id}`} onClick={(e) => e.stopPropagation()}>
+          <div className="w-px h-4 bg-slate-100 mx-3" />
+          <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
-              size="sm"
-              className="h-9 w-9 p-0 text-brand-blue hover:bg-brand-blue/5 rounded-xl transition-all"
-              title={UI_LABELS.forms.intake.TITLE}
+              size="xs"
+              className="w-9 p-0 text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedCustomer(c);
+                setIsEditModalOpen(true);
+              }}
+              title={UI_LABELS.modules.customers.EDIT_PROFILE}
             >
-              <PlusCircle className="h-4 w-4" />
+              <Settings2 className="h-4 w-4" />
             </Button>
-          </Link>
+            <Link href={`/orders?new=true&customerId=${c.id}`} onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="xs"
+                className="w-9 p-0 text-brand-blue hover:bg-brand-blue/5 transition-all"
+                title={UI_LABELS.forms.intake.TITLE}
+              >
+                <PlusCircle className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       ),
     },

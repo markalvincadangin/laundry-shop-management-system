@@ -173,13 +173,13 @@ export default function AuditLogPage() {
       ),
     },
     {
-      header: "",
+      header: UI_LABELS.shared.common.ACTIONS,
       align: "right",
       render: (a) => (
         <Button 
           variant="ghost" 
-          size="sm"
-          className="h-11 px-5 gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 rounded-2xl transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
+          size="xs"
+          className="text-slate-400 hover:text-brand-blue hover:bg-brand-blue/5 transition-all border border-transparent hover:border-brand-blue/10 active:scale-95"
           onClick={() => setSelected(a)}
         >
           <Activity className="h-4 w-4" />
