@@ -390,11 +390,16 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
-                      <Calendar className="h-3 w-3" /> {UI_LABELS.shared.common.DATE} & {UI_LABELS.shared.common.TIME}
+                      <Calendar className="h-3 w-3" /> {UI_LABELS.shared.common.DATE}
                     </p>
-                    <p className="text-sm font-black text-slate-900 tabular-nums">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : "—"}
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-sm font-black text-slate-900 tracking-tight">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "—"}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                        {order.createdAt ? new Date(order.createdAt).toLocaleTimeString(undefined, { timeStyle: 'short' }) : ""}
+                      </p>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
