@@ -31,7 +31,8 @@ public class FlywayConfig {
                     throw e;
                 }
             }
-            log.info("Running database migrations...");
+            log.info("Repairing and running database migrations...");
+            flyway.repair();
             flyway.migrate();
         };
     }
