@@ -1,6 +1,8 @@
 package com.himotech.laundryms.api.mapper;
 
 import com.himotech.laundryms.api.dto.response.PaymentResponse;
+import com.himotech.laundryms.orders.entity.Order;
+import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.payments.entity.Payment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

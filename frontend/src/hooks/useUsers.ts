@@ -7,19 +7,19 @@ import { UI_LABELS } from "@/constants/ui";
  * useUsers: Hook for staff management.
  * Standardized with TanStack Query and consistent return structure.
  */
-export function useUsers() {
+export function useUsers(params: any = { page: 0, size: 20 }) {
   const queryClient = useQueryClient();
 
   const {
-    data: users = [],
+    data,
     isLoading: loading,
     isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => usersService.getAll(),
-    staleTime: 60 * 1000, // 1 minute
+    queryKey: ["users", params],
+    queryFn: () => usersService.getAll(params),
+    staleTime: 30 * 1000, // 30 seconds
   });
 
   const toggleStatusMutation = useMutation({
@@ -34,13 +34,13 @@ export function useUsers() {
   });
 
   return { 
-    users, 
+    users: data?.content ?? [], 
     loading, 
     error: isError ? (error as any).message : null, 
     pagination: {
-      page: 0,
-      totalPages: 1,
-      totalElements: users.length,
+      page: data?.page ?? 0,
+      totalPages: data?.totalPages ?? 0,
+      totalElements: data?.totalElements ?? 0,
     },
     refresh: refetch, 
     toggleStatus: toggleStatusMutation.mutate 

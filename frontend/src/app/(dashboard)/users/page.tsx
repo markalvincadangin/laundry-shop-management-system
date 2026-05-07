@@ -34,6 +34,7 @@ import { UserResponse } from "@/services/users.service";
 import { DataTableColumn } from "@/types/components";
 import { UserModal } from "@/components/features/users/UserModal";
 import { formatDate } from "@/lib/utils";
+import { useRegistry } from "@/hooks/useRegistry";
 
 /**
  * Staff Management Page — High Fidelity (v5.0)
@@ -43,22 +44,31 @@ import { formatDate } from "@/lib/utils";
  */
 export default function UsersPage() {
   const { user: currentUser, loading: authLoading } = useAuth();
-  const { users, pagination, loading, refresh, toggleStatus } = useUsers();
+  // Registry State Management (Centralized Architecture)
+  const { 
+    params, 
+    sortBy, 
+    sortDir, 
+    searchTerm, 
+    setSearchTerm, 
+    updateParams, 
+    handleSort 
+  } = useRegistry({
+    defaultSortBy: "username",
+    defaultSortDir: "asc",
+    defaultPageSize: 20,
+    searchParamKey: "q"
+  });
+
+  const { users, pagination, loading, refresh, toggleStatus } = useUsers(params as any);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Status Confirmation State
   const [confirmStatusUser, setConfirmStatusUser] = useState<UserResponse | null>(null);
 
-  const filteredUsers = users.filter(u => 
-    u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.lastName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const adminCount = users.filter(u => u.role === "ADMIN").length;
-  const activeCount = users.filter(u => u.isActive).length;
+  const adminCount = users.filter((u: UserResponse) => u.role === "ADMIN").length;
+  const activeCount = users.filter((u: UserResponse) => u.isActive).length;
 
   if (authLoading) {
     return (
@@ -93,6 +103,8 @@ export default function UsersPage() {
   const columns: DataTableColumn<UserResponse>[] = [
     {
       header: UI_LABELS.modules.users.USERNAME,
+      sortable: true,
+      sortKey: "username",
       render: (u) => (
         <div className="flex items-center gap-grid-4 group">
           <Avatar 
@@ -113,6 +125,8 @@ export default function UsersPage() {
     },
     {
       header: UI_LABELS.shared.common.ROLE,
+      sortable: true,
+      sortKey: "role",
       render: (u) => (
         <div className="flex items-center gap-2">
           <div className={`h-6 w-6 rounded-lg flex items-center justify-center border ${
@@ -132,6 +146,8 @@ export default function UsersPage() {
     },
     {
       header: UI_LABELS.shared.common.STATUS,
+      sortable: true,
+      sortKey: "isActive",
       render: (u) => (
         <StatusBadge 
           variant={u.isActive ? "success" : "neutral"} 
@@ -143,6 +159,8 @@ export default function UsersPage() {
     },
     {
       header: UI_LABELS.shared.common.DATE,
+      sortable: true,
+      sortKey: "createdAt",
       render: (u) => (
         <div className="flex items-center gap-3 text-slate-500">
           <div className="flex flex-col">
@@ -250,9 +268,12 @@ export default function UsersPage() {
         className="space-y-grid-6"
       >
         <DataTable
-          data={filteredUsers}
+          data={users}
           columns={columns}
           loading={loading}
+          sortBy={sortBy}
+          sortDir={sortDir}
+          onSort={handleSort}
           emptyState={
             <EmptyState
               title={UI_LABELS.modules.users.EMPTY_TITLE}
@@ -264,11 +285,11 @@ export default function UsersPage() {
 
         <Pagination
           currentPage={pagination.page}
-          totalPages={Math.ceil(filteredUsers.length / 20) || 1}
-          totalElements={filteredUsers.length}
-          pageSize={20}
-          onPageChange={() => {}} // User list is usually small
-          onPageSizeChange={() => {}}
+          totalPages={pagination.totalPages}
+          totalElements={pagination.totalElements}
+          pageSize={params.size}
+          onPageChange={(page) => updateParams({ page })}
+          onPageSizeChange={(newSize) => updateParams({ size: newSize, page: 0 })}
           isLoading={loading}
         />
       </motion.div>

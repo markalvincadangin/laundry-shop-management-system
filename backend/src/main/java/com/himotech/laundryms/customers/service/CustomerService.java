@@ -44,14 +44,28 @@ public class CustomerService {
 
     /**
      * Searches customers by query with pagination.
-     * If query is blank, returns all customers paged.
+     * Uses CustomerSpecification for dynamic criteria-based filtering.
      */
     @Transactional(readOnly = true)
-    public org.springframework.data.domain.Page<Customer> search(String query, Boolean isActive, java.time.LocalDate from,
-            java.time.LocalDate to, org.springframework.data.domain.Pageable pageable) {
+    public org.springframework.data.domain.Page<Customer> search(
+            String query, 
+            Boolean isActive, 
+            java.time.LocalDate from,
+            java.time.LocalDate to, 
+            org.springframework.data.domain.Pageable pageable) {
+        
         java.time.Instant fromTs = from != null ? from.atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
         java.time.Instant toTs = to != null ? to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
-        return customerRepository.search(query != null ? query.trim() : null, isActive, fromTs, toTs, pageable);
+        
+        org.springframework.data.jpa.domain.Specification<Customer> spec = 
+            com.himotech.laundryms.customers.repository.CustomerSpecification.filterBy(
+                query != null ? query.trim() : null, 
+                isActive, 
+                fromTs, 
+                toTs
+            );
+            
+        return customerRepository.findAll(spec, pageable);
     }
 
     /**

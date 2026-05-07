@@ -1,6 +1,8 @@
 package com.himotech.laundryms.clientalert.api;
 
 import com.himotech.laundryms.clientalert.entity.ClientAlert;
+import com.himotech.laundryms.customers.entity.Customer;
+import com.himotech.laundryms.orders.entity.Order;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

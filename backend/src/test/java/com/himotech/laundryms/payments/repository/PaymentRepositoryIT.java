@@ -433,7 +433,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(null, null, null, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, null, null, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(3);
@@ -455,7 +455,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(null, from, to, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, from, to, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(1);
@@ -471,7 +471,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(null, from, null, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, from, null, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(2);
@@ -487,7 +487,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(null, null, to, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, null, to, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(2);
@@ -502,7 +502,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(order1.getId(), null, null, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(order1.getId(), null, null, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(1);
@@ -519,7 +519,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(order2.getId(), from, to, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(order2.getId(), from, to, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(1);
@@ -535,7 +535,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(null, from, to, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, from, to, null), pageable);
 
             // Then
             assertThat(result.getTotalElements()).isEqualTo(0);
@@ -550,8 +550,8 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable secondPage = PageRequest.of(1, 2);
 
             // When
-            Page<Payment> page1 = paymentRepository.findAllFiltered(null, null, null, null, firstPage);
-            Page<Payment> page2 = paymentRepository.findAllFiltered(null, null, null, null, secondPage);
+            Page<Payment> page1 = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, null, null, null), firstPage);
+            Page<Payment> page2 = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, null, null, null), secondPage);
 
             // Then
             assertThat(page1.getTotalElements()).isEqualTo(3);
@@ -572,7 +572,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             // When
-            Page<Payment> result = paymentRepository.findAllFiltered(null, null, null, null, pageable);
+            Page<Payment> result = paymentRepository.findAll(com.himotech.laundryms.payments.repository.PaymentSpecification.filterBy(null, null, null, null), pageable);
             entityManager.clear(); // Clear persistence context to ensure associations are loaded
 
             // Then - Accessing associations should not trigger LazyInitializationException
