@@ -153,7 +153,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     @DisplayName("filterBy - Should return all orders when all filters are null")
     void filterBy_ShouldReturnAllOrders_WhenAllFiltersAreNull() {
         // Given - All filter parameters are null
-        Specification<Order> spec = OrderSpecification.filterBy(null, null, null, null, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, null, null, null, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -171,7 +171,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     @DisplayName("filterBy - Should filter by OrderStatus enum when only status is provided")
     void filterBy_ShouldFilterByStatus_WhenOnlyStatusProvided() {
         // Given - Filter by WASHING status only
-        Specification<Order> spec = OrderSpecification.filterBy(OrderStatus.WASHING, null, null, null, null);
+        Specification<Order> spec = OrderSpecification.filterBy(OrderStatus.WASHING, null, null, null, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -189,7 +189,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     @DisplayName("filterBy - Should filter by PaymentStatus enum when only payment status is provided")
     void filterBy_ShouldFilterByPaymentStatus_WhenOnlyPaymentStatusProvided() {
         // Given - Filter by PAID payment status only
-        Specification<Order> spec = OrderSpecification.filterBy(null, PaymentStatus.PAID, null, null, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, PaymentStatus.PAID, null, null, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -211,6 +211,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
         Specification<Order> spec = OrderSpecification.filterBy(
                 OrderStatus.RECEIVED,
                 PaymentStatus.UNPAID,
+                null,
                 null,
                 null,
                 null
@@ -235,7 +236,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     void filterBy_ShouldFilterByFromTimestamp_WhenFromTsProvided() {
         // Given - Set fromTs to just before earliest order
         Instant fromTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
-        Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, null, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, null, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -253,7 +254,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     void filterBy_ShouldFilterByToTimestamp_WhenToTsProvided() {
         // Given - Set toTs to just after latest order
         Instant toTs = latestCreatedAt.plus(1, ChronoUnit.SECONDS);
-        Specification<Order> spec = OrderSpecification.filterBy(null, null, null, toTs, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, null, null, toTs, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -272,7 +273,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
         // Given - Date range covering all test orders
         Instant fromTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
         Instant toTs = latestCreatedAt.plus(1, ChronoUnit.SECONDS);
-        Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, toTs, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, toTs, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -291,7 +292,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
         // Given - Date range before test orders were created
         Instant fromTs = earliestCreatedAt.minus(2, ChronoUnit.HOURS);
         Instant toTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
-        Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, toTs, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, toTs, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -315,6 +316,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
                 PaymentStatus.PAID,
                 fromTs,
                 toTs,
+                null,
                 null
         );
 
@@ -340,6 +342,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
                 PaymentStatus.PAID,
                 null,
                 null,
+                null,
                 null
         );
 
@@ -357,7 +360,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     @DisplayName("filterBy - Should filter by CANCELLED status correctly")
     void filterBy_ShouldFilterByCancelledStatus_WhenStatusIsCancelled() {
         // Given - Filter by CANCELLED status
-        Specification<Order> spec = OrderSpecification.filterBy(OrderStatus.CANCELLED, null, null, null, null);
+        Specification<Order> spec = OrderSpecification.filterBy(OrderStatus.CANCELLED, null, null, null, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);
@@ -378,19 +381,19 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
         // by executing multiple queries with different enum values in sequence
 
         // Query 1: Filter by WASHING
-        Specification<Order> spec1 = OrderSpecification.filterBy(OrderStatus.WASHING, null, null, null, null);
+        Specification<Order> spec1 = OrderSpecification.filterBy(OrderStatus.WASHING, null, null, null, null, null);
         List<Order> results1 = orderRepository.findAll(spec1);
         assertThat(results1).hasSize(1);
         assertThat(results1.get(0).getCurrentStatus()).isEqualTo(OrderStatus.WASHING);
 
         // Query 2: Filter by RECEIVED
-        Specification<Order> spec2 = OrderSpecification.filterBy(OrderStatus.RECEIVED, null, null, null, null);
+        Specification<Order> spec2 = OrderSpecification.filterBy(OrderStatus.RECEIVED, null, null, null, null, null);
         List<Order> results2 = orderRepository.findAll(spec2);
         assertThat(results2).hasSize(1);
         assertThat(results2.get(0).getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);
 
         // Query 3: Filter by RELEASED
-        Specification<Order> spec3 = OrderSpecification.filterBy(OrderStatus.RELEASED, null, null, null, null);
+        Specification<Order> spec3 = OrderSpecification.filterBy(OrderStatus.RELEASED, null, null, null, null, null);
         List<Order> results3 = orderRepository.findAll(spec3);
         assertThat(results3).hasSize(1);
         assertThat(results3.get(0).getCurrentStatus()).isEqualTo(OrderStatus.RELEASED);
@@ -405,7 +408,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
     @DisplayName("filterBy - Should handle mix of null and non-null enum parameters")
     void filterBy_ShouldHandleMixedNullAndNonNullEnums_Correctly() {
         // Given - Null OrderStatus, non-null PaymentStatus
-        Specification<Order> spec = OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null);
+        Specification<Order> spec = OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null, null);
 
         // When
         List<Order> results = orderRepository.findAll(spec);

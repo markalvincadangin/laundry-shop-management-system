@@ -284,11 +284,11 @@ public class OrderService {
         Instant from = date.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant to = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to, null));
+        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to, null, null));
         long inProgress = orderRepository.count(OrderSpecification.filterByStatusIn(
                 Set.of(OrderStatus.WASHING, OrderStatus.DRYING, OrderStatus.FOLDING)));
-        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null, null));
-        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null));
+        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null, null, null));
+        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null, null));
 
         BigDecimal todaysRevenue = paymentRepository.sumAmountPaidByPaymentDateBetween(from, to);
 
@@ -406,10 +406,11 @@ public class OrderService {
             java.time.LocalDate from,
             java.time.LocalDate to,
             String q,
+            Long customerId,
             Pageable pageable) {
         java.time.Instant fromTs = from != null ? from.atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
         java.time.Instant toTs = to != null ? to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
-        var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs, q);
+        var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs, q, customerId);
         return orderRepository.findAll(spec, pageable);
     }
 

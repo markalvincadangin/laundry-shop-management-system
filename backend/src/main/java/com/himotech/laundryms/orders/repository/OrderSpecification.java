@@ -27,7 +27,8 @@ public final class OrderSpecification {
             PaymentStatus paymentStatus,
             Instant fromTs,
             Instant toTs,
-            String q) {
+            String q,
+            Long customerId) {
         return (root, query, cb) -> {
             // Performance Optimization: Eagerly fetch Customer to prevent N+1 issues in registries
             // We skip fetch for count queries (Long.class) to prevent JPA exceptions
@@ -41,6 +42,9 @@ public final class OrderSpecification {
             }
             if (paymentStatus != null) {
                 predicates.add(cb.equal(root.get("paymentStatus"), paymentStatus));
+            }
+            if (customerId != null) {
+                predicates.add(cb.equal(root.get("customer").get("id"), customerId));
             }
             if (fromTs != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), fromTs));

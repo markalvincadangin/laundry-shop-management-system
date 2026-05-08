@@ -147,6 +147,7 @@ public class OrderController {
                 params.getFrom(),
                 params.getTo(),
                 params.getQ(),
+                params.getCustomerId(),
                 pageable);
         final List<OrderResponse> content = ordersPage.getContent().stream()
                 .map(orderMapper::toResponse)
