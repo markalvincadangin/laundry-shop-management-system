@@ -55,6 +55,11 @@ public final class OrderListParams {
     private String sortBy = "createdAt";
 
     /**
+     * Filter by customer ID.
+     */
+    private Long customerId;
+
+    /**
      * Sort direction.
      */
     private String sortDir = "desc";
