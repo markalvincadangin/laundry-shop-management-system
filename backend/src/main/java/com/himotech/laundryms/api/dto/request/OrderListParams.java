@@ -63,4 +63,9 @@ public final class OrderListParams {
      * Sort direction.
      */
     private String sortDir = "desc";
+
+    /**
+     * Filter by service rate ID.
+     */
+    private Integer serviceRateId;
 }

@@ -247,6 +247,7 @@ export function ReportDocument({ data }: ReportDocumentProps) {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={styles.brandWrapper}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text */}
               <Image src={getFontPath("/branding/logo.svg")} style={styles.logo} />
               <Text style={styles.shopName}>Faith Laundry Shop</Text>
             </View>
@@ -275,6 +276,7 @@ export function ReportDocument({ data }: ReportDocumentProps) {
             <Text style={styles.sectionTitle}>Performance Visualizations</Text>
             {data.charts.map((img, idx) => (
               <View key={idx} style={styles.chartContainer}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <Image src={img} />
               </View>
             ))}

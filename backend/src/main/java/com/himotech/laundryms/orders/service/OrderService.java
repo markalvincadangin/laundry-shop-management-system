@@ -2,6 +2,7 @@ package com.himotech.laundryms.orders.service;
 
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
+import com.himotech.laundryms.api.dto.request.OrderListParams;
 import com.himotech.laundryms.api.dto.request.OrderPreviewRequest;
 import com.himotech.laundryms.api.dto.request.UpdateOrderRequest;
 import com.himotech.laundryms.api.dto.response.OrderPreviewResponse;
@@ -28,6 +29,7 @@ import com.himotech.laundryms.api.mapper.OrderMapper;
 import com.himotech.laundryms.auditlog.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -284,11 +286,11 @@ public class OrderService {
         Instant from = date.atStartOfDay(ZoneOffset.UTC).toInstant();
         Instant to = date.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
 
-        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to, null, null));
+        long todaysOrders = orderRepository.count(OrderSpecification.filterBy(null, null, from, to, null, null, null));
         long inProgress = orderRepository.count(OrderSpecification.filterByStatusIn(
                 Set.of(OrderStatus.WASHING, OrderStatus.DRYING, OrderStatus.FOLDING)));
-        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null, null, null));
-        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null, null));
+        long readyForPickup = orderRepository.count(OrderSpecification.filterBy(OrderStatus.READY_FOR_PICKUP, null, null, null, null, null, null));
+        long unpaidOrders = orderRepository.count(OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null, null, null));
 
         BigDecimal todaysRevenue = paymentRepository.sumAmountPaidByPaymentDateBetween(from, to);
 
@@ -400,17 +402,19 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Order> findAll(
-            OrderStatus status,
-            PaymentStatus paymentStatus,
-            java.time.LocalDate from,
-            java.time.LocalDate to,
-            String q,
-            Long customerId,
-            Pageable pageable) {
-        java.time.Instant fromTs = from != null ? from.atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
-        java.time.Instant toTs = to != null ? to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant() : null;
-        var spec = OrderSpecification.filterBy(status, paymentStatus, fromTs, toTs, q, customerId);
+    public Page<Order> search(OrderListParams params, Pageable pageable) {
+        Instant from = params.getFrom() != null ? params.getFrom().atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        Instant to = params.getTo() != null ? params.getTo().plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        
+        Specification<Order> spec = OrderSpecification.filterBy(
+                params.getStatus(),
+                params.getPaymentStatus(),
+                from,
+                to,
+                params.getQ(),
+                params.getCustomerId(),
+                params.getServiceRateId()
+        );
         return orderRepository.findAll(spec, pageable);
     }
 

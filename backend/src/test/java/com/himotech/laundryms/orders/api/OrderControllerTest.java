@@ -3,6 +3,7 @@ package com.himotech.laundryms.orders.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.himotech.laundryms.api.dto.request.AddOnInput;
 import com.himotech.laundryms.api.dto.request.CreateOrderRequest;
+import com.himotech.laundryms.api.dto.request.OrderListParams;
 import com.himotech.laundryms.api.dto.request.UpdateOrderStatusRequest;
 import com.himotech.laundryms.common.enums.OrderStatus;
 import com.himotech.laundryms.common.enums.PaymentStatus;
@@ -222,7 +223,7 @@ class OrderControllerTest {
             Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
             Page<Order> page = new PageImpl<>(List.of(order), PageRequest.of(0, 20), 1);
-            when(orderService.findAll(any(), any(), any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
+            when(orderService.search(any(OrderListParams.class), any(Pageable.class))).thenReturn(page);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
             mockMvc.perform(get("/api/v1/orders"))
@@ -235,7 +236,7 @@ class OrderControllerTest {
                     .andExpect(jsonPath("$.totalElements").value(1))
                     .andExpect(jsonPath("$.totalPages").value(1));
 
-            verify(orderService).findAll(any(), any(), any(), any(), any(), any(), any(Pageable.class));
+            verify(orderService).search(any(OrderListParams.class), any(Pageable.class));
         }
     }
 

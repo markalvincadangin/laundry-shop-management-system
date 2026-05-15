@@ -32,5 +32,30 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
      * @return an Optional containing the user if found, empty otherwise
      */
     Optional<User> findFirstByRole(UserRole role);
+
+    /**
+     * Counts users by their role.
+     *
+     * @param role the user role
+     * @return the count of users
+     */
+    long countByRole(UserRole role);
+
+    /**
+     * Counts users by role and active status.
+     *
+     * @param role the user role
+     * @param isActive the active status
+     * @return the count of users
+     */
+    long countByRoleAndIsActive(UserRole role, boolean isActive);
+
+    /**
+     * Counts users by their active status.
+     *
+     * @param isActive the active status
+     * @return the count of users
+     */
+    long countByIsActive(boolean isActive);
 }
 

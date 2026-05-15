@@ -1,39 +1,28 @@
 package com.himotech.laundryms.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * FlywayConfig — Customizes Flyway migration behavior.
- * Provides a strategy to clean the database on startup if a specific property
- * is set.
+ *
+ * <p>Strategy: repair (fix any checksum mismatches) then migrate.
+ * Database resets are done externally (Neon dashboard for prod,
+ * {@code docker compose down -v} for dev) — never via flyway.clean().
  */
 @Configuration
 @Slf4j
 public class FlywayConfig {
 
-    @Value("${spring.flyway.clean-on-startup:false}")
-    private boolean cleanOnStartup;
-
     @Bean
     public FlywayMigrationStrategy flywayMigrationStrategy() {
         return flyway -> {
-            if (cleanOnStartup) {
-                log.warn("DATABASE CLEAN-ON-STARTUP IS ENABLED! Wiping all data...");
-                try {
-                    flyway.clean();
-                    log.info("Database cleaned successfully.");
-                } catch (Exception e) {
-                    log.error("Failed to clean database. Check if 'spring.flyway.clean-disabled' is set to false.", e);
-                    throw e;
-                }
-            }
-            log.info("Repairing and running database migrations...");
-            flyway.repair();
+            // repair() removed to preserve migration immutability guarantees.
+            // Use manual repair or dev-only properties if checksum updates are needed.
             flyway.migrate();
+            log.info("Flyway migrations completed successfully.");
         };
     }
 }

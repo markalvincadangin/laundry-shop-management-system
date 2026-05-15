@@ -1,3 +1,5 @@
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { paymentsService, type CreatePaymentRequest } from "@/services/payments.service";
 import { toast } from "sonner";
@@ -33,3 +35,4 @@ export function usePaymentAction() {
     error: mutation.error,
   };
 }
+

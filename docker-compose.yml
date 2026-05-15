@@ -53,10 +53,11 @@ services:
         condition: service_healthy
 
   frontend:
-    image: node:20-alpine
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
     container_name: laundry-frontend
-    working_dir: /app
-    command: sh -c "npm install && npm run dev"
     volumes:
       - ./frontend:/app
       - node_modules:/app/node_modules

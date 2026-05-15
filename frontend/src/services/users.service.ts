@@ -1,5 +1,7 @@
 import { apiClient } from "@/lib/api-client";
-import { UserRole } from "@/types";
+import { UserRole, components } from "@/types";
+
+export type UserStatsResponse = components["schemas"]["UserStatsResponse"];
 
 export interface UserResponse {
   id: string;
@@ -29,6 +31,7 @@ export interface UpdateUserRequest {
 
 export const usersService = {
   getAll: (params?: any) => apiClient.get<any>("/v1/users", { params }),
+  getStats: () => apiClient.get<UserStatsResponse>("/v1/users/stats"),
   create: (data: CreateUserRequest) => apiClient.post<UserResponse>("/v1/users", data),
   update: (id: string, data: UpdateUserRequest) => apiClient.patch<UserResponse>(`/v1/users/${id}`, data),
   toggleStatus: (id: string) => apiClient.patch(`/v1/users/${id}/toggle-status`, {}),

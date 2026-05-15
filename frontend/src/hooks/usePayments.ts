@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { paymentsService, type PaymentListParams } from "@/services/payments.service";
 
@@ -31,3 +33,4 @@ export function usePayments(params: PaymentListParams) {
     refresh,
   };
 }
+

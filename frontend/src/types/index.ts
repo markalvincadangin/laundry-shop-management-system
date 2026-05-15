@@ -1,4 +1,5 @@
 import { components } from "./api.generated";
+export type { components };
 
 export type OrderStatus = components["schemas"]["OrderStatus"];
 export type PaymentStatus = components["schemas"]["PaymentStatus"];

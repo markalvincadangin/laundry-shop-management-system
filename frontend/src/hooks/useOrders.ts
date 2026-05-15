@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ordersService, OrderListParams } from "@/services/orders.service";
 import { OrderStatus } from "@/constants/order-status";
@@ -78,3 +80,4 @@ export function useOrders(params?: OrderListParams) {
     advanceOrder,
   };
 }
+

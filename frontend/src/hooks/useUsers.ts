@@ -1,7 +1,10 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usersService, UserResponse } from "@/services/users.service";
+import { usersService, UserResponse, UserStatsResponse } from "@/services/users.service";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * useUsers: Hook for staff management.
@@ -9,6 +12,7 @@ import { UI_LABELS } from "@/constants/ui";
  */
 export function useUsers(params: any = { page: 0, size: 20 }) {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
 
   const {
     data,
@@ -20,12 +24,21 @@ export function useUsers(params: any = { page: 0, size: 20 }) {
     queryKey: ["users", params],
     queryFn: () => usersService.getAll(params),
     staleTime: 30 * 1000, // 30 seconds
+    enabled: currentUser?.role === "ADMIN",
+  });
+
+  const { data: stats } = useQuery<UserStatsResponse>({
+    queryKey: ["user-stats"],
+    queryFn: () => usersService.getStats(),
+    staleTime: 60 * 1000,
+    enabled: currentUser?.role === "ADMIN",
   });
 
   const toggleStatusMutation = useMutation({
     mutationFn: (id: string) => usersService.toggleStatus(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user-stats"] });
       toast.success(UI_LABELS.feedback.success.GENERIC);
     },
     onError: () => {
@@ -35,6 +48,7 @@ export function useUsers(params: any = { page: 0, size: 20 }) {
 
   return { 
     users: data?.content ?? [], 
+    stats,
     loading, 
     error: isError ? (error as any).message : null, 
     pagination: {

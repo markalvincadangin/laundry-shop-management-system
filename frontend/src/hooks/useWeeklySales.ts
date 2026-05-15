@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { reportsService } from "@/services/reports.service";
@@ -43,3 +45,4 @@ export function useWeeklySales() {
 
   return { chartData, loading, refresh: fetchChart };
 }
+

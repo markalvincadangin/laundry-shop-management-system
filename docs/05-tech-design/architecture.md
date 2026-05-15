@@ -54,7 +54,7 @@
 
 | Layer      | Technology                            |
 |------------|---------------------------------------|
-| Backend    | Java 21, Spring Boot 3.4+, Maven      |
+| Backend    | Java 21, Spring Boot 3.5+, Maven      |
 | Frontend   | Next.js 15+, TypeScript, Tailwind CSS |
 | Database   | PostgreSQL 16                         |
 | Migrations | Flyway                                |
@@ -83,7 +83,7 @@
    - Reports dashboard (Admin only)
    - Public tracking page (reference number lookup)
 
-2. **API Server (Backend)** — Java Spring Boot 3.3+
+2. **API Server (Backend)** — Java Spring Boot 3.5+
    - Business rules enforcement (Service layer only)
    - Reference number generation and uniqueness
    - Auth and role-based access (ADMIN vs STAFF)
@@ -172,11 +172,11 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 ### 8.1 Local Development
 
 - **Frontend:** `localhost:3001`
-- **Backend:** `localhost:8081`
+- **Backend:** `localhost:8080` (mapped to host via `BACKEND_PORT`)
 - **Database:** PostgreSQL 16 via Docker Compose
-- **Configuration:** `.env` (backend), `.env.local` (frontend) — gitignored; use `.env.example` as template
-- **Secrets:** Never committed; JWT secret, DB credentials in `docker/.env.docker`
-- **Orchestration:** `docker compose --env-file docker/.env.docker up -d`
+- **Configuration:** Unified `.env` at project root — gitignored; use `.env.example` as template
+- **Secrets:** Never committed; JWT secret, DB credentials in root `.env`
+- **Orchestration:** `docker compose up -d`
 
 ### 8.2 CI
 

@@ -171,7 +171,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 
 ### 7.1 Technical Constraints
 
-- Backend: Java 21, Spring Boot 3.3+
+- Backend: Java 21, Spring Boot 3.5+
 - Database: PostgreSQL 16
 - Migration Tool: Flyway
 - Frontend: Next.js 14+, TypeScript

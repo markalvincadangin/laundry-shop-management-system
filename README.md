@@ -114,7 +114,7 @@ These rules are enforced in the backend service layer and derived from **busines
 ### Technology Stack
 | Layer                | Technology                  | Version                  |
 |----------------------|-----------------------------|--------------------------|
-| **Backend**          | Java (Spring Boot)          | 21 LTS, Spring Boot 3.3+ |
+| **Backend**          | Java (Spring Boot)          | 21 LTS, Spring Boot 3.5  |
 | **Frontend**         | Next.js (React, TypeScript) | 14+                      |
 | **Database**         | PostgreSQL                  | 16                       |
 | **Migrations**       | Flyway                      | Embedded                 |
@@ -134,7 +134,7 @@ These rules are enforced in the backend service layer and derived from **busines
          │ HTTP/REST
          ▼
 ┌─────────────────┐
-│   API Server    │  Spring Boot 3.3 (Java 21)
+│   API Server    │  Spring Boot 3.5 (Java 21)
 │   (Backend)     │  - Business rules enforcement
 │                 │  - Pricing computation
 └────────┬────────┘  - Auth & role-based access
@@ -205,8 +205,8 @@ The REST API follows the **OpenAPI 3.0.3** specification defined in **[docs/05-t
 #### API Documentation
 
 When the backend is running, access interactive API documentation at:
-- **Swagger UI**: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
-- **OpenAPI JSON**: [http://localhost:8081/v3/api-docs](http://localhost:8081/v3/api-docs)
+- **Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
 For the full list of endpoints (e.g. order preview, order by ID, payments by ID), see **[docs/05-tech-design/openapi.yaml](docs/05-tech-design/openapi.yaml)**.
 
@@ -230,11 +230,10 @@ laundry-shop-management-system/
 │   ├── mvnw.cmd                # Maven wrapper (Windows)
 │   └── mvnw                    # Maven wrapper (Unix)
 ├── frontend/                    # Next.js client application
-├── docker-compose.yml           # Base container setup (moved to root)
-├── docker-compose.override.yml  # Development overrides (moved to root)
-├── docker/
-│   ├── docker-compose.prod.yml  # Production setup
-│   ├── .env.docker              # Database credentials
+├── docker-compose.yml           # Dev stack (Database + Backend + Frontend)
+├── docker-compose.prod.yml      # Production stack
+├── .env                         # Unified config (copy from .env.example)
+├── .env.example                 # Template with Render checklist
 ├── docs/                        # Project documentation (source of truth)
 │   ├── README.md               # Documentation index — start here
 │   ├── 00-context/
@@ -413,7 +412,7 @@ docker compose logs -f backend
 
 #### 4.1 Internal Access
 - **App:** [http://localhost:3001](http://localhost:3001)
-- **API Docs:** [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+- **API Docs:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 #### 4.2 Sharing with the Team (Ngrok)
 If you need to share your local environment with the team or the client, use the provided script:
@@ -485,7 +484,7 @@ If migrations fail or you need to reset:
 ```powershell
 # Option 1: Clean rebuild (deletes all data)
 docker compose down -v
-docker compose -f docker/docker-compose.dev.yml up -d
+docker compose up -d
 cd backend
 .\mvnw.cmd spring-boot:run
 
@@ -497,7 +496,7 @@ cd backend
 
 ### Step 5: Backend Setup (Spring Boot)
 
-The backend is a **Java 21** application using **Spring Boot 3.3+** and **Maven**.
+The backend is a **Java 21** application using **Spring Boot 3.5** and **Maven**.
 
 #### 5.1 Navigate to Backend Directory
 
@@ -556,11 +555,11 @@ INFO  LaundrySystemApplication : Started LaundrySystemApplication in X.XXX secon
 **Test the health endpoint:**
 ```powershell
 # Should return HTTP 200 OK
-curl http://localhost:8081/api/v1/health
+curl http://localhost:8080/api/v1/health
 ```
 
 **Test the API documentation:**
-- Open browser: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+- Open browser: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 #### 5.5 Backend Startup Checklist
 
@@ -661,7 +660,7 @@ For deploying to the shop's hardware (production):
 #    - NEXT_PUBLIC_API_URL (e.g., http://192.168.1.100/api)
 
 # 2. Start production stack (Nginx + Backend + Frontend + PostgreSQL)
-docker compose -f docker/docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 
 # 3. Access via http://localhost or your server IP
 ```
@@ -730,7 +729,7 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 - **Feature branches** — `feature/short-description` (e.g., `feature/order-preview`).
 - **Bugfix branches** — `fix/bug-description`.
 - **Workflow:** Sync from `develop` (`git checkout develop && git pull --rebase origin develop`) → Branch from `develop` → Commit (use `feat:`, `fix:`, `docs:`, etc.) → Push → Open PR **into `develop`** → Request review.
-- **Local setup:** Create env files from `.env.example` in `docker/`, `backend/`, `frontend/` → Start DB: `docker compose --env-file docker/.env.docker up -d` → Backend: `cd backend` + `.\mvnw.cmd spring-boot:run` → Frontend: `cd frontend` + `npm run dev` → Open http://localhost:3000
+- **Local setup:** Copy `.env.example` to `.env` at project root → Start stack: `docker compose up -d` → Open http://localhost:3001
 
 ### Pull Request Checklist
 
@@ -741,7 +740,7 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 
 ### Rules for All Team Members
 
-- **Never commit** `.env`, `.env.docker`, `.env.local`, or any file with secrets.
+- **Never commit** `.env`, `.env.local`, or any file with secrets.
 - **Never force-push** to `main` (or shared branches).
 - **Pull before you push** — `git pull --rebase origin main` before opening a PR.
 - **Keep PRs small** — One feature or fix per PR.
@@ -751,15 +750,15 @@ For detailed data model and relationships, see `docs/04-data-design/`.
 
 ### Database Connection Issues
 - **Verify Docker is running:** `docker compose ps`
-- **Check credentials:** Ensure `docker/.env.docker` and `backend/.env` have correct `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`
+- **Check credentials:** Ensure root `.env` has correct `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`
 - **Verify port availability:** Ensure PostgreSQL port 5433 is not in use
-- **Restart container:** `docker compose down` then `docker compose --env-file docker/.env.docker up -d`
+- **Restart container:** `docker compose down` then `docker compose up -d`
 
 ### Flyway Migrations Fail
 - **Check migration format:** Files should follow `V{version}__{description}.sql` (e.g., `V1__init.sql`)
 - **Verify file encoding:** Ensure all migration files are in UTF-8 format
 - **Review logs:** Check application console output for detailed migration error messages
-- **Reset database:** `docker compose down -v` then `docker compose --env-file docker/.env.docker up -d`
+- **Reset database:** `docker compose down -v` then `docker compose up -d`
 
 ### Backend Startup Issues
 - **Check Java version:** `java -version` (should be 21 or higher)

@@ -590,6 +590,10 @@ export interface paths {
                     size?: number;
                     sortBy?: string;
                     sortDir?: "asc" | "desc";
+                    /** @description Filter by specific customer ID */
+                    customerId?: number;
+                    /** @description Filter by service type (Rate ID) */
+                    serviceRateId?: number;
                 };
                 header?: never;
                 path?: never;
@@ -1339,6 +1343,52 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["AuditLogPageResponse"];
+                    };
+                };
+                /** @description Forbidden - Admin only */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user statistics
+         * @description Returns global counts of admins, active staff, and total users.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description User statistics */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserStatsResponse"];
                     };
                 };
                 /** @description Forbidden - Admin only */
@@ -2157,6 +2207,11 @@ export interface components {
             totalPages: number;
             first: boolean;
             last: boolean;
+        };
+        UserStatsResponse: {
+            totalAdmins: number;
+            totalActiveStaff: number;
+            totalUsers: number;
         };
     };
     responses: never;

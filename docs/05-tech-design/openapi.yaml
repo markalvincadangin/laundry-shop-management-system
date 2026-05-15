@@ -399,6 +399,14 @@ paths:
         - in: query
           name: sortDir
           schema: { type: string, enum: [asc, desc], default: desc }
+        - in: query
+          name: customerId
+          schema: { type: integer, format: int64 }
+          description: Filter by specific customer ID
+        - in: query
+          name: serviceRateId
+          schema: { type: integer }
+          description: Filter by service type (Rate ID)
       responses:
         "200":
           description: Paginated orders list
@@ -820,6 +828,21 @@ paths:
   # -------------------------
   # USERS (Staff Management)
   # -------------------------
+  /api/v1/users/stats:
+    get:
+      summary: Get user statistics
+      description: Returns global counts of admins, active staff, and total users.
+      tags: [Users]
+      responses:
+        "200":
+          description: User statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStatsResponse"
+        "403":
+          description: Forbidden - Admin only
+
   /api/v1/users:
     get:
       summary: List or search users
@@ -1519,3 +1542,10 @@ components:
         first: { type: boolean }
         last: { type: boolean }
       required: [content, page, size, totalElements, totalPages, first, last]
+    UserStatsResponse:
+      type: object
+      properties:
+        totalAdmins: { type: integer }
+        totalActiveStaff: { type: integer }
+        totalUsers: { type: integer }
+      required: [totalAdmins, totalActiveStaff, totalUsers]
