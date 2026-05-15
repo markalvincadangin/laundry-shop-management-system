@@ -828,6 +828,21 @@ paths:
   # -------------------------
   # USERS (Staff Management)
   # -------------------------
+  /api/v1/users/stats:
+    get:
+      summary: Get user statistics
+      description: Returns global counts of admins, active staff, and total users.
+      tags: [Users]
+      responses:
+        "200":
+          description: User statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStatsResponse"
+        "403":
+          description: Forbidden - Admin only
+
   /api/v1/users:
     get:
       summary: List or search users
@@ -860,21 +875,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserPageResponse"
-        "403":
-          description: Forbidden - Admin only
-
-  /api/v1/users/stats:
-    get:
-      summary: Get user statistics
-      description: Returns global counts of admins, active staff, and total users.
-      tags: [Users]
-      responses:
-        "200":
-          description: User statistics
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserStatsResponse"
         "403":
           description: Forbidden - Admin only
 

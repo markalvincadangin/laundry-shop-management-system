@@ -39,7 +39,16 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
      * @param role the user role
      * @return the count of users
      */
-    long countByRole(String role);
+    long countByRole(UserRole role);
+
+    /**
+     * Counts users by role and active status.
+     *
+     * @param role the user role
+     * @param isActive the active status
+     * @return the count of users
+     */
+    long countByRoleAndIsActive(UserRole role, boolean isActive);
 
     /**
      * Counts users by their active status.

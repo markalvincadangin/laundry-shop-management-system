@@ -67,6 +67,7 @@ public class UserController {
     }
 
     @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
     public com.himotech.laundryms.api.dto.response.UserStatsResponse getStats() {
         return userService.getUserStats();
     }

@@ -40,8 +40,8 @@ public class UserService {
     public com.himotech.laundryms.api.dto.response.UserStatsResponse getUserStats() {
         return com.himotech.laundryms.api.dto.response.UserStatsResponse.builder()
                 .totalUsers(userRepository.count())
-                .totalAdmins(userRepository.countByRole("ADMIN"))
-                .totalActiveStaff(userRepository.countByIsActive(true))
+                .totalAdmins(userRepository.countByRole(com.himotech.laundryms.common.enums.UserRole.ADMIN))
+                .totalActiveStaff(userRepository.countByRoleAndIsActive(com.himotech.laundryms.common.enums.UserRole.STAFF, true))
                 .build();
     }
 
