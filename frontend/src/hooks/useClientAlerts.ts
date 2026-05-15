@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { clientAlertsService, ClientAlertParams } from "@/services/client-alerts.service";
 
@@ -50,3 +52,4 @@ export function useClientAlerts(params: ClientAlertParams = { page: 0, size: 15 
     isMarkingAsRead: markAsRead.isPending || markAllAsRead.isPending,
   };
 }
+

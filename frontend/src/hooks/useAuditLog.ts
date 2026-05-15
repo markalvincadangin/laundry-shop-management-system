@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { auditLogService, AuditLogParams } from "@/services/audit-log.service";
 
@@ -31,3 +33,4 @@ export function useAuditLog(params: AuditLogParams = { page: 0, size: 20 }) {
     refresh: refetch,
   };
 }
+

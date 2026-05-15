@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { customersService, CustomerResponse } from "@/services/customers.service";
 
@@ -74,3 +76,4 @@ export function useCustomerLookup(initialQuery: string = "") {
     loading
   };
 }
+

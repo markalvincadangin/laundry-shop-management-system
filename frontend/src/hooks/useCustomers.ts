@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { customersService, CustomerListParams } from "@/services/customers.service";
 
@@ -56,3 +58,4 @@ export function useCustomer(customerId?: number) {
     refresh,
   };
 }
+

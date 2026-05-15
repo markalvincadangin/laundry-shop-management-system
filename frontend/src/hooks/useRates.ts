@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   serviceRatesService, 
@@ -69,3 +71,4 @@ export function useRates() {
     isUpdating: updateMutation.isPending,
   };
 }
+

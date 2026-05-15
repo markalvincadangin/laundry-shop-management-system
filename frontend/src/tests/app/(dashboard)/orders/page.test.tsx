@@ -18,6 +18,12 @@ vi.mock("@/services/orders.service", () => ({
   },
 }));
 
+vi.mock("@/services/service-rates.service", () => ({
+  serviceRatesService: {
+    list: vi.fn().mockResolvedValue([]),
+  },
+}));
+
 // Mock Auth
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { userId: "staff-1", username: "staff", role: "STAFF" }, loading: false }),

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import { ordersService, OrderPreviewResponse } from "@/services/orders.service";
 import type { components } from "@/types/api.generated";
@@ -62,3 +64,4 @@ export function usePriceCalculation({
 
   return { preview, loading, error, refetch: fetchPreview };
 }
+
