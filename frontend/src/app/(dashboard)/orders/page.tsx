@@ -312,7 +312,7 @@ export default function OrdersPage() {
             >
               <option value="">All Services</option>
               {rates.map(rate => (
-                <option key={rate.id} value={rate.id}>{rate.name}</option>
+                <option key={rate.id} value={rate.id}>{rate.serviceName}</option>
               ))}
             </Select>
           </div>
