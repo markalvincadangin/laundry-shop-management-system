@@ -60,15 +60,16 @@ export default function UsersPage() {
     searchParamKey: "q"
   });
 
-  const { users, pagination, loading, refresh, toggleStatus } = useUsers(params as any);
+  const { users, stats, pagination, loading, refresh, toggleStatus } = useUsers(params as any);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Status Confirmation State
   const [confirmStatusUser, setConfirmStatusUser] = useState<UserResponse | null>(null);
 
-  const adminCount = users.filter((u: UserResponse) => u.role === "ADMIN").length;
-  const activeCount = users.filter((u: UserResponse) => u.isActive).length;
+  const adminCount = stats?.totalAdmins ?? 0;
+  const activeCount = stats?.totalActiveStaff ?? 0;
+  const totalCount = stats?.totalUsers ?? 0;
 
   if (authLoading) {
     return (
@@ -235,7 +236,7 @@ export default function UsersPage() {
         transition={{ duration: 0.6 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-grid-6"
       >
-        <KPICard title="Total Staff" value={users.length} subtitle="Onboarded Accounts" icon={Users} variant="default" />
+        <KPICard title="Total Staff" value={totalCount} subtitle="Onboarded Accounts" icon={Users} variant="default" />
         <KPICard title="Administrators" value={adminCount} subtitle="Full Access Control" icon={ShieldHalf} variant="accent" />
         <KPICard title="Active Status" value={activeCount} subtitle="Currently Authorized" icon={UserCheck} variant="success" />
       </motion.div>

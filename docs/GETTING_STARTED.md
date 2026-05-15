@@ -422,7 +422,7 @@ export enum OrderStatus {
 // frontend/lib/api/orders.ts
 // Reference: frontend.instructions.md → "API Integration"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const ordersApi = {
   create: async (data: CreateOrderRequest): Promise<OrderResponse> => {

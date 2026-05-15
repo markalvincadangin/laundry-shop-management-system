@@ -34,7 +34,7 @@ Configuration is centralized in a **single `.env` file** at the root of the proj
 | `DB_PORT` | No | Host port for PostgreSQL (default: `5433`) |
 | `JWT_SECRET` | Yes (prod) | At least 32 characters for JWT signing |
 | `ALLOWED_ORIGIN` | No | CORS origin (default: `http://localhost:3001`) |
-| `NEXT_PUBLIC_API_URL` | Yes (frontend) | Backend API base URL (e.g. `http://localhost:8081/api`) |
+| `NEXT_PUBLIC_API_URL` | Yes (frontend) | Backend API base URL (e.g. `http://localhost:8080/api`) |
 
 ---
 
@@ -113,13 +113,13 @@ Deploy the full stack with Nginx reverse proxy:
 # From project root
 # 1. Configure .env for production (see 6.2)
 # 2. Build and start
-docker compose -f docker/docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml up -d --build
 
 # View logs
-docker compose -f docker/docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml logs -f
 
 # Stop
-docker compose -f docker/docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 ```
 
 **Access:** http://localhost (or your server IP/domain) — Nginx proxies to backend and frontend.
@@ -145,7 +145,7 @@ sh docker/nginx/generate-ssl.sh
 cp docker/nginx/nginx-ssl.conf docker/nginx/nginx.conf
 
 # Restart Nginx
-docker compose -f docker/docker-compose.prod.yml restart nginx
+docker compose -f docker-compose.prod.yml restart nginx
 ```
 
 Access via https://localhost (browsers will show a warning for self-signed certs; accept for local use).
@@ -224,7 +224,7 @@ If PostgreSQL runs in Docker (e.g. `laundry-postgres` or `laundry-postgres-prod`
 **After restore**
 
 - Restart the backend. Flyway will see existing schema; no migration rerun is needed if the dump included the full schema.
-- Verify with a quick health check: `GET http://localhost:8081/api/v1/health` or `GET http://localhost:8081/actuator/health`.
+- Verify with a quick health check: `GET http://localhost:8080/api/v1/health` or `GET http://localhost:8080/actuator/health`.
 
 ### 6.6 User Manual
 
@@ -241,6 +241,62 @@ See [docs/06-implementation/user-manual.md](user-manual.md) for the Admin and St
 - [ ] Ensure `DB_PASSWORD` is not the default
 - [ ] Run backend as non-root user
 - [ ] Configure database backups
+
+---
+
+## 8. Cloud Deployment (Render + Neon + Vercel)
+
+The project is deployed to the cloud using:
+- **Render** — Backend (Spring Boot) web service
+- **Neon** — PostgreSQL serverless database
+- **Vercel** — Frontend (Next.js) hosting
+
+### 8.1 Neon Database Setup
+
+1. Create a project on [neon.tech](https://neon.tech)
+2. Note your connection details:
+   - Host: `<your-id>.neon.tech`
+   - Database: `faith-laundry-shop`
+   - User: `neondb_owner`
+   - Port: `5432`
+3. The `pgcrypto` extension is pre-installed on Neon.
+
+### 8.2 Render Backend Setup
+
+1. Create a **Web Service** on [render.com](https://render.com)
+2. Connect your GitHub repository, set root directory to `backend/`
+3. **Build Command:** `./mvnw -B package -DskipTests`
+4. **Start Command:** `java -jar target/laundryms-backend-*.jar`
+5. Set environment variables in Render Dashboard → Environment:
+
+| Variable | Value |
+|---|---|
+| `SPRING_PROFILES_ACTIVE` | `prod` |
+| `DB_HOST` | `<your-host>.neon.tech` |
+| `DB_PORT` | `5432` |
+| `DB_NAME` | `faith-laundry-shop` |
+| `DB_USER` | `neondb_owner` |
+| `DB_PASSWORD` | `<neon-password>` |
+| `JWT_SECRET` | `<random-64-char-string>` |
+| `ALLOWED_ORIGIN` | `https://your-app.vercel.app` |
+| `ALLOWED_ORIGIN_PATTERNS` | `https://your-app.vercel.app,https://*.vercel.app` |
+
+> 💡 **Database Reset:** To reset production data, use the Neon dashboard (delete/recreate branch) or run `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` via the Neon SQL Editor. Then redeploy on Render — Flyway will re-apply all migrations.
+
+### 8.3 Vercel Frontend Setup
+
+1. Import the repository on [vercel.com](https://vercel.com)
+2. Set root directory to `frontend/`
+3. Set environment variables:
+   - `NEXT_PUBLIC_API_URL` = `https://your-render-backend.onrender.com/api`
+4. Deploy.
+
+### 8.4 Render Free Tier Notes
+
+- Services spin down after 15 minutes of inactivity (cold start ~60s)
+- Environment variables persist across restarts and redeploys
+- The filesystem is **ephemeral** — uploaded files are lost on restart
+- Database data is safe on Neon (persistent, durable storage)
 
 ---
 

@@ -28,12 +28,15 @@ public final class OrderSpecification {
             Instant fromTs,
             Instant toTs,
             String q,
-            Long customerId) {
+            Long customerId,
+            Integer serviceRateId) {
         return (root, query, cb) -> {
-            // Performance Optimization: Eagerly fetch Customer to prevent N+1 issues in registries
+            // Performance Optimization: Eagerly fetch associations to prevent N+1 issues in registries
             // We skip fetch for count queries (Long.class) to prevent JPA exceptions
             if (Long.class != query.getResultType()) {
                 root.fetch("customer", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch("serviceRate", jakarta.persistence.criteria.JoinType.LEFT);
+                root.fetch("createdBy", jakarta.persistence.criteria.JoinType.LEFT);
             }
 
             List<Predicate> predicates = new ArrayList<>();
@@ -45,6 +48,9 @@ public final class OrderSpecification {
             }
             if (customerId != null) {
                 predicates.add(cb.equal(root.get("customer").get("id"), customerId));
+            }
+            if (serviceRateId != null) {
+                predicates.add(cb.equal(root.get("serviceRate").get("id"), serviceRateId));
             }
             if (fromTs != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("createdAt"), fromTs));
@@ -69,6 +75,9 @@ public final class OrderSpecification {
 
     public static Specification<Order> filterByStatusIn(Set<OrderStatus> statuses) {
         return (root, query, cb) -> {
+            if (Long.class != query.getResultType()) {
+                root.fetch("customer", jakarta.persistence.criteria.JoinType.LEFT);
+            }
             if (statuses == null || statuses.isEmpty()) {
                 return cb.conjunction();
             }

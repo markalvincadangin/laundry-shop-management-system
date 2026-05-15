@@ -22,6 +22,7 @@ import { pdf } from "@react-pdf/renderer";
 import { ReportDocument } from "@/components/features/shared/ReportDocument";
 import { UI_LABELS } from "@/constants/ui";
 import { useOrders } from "@/hooks/useOrders";
+import { useRates } from "@/hooks/useRates";
 import { useRegistry } from "@/hooks/useRegistry";
 import {
   StatusBadge,
@@ -46,6 +47,7 @@ import { DataTableColumn } from "@/types/components";
  */
 export default function OrdersPage() {
   const router = useRouter();
+  const { rates } = useRates();
 
   // Registry State Management (Centralized Architecture)
   const {
@@ -149,11 +151,25 @@ export default function OrdersPage() {
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-1">
-            <User className="h-3 w-3 text-slate-400" />
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate max-w-[140px]">
-              {order.customerName || UI_LABELS.shared.common.NAME}
+            <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">
+              {order.serviceName || "Standard"}
             </span>
           </div>
+        </div>
+      ),
+    },
+    {
+      header: UI_LABELS.shared.common.CUSTOMER,
+      sortable: true,
+      sortKey: "customer.lastName",
+      render: (order) => (
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shadow-sm">
+            <User className="h-4 w-4 text-slate-400" />
+          </div>
+          <span className="text-[11px] text-slate-700 font-bold uppercase tracking-tight truncate max-w-[140px]">
+            {order.customerName || UI_LABELS.shared.common.NAME}
+          </span>
         </div>
       ),
     },
@@ -285,6 +301,19 @@ export default function OrdersPage() {
               <option value="READY_FOR_PICKUP">{UI_LABELS.shared.status.READY_FOR_PICKUP}</option>
               <option value="RELEASED">{UI_LABELS.shared.status.RELEASED}</option>
               <option value="CANCELLED">{UI_LABELS.shared.status.CANCELLED}</option>
+            </Select>
+          </div>
+          <div className="flex-1 min-w-[180px]">
+            <Select
+              label="Service Type"
+              value={params.serviceRateId ?? ""}
+              onChange={(e) => updateParams({ serviceRateId: e.target.value ? Number(e.target.value) : undefined })}
+              className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
+            >
+              <option value="">All Services</option>
+              {rates.map(rate => (
+                <option key={rate.id} value={rate.id}>{rate.name}</option>
+              ))}
             </Select>
           </div>
           <div className="flex-1 min-w-[180px]">

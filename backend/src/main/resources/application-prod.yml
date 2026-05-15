@@ -1,7 +1,18 @@
-# Production profile: no SQL logging, minimal verbosity
+# Production profile: hardened for Render + Neon deployment
 # Activate with: SPRING_PROFILES_ACTIVE=prod
+
 spring:
+  # --- Flyway: production settings ---
+  flyway:
+    clean-disabled: true
+    baseline-on-migrate: true
+    group: true
+    out-of-order: false
+
+  # --- JPA: validate-only, no auto-DDL ---
   jpa:
+    hibernate:
+      ddl-auto: validate
     show-sql: false
 
 logging:
@@ -9,3 +20,5 @@ logging:
     org:
       hibernate:
         SQL: warn
+    com.himotech: info
+    org.flywaydb: info

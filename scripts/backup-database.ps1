@@ -21,8 +21,10 @@ $ProjectRoot = Split-Path $PSScriptRoot -Parent
 $EnvFile = Join-Path $ProjectRoot ".env"
 if (Test-Path $EnvFile) {
     Get-Content $EnvFile | ForEach-Object {
-        if ($_ -match '^\s*([^#][^=]+)=(.*)$') {
-            [Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim(), "Process")
+        if ($_ -match '^\s*([^#=]+)=(.*)$') {
+            $name = $matches[1].Trim()
+            $value = $matches[2].Trim().Trim('"').Trim("'")
+            [Environment]::SetEnvironmentVariable($name, $value, "Process")
         }
     }
 }

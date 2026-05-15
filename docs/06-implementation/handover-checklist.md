@@ -7,7 +7,7 @@
 
 ## Pre-Handover
 
-- [ ] Production stack running: `docker compose -f docker/docker-compose.prod.yml up -d`
+- [ ] Production stack running: `docker compose -f docker-compose.prod.yml up -d`
 - [ ] Application accessible via local network IP or domain
 - [ ] Admin and Staff accounts created (via seed or migration)
 - [ ] User manual printed or available: [user-manual.md](user-manual.md)

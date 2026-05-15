@@ -22,10 +22,17 @@ export function useUsers(params: any = { page: 0, size: 20 }) {
     staleTime: 30 * 1000, // 30 seconds
   });
 
+  const { data: stats } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: () => usersService.getStats(),
+    staleTime: 60 * 1000,
+  });
+
   const toggleStatusMutation = useMutation({
     mutationFn: (id: string) => usersService.toggleStatus(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user-stats"] });
       toast.success(UI_LABELS.feedback.success.GENERIC);
     },
     onError: () => {
@@ -35,6 +42,7 @@ export function useUsers(params: any = { page: 0, size: 20 }) {
 
   return { 
     users: data?.content ?? [], 
+    stats,
     loading, 
     error: isError ? (error as any).message : null, 
     pagination: {

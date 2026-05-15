@@ -26,6 +26,7 @@ export type OrderListParams = {
   size?: number;
   q?: string;
   customerId?: number;
+  serviceRateId?: number;
   sortBy?: string;
   sortDir?: "asc" | "desc";
 };
