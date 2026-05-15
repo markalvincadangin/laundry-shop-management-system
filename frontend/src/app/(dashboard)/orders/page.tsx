@@ -152,7 +152,7 @@ export default function OrdersPage() {
           </div>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">
-              {order.serviceName || UI_LABELS.rates.BASE_RATE}
+              {order.serviceName || UI_LABELS.modules.rates.BASE_RATE}
             </span>
           </div>
         </div>
