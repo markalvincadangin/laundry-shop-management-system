@@ -146,13 +146,13 @@ export default function OrdersPage() {
             <span className="text-sm font-bold text-slate-900 group-hover:text-brand-blue transition-colors font-mono tracking-wider">
               {order.referenceNumber}
             </span>
-            {(order.serviceName?.includes("Rush") || order.serviceRateId === 2) && (
+            {order.serviceName?.includes("Rush") && (
               <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px]" />
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">
-              {order.serviceName || "Standard"}
+              {order.serviceName || UI_LABELS.rates.BASE_RATE}
             </span>
           </div>
         </div>
@@ -305,12 +305,12 @@ export default function OrdersPage() {
           </div>
           <div className="flex-1 min-w-[180px]">
             <Select
-              label="Service Type"
+              label={UI_LABELS.shared.common.SERVICE}
               value={params.serviceRateId ?? ""}
               onChange={(e) => updateParams({ serviceRateId: e.target.value ? Number(e.target.value) : undefined })}
               className="h-14 rounded-2xl border-slate-200 bg-white shadow-sm"
             >
-              <option value="">All Services</option>
+              <option value="">{UI_LABELS.shared.common.FILTER}</option>
               {rates.map(rate => (
                 <option key={rate.id} value={rate.id}>{rate.serviceName}</option>
               ))}

@@ -1,5 +1,7 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usersService, UserResponse } from "@/services/users.service";
+import { usersService, UserResponse, UserStatsResponse } from "@/services/users.service";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,7 +27,7 @@ export function useUsers(params: any = { page: 0, size: 20 }) {
     enabled: currentUser?.role === "ADMIN",
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<UserStatsResponse>({
     queryKey: ["user-stats"],
     queryFn: () => usersService.getStats(),
     staleTime: 60 * 1000,

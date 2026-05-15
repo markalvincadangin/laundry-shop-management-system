@@ -1,5 +1,7 @@
 import { apiClient } from "@/lib/api-client";
-import { UserRole } from "@/types";
+import { UserRole, components } from "@/types";
+
+export type UserStatsResponse = components["schemas"]["UserStatsResponse"];
 
 export interface UserResponse {
   id: string;
@@ -25,12 +27,6 @@ export interface UpdateUserRequest {
   lastName?: string;
   role?: UserRole;
   password?: string;
-}
-
-export interface UserStatsResponse {
-  totalAdmins: number;
-  totalActiveStaff: number;
-  totalUsers: number;
 }
 
 export const usersService = {

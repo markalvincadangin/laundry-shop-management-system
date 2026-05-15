@@ -37,7 +37,7 @@ const nextConfig = {
   },
 
   images: {
-    dangerouslyAllowSVG: true,
+    dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
