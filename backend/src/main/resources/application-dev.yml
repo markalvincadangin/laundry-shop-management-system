@@ -1,5 +1,7 @@
 # Development profile: request/response logging, verbose logs
 spring:
+  main:
+    lazy-initialization: true
   jpa:
     show-sql: true
 

@@ -1,15 +1,41 @@
-name: Project Maintenance (Keep Render Awake)
+name: Keep Services Awake
 
 on:
   schedule:
-    # Runs every 10 minutes to keep Render backend awake
+    # Ping every 10 minutes to prevent Render free tier spin-down
     - cron: '*/10 * * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+  workflow_dispatch: # Manual trigger from GitHub UI
 
 jobs:
-  keep-render-awake:
+  ping-services:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render Backend
+        env:
+          RENDER_URL: ${{ secrets.RENDER_BACKEND_URL }}
         run: |
-          curl -s "${{ secrets.RENDER_BACKEND_URL }}/actuator/health" || echo "Backend might be sleeping or URL not set"
+          if [ -z "$RENDER_URL" ]; then
+            echo "⚠️ RENDER_BACKEND_URL secret is not set"
+            exit 0
+          fi
+          for i in 1 2 3; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$RENDER_URL/actuator/health" 2>/dev/null)
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Backend is awake (HTTP $STATUS)"
+              break
+            else
+              echo "⏳ Attempt $i — Backend returned HTTP $STATUS (may be waking up)"
+              sleep 10
+            fi
+          done
+
+      - name: Ping Vercel Frontend
+        env:
+          VERCEL_URL: ${{ secrets.VERCEL_FRONTEND_URL }}
+        run: |
+          if [ -z "$VERCEL_URL" ]; then
+            echo "ℹ️ VERCEL_FRONTEND_URL secret not set, skipping"
+            exit 0
+          fi
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$VERCEL_URL" 2>/dev/null)
+          echo "Frontend: HTTP $STATUS"

@@ -13,10 +13,10 @@ export default function AuthLayout({
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
-            src="/premium_laundry_auth_bg_1777211779874.png"
+            src="/auth-bg.png"
             alt="Faith Laundry Premium Service"
             fill
-            className="object-cover opacity-30 scale-105 animate-pulse-slow"
+            className="object-cover opacity-30 scale-105 animate-pulse-slow transition-transform duration-[10000ms] hover:scale-110"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/90 via-slate-950/70 to-slate-950" />

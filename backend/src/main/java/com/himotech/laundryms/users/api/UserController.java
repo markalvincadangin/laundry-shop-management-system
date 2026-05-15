@@ -65,4 +65,9 @@ public class UserController {
     public void toggleStatus(@PathVariable UUID id) {
         userService.toggleUserStatus(id);
     }
+
+    @GetMapping("/stats")
+    public com.himotech.laundryms.api.dto.response.UserStatsResponse getStats() {
+        return userService.getUserStats();
+    }
 }

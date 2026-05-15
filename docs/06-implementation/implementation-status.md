@@ -97,7 +97,7 @@
 | Item | Doc reference | Action |
 |------|----------------|--------|
 | **Restore procedure** | NFR-A3; deployment guide §6.4 (backup only). | Add a “Restore from backup” subsection to the deployment guide: how to restore from `laundry_db_YYYYMMDD_HHMMSS.sql.gz` (e.g. `gunzip -c file.sql.gz \| psql ...` or equivalent). |
-| **Backup script env** | Backup scripts load `$PROJECT_ROOT/.env`. Project uses per-component env (e.g. `docker/.env.docker`, `backend/.env`). | Document in deployment guide that for backup, DB_* can be taken from `backend/.env` or `docker/.env.docker`, or set in environment when running the script. |
+| **Backup script env** | Backup scripts load `$PROJECT_ROOT/.env`. Project uses a unified root `.env` file. | ✅ Documented in deployment guide. Set `DB_*` vars in root `.env` or in environment when running the script. |
 
 ### 2.3 Optional / post-MVP (no implementation required for MVP)
 

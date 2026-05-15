@@ -36,6 +36,15 @@ public class UserService {
         return userRepository.findAll(spec, pageable).map(this::mapToResponse);
     }
 
+    @Transactional(readOnly = true)
+    public com.himotech.laundryms.api.dto.response.UserStatsResponse getUserStats() {
+        return com.himotech.laundryms.api.dto.response.UserStatsResponse.builder()
+                .totalUsers(userRepository.count())
+                .totalAdmins(userRepository.countByRole("ADMIN"))
+                .totalActiveStaff(userRepository.countByIsActive(true))
+                .build();
+    }
+
     @Auditable(action = "USER_CREATE", description = "Create new system user")
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {

@@ -6,12 +6,12 @@ WORKDIR /build
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
-RUN ./mvnw dependency:go-offline -B -DskipTests
+RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B -DskipTests
 
 # Then copy source and build
 COPY src ./src
 COPY checkstyle.xml .
-RUN ./mvnw package -DskipTests -B
+RUN --mount=type=cache,target=/root/.m2 ./mvnw package -DskipTests -B
 
 # ===== STAGE 2: Extract Layers =====
 FROM eclipse-temurin:21-jdk-alpine AS extractor

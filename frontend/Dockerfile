@@ -6,7 +6,7 @@ WORKDIR /app
 # --- Stage 2: Dependencies ---
 FROM base AS deps
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 # --- Stage 3: Development (Target for docker-compose dev) ---
 FROM base AS development
@@ -22,7 +22,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build
+RUN --mount=type=cache,target=/app/.next/cache npm run build
 
 # --- Stage 5: Production Runner ---
 FROM node:20-alpine AS runner

@@ -141,14 +141,7 @@ public class OrderController {
         final Pageable pageable = PageRequest.of(
                 params.getPage(), Math.min(Math.max(params.getSize(), 1), 100), sort);
         
-        final Page<Order> ordersPage = orderService.findAll(
-                params.getStatus(),
-                params.getPaymentStatus(),
-                params.getFrom(),
-                params.getTo(),
-                params.getQ(),
-                params.getCustomerId(),
-                pageable);
+        final Page<Order> ordersPage = orderService.search(params, pageable);
         final List<OrderResponse> content = ordersPage.getContent().stream()
                 .map(orderMapper::toResponse)
                 .toList();

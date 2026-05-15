@@ -11,10 +11,11 @@ Write-Host "Initializing Public Environment Sharing..." -ForegroundColor Cyan
 if (Test-Path ".env") {
     Write-Host "Loading .env configuration..." -ForegroundColor Gray
     Get-Content .env | ForEach-Object {
-        if ($_ -match '^([^#=]+)=(.*)$') {
+        # Matches name=value, ignores comments, handles optional quotes
+        if ($_ -match '^\s*([^#=]+)=(.*)$') {
             $name = $matches[1].Trim()
-            $value = $matches[2].Trim()
-            Set-Item -Path "Env:\$name" -Value $value
+            $value = $matches[2].Trim().Trim('"').Trim("'")
+            [Environment]::SetEnvironmentVariable($name, $value, "Process")
         }
     }
 }
@@ -57,6 +58,7 @@ Start-Sleep -Seconds 1
 
 Write-Host "Starting ngrok tunnel for port $FrontendPort..." -ForegroundColor Yellow
 Write-Host "Domain: $Domain" -ForegroundColor Gray
+Write-Host "Note: Ensure ALLOWED_ORIGIN_PATTERNS in .env includes *.ngrok-free.app" -ForegroundColor DarkGray
 Write-Host "Press Ctrl+C to stop sharing."
 
 # Run ngrok using the config for auth but overriding the port and domain from env/config
