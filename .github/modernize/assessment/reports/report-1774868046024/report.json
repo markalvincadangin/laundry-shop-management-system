@@ -1,0 +1,130 @@
+{
+  "version": "1.0.0",
+  "producer": "Java AppCAT CLI",
+  "metadata": {
+    "analysisStartTime": "2026-03-30T10:54:06.037Z",
+    "analysisEndTime": "2026-03-30T10:59:52.035Z",
+    "privacyMode": "Protected",
+    "privacyModeHelpUrl": "https://aka.ms/appmod-privacy-mode",
+    "targetIds": [],
+    "targetDisplayNames": [],
+    "capabilities": [
+      "openjdk21"
+    ],
+    "os": [],
+    "id": "1774868046024",
+    "name": "Report_202603301854",
+    "status": "completed",
+    "domains": [
+      "java-upgrade",
+      "security"
+    ],
+    "mode": "issue-only"
+  },
+  "summary": {
+    "totalProjects": 1,
+    "totalIssues": 0,
+    "totalIncidents": 0,
+    "totalEffort": 0,
+    "charts": {
+      "severity": {
+        "mandatory": 0,
+        "optional": 0,
+        "potential": 0,
+        "information": 0
+      },
+      "category": {}
+    }
+  },
+  "projects": [
+    {
+      "path": ".",
+      "issues": 0,
+      "storyPoints": 0,
+      "properties": {
+        "appName": "laundry-shop-management-system",
+        "jdkVersion": "21",
+        "frameworks": [
+          "Spring Boot",
+          "Spring",
+          "Next",
+          "Next.js",
+          "React"
+        ],
+        "languages": [
+          "Java",
+          "TypeScript"
+        ],
+        "tools": [
+          "Maven",
+          "NodeJs"
+        ]
+      },
+      "incidents": []
+    }
+  ],
+  "rules": {},
+  "security": [
+    {
+      "id": "CWE-259",
+      "title": "Use of Hard-coded Password",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains a hard-coded password, which it uses for its own inbound authentication or for outbound communication to external components.",
+      "evidence": {
+        "files": [
+          "backend/.env",
+          "backend/src/main/resources/db/migration/V2__seed_users.sql"
+        ],
+        "explanation": "Hard-coded passwords are present: backend/.env line 6 defines DB_PASSWORD=faith@laundry2026!, and backend/src/main/resources/db/migration/V2__seed_users.sql lines 8-9 include plaintext dev passwords ('owner123', 'staff123') in seed-account comments."
+      },
+      "storyPoint": "5"
+    },
+    {
+      "id": "CWE-321",
+      "title": "Use of Hard-coded Cryptographic Key",
+      "category": "Credentials & Secrets",
+      "severity": "potential",
+      "description": "The product uses a hard-coded, unchangeable cryptographic key.",
+      "evidence": {
+        "files": [
+          "backend/.env",
+          "docker/docker-compose.fullstack.yml"
+        ],
+        "explanation": "A hard-coded JWT signing secret/key is present: backend/.env line 11 sets JWT_SECRET=dev-only-change-me-in-production, and docker/docker-compose.fullstack.yml line 41 provides a default JWT_SECRET fallback string used if no environment value is supplied."
+      },
+      "storyPoint": "5"
+    },
+    {
+      "id": "CWE-778",
+      "title": "Insufficient Logging",
+      "category": "Credentials & Secrets",
+      "severity": "potential",
+      "description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+      "evidence": {
+        "files": [
+          "backend/src/main/java/com/himotech/laundryms/auth/AuthService.java",
+          "backend/src/main/java/com/himotech/laundryms/exception/GlobalExceptionHandler.java"
+        ],
+        "explanation": "Security-critical failed authentication events are handled without audit/security logging: AuthService.authenticate() throws InvalidCredentialsException on invalid username/password at lines 29, 32, and 36 with no log call, and GlobalExceptionHandler.handleInvalidCredentials() (line 61) returns a generic 401 response (line 64) without recording the failed login event context."
+      },
+      "storyPoint": "3"
+    },
+    {
+      "id": "CWE-798",
+      "title": "Use of Hard-coded Credentials",
+      "category": "Credentials & Secrets",
+      "severity": "optional",
+      "description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+      "evidence": {
+        "files": [
+          "backend/.env",
+          "backend/src/main/resources/db/migration/V2__seed_users.sql",
+          "docker/docker-compose.fullstack.yml"
+        ],
+        "explanation": "Hard-coded credentials are present in multiple forms: backend/.env contains DB_PASSWORD (line 6) and JWT_SECRET (line 11), backend/src/main/resources/db/migration/V2__seed_users.sql includes plaintext seeded credentials in comments (lines 8-9), and docker/docker-compose.fullstack.yml sets a default JWT_SECRET fallback at line 41."
+      },
+      "storyPoint": "5"
+    }
+  ]
+}
