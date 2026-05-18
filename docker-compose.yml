@@ -53,6 +53,7 @@ services:
         condition: service_healthy
 
   frontend:
+    profiles: ["full"]
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -67,8 +68,7 @@ services:
       # Points to backend via Docker internal network — not exposed publicly
       # /api/* calls are proxied by Next.js rewrites to this URL
       - NEXT_PUBLIC_API_URL=http://backend:8080/api
-      - WATCHPACK_POLLING=true
-      - CHOKIDAR_USEPOLLING=true
+      - DOCKER_DEV=true
       - HOSTNAME=0.0.0.0
     depends_on:
       - backend

@@ -11,9 +11,9 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 # --- Stage 3: Development (Target for docker-compose dev) ---
 FROM base AS development
 ENV NODE_ENV=development
+ENV DOCKER_DEV=true
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Next.js dev server with Turbopack
 CMD ["npm", "run", "dev"]
 
 # --- Stage 4: Builder (Production compilation) ---
