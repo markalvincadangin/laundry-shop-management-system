@@ -1,7 +1,7 @@
 # Deployment Guide — Faith Laundry Shop Management System
 
-> **Version:** 1.1  
-> **Date:** 2026-02-20  
+> **Version:** 1.2  
+> **Date:** 2026-05-18  
 > **Purpose:** Production and development deployment instructions  
 > **Related:** [Project Scope § 9 Operational Readiness](../01-scope/project-scope.md#9-operational-readiness-complete-system)
 
@@ -38,26 +38,44 @@ Configuration is centralized in a **single `.env` file** at the root of the proj
 
 ---
 
-## 3. Docker Compose — Full Stack (HIMÓTECH Standard)
+## 3. Local Development (Recommended — Hybrid)
 
-Run the entire stack (PostgreSQL + Backend + Frontend):
+**Default workflow:** PostgreSQL + backend in Docker, frontend on the host with Turbopack (fastest hot reload on Windows/macOS).
 
 ```bash
-# From project root
-docker compose up -d
+# Terminal 1 — from project root
+docker compose up db backend
 
-# View logs
-docker compose logs -f
+# Terminal 2 — frontend on host
+cd frontend
+cp .env.local.example .env.local   # first time only; set NEXT_PUBLIC_API_URL to match BACKEND_PORT
+npm run dev
 ```
 
-**Access:**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8080/api
+| Service | Where | URL |
+|---------|-------|-----|
+| Frontend | Host (Turbopack) | http://localhost:3000 or :3001 |
+| Backend API | Docker | http://localhost:8080/api (or `BACKEND_PORT` from `.env`) |
+| PostgreSQL | Docker | localhost:`DB_PORT` (default `5433`) |
+
+**Environment alignment:**
+- Root `.env` → `ALLOWED_ORIGIN` must match your frontend URL (e.g. `http://localhost:3001`)
+- `frontend/.env.local` → `NEXT_PUBLIC_API_URL=http://localhost:<BACKEND_PORT>/api`
 
 **Stop:**
 ```bash
 docker compose down
 ```
+
+### 3.1 Optional — Full Stack in Docker
+
+Use only when you need everything containerized (e.g. CI parity, Linux teammates):
+
+```bash
+docker compose --profile full up -d
+```
+
+Frontend container uses Turbopack with file-watcher polling (`DOCKER_DEV=true`). Slower than host dev on Windows bind mounts.
 
 ---
 
@@ -281,6 +299,8 @@ The project is deployed to the cloud using:
 | `ALLOWED_ORIGIN` | `https://your-app.vercel.app` |
 | `ALLOWED_ORIGIN_PATTERNS` | `https://your-app.vercel.app,https://*.vercel.app` |
 
+> **Neon SSL:** The `prod` profile sets `sslmode=require` on the JDBC URL automatically. No extra env var needed.
+
 > 💡 **Database Reset:** To reset production data, use the Neon dashboard (delete/recreate branch) or run `DROP SCHEMA public CASCADE; CREATE SCHEMA public;` via the Neon SQL Editor. Then redeploy on Render — Flyway will re-apply all migrations.
 
 ### 8.3 Vercel Frontend Setup
@@ -293,18 +313,56 @@ The project is deployed to the cloud using:
 
 ### 8.4 Render Free Tier Notes
 
-- Services spin down after 15 minutes of inactivity (cold start ~60s)
+- Services spin down after **15 minutes** of inactivity (cold start ~60s)
+- **Neon free tier** also cold-starts compute (~2–5s on first query after idle)
 - Environment variables persist across restarts and redeploys
 - The filesystem is **ephemeral** — uploaded files are lost on restart
 - Database data is safe on Neon (persistent, durable storage)
+- **Vercel does not spin down** — no keep-alive needed for the frontend
+
+### 8.5 Keep-Alive (Prevent Render Cold Starts)
+
+Render free tier needs inbound HTTP traffic at least every 15 minutes. Two options:
+
+#### Option A — UptimeRobot (recommended, primary)
+
+Free, reliable, does not use GitHub Actions minutes.
+
+1. Create a free account at [uptimerobot.com](https://uptimerobot.com)
+2. Add a **HTTP(s) monitor**:
+   - **URL:** `https://your-backend.onrender.com/actuator/health`
+   - **Interval:** 5 minutes
+   - **Expected:** HTTP 200
+3. Save — UptimeRobot pings automatically 24/7
+
+#### Option B — GitHub Actions (secondary)
+
+Workflow: `.github/workflows/maintenance.yml` (runs every 10 minutes on `main`).
+
+**GitHub secret required:**
+
+| Secret | Value |
+|--------|-------|
+| `RENDER_BACKEND_URL` | `https://your-backend.onrender.com` (no trailing slash) |
+
+**Known limitations:**
+- Requires available GitHub Actions minutes (billing); failed payment blocks runs entirely
+- Scheduled cron can jitter by several minutes during high GitHub load
+- Workflow must exist on the **`main`** branch
+- Disabled automatically after 60 days of repository inactivity
+
+Use UptimeRobot as primary; keep the GitHub workflow as backup only if Actions minutes are available.
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
-| Backend fails to connect to DB | Ensure PostgreSQL is running; check `DB_HOST` (use `postgres` when using Docker Compose) |
+| Backend fails to connect to DB (local) | Ensure PostgreSQL is running; check `DB_HOST` (use `db` in Docker Compose, `localhost` on host) |
+| Backend fails to connect to Neon | Confirm `SPRING_PROFILES_ACTIVE=prod` (enables `sslmode=require`); verify Neon credentials in Render |
 | CORS errors | Set `ALLOWED_ORIGIN` to the exact frontend URL |
-| Frontend shows API errors | Verify `NEXT_PUBLIC_API_URL` matches backend URL (baked at build time) |
+| Frontend shows API errors | Verify `NEXT_PUBLIC_API_URL` matches backend URL (baked at Vercel build time) |
 | JWT validation fails | Ensure `JWT_SECRET` is identical across restarts |
+| Render cold starts persist | Set up UptimeRobot (§8.5); check GitHub Actions billing if using the backup workflow |
+| GitHub keep-alive workflow fails | Settings → Billing — resolve payment or spending limit; verify `RENDER_BACKEND_URL` secret |

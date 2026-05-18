@@ -105,10 +105,16 @@ Keep these open in your IDE or browser:
 Copy-Item .env.example .env
 # Edit .env with your DB_PASSWORD and other secrets
 
-# Start the full stack (Database, Backend, Frontend)
-docker compose up -d
+# Start database + backend (Docker)
+docker compose up db backend
 
-# Verify services are running
+# Start frontend on host (Turbopack)
+cd frontend
+Copy-Item .env.local.example .env.local
+# Edit .env.local: NEXT_PUBLIC_API_URL=http://localhost:<BACKEND_PORT>/api
+npm run dev
+
+# Verify backend is running
 docker compose ps
 ```
 

@@ -109,5 +109,16 @@ Set these in your **Render Dashboard → Service → Environment**:
 | `ALLOWED_ORIGIN` | `https://your-app.vercel.app` |
 | `ALLOWED_ORIGIN_PATTERNS` | `https://your-app.vercel.app,https://*.vercel.app` |
 
+> **Neon SSL:** `SPRING_PROFILES_ACTIVE=prod` enables `sslmode=require` on the JDBC URL (see `application-prod.yml`).
+
+## 🔄 Render Keep-Alive
+
+| Method | Config |
+| :--- | :--- |
+| **UptimeRobot** (recommended) | Monitor `https://your-backend.onrender.com/actuator/health` every 5 min |
+| **GitHub Actions** (backup) | Secret `RENDER_BACKEND_URL` in repo Settings → Secrets; workflow `.github/workflows/maintenance.yml` |
+
+See [deployment-guide.md §8.5](deployment-guide.md#85-keep-alive-prevent-render-cold-starts) for setup steps.
+
 ---
-*Updated 2026-05-15 — Unified .env architecture, added Flyway safety and Render production variables.*
+*Updated 2026-05-18 — Neon SSL via prod profile, Render keep-alive guidance.*
