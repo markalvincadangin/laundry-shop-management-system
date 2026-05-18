@@ -30,7 +30,7 @@
 ### 2.1 Dashboard Overview
 Upon login, the Dashboard (Command Center) is displayed. It provides:
 - **KPI Cards** showing active loads in progress, orders ready for pickup, today's new orders, and today's revenue (Admin only).
-- **Order Pipeline** — a five-column Kanban board displaying all active orders organized by their lifecycle status: Received, In Progress, Ready for Pickup, Released, and Cancelled.
+- **Order Pipeline** — a five-column Kanban board displaying all active orders organized by their lifecycle status: Queued/Received, Washing, Drying, Folding, and Ready for Pickup.
 
 ### 2.2 Creating a New Order
 1. Click on **New Order** in the sidebar navigation.
@@ -38,14 +38,14 @@ Upon login, the Dashboard (Command Center) is displayed. It provides:
 3. **Step 2 — Service & Weight:** Select the service type (e.g., Standard Wash, Rush Wash, Blankets), then enter the weight in kilograms (kg). The system will automatically compute the number of loads based on the 8kg-per-load limit.
 4. **Step 3 — Add-ons (Optional):** Select any optional add-ons (e.g., extra fabric conditioner). Each add-on will be itemized and added to the total.
 5. **Step 4 — Review & Confirm:** Review the auto-computed total price including the base amount, any extra-time charges, and add-ons. Click **Create Order** to submit.
-6. The system generates a unique reference number in the format `LDR-XXXXXXXX-XXXX` for the customer's claim stub.
+6. The system generates a unique reference number in the format `LDR-YYYYMMDD-XXXX` for the customer's claim stub.
 
 ### 2.3 Advancing Order Status
 1. Navigate to the **Dashboard** to view the Order Pipeline.
 2. Locate the order in the appropriate status column.
 3. Click the **action button** on the order card to advance it to the next status:
-   - **Received → In Progress:** Click "Start Processing" when the laundry is loaded into the machine.
-   - **In Progress → Ready for Pickup:** Click "Mark Ready" when the laundry is washed, dried, and folded.
+   - **Received → Washing:** Click "Start Processing" when the laundry is loaded into the machine.
+   - **Washing → Drying → Folding → Ready for Pickup:** Advance the order through these stages as the laundry completes each physical step.
    - **Ready for Pickup → Released:** Click "Release" — if payment is still pending, the system will prompt for payment first.
 
 ### 2.4 Recording Payment and Releasing Orders

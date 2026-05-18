@@ -43,7 +43,7 @@ This document outlines the core business logic and computational rules that the 
 - **BR-PAY-01 (Payment Timing):** Payment is typically collected upon pickup, not at drop-off. This is a process guideline, not a strict system constraint.
 - **BR-PAY-02 (Payment Linked to Order):** Each payment must be associated with exactly one order. This is enforced by a database foreign key constraint.
 - **BR-PAY-03 (Payment Amount Validation):** The recorded payment amount must exactly match the order grand total. Partial payments, overpayments, and refunds are not supported in the current version.
-- **BR-PAY-04 (Payment Status):** An order's payment status is either `PAID` or `UNPAID`. The status is derived from the presence of a completed payment record.
+- **BR-PAY-04 (Payment Status):** An order's payment status is either `PAID`, `UNPAID`, or `VOIDED`. The status is derived from the presence of a completed payment record, and transitions to `VOIDED` upon paid order cancellation.
 - **BR-PAY-05 (Payment Method):** Each payment must record the payment method used: **Cash**, **GCash**, or **Bank Transfer**. This is for record-keeping only; the system does not integrate with external payment gateways.
 - **BR-PAY-06 (Automatic Reversal on Cancellation):** When a paid order is cancelled, the associated payment status must automatically transition to `VOIDED` to ensure financial reports accurately reflect net revenue.
 

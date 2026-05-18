@@ -54,19 +54,19 @@ The interface employs glassmorphism as a unifying design language. Glass panels 
 
 The Login Page serves as the staff authentication portal. It follows a vertically centered, single-column layout that minimizes visual distractions and directs focus entirely to the credential input fields. The design applies Nielsen's Aesthetic-Minimalist heuristic by removing all unnecessary elements. Error messages are displayed inline using a high-contrast rose alert banner with an icon for immediate visibility. A secondary call-to-action below the form links customers to the public order tracking page.
 
-![Login Page](./diagrams/ui/UI_LOGIN.png)
+![Login Page](./ui/LOGIN.png)
 
 ### Public Landing Page
 
 The Public Landing Page is the customer-facing entry point to the system. It features a full-width hero section with the business name, service description, and an integrated order tracking search bar. Below the hero, a location strip displays the shop address, operating hours, and contact information. A features section highlights the value propositions of the service, and a pricing card dynamically displays the current standard wash rate fetched from the backend API. The page concludes with a footer containing business location details and support contact information.
 
-![Public Landing Page](./diagrams/ui/UI_LANDING.png)
+![Public Landing Page](./ui/LANDING.png)
 
 ### Order Tracking Page
 
 The Order Tracking Page allows customers to look up the real-time status of their laundry order using a reference number. Upon entering a valid reference number, the page displays the current order status using a visual progress stepper, the service type, weight, pricing breakdown, and a timestamped status history. This page is publicly accessible and does not require authentication.
 
-![Order Tracking Page](./diagrams/ui/UI_TRACKING.png)
+![Order Tracking Page](./ui/TRACK.png)
 
 ### Dashboard (Command Center)
 
@@ -74,61 +74,61 @@ The Dashboard is the primary operational interface for staff and administrators.
 
 The bottom section features the Order Pipeline, a five-column Kanban-style board that visualizes all active orders organized by their lifecycle status: Received, In Progress, Ready for Pickup, Released, and Cancelled. Staff can advance orders through the pipeline using action buttons on each order card, triggering backend status transitions and audit log entries.
 
-![Dashboard Overview](./diagrams/ui/UI_DASHBOARD.png)
+![Dashboard Overview](./ui/DASHBOARD.png)
 
 ### Order Intake Wizard
 
 The Order Intake Wizard provides a guided, multi-step form for creating new laundry orders. The wizard is divided into sequential steps: customer selection or creation, service and weight input, optional add-ons, and a final review and confirmation step. Each step validates input before allowing progression to the next, preventing incomplete order submissions. The wizard dynamically calculates pricing based on the selected service rate, weight, and any add-ons.
 
-![Order Intake Wizard](./diagrams/ui/UI_NEW_ORDER.png)
+![Order Intake Wizard](./ui/ORDER_INTAKE.png)
 
 ### Order Management List
 
 The Order Management List displays all orders in a searchable, filterable, and paginated table. Each row shows the reference number, customer name, service type, total amount, current status, and payment status. Status badges use semantic color coding consistent with the design system. Staff can click on any order to view its full details, update its status, or process a payment.
 
-![Order Management List](./diagrams/ui/UI_ORDERS.png)
+![Order Management List](./ui/ORDERS.png)
 
 ### Customer Management
 
 The Customer Management module provides a master list of all registered customers with their contact information and order history. Staff can search customers by name or contact number, view individual customer profiles, and edit customer details. The customer detail view displays the complete order history for that customer along with summary statistics.
 
-![Customer Management](./diagrams/ui/UI_CUSTOMERS.png)
+![Customer Management](./ui/CUSTOMERS.png)
 
 ### Payment Management
 
 The Payment Management module displays a complete ledger of all payment transactions. The table includes the order reference number, customer name, amount paid, payment method, the staff member who received the payment, and the payment date. A payment action modal allows staff to record payments for unpaid orders, capturing the payment method and optional remarks.
 
-![Payment Management](./diagrams/ui/UI_PAYMENTS.png)
+![Payment Management](./ui/PAYMENTS.png)
 
 ### Reports Module
 
 The Reports Module provides automated sales reporting capabilities. It displays revenue charts, order volume trends, and service type breakdowns across configurable date ranges. The module supports daily and monthly aggregation views with exportable data. Revenue figures, order counts, and average order values are displayed as KPI summary cards above the chart area. This module is restricted to administrators only.
 
-![Reports Module](./diagrams/ui/UI_REPORTS.png)
+![Reports Module](./ui/REPORTS.png)
 
 ### Service Rates Configuration
 
 The Service Rates Configuration screen allows administrators to manage the pricing structure of the laundry shop. Each service rate entry defines the service name, base price per load, weight limit per load, and extra time charge per minute. Administrators can add new service types, edit existing rates, and activate or deactivate services. Changes to service rates are logged in the audit trail for accountability.
 
-![Service Rates Configuration](./diagrams/ui/UI_RATES.png)
+![Service Rates Configuration](./ui/RATES.png)
 
 ### User Management
 
 The User Management module allows administrators to manage staff accounts. The interface displays all system users with their usernames, full names, roles, and active status. Administrators can create new user accounts, edit existing user profiles, reset passwords, and deactivate accounts. Role-based access control is enforced at both the frontend and backend levels.
 
-![User Management](./diagrams/ui/UI_USERS.png)
+![User Management](./ui/USERS.png)
 
 ### Client Alerts (Messaging)
 
 The Client Alerts module provides a log of all customer notifications generated by the system. Each alert entry shows the associated order reference, the notification channel, message content, creation timestamp, and delivery status. This module enables staff to monitor customer communication history and verify that status update notifications have been sent successfully.
 
-![Client Alerts](./diagrams/ui/UI_MESSAGING.png)
+![Client Alerts](./ui/MESSAGING.png)
 
 ### Audit Logs
 
 The Audit Logs module provides a forensic trail of all system actions for accountability and compliance. The log displays the user who performed the action, the action type, the affected table and record, timestamps, and before-and-after data snapshots in JSON format. This module is restricted to administrators and supports filtering by action type, table name, and date range.
 
-![Audit Logs](./diagrams/ui/UI_AUDIT_LOGS.png)
+![Audit Logs](./ui/LOGS.png)
 
 ## 4. Responsive Design
 

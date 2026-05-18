@@ -90,7 +90,7 @@ This system digitizes the entire workflow: from order intake with automatic pric
 
 | Layer | Technology | Version |
 |:---|:---|:---|
-| **Frontend** | Next.js (React, TypeScript, Tailwind CSS) | 14+ |
+| **Frontend** | Next.js (React, TypeScript, Tailwind CSS) | 15.5.15 |
 | **Backend** | Spring Boot (Java) | 3.5 / Java 21 LTS |
 | **Database** | PostgreSQL | 16 |
 | **Migrations** | Flyway | Embedded |
@@ -218,7 +218,7 @@ laundry-shop-management-system/
 │       │   ├── (dashboard)/          # Protected dashboard routes
 │       │   └── (public)/             # Landing & public tracking
 │       ├── components/               # Shared UI components
-│       ├── features/                 # Feature-specific modules
+│       │   └── features/             # Feature-specific modules
 │       ├── contexts/                 # React context providers
 │       └── hooks/                    # Custom React hooks
 ├── docs/                             # Project documentation (source of truth)
@@ -234,7 +234,7 @@ laundry-shop-management-system/
 
 ```
 ┌──────────────────────┐
-│     Next.js 14       │  React + TypeScript + Tailwind CSS
+│     Next.js 15.5.15  │  React + TypeScript + Tailwind CSS
 │     (Frontend)       │  Glassmorphism UI with Framer Motion
 │                      │  App Router with Route Groups
 └──────────┬───────────┘

@@ -229,8 +229,8 @@ def add_subsection_heading(doc, prefix, title):
 def add_figure_placeholder(doc, caption, figure_num, svg_filename=None):
     """Add a diagram image or placeholder box with a caption."""
     svg_path = os.path.join(DIAGRAMS_DIR, svg_filename) if svg_filename else None
-    # Also check diagrams/ui/ subdirectory for UI screenshots
-    ui_dir = os.path.join(BASE_DIR, "diagrams", "ui")
+    # Also check ui/ subdirectory for UI screenshots
+    ui_dir = os.path.join(BASE_DIR, "ui")
     ui_path = os.path.join(ui_dir, svg_filename) if svg_filename else None
     has_file = (svg_path and os.path.exists(svg_path)) or (ui_path and os.path.exists(ui_path))
 
@@ -693,6 +693,11 @@ def build_document():
             content = parse_md_content(filepath)
             subsection_prefix = f"{ch_idx}.{sec_idx}"
             render_section_content(doc, content, subsection_prefix, next_figure_num, next_table_num)
+
+            # Render mapped diagrams
+            if filename in DIAGRAM_MAP:
+                for diag_file, diag_caption, _ in DIAGRAM_MAP[filename]:
+                    add_figure_placeholder(doc, diag_caption, next_figure_num(), diag_file)
 
     # ── REFERENCES ───────────────────────────────────────────
     doc.add_page_break()

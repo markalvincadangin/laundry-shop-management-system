@@ -44,7 +44,7 @@ To ensure the Faith Laundry Shop Management System is reliable and bug-free, a m
   3. Select or create a customer.
   4. Choose "Standard Wash" service and set weight to 7kg.
   5. Submit the order.
-- **Expected Result:** System registers 1 load and sets the base amount to ₱140.00. The order status is set to RECEIVED and a reference number in the format LDR-XXXXXXXX-XXXX is generated.
+- **Expected Result:** System registers 1 load and sets the base amount to ₱140.00. The order status is set to RECEIVED and a reference number in the format LDR-YYYYMMDD-XXXX is generated.
 
 ### TC-03: Order Creation (Excess Load)
 - **Objective:** Verify that an order exceeding 8kg computes additional loads correctly.
@@ -63,7 +63,7 @@ To ensure the Faith Laundry Shop Management System is reliable and bug-free, a m
   2. Navigate to the Dashboard.
   3. Locate a RECEIVED order in the pipeline.
   4. Click the advance action button on the order card.
-- **Expected Result:** The order moves from RECEIVED to IN_PROGRESS. The status change is recorded in the audit log with the user ID and timestamp.
+- **Expected Result:** The order moves from RECEIVED to WASHING. The status change is recorded in the audit log with the user ID and timestamp.
 
 ### TC-05: Payment Before Release
 - **Objective:** Ensure an order cannot be released without recording payment first.
@@ -112,4 +112,4 @@ To ensure the Faith Laundry Shop Management System is reliable and bug-free, a m
   1. Open the public landing page (without authentication).
   2. Enter a valid order reference number (e.g., LDR-20260517-0001) in the tracking search bar.
   3. Submit the search.
-- **Expected Result:** The system displays the order's current status, service type, weight, pricing breakdown, and a timestamped status history. No sensitive internal data is exposed.
+- **Expected Result:** The system displays the order's current status, service type, weight, and a timestamped status history. No sensitive internal data or pricing breakdown is exposed.

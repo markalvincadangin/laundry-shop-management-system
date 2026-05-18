@@ -50,8 +50,8 @@ DB_PORT=5433
 SPRING_PORT=8080
 SPRING_PROFILES_ACTIVE=dev
 JWT_SECRET=dev-secret-change-in-production-minimum-32-characters-required
-ALLOWED_ORIGIN=http://localhost:3000
-ALLOWED_ORIGIN_PATTERNS=http://localhost:3000,http://localhost:3001,https://*.ngrok-free.app
+ALLOWED_ORIGIN=http://localhost:3001
+ALLOWED_ORIGIN_PATTERNS=http://localhost:3001,https://*.ngrok-free.app
 ```
 
 **Dev Seed Accounts (dev profile only):**
@@ -66,7 +66,7 @@ APP_SEED_STAFF_PASSWORD=staff123
 
 **Frontend Configuration:**
 ```env
-FRONTEND_PORT=3000
+FRONTEND_PORT=3001
 NEXT_PUBLIC_API_URL=http://backend:8080/api
 ```
 
@@ -81,7 +81,7 @@ SEMAPHORE_SENDER_NAME=FaithLaundry
 2. Run the command: `docker-compose up -d --build`
 3. Wait for the containers to initialize. The PostgreSQL database must pass its health check before the backend starts.
 4. The Backend API will be available at `http://localhost:8080`.
-5. The Frontend App will be available at `http://localhost:3000` (or the port defined in `FRONTEND_PORT`).
+5. The Frontend App will be available at `http://localhost:3001` (or the port defined in `FRONTEND_PORT`).
 
 ## 4. Running Locally (Without Docker)
 
@@ -104,7 +104,7 @@ cd frontend
 npm install
 npm run dev
 ```
-The frontend will start on port 3000 and connect to the backend API.
+The frontend will start on port 3001 and connect to the backend API.
 
 ## 5. Database Migrations
 The backend utilizes **Flyway** for database migrations. When the Spring Boot application starts, it will automatically connect to the PostgreSQL database and run any pending `.sql` migration scripts found in `backend/src/main/resources/db/migration/`. No manual database creation is required other than providing the blank schema via Docker.
