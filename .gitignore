@@ -13,6 +13,7 @@ yarn-error.log*
 .env.*
 !.env.example
 !**/.env.example
+!**/.env.local.example
 backend/.env
 frontend/.env.local
 docker/.env.docker
@@ -36,6 +37,7 @@ docker/.env.docker
 **/build/
 **/.next/
 .vercel
+*.tsbuildinfo
 
 # Test coverage and reports
 **/coverage/
@@ -49,3 +51,6 @@ docker/.env.docker
 
 # ngrok config
 ngrok.yml
+
+# Tooling assessment artifacts (local only)
+.github/modernize/

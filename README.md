@@ -112,7 +112,7 @@ This system digitizes the entire workflow: from order intake with automatic pric
 
 > **Note:** Maven is included via the project's wrapper (`mvnw` / `mvnw.cmd`) — no separate install needed.
 
-### Quick Start (Docker — Recommended)
+### Quick Start (Hybrid Dev — Recommended)
 
 ```bash
 # 1. Clone
@@ -123,14 +123,24 @@ cd laundry-shop-management-system
 cp .env.example .env    # Linux/macOS
 # Copy-Item .env.example .env    # Windows PowerShell
 
-# 3. Start the full stack
-docker compose up -d
+# 3. Start database + backend (Docker)
+docker compose up db backend
 
-# 4. Open the app
-# Frontend:  http://localhost:3001
+# 4. Start frontend on host (Turbopack — fast hot reload)
+cd frontend
+cp .env.local.example .env.local   # Linux/macOS
+# Copy-Item .env.local.example .env.local   # Windows
+# Edit .env.local: NEXT_PUBLIC_API_URL=http://localhost:<BACKEND_PORT>/api
+npm install
+npm run dev
+
+# 5. Open the app
+# Frontend:  http://localhost:3000 (or :3001 if 3000 is in use)
 # Backend:   http://localhost:8080/api/v1/health
 # API Docs:  http://localhost:8080/swagger-ui.html
 ```
+
+> **Optional:** Full stack in Docker: `docker compose --profile full up -d` (slower frontend HMR on Windows).
 
 ### Manual Setup (Without Docker)
 
@@ -186,7 +196,8 @@ The frontend starts on `http://localhost:3001`.
 
 | Command | Description |
 |:---|:---|
-| `docker compose up -d` | Start the full stack |
+| `docker compose up db backend` | Start database + backend (recommended) |
+| `docker compose --profile full up -d` | Start full stack including frontend container |
 | `docker compose down` | Stop all services |
 | `./scripts/fresh.ps1` | Reset DB, re-migrate, and re-seed (keeps caches) |
 | `./scripts/share.ps1` | Share local environment via ngrok |

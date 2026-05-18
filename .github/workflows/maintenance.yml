@@ -1,13 +1,20 @@
 name: Keep Services Awake
 
+# Secondary keep-alive for Render free tier. Prefer UptimeRobot (see deployment-guide §8.5)
+# as primary — it does not consume GitHub Actions minutes or depend on billing.
+
 on:
   schedule:
-    # Ping every 10 minutes to prevent Render free tier spin-down
+    # Ping every 10 minutes to prevent Render free tier spin-down (15 min idle limit)
     - cron: '*/10 * * * *'
-  workflow_dispatch: # Manual trigger from GitHub UI
+  workflow_dispatch:
+
+concurrency:
+  group: keep-services-awake
+  cancel-in-progress: false
 
 jobs:
-  ping-services:
+  ping-render:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render Backend
@@ -15,27 +22,28 @@ jobs:
           RENDER_URL: ${{ secrets.RENDER_BACKEND_URL }}
         run: |
           if [ -z "$RENDER_URL" ]; then
-            echo "⚠️ RENDER_BACKEND_URL secret is not set"
-            exit 0
+            echo "::error::RENDER_BACKEND_URL secret is not set — add it in GitHub → Settings → Secrets"
+            exit 1
           fi
-          for i in 1 2 3; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$RENDER_URL/actuator/health" 2>/dev/null)
+
+          # Strip trailing slash
+          RENDER_URL="${RENDER_URL%/}"
+
+          echo "Pinging $RENDER_URL/actuator/health"
+
+          # Render cold starts can take ~60s; retry for up to 90s
+          AWAKE=false
+          for i in $(seq 1 9); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$RENDER_URL/actuator/health" 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
-              echo "✅ Backend is awake (HTTP $STATUS)"
+              echo "✅ Backend is awake (HTTP $STATUS, attempt $i)"
+              AWAKE=true
               break
-            else
-              echo "⏳ Attempt $i — Backend returned HTTP $STATUS (may be waking up)"
-              sleep 10
             fi
+            echo "⏳ Attempt $i/9 — HTTP $STATUS (may be cold-starting)"
+            sleep 10
           done
 
-      - name: Ping Vercel Frontend
-        env:
-          VERCEL_URL: ${{ secrets.VERCEL_FRONTEND_URL }}
-        run: |
-          if [ -z "$VERCEL_URL" ]; then
-            echo "ℹ️ VERCEL_FRONTEND_URL secret not set, skipping"
-            exit 0
+          if [ "$AWAKE" = "false" ]; then
+            echo "::warning::Backend did not return HTTP 200 within 90s — inbound traffic was still sent (may help wake Render)"
           fi
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$VERCEL_URL" 2>/dev/null)
-          echo "Frontend: HTTP $STATUS"

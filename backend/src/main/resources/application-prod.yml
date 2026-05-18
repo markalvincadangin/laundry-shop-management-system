@@ -2,6 +2,10 @@
 # Activate with: SPRING_PROFILES_ACTIVE=prod
 
 spring:
+  datasource:
+    # Neon requires SSL for external connections from Render
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}?stringtype=unspecified&sslmode=require
+
   # --- Flyway: production settings ---
   flyway:
     clean-disabled: true
@@ -22,3 +26,8 @@ logging:
         SQL: warn
     com.himotech: info
     org.flywaydb: info
+
+app:
+  security:
+    cookie-secure: true
+    cookie-same-site: Lax

@@ -3,6 +3,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const isDockerDev = process.env.DOCKER_DEV === "true";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Standalone only in prod — dev volume mounts conflict with it
@@ -25,16 +27,12 @@ const nextConfig = {
     }
   },
 
-  // Webpack configuration for Docker hot-reloading (Polling)
-  webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      config.watchOptions = {
-        poll: 3000,
-        aggregateTimeout: 500,
-      };
-    }
-    return config;
-  },
+  // Turbopack file-watcher polling — only needed inside Docker bind mounts
+  ...(isDockerDev && {
+    watchOptions: {
+      pollIntervalMs: 1000,
+    },
+  }),
 
   images: {
     dangerouslyAllowSVG: false,
