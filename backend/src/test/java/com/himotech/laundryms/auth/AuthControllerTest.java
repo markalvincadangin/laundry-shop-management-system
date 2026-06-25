@@ -1,9 +1,9 @@
 package com.himotech.laundryms.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.himotech.laundryms.api.dto.request.LoginRequest;
+import com.himotech.laundryms.auth.dto.LoginRequest;
 import com.himotech.laundryms.config.AppConfig;
-import com.himotech.laundryms.exception.GlobalExceptionHandler;
+import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -73,7 +73,7 @@ class AuthControllerTest {
             User user = User.builder()
                     .id(USER_ID)
                     .username(TEST_USERNAME)
-                    .role(com.himotech.laundryms.common.enums.UserRole.ADMIN)
+                    .role(com.himotech.laundryms.shared.UserRole.ADMIN)
                     .build();
             when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(user);
             when(jwtService.createToken(user)).thenReturn("jwt-token");

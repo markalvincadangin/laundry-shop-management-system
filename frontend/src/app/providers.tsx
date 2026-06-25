@@ -1,7 +1,7 @@
 'use client';
 
-import { AuthProvider } from '@/contexts/AuthContext';
-import { LayoutProvider } from '@/contexts/LayoutContext';
+import { AuthProvider } from '@/stores/auth-store';
+import { LayoutProvider } from '@/stores/layout-store';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 
 /**

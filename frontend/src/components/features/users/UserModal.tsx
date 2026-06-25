@@ -24,7 +24,7 @@ import {
   CardContent
 } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
-import { usersService, UserResponse } from "@/services/users.service";
+import { usersService, UserResponse } from "@/lib/api/users";
 import { toast } from "sonner";
 import { UserRole } from "@/types";
 

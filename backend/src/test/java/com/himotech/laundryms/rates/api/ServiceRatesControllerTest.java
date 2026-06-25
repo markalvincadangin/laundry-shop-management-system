@@ -1,9 +1,9 @@
 package com.himotech.laundryms.rates.api;
 
-import com.himotech.laundryms.exception.GlobalExceptionHandler;
-import com.himotech.laundryms.exception.NotFoundException;
-import com.himotech.laundryms.api.dto.response.ServiceRateResponse;
-import com.himotech.laundryms.api.mapper.ServiceRateMapper;
+import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
+import com.himotech.laundryms.shared.exception.NotFoundException;
+import com.himotech.laundryms.rates.dto.ServiceRateResponse;
+import com.himotech.laundryms.rates.mapper.ServiceRateMapper;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.repository.ServiceRateRepository;
 import com.himotech.laundryms.rates.service.ServiceRateService;

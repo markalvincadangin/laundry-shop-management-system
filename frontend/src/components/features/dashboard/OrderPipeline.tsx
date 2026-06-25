@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { OrderResponse } from "@/services/orders.service";
+import { OrderResponse } from "@/lib/api/orders";
 import { ORDER_STATUS, OrderStatus } from "@/constants/order-status";
 import { OrderCard } from "./OrderCard";
 import { UI_LABELS } from "@/constants/ui";

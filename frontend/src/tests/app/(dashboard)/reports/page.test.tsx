@@ -7,10 +7,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
-import { reportsService } from "@/services/reports.service";
+import { reportsService } from "@/lib/api/reports";
 import ReportsPage from "@/app/(dashboard)/reports/page";
 
-vi.mock("@/services/reports.service", () => ({
+vi.mock("@/lib/api/reports", () => ({
   reportsService: {
     getDailySales: vi.fn(),
     getMonthlySales: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock("@/services/reports.service", () => ({
   },
 }));
 
-vi.mock("@/services/orders.service", () => ({
+vi.mock("@/lib/api/orders", () => ({
   ordersService: {
     list: vi.fn(() => Promise.resolve({ content: [], page: 0, size: 10, totalElements: 0, totalPages: 0 })),
   },
@@ -38,7 +38,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/",
 }));
 
-vi.mock("@/contexts/AuthContext", () => ({
+vi.mock("@/stores/auth-store", () => ({
   useAuth: () => ({ user: { userId: "admin-1", username: "admin", role: "ADMIN" }, loading: false }),
 }));
 

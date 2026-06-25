@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { clientAlertsService, ClientAlertParams } from "@/services/client-alerts.service";
+import { clientAlertsService, ClientAlertParams } from "@/lib/api/client-alerts";
 
 /**
  * useClientAlerts: Encapsulates recent activity retrieval logic.

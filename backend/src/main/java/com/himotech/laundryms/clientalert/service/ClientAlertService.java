@@ -3,7 +3,7 @@ package com.himotech.laundryms.clientalert.service;
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.clientalert.api.ClientAlertResponse;
 import com.himotech.laundryms.clientalert.api.ClientAlertMapper;
-import com.himotech.laundryms.common.enums.ClientAlertStatus;
+import com.himotech.laundryms.clientalert.ClientAlertStatus;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.clientalert.entity.ClientAlert;
 import com.himotech.laundryms.clientalert.repository.ClientAlertRepository;

@@ -27,8 +27,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { ordersService } from "@/services/orders.service";
-import { paymentsService } from "@/services/payments.service";
+import { ordersService } from "@/lib/api/orders";
+import { paymentsService } from "@/lib/api/payments";
 import { PaymentMethod } from "@/constants/order-status";
 import { Card, CardContent, Input, Button, Select, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
@@ -40,11 +40,11 @@ import {
   IntakeCustomerStepSchema,
   IntakeServiceStepSchema,
   type OrderIntakeInput
-} from "@/lib/validators";
+} from "@/lib/validation/order";
 import { OrderIntakeFormProps } from "@/types/components";
 import { ClaimStub } from "./ClaimStub";
 import { OrderPreview } from "./OrderPreview";
-import { OrderResponse } from "@/services/orders.service";
+import { OrderResponse } from "@/lib/api/orders";
 import { ProcessStepper } from "@/components/features/shared/ProcessStepper";
 
 type IntakeStep = "CUSTOMER" | "SERVICE" | "ADDONS" | "CONFIRM";

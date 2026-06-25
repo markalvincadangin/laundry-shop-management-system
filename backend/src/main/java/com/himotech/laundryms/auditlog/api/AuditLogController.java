@@ -1,8 +1,8 @@
 package com.himotech.laundryms.auditlog.api;
 
 import com.himotech.laundryms.auditlog.service.AuditLogService;
-import com.himotech.laundryms.api.dto.response.AuditLogResponse;
-import com.himotech.laundryms.api.dto.response.PageResponse;
+import com.himotech.laundryms.auditlog.dto.AuditLogResponse;
+import com.himotech.laundryms.shared.dto.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

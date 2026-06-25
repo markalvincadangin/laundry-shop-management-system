@@ -5,7 +5,7 @@ import Link from "next/link";
 import { IntakeWizard } from "@/components/features/orders/IntakeWizard";
 import { PageHeader } from "@/components/layout";
 import { UI_LABELS } from "@/constants/ui";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { LoadingState } from "@/features/shared";
 
 export default function NewOrderPage() {

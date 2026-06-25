@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/"),
 }));
 
-vi.mock("@/contexts/AuthContext", () => ({
+vi.mock("@/stores/auth-store", () => ({
   useRequireAuth: vi.fn(),
   useAuth: vi.fn(() => ({ user: { id: "1" }, loading: false })),
 }));

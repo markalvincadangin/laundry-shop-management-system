@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { User, Clock, Activity, ChevronRight, History, Database, ClipboardList } from "lucide-react";
 import { Modal, StatusBadge } from "@/components/ui";
-import { AuditLogResponse } from "@/services/audit-log.service";
+import { AuditLogResponse } from "@/lib/api/audit-log";
 import { formatDateTime } from "@/lib/utils";
 import { UI_LABELS } from "@/constants/ui";
 

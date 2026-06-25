@@ -1,7 +1,7 @@
 import React from "react";
 import { CreditCard, Calendar, User, ArrowRight, Receipt, ShieldCheck } from "lucide-react";
 import { Modal, Button } from "@/components/ui";
-import { PaymentResponse } from "@/services/payments.service";
+import { PaymentResponse } from "@/lib/api/payments";
 import { formatDate } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { UI_LABELS } from "@/constants/ui";

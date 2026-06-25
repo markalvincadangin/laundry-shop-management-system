@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usersService, UserResponse, UserStatsResponse } from "@/services/users.service";
+import { usersService, UserResponse, UserStatsResponse } from "@/lib/api/users";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 
 /**
  * useUsers: Hook for staff management.

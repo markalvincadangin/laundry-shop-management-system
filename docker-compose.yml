@@ -5,6 +5,7 @@ services:
     image: postgres:16-alpine
     container_name: laundry-postgres
     restart: unless-stopped
+    env_file: .env
     environment:
       POSTGRES_DB: ${DB_NAME:-laundry_db}
       POSTGRES_USER: ${DB_USER:-laundry_user}
@@ -21,33 +22,22 @@ services:
       retries: 5
 
   backend:
-    image: eclipse-temurin:21-jdk-alpine
+    build:
+      context: ./backend
+      target: development
     container_name: laundry-backend
     working_dir: /app
-    command: >
-      ./mvnw spring-boot:run 
-      -Dspring-boot.run.profiles=dev 
-      -Dcheckstyle.skip 
-      -Djacoco.skip 
-      -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     volumes:
       - ./backend:/app
       - maven_cache:/root/.m2
     ports:
       - "${BACKEND_PORT:-8080}:8080"
       - "${DEBUG_PORT:-5005}:5005" # Remote debugger port
+    env_file: .env
     environment:
-      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME:-laundry_db}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-laundry_user}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-http://localhost:3000}
-      ALLOWED_ORIGIN_PATTERNS: ${ALLOWED_ORIGIN_PATTERNS}
-      SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME}
-      SEED_ADMIN_PASSWORD_HASH: ${SEED_ADMIN_PASSWORD_HASH}
-      SEED_STAFF_USERNAME: ${SEED_STAFF_USERNAME}
-      SEED_STAFF_PASSWORD_HASH: ${SEED_STAFF_PASSWORD_HASH}
     depends_on:
       db:
         condition: service_healthy
@@ -64,6 +54,7 @@ services:
       - node_modules:/app/node_modules
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
+    env_file: .env
     environment:
       # Points to backend via Docker internal network — not exposed publicly
       # /api/* calls are proxied by Next.js rewrites to this URL

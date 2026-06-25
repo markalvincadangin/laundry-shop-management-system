@@ -26,16 +26,16 @@ import {
   ShieldCheck,
   FileText
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { ApiError } from "@/lib/api-client";
 import {
   ordersService,
   type OrderResponse,
   type UpdateOrderRequest,
-} from "@/services/orders.service";
+} from "@/lib/api/orders";
 import type { components } from "@/types/api.generated";
 import { StatusBadge, CurrencyDisplay, Button, Input } from "@/components/ui";
-import { paymentsService } from "@/services/payments.service";
+import { paymentsService } from "@/lib/api/payments";
 import { OrderStatusTimeline } from "@/features/orders/OrderStatusTimeline";
 import { ClaimStub } from "@/features/orders/ClaimStub";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";

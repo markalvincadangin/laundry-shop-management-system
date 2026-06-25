@@ -1,6 +1,6 @@
 package com.himotech.laundryms.users.repository;
 
-import com.himotech.laundryms.common.enums.UserRole;
+import com.himotech.laundryms.shared.UserRole;
 import com.himotech.laundryms.users.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;

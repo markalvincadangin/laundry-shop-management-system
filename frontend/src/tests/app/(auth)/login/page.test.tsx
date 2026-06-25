@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import LoginPage from "@/app/(auth)/login/page";
 
 const mockLogin = vi.fn();
-vi.mock("@/contexts/AuthContext", () => ({
+vi.mock("@/stores/auth-store", () => ({
   useAuth: () => ({
     user: null,
     login: mockLogin,

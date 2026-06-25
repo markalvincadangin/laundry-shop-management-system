@@ -30,7 +30,7 @@ import { formatDateTime } from "@/lib/utils";
 import { DataTableColumn } from "@/types/components";
 import { useClientAlerts } from "@/hooks/useClientAlerts";
 import { useRegistry } from "@/hooks/useRegistry";
-import { ClientAlertResponse } from "@/services/client-alerts.service";
+import { ClientAlertResponse } from "@/lib/api/client-alerts";
 import { ClientAlertDetailsModal } from "@/components/features/client-alerts/ClientAlertDetailsModal";
 import { motion } from "framer-motion";
 

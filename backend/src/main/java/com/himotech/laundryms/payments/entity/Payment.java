@@ -1,6 +1,6 @@
 package com.himotech.laundryms.payments.entity;
 
-import com.himotech.laundryms.common.enums.PaymentMethod;
+import com.himotech.laundryms.payments.PaymentMethod;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.users.entity.User;
 import jakarta.persistence.*;

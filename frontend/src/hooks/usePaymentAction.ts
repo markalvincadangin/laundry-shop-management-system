@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { paymentsService, type CreatePaymentRequest } from "@/services/payments.service";
+import { paymentsService, type CreatePaymentRequest } from "@/lib/api/payments";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";
 

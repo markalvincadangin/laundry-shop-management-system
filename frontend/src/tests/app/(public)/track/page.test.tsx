@@ -6,12 +6,12 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
-import { ordersService } from "@/services/orders.service";
+import { ordersService } from "@/lib/api/orders";
 import { ApiError } from "@/lib/api-client";
 import TrackPage from "@/app/(public)/track/page";
 
 // Mock services
-vi.mock("@/services/orders.service", () => ({
+vi.mock("@/lib/api/orders", () => ({
   ordersService: {
     trackByReference: vi.fn(),
   },

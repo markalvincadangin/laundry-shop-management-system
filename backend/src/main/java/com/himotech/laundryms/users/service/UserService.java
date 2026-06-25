@@ -37,11 +37,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public com.himotech.laundryms.api.dto.response.UserStatsResponse getUserStats() {
-        return com.himotech.laundryms.api.dto.response.UserStatsResponse.builder()
+    public com.himotech.laundryms.users.dto.UserStatsResponse getUserStats() {
+        return com.himotech.laundryms.users.dto.UserStatsResponse.builder()
                 .totalUsers(userRepository.count())
-                .totalAdmins(userRepository.countByRole(com.himotech.laundryms.common.enums.UserRole.ADMIN))
-                .totalActiveStaff(userRepository.countByRoleAndIsActive(com.himotech.laundryms.common.enums.UserRole.STAFF, true))
+                .totalAdmins(userRepository.countByRole(com.himotech.laundryms.shared.UserRole.ADMIN))
+                .totalActiveStaff(userRepository.countByRoleAndIsActive(com.himotech.laundryms.shared.UserRole.STAFF, true))
                 .build();
     }
 
@@ -88,7 +88,7 @@ public class UserService {
 
         // Constraint: Admin cannot deactivate themselves
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getPrincipal() instanceof com.himotech.laundryms.security.JwtPrincipal principal) {
+        if (auth != null && auth.getPrincipal() instanceof com.himotech.laundryms.auth.JwtPrincipal principal) {
             if (principal.userId().equals(id) && user.getIsActive()) {
                 throw new RuntimeException("Admins cannot deactivate their own account to prevent lockout.");
             }

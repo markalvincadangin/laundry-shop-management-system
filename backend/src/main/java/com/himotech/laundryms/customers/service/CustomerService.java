@@ -76,7 +76,7 @@ public class CustomerService {
     @CacheEvict(value = CacheConfig.CACHE_CUSTOMERS, key = "#id")
     public Customer update(Long id, String firstName, String lastName, String contactNumber) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new com.himotech.laundryms.exception.NotFoundException("Customer not found: " + id));
+                .orElseThrow(() -> new com.himotech.laundryms.shared.exception.NotFoundException("Customer not found: " + id));
 
         if (firstName != null)
             customer.setFirstName(firstName);
@@ -96,7 +96,7 @@ public class CustomerService {
     @CacheEvict(value = CacheConfig.CACHE_CUSTOMERS, key = "#id")
     public Customer toggleActive(Long id) {
         Customer customer = customerRepository.findById(id)
-                .orElseThrow(() -> new com.himotech.laundryms.exception.NotFoundException("Customer not found: " + id));
+                .orElseThrow(() -> new com.himotech.laundryms.shared.exception.NotFoundException("Customer not found: " + id));
         customer.setIsActive(!customer.getIsActive());
         return customerRepository.save(customer);
     }

@@ -1,6 +1,6 @@
 package com.himotech.laundryms.users.dto;
 
-import com.himotech.laundryms.common.enums.UserRole;
+import com.himotech.laundryms.shared.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -10,7 +10,7 @@ import {
   Zap,
   RefreshCcw,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { OrderPipeline } from "@/features/dashboard";
 import { SectionHeader, ErrorState } from "@/features/shared";
 import { PageHeader } from "@/components/layout";

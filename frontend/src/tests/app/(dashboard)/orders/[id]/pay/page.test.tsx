@@ -6,25 +6,25 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
-import { ordersService } from "@/services/orders.service";
-import { paymentsService } from "@/services/payments.service";
+import { ordersService } from "@/lib/api/orders";
+import { paymentsService } from "@/lib/api/payments";
 import PayOrderPage from "@/app/(dashboard)/orders/[id]/pay/page";
 
 // Mock services
-vi.mock("@/services/orders.service", () => ({
+vi.mock("@/lib/api/orders", () => ({
   ordersService: {
     getById: vi.fn(),
   },
 }));
 
-vi.mock("@/services/payments.service", () => ({
+vi.mock("@/lib/api/payments", () => ({
   paymentsService: {
     create: vi.fn(),
   },
 }));
 
 // Mock Auth
-vi.mock("@/contexts/AuthContext", () => ({
+vi.mock("@/stores/auth-store", () => ({
   useAuth: () => ({ user: { userId: 123, username: "staff", role: "STAFF" }, loading: false }),
 }));
 

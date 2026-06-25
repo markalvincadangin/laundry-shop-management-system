@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { User, Calendar, Hash, Banknote, Wallet, CreditCard, ShieldCheck, Eye } from "lucide-react";
-import { type PaymentResponse } from "@/services/payments.service";
+import { type PaymentResponse } from "@/lib/api/payments";
 import { DataTable, EmptyState } from "@/features/shared";
 import { DataTableColumn } from "@/types/components";
 import { UI_LABELS } from "@/constants/ui";

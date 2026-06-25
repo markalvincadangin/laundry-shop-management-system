@@ -2,7 +2,7 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { useAuth, useRequireAuth } from "@/contexts/AuthContext";
+import { useAuth, useRequireAuth } from "@/stores/auth-store";
 import { LoadingState } from "@/features/shared";
 
 /**

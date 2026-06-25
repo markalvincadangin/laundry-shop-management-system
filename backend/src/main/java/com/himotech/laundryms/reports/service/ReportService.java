@@ -1,7 +1,7 @@
 package com.himotech.laundryms.reports.service;
 
-import com.himotech.laundryms.api.dto.response.DailySalesReportResponse;
-import com.himotech.laundryms.api.dto.response.PeriodSalesReportResponse;
+import com.himotech.laundryms.reports.dto.DailySalesReportResponse;
+import com.himotech.laundryms.reports.dto.PeriodSalesReportResponse;
 import com.himotech.laundryms.payments.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

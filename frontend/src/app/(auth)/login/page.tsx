@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, User, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { Card, CardContent } from "@/components/ui";
 import { Input, Button } from "@/components/ui";
 import { LoadingState } from "@/features/shared";

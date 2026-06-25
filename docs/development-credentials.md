@@ -26,12 +26,16 @@ This document describes how to configure development seed credentials for **deve
 ## Development Seed Accounts
 
 When development seed users are enabled, the migration creates:
-- Admin account (role `Admin`)
+- Admin account (role `ADMIN`)
 - Staff account (role `STAFF`)
 
 Usernames and password hashes are sourced from environment variables.
 
-## Environment Configuration
+## Environment Configuration (Hybrid vs Docker)
+
+Depending on your chosen development setup (see `GETTING_STARTED.md`), these variables must be passed to the backend:
+- **Full Docker Mode**: Picked up automatically from the root `.env` file.
+- **Hybrid Native Mode**: Must be exported to your shell before running Maven (`export $(grep -v '^#' .env | xargs)`).
 
 The seed users are created by Flyway migration `V2__seed_users.sql` only when all conditions are true:
 1. `SPRING_PROFILES_ACTIVE=dev`
@@ -41,8 +45,8 @@ The seed users are created by Flyway migration `V2__seed_users.sql` only when al
 Example configuration in the root `.env` file:
 ```
 SPRING_PROFILES_ACTIVE=dev
-SEED_ADMIN_USERNAME=Admin
-SEED_ADMIN_PASSWORD_HASH=$2a$10$replace_with_Admin_bcrypt_hash
+SEED_ADMIN_USERNAME=admin
+SEED_ADMIN_PASSWORD_HASH=$2a$10$replace_with_admin_bcrypt_hash
 SEED_STAFF_USERNAME=staff
 SEED_STAFF_PASSWORD_HASH=$2a$10$replace_with_staff_bcrypt_hash
 ```
