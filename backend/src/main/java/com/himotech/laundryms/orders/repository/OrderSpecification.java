@@ -1,7 +1,7 @@
 package com.himotech.laundryms.orders.repository;
 
-import com.himotech.laundryms.common.enums.OrderStatus;
-import com.himotech.laundryms.common.enums.PaymentStatus;
+import com.himotech.laundryms.orders.OrderStatus;
+import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.orders.entity.Order;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

@@ -1,3 +1,8 @@
+# ===== STAGE 0: Development =====
+FROM maven:3.9-eclipse-temurin-21-alpine AS development
+WORKDIR /app
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.profiles=dev", "-Dcheckstyle.skip", "-Djacoco.skip", "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]
+
 # ===== STAGE 1: Build =====
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /build

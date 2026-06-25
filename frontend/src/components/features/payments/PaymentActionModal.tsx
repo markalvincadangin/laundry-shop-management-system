@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Modal, Button, Input } from "@/components/ui";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { usePaymentAction } from "@/hooks/usePaymentAction";
 import { type PaymentMethod } from "@/constants/payment";
 import { Wallet, Banknote, Check, Landmark } from "lucide-react";

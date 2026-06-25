@@ -16,7 +16,7 @@ import {
   ShieldHalf
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { PageHeader } from "@/components/layout";
 import { 
   Button, 
@@ -30,7 +30,7 @@ import {
 import { DataTable, EmptyState, AccessDenied, FilterBar, Pagination } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
 import { useUsers } from "@/hooks/useUsers";
-import { UserResponse } from "@/services/users.service";
+import { UserResponse } from "@/lib/api/users";
 import { DataTableColumn } from "@/types/components";
 import { UserModal } from "@/components/features/users/UserModal";
 import { formatDate } from "@/lib/utils";

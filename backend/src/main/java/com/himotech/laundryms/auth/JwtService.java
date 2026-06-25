@@ -1,7 +1,7 @@
 package com.himotech.laundryms.auth;
 
-import com.himotech.laundryms.common.enums.UserRole;
-import com.himotech.laundryms.security.SecurityProperties;
+import com.himotech.laundryms.shared.UserRole;
+import com.himotech.laundryms.config.SecurityProperties;
 import com.himotech.laundryms.users.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

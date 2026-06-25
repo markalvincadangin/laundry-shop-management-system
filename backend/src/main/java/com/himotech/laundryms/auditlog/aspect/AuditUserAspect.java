@@ -7,7 +7,7 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.himotech.laundryms.security.JwtPrincipal;
+import com.himotech.laundryms.auth.JwtPrincipal;
 import org.springframework.stereotype.Component;
 
 /**

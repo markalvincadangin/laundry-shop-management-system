@@ -89,11 +89,12 @@
 | [implementation-status.md](06-implementation/implementation-status.md) | Gap analysis: implemented vs. required per docs (user stories, BRs, API, NFRs).  |
 
 
-### Root-Level Guides
-
-
+### Root-Level & Contributor Guides
+ 
 | Document                                                 | Description                                                                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [CONTRIBUTING.md](CONTRIBUTING.md)                       | Branch naming, commit message standards, and architecture/PR rules for contributors.     |
+| [API.md](API.md)                                         | Guidelines for API synchronization and maintaining the polyglot contract.                |
 | [GETTING_STARTED.md](GETTING_STARTED.md)                 | Step-by-step local setup and implementation guide (Docker, database, backend, frontend). |
 | [development-credentials.md](development-credentials.md) | Default development credentials for database, seeded users, and test accounts.           |
 

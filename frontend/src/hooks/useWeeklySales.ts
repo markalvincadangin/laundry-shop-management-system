@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { reportsService } from "@/services/reports.service";
+import { useAuth } from "@/stores/auth-store";
+import { reportsService } from "@/lib/api/reports";
 
 export type ChartPoint = { period: string; income: number; rawDate?: string };
 

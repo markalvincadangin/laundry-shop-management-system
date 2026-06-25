@@ -112,85 +112,57 @@ This system digitizes the entire workflow: from order intake with automatic pric
 
 > **Note:** Maven is included via the project's wrapper (`mvnw` / `mvnw.cmd`) — no separate install needed.
 
-### Quick Start (Hybrid Dev — Recommended)
+### 🚀 Option 1: Hybrid Dev Setup (Recommended for WSL/Linux)
+
+This is the fastest, most optimized setup. It isolates PostgreSQL in Docker but runs the frontend and backend natively to utilize local hardware and fast filesystem event watching (Turbopack).
+
+**Prerequisite:** Ensure Node.js v20+ and Java 21 are installed natively on your host machine.
 
 ```bash
-# 1. Clone
+# 1. Clone & Configure
 git clone <repository-url>
 cd laundry-shop-management-system
+cp .env.example .env
 
-# 2. Configure environment
-cp .env.example .env    # Linux/macOS
-# Copy-Item .env.example .env    # Windows PowerShell
+# 2. Start Database in Docker
+docker compose up -d db
 
-# 3. Start database + backend (Docker)
-docker compose up db backend
+# 3. Start Backend natively (Terminal 1)
+# Note: Linux users must export .env variables before running Maven
+export $(grep -v '^#' .env | xargs) && cd backend && ./mvnw spring-boot:run
 
-# 4. Start frontend on host (Turbopack — fast hot reload)
+# 4. Start Frontend natively (Terminal 2)
 cd frontend
-cp .env.local.example .env.local   # Linux/macOS
-# Copy-Item .env.local.example .env.local   # Windows
-# Edit .env.local: NEXT_PUBLIC_API_URL=http://localhost:<BACKEND_PORT>/api
-npm install
-npm run dev
-
-# 5. Open the app
-# Frontend:  http://localhost:3000 (or :3001 if 3000 is in use)
-# Backend:   http://localhost:8080/api/v1/health
-# API Docs:  http://localhost:8080/swagger-ui.html
-```
-
-> **Optional:** Full stack in Docker: `docker compose --profile full up -d` (slower frontend HMR on Windows).
-
-### Manual Setup (Without Docker)
-
-<details>
-<summary><strong>Click to expand manual setup instructions</strong></summary>
-
-#### 1. Database
-
-Start a PostgreSQL 16 instance and enable the `pgcrypto` extension:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-```
-
-#### 2. Backend
-
-```bash
-cd backend
-cp ../.env.example ../.env
-# Edit ../.env with your database credentials
-
-# Build and run
-./mvnw clean install        # Linux/macOS
-# .\mvnw.cmd clean install  # Windows
-
-./mvnw spring-boot:run
-```
-
-The backend starts on `http://localhost:8080`. Flyway migrations run automatically on startup.
-
-#### 3. Frontend
-
-```bash
-cd frontend
+cp .env.local.example .env.local
+# Make sure .env.local has: NEXT_PUBLIC_API_URL=http://localhost:8080/api
 npm install
 npm run dev
 ```
 
-The frontend starts on `http://localhost:3001`.
+### 📦 Option 2: Full Docker Setup (Containerized)
 
-</details>
+This setup is ideal if you do not have Java or Node.js installed natively, or if you want to verify production-like container builds. Everything runs inside Docker.
+
+```bash
+# 1. Clone & Configure
+git clone <repository-url>
+cd laundry-shop-management-system
+cp .env.example .env
+
+# 2. Start Full Stack
+docker compose --profile full up -d
+```
+> **Note on Permissions:** If switching from Full Docker back to Hybrid mode, you may encounter `Permission Denied` errors because Docker creates root-owned files in `node_modules/` and `target/`. Clean them up using a dockerized remove command:
+> `docker run --rm -v $(pwd)/frontend:/app -w /app postgres:16-alpine rm -rf node_modules .next`
 
 ### Verify Everything is Running
 
-| Service | URL | Expected |
-|:---|:---|:---|
-| **Database** | `localhost:5433` | `docker compose ps` shows healthy |
-| **Backend** | http://localhost:8080/api/v1/health | HTTP 200 OK |
-| **API Docs** | http://localhost:8080/swagger-ui.html | Swagger UI loads |
-| **Frontend** | http://localhost:3001 | Application loads |
+| Service | Mode | URL | Expected |
+|:---|:---|:---|:---|
+| **Frontend UI** | Both | http://localhost:3000 | Application loads |
+| **Backend API** | Hybrid | http://localhost:8080/api/v1/health | HTTP 200 OK |
+| **Backend API** | Full Docker | http://localhost:8081/api/v1/health | HTTP 200 OK |
+| **Database** | Both | `localhost:5433` | Connection successful |
 
 ### Utility Scripts
 

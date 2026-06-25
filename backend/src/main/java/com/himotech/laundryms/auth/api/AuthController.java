@@ -1,12 +1,12 @@
 package com.himotech.laundryms.auth.api;
 
-import com.himotech.laundryms.api.dto.request.LoginRequest;
-import com.himotech.laundryms.api.dto.response.CurrentUserResponse;
-import com.himotech.laundryms.api.dto.response.LoginResponse;
+import com.himotech.laundryms.auth.dto.LoginRequest;
+import com.himotech.laundryms.auth.dto.CurrentUserResponse;
+import com.himotech.laundryms.auth.dto.LoginResponse;
 import com.himotech.laundryms.auth.AuthService;
 import com.himotech.laundryms.auth.JwtService;
-import com.himotech.laundryms.security.JwtPrincipal;
-import com.himotech.laundryms.security.SecurityProperties;
+import com.himotech.laundryms.auth.JwtPrincipal;
+import com.himotech.laundryms.config.SecurityProperties;
 import com.himotech.laundryms.users.entity.User;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;

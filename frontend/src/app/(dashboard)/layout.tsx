@@ -5,9 +5,9 @@ import { Sidebar, MobileNav, AuthGuard, Topbar } from "@/components/layout";
 import { LoadingState } from "@/features/shared";
 import { MeshBackground } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { usePathname, useRouter } from "next/navigation";
-import { useLayout } from "@/contexts/LayoutContext";
+import { useLayout } from "@/stores/layout-store";
 import { useEffect } from "react";
 
 /**

@@ -11,7 +11,7 @@ import {
   Clock
 } from "lucide-react";
 import { Modal, Button, StatusBadge } from "@/components/ui";
-import { ClientAlertResponse } from "@/services/client-alerts.service";
+import { ClientAlertResponse } from "@/lib/api/client-alerts";
 import { formatDateTime } from "@/lib/utils";
 import { UI_LABELS } from "@/constants/ui";
 import Link from "next/link";

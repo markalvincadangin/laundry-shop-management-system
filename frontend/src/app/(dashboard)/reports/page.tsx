@@ -14,9 +14,9 @@ import {
 import { toPng } from "html-to-image";
 import { pdf } from "@react-pdf/renderer";
 import { ReportDocument } from "@/components/features/shared/ReportDocument";
-import { reportsService } from "@/services/reports.service";
-import { paymentsService } from "@/services/payments.service";
-import { useAuth } from "@/contexts/AuthContext";
+import { reportsService } from "@/lib/api/reports";
+import { paymentsService } from "@/lib/api/payments";
+import { useAuth } from "@/stores/auth-store";
 import {
   Card,
   CardHeader,

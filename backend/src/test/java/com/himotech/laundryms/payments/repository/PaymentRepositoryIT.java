@@ -1,9 +1,9 @@
 package com.himotech.laundryms.payments.repository;
 
-import com.himotech.laundryms.common.enums.OrderStatus;
-import com.himotech.laundryms.common.enums.PaymentMethod;
-import com.himotech.laundryms.common.enums.PaymentStatus;
-import com.himotech.laundryms.common.enums.UserRole;
+import com.himotech.laundryms.orders.OrderStatus;
+import com.himotech.laundryms.payments.PaymentMethod;
+import com.himotech.laundryms.payments.PaymentStatus;
+import com.himotech.laundryms.shared.UserRole;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.payments.entity.Payment;

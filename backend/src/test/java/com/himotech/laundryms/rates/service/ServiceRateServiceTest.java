@@ -1,6 +1,6 @@
 package com.himotech.laundryms.rates.service;
 
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.repository.ServiceRateRepository;
 import com.himotech.laundryms.support.TestDataBuilders;

@@ -1,6 +1,6 @@
 package com.himotech.laundryms.payments.service;
 
-import com.himotech.laundryms.common.enums.PaymentMethod;
+import com.himotech.laundryms.payments.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.util.UUID;

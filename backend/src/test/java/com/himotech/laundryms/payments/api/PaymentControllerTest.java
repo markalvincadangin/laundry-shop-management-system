@@ -1,13 +1,13 @@
 package com.himotech.laundryms.payments.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.himotech.laundryms.api.dto.request.CreatePaymentRequest;
-import com.himotech.laundryms.api.dto.response.PageResponse;
-import com.himotech.laundryms.api.dto.response.PaymentResponse;
-import com.himotech.laundryms.api.mapper.PaymentMapper;
-import com.himotech.laundryms.common.enums.PaymentMethod;
-import com.himotech.laundryms.exception.GlobalExceptionHandler;
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.payments.dto.CreatePaymentRequest;
+import com.himotech.laundryms.shared.dto.PageResponse;
+import com.himotech.laundryms.payments.dto.PaymentResponse;
+import com.himotech.laundryms.payments.mapper.PaymentMapper;
+import com.himotech.laundryms.payments.PaymentMethod;
+import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.payments.entity.Payment;
 import com.himotech.laundryms.payments.service.PaymentService;
 import org.junit.jupiter.api.DisplayName;

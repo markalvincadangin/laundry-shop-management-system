@@ -23,7 +23,7 @@ import {
   CardContent
 } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
-import { ServiceRateResponse } from "@/services/service-rates.service";
+import { ServiceRateResponse } from "@/lib/api/service-rates";
 import { useRates } from "@/hooks/useRates";
 
 interface RateModalProps {

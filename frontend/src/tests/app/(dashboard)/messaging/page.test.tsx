@@ -7,18 +7,18 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
-import { clientAlertsService } from "@/services/client-alerts.service";
+import { clientAlertsService } from "@/lib/api/client-alerts";
 import MessagingPage from "@/app/(dashboard)/messaging/page";
 
 // Mock services
-vi.mock("@/services/client-alerts.service", () => ({
+vi.mock("@/lib/api/client-alerts", () => ({
   clientAlertsService: {
     list: vi.fn(),
   },
 }));
 
 // Mock Auth
-vi.mock("@/contexts/AuthContext", () => ({
+vi.mock("@/stores/auth-store", () => ({
   useAuth: () => ({ user: { userId: "staff-1", username: "staff", role: "STAFF" }, loading: false }),
 }));
 

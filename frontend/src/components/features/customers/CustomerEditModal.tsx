@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { User, Phone, Save, X, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Modal, Button, Input, ConfirmDialog } from "@/components/ui";
-import { customersService } from "@/services/customers.service";
-import { useAuth } from "@/contexts/AuthContext";
+import { customersService } from "@/lib/api/customers";
+import { useAuth } from "@/stores/auth-store";
 import type { components } from "@/types/api.generated";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";

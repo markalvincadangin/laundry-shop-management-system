@@ -1,9 +1,9 @@
 package com.himotech.laundryms.payments.api;
 
-import com.himotech.laundryms.api.dto.request.CreatePaymentRequest;
-import com.himotech.laundryms.api.dto.response.PageResponse;
-import com.himotech.laundryms.api.dto.response.PaymentResponse;
-import com.himotech.laundryms.api.mapper.PaymentMapper;
+import com.himotech.laundryms.payments.dto.CreatePaymentRequest;
+import com.himotech.laundryms.shared.dto.PageResponse;
+import com.himotech.laundryms.payments.dto.PaymentResponse;
+import com.himotech.laundryms.payments.mapper.PaymentMapper;
 import com.himotech.laundryms.payments.entity.Payment;
 import com.himotech.laundryms.payments.service.PaymentService;
 import com.himotech.laundryms.payments.service.RecordPaymentCommand;
@@ -13,7 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import com.himotech.laundryms.security.JwtPrincipal;
+import com.himotech.laundryms.auth.JwtPrincipal;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

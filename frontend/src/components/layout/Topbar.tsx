@@ -6,7 +6,7 @@ import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Calendar } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { Button } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { TopbarProps } from "@/types/components";

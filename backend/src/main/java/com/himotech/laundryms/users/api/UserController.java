@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.himotech.laundryms.api.dto.response.PageResponse;
+import com.himotech.laundryms.shared.dto.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -68,7 +68,7 @@ public class UserController {
 
     @GetMapping("/stats")
     @PreAuthorize("hasRole('ADMIN')")
-    public com.himotech.laundryms.api.dto.response.UserStatsResponse getStats() {
+    public com.himotech.laundryms.users.dto.UserStatsResponse getStats() {
         return userService.getUserStats();
     }
 }

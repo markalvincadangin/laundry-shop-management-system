@@ -1,6 +1,6 @@
 package com.himotech.laundryms.users.entity;
 
-import com.himotech.laundryms.common.enums.UserRole;
+import com.himotech.laundryms.shared.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

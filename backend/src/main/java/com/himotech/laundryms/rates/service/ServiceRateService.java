@@ -1,10 +1,10 @@
 package com.himotech.laundryms.rates.service;
 
 import com.himotech.laundryms.auditlog.aspect.Auditable;
-import com.himotech.laundryms.api.dto.request.CreateServiceRateRequest;
-import com.himotech.laundryms.api.dto.request.UpdateServiceRateRequest;
+import com.himotech.laundryms.rates.dto.CreateServiceRateRequest;
+import com.himotech.laundryms.rates.dto.UpdateServiceRateRequest;
 import com.himotech.laundryms.config.CacheConfig;
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.repository.ServiceRateRepository;
 import lombok.RequiredArgsConstructor;

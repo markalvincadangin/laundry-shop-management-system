@@ -1,10 +1,10 @@
 package com.himotech.laundryms.orders.service;
 
-import com.himotech.laundryms.common.enums.OrderStatus;
-import com.himotech.laundryms.common.enums.PaymentStatus;
+import com.himotech.laundryms.orders.OrderStatus;
+import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.repository.CustomerRepository;
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.rates.entity.ServiceRate;
@@ -382,8 +382,8 @@ class OrderServiceTest {
         @DisplayName("Should update extra minutes and recalculate totals (BR-OL-06)")
         void update_ShouldUpdateExtraMinutesAndRecalculateTotals() {
             // Given - update extra minutes from 5 to 10
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
 
             // When
@@ -401,20 +401,20 @@ class OrderServiceTest {
         @DisplayName("Should update add-ons and recalculate totals (BR-OL-06)")
         void update_ShouldUpdateAddOnsAndRecalculateTotals() {
             // Given - add new add-on
-            com.himotech.laundryms.api.dto.request.AddOnInput addOn1 = 
-                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            com.himotech.laundryms.orders.dto.AddOnInput addOn1 = 
+                new com.himotech.laundryms.orders.dto.AddOnInput();
             addOn1.setName("Fabric Conditioner");
             addOn1.setPrice(new BigDecimal("20.00"));
             addOn1.setQuantity(1);
 
-            com.himotech.laundryms.api.dto.request.AddOnInput addOn2 = 
-                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            com.himotech.laundryms.orders.dto.AddOnInput addOn2 = 
+                new com.himotech.laundryms.orders.dto.AddOnInput();
             addOn2.setName("Extra Detergent");
             addOn2.setPrice(new BigDecimal("15.00"));
             addOn2.setQuantity(2);
 
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setAddOns(List.of(addOn1, addOn2));
 
             // When
@@ -432,14 +432,14 @@ class OrderServiceTest {
         @DisplayName("Should update both extra minutes and add-ons together (BR-OL-06)")
         void update_ShouldUpdateExtraMinutesAndAddOnsTogether() {
             // Given
-            com.himotech.laundryms.api.dto.request.AddOnInput addOn = 
-                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            com.himotech.laundryms.orders.dto.AddOnInput addOn = 
+                new com.himotech.laundryms.orders.dto.AddOnInput();
             addOn.setName("Conditioner");
             addOn.setPrice(new BigDecimal("25.00"));
             addOn.setQuantity(1);
 
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(15);
             request.setAddOns(List.of(addOn));
 
@@ -459,8 +459,8 @@ class OrderServiceTest {
         void update_ShouldReject_WhenOrderAlreadyPaid() {
             // Given - order is paid
             existingOrder.setPaymentStatus(PaymentStatus.PAID);
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
 
             // When/Then
@@ -475,8 +475,8 @@ class OrderServiceTest {
         void update_ShouldReject_WhenOrderAlreadyReleased() {
             // Given - order is released
             existingOrder.setCurrentStatus(OrderStatus.RELEASED);
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
 
             // When/Then
@@ -490,8 +490,8 @@ class OrderServiceTest {
         @DisplayName("Should reject when extra minutes is negative (BR-OL-06)")
         void update_ShouldReject_WhenExtraMinutesNegative() {
             // Given
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(-5);
 
             // When/Then
@@ -505,8 +505,8 @@ class OrderServiceTest {
         @DisplayName("Should allow updating extra minutes to zero (BR-OL-06)")
         void update_ShouldAllowZeroExtraMinutes() {
             // Given - reduce extra minutes to 0
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(0);
 
             // When
@@ -523,14 +523,14 @@ class OrderServiceTest {
         @DisplayName("Should handle null extra minutes (keep existing value) (BR-OL-06)")
         void update_ShouldKeepExistingExtraMinutes_WhenNotProvided() {
             // Given - don't update extra minutes
-            com.himotech.laundryms.api.dto.request.AddOnInput addOn = 
-                new com.himotech.laundryms.api.dto.request.AddOnInput();
+            com.himotech.laundryms.orders.dto.AddOnInput addOn = 
+                new com.himotech.laundryms.orders.dto.AddOnInput();
             addOn.setName("Test");
             addOn.setPrice(new BigDecimal("10.00"));
             addOn.setQuantity(1);
 
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(null);
             request.setAddOns(List.of(addOn));
 
@@ -560,8 +560,8 @@ class OrderServiceTest {
             existingOrder.setAddonsTotalAmount(new BigDecimal("30.00"));
             existingOrder.setGrandTotal(new BigDecimal("315.00")); // 280 + 5 + 30
 
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
             request.setAddOns(null); // Don't update add-ons
 
@@ -581,8 +581,8 @@ class OrderServiceTest {
         void update_ShouldThrow_WhenOrderNotFound() {
             // Given
             when(orderRepository.findById(999L)).thenReturn(Optional.empty());
-            com.himotech.laundryms.api.dto.request.UpdateOrderRequest request = 
-                new com.himotech.laundryms.api.dto.request.UpdateOrderRequest();
+            com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
+                new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
 
             // When/Then

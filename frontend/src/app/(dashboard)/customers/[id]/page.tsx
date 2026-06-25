@@ -31,7 +31,7 @@ import { UI_LABELS } from "@/constants/ui";
 import { formatDate } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { DataTableColumn } from "@/types/components";
-import { OrderResponse } from "@/services/orders.service";
+import { OrderResponse } from "@/lib/api/orders";
 
 /**
  * Customer Profile Page — High Fidelity (v4.0)

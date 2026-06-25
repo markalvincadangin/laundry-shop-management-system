@@ -54,3 +54,6 @@ ngrok.yml
 
 # Tooling assessment artifacts (local only)
 .github/modernize/
+
+# Docker overrides
+docker-compose.override.yml

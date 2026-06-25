@@ -11,9 +11,9 @@ import {
   Edit3,
   Tag
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { useRates } from "@/hooks/useRates";
-import { ServiceRateResponse } from "@/services/service-rates.service";
+import { ServiceRateResponse } from "@/lib/api/service-rates";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";

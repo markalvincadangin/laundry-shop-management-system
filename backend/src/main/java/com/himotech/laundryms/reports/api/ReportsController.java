@@ -1,7 +1,7 @@
 package com.himotech.laundryms.reports.api;
 
-import com.himotech.laundryms.api.dto.response.DailySalesReportResponse;
-import com.himotech.laundryms.api.dto.response.PeriodSalesReportResponse;
+import com.himotech.laundryms.reports.dto.DailySalesReportResponse;
+import com.himotech.laundryms.reports.dto.PeriodSalesReportResponse;
 import com.himotech.laundryms.reports.service.ReportService;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
