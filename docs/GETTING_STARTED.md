@@ -100,23 +100,25 @@ Keep these open in your IDE or browser:
 - `.github/instructions/frontend.instructions.md` - For frontend work
 
 #### Step 3: Set Up Environment
-```powershell
-# Copy env file (from project root)
-Copy-Item .env.example .env
-# Edit .env with your DB_PASSWORD and other secrets
 
-# Start database + backend (Docker)
-docker compose up db backend
+```bash
+# 1. Configure environment
+cp .env.example .env
 
-# Start frontend on host (Turbopack)
+# 2. Start ONLY the database in Docker
+docker compose up -d db
+
+# 3. Start Backend natively (Terminal 1)
+# Export .env variables to your Linux shell first
+export $(grep -v '^#' .env | xargs) && cd backend && ./mvnw spring-boot:run
+
+# 4. Start Frontend natively (Terminal 2)
 cd frontend
-Copy-Item .env.local.example .env.local
-# Edit .env.local: NEXT_PUBLIC_API_URL=http://localhost:<BACKEND_PORT>/api
+cp .env.local.example .env.local
+# Ensure .env.local points to the native backend port: NEXT_PUBLIC_API_URL=http://localhost:8080/api
 npm run dev
-
-# Verify backend is running
-docker compose ps
 ```
+> **Note:** Alternatively, to run the entire stack in Docker without native dependencies, simply use `docker compose --profile full up -d`.
 
 ---
 

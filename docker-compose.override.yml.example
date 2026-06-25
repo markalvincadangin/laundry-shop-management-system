@@ -1,0 +1,19 @@
+# Docker Compose Override Example
+#
+# Copy this file to docker-compose.override.yml to customize local development.
+# This file is gitignored and will not be committed.
+#
+# Example: expose additional debug ports, mount custom configs, etc.
+
+services:
+  backend:
+    # Uncomment to enable remote debugging
+    # ports:
+    #   - "${DEBUG_PORT:-5006}:5005"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+
+  frontend:
+    environment:
+      - WATCHPACK_POLLING=true  # Enable polling for file watching in WSL2

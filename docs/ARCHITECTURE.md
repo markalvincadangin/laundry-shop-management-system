@@ -4,9 +4,15 @@
 
 Faith Laundry Shop uses a modern **Polyglot Monorepo** architecture:
 - **Backend**: Java 21, Spring Boot 3.2, PostgreSQL (Feature-First Architecture)
-- **Frontend**: TypeScript, Next.js 14 App Router, Tailwind CSS, shadcn/ui
+- **Frontend**: TypeScript, Next.js 15 App Router, Tailwind CSS, shadcn/ui
 
 ## Backend: Feature-First Packaging
+
+### Business Alignment (Solving the Case Study)
+This architecture directly solves the problems identified in the Faith Laundry Shop Case Study (`CS-001`):
+- **Pricing Engine (Backend)**: Encapsulates the complex load calculation (8kg base limit + extra minute charges) to eliminate manual math errors.
+- **Order Pipeline (Database/Backend)**: Replaces physical paper tags with a digital 6-stage pipeline tracked via `reference_number`.
+- **Public High Availability (Frontend)**: The Next.js public tracking page allows customers to check status independently without staff intervention, directly addressing workload constraints found in the Client Interview.
 
 The backend is structured by feature rather than by technical layer. This aligns with modern Spring Boot practices and prepares the codebase for potential future microservice extraction.
 

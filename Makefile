@@ -23,4 +23,4 @@ test-backend:
 	docker compose run --rm backend ./mvnw test
 
 test-frontend:
-	docker compose run --rm frontend npm test
+	docker compose --profile full run --rm frontend npm test

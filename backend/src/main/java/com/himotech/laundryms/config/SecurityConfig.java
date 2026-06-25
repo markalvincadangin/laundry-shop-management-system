@@ -28,6 +28,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    org.springframework.security.core.userdetails.UserDetailsService userDetailsService() {
+        return username -> { throw new org.springframework.security.core.userdetails.UsernameNotFoundException("No internal users"); };
+    }
+
+    @Bean
     CorsConfigurationSource corsConfigurationSource(SecurityProperties props) {
         CorsConfiguration config = new CorsConfiguration();
         // Use origin patterns from environment for maximum flexibility without hardcoding
