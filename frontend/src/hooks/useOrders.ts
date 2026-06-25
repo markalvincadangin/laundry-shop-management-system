@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ordersService, OrderListParams } from "@/services/orders.service";
+import { ordersService, OrderListParams } from "@/lib/api/orders";
 import { OrderStatus } from "@/constants/order-status";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { toast } from "sonner";
 
 /**

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { customersService, CustomerResponse } from "@/services/customers.service";
+import { customersService, CustomerResponse } from "@/lib/api/customers";
 
 /**
  * useCustomerLookup: Shared logic for predictive customer search and registration.

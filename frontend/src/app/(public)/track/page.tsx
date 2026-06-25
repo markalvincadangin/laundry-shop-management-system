@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api-client";
-import { ordersService } from "@/services/orders.service";
+import { ordersService } from "@/lib/api/orders";
 import type { components } from "@/types/api.generated";
 type OrderTrackingResponse = components["schemas"]["OrderTrackingResponse"];
 import { StatusBadge, Card, Button } from "@/components/ui";

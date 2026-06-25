@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { paymentsService, type PaymentListParams } from "@/services/payments.service";
+import { paymentsService, type PaymentListParams } from "@/lib/api/payments";
 
 /**
  * usePayments: Encapsulates payment fetching and caching logic.

@@ -2,7 +2,7 @@ package com.himotech.laundryms.auditlog.service;
 
 import com.himotech.laundryms.auditlog.entity.AuditLog;
 import com.himotech.laundryms.auditlog.repository.AuditLogRepository;
-import com.himotech.laundryms.api.dto.response.AuditLogResponse;
+import com.himotech.laundryms.auditlog.dto.AuditLogResponse;
 import com.himotech.laundryms.config.CacheConfig;
 import com.himotech.laundryms.users.repository.UserRepository;
 import com.himotech.laundryms.users.entity.User;

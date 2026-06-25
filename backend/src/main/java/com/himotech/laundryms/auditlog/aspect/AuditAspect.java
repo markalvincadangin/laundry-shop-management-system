@@ -1,7 +1,7 @@
 package com.himotech.laundryms.auditlog.aspect;
 
 import com.himotech.laundryms.auditlog.event.AuditLogEvent;
-import com.himotech.laundryms.security.JwtPrincipal;
+import com.himotech.laundryms.auth.JwtPrincipal;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

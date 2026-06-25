@@ -1,7 +1,7 @@
 package com.himotech.laundryms.clientalert.repository;
 
 import com.himotech.laundryms.clientalert.entity.ClientAlert;
-import com.himotech.laundryms.common.enums.ClientAlertStatus;
+import com.himotech.laundryms.clientalert.ClientAlertStatus;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

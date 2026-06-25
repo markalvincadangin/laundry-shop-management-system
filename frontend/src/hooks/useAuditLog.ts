@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { auditLogService, AuditLogParams } from "@/services/audit-log.service";
+import { auditLogService, AuditLogParams } from "@/lib/api/audit-log";
 
 /**
  * useAuditLog: Hook for the system audit log.

@@ -1,6 +1,6 @@
 package com.himotech.laundryms.clientalert.entity;
 
-import com.himotech.laundryms.common.enums.ClientAlertStatus;
+import com.himotech.laundryms.clientalert.ClientAlertStatus;
 import com.himotech.laundryms.orders.entity.Order;
 import jakarta.persistence.*;
 import lombok.*;

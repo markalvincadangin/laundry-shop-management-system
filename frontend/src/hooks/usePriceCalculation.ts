@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ordersService, OrderPreviewResponse } from "@/services/orders.service";
+import { ordersService, OrderPreviewResponse } from "@/lib/api/orders";
 import type { components } from "@/types/api.generated";
 
 type AddOnInput = components["schemas"]["AddOnInput"];

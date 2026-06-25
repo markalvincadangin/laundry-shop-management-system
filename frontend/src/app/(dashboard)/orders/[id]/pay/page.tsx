@@ -15,7 +15,7 @@ import {
   Wallet
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { useOrder } from "@/hooks/useOrder";
 import { usePaymentAction } from "@/hooks/usePaymentAction";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";

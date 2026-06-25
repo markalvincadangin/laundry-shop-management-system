@@ -1,13 +1,13 @@
 package com.himotech.laundryms.customers.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.himotech.laundryms.api.dto.request.CreateCustomerRequest;
-import com.himotech.laundryms.api.dto.response.CustomerResponse;
-import com.himotech.laundryms.api.mapper.CustomerMapper;
+import com.himotech.laundryms.customers.dto.CreateCustomerRequest;
+import com.himotech.laundryms.customers.dto.CustomerResponse;
+import com.himotech.laundryms.customers.mapper.CustomerMapper;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.service.CustomerService;
-import com.himotech.laundryms.exception.GlobalExceptionHandler;
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

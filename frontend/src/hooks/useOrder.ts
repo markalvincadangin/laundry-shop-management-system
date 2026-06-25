@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ordersService } from "@/services/orders.service";
+import { ordersService } from "@/lib/api/orders";
 
 /**
  * useOrder: Fetches full details for a specific order.

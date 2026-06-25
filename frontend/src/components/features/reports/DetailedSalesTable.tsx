@@ -14,7 +14,7 @@ import {
   CreditCard,
   Search
 } from "lucide-react";
-import { type PaymentResponse } from "@/services/payments.service";
+import { type PaymentResponse } from "@/lib/api/payments";
 import { Button, Input, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { usePayments } from "@/hooks/usePayments";

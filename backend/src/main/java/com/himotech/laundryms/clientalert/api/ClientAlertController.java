@@ -1,6 +1,6 @@
 package com.himotech.laundryms.clientalert.api;
 
-import com.himotech.laundryms.api.dto.response.PageResponse;
+import com.himotech.laundryms.shared.dto.PageResponse;
 import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,9 +42,9 @@ public class ClientAlertController {
         Instant fromTs = from != null ? from.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         Instant toTs = to != null ? to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         
-        com.himotech.laundryms.common.enums.ClientAlertStatus alertStatus = null;
+        com.himotech.laundryms.clientalert.ClientAlertStatus alertStatus = null;
         if (status != null && !status.isEmpty()) {
-            alertStatus = com.himotech.laundryms.common.enums.ClientAlertStatus.valueOf(status.toUpperCase());
+            alertStatus = com.himotech.laundryms.clientalert.ClientAlertStatus.valueOf(status.toUpperCase());
         }
         
         Page<ClientAlertResponse> pageData = clientAlertService.search(q, alertStatus, fromTs, toTs, pageable);

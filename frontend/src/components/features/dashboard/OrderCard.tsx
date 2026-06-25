@@ -3,7 +3,7 @@
 import React from "react";
 import { ArrowRight, Clock, Scale, Zap, FileText } from "lucide-react";
 import { Card, Button, StatusBadge, Tooltip } from "@/components/ui";
-import { OrderResponse } from "@/services/orders.service";
+import { OrderResponse } from "@/lib/api/orders";
 import { STATUS_TRANSITIONS, OrderStatus } from "@/constants/order-status";
 import { motion } from "framer-motion";
 import { UI_LABELS } from "@/constants/ui";

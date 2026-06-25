@@ -1,10 +1,10 @@
 package com.himotech.laundryms.payments.service;
 
 import com.himotech.laundryms.auditlog.aspect.Auditable;
-import com.himotech.laundryms.common.enums.OrderStatus;
-import com.himotech.laundryms.common.enums.PaymentStatus;
-import com.himotech.laundryms.exception.ConflictException;
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.orders.OrderStatus;
+import com.himotech.laundryms.payments.PaymentStatus;
+import com.himotech.laundryms.shared.exception.ConflictException;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.payments.entity.Payment;
@@ -64,7 +64,7 @@ public class PaymentService {
         }
 
         // BR-PAY-04: Non-cash payments MUST have a reference number
-        if (command.paymentMethod() != com.himotech.laundryms.common.enums.PaymentMethod.CASH 
+        if (command.paymentMethod() != com.himotech.laundryms.payments.PaymentMethod.CASH 
             && (command.paymentReference() == null || command.paymentReference().trim().isEmpty())) {
             throw new IllegalArgumentException("Reference number is required for " + command.paymentMethod() + " payments");
         }

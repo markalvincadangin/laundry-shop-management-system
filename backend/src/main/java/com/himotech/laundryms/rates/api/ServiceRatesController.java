@@ -1,9 +1,9 @@
 package com.himotech.laundryms.rates.api;
 
-import com.himotech.laundryms.api.dto.request.CreateServiceRateRequest;
-import com.himotech.laundryms.api.dto.request.UpdateServiceRateRequest;
-import com.himotech.laundryms.api.dto.response.ServiceRateResponse;
-import com.himotech.laundryms.api.mapper.ServiceRateMapper;
+import com.himotech.laundryms.rates.dto.CreateServiceRateRequest;
+import com.himotech.laundryms.rates.dto.UpdateServiceRateRequest;
+import com.himotech.laundryms.rates.dto.ServiceRateResponse;
+import com.himotech.laundryms.rates.mapper.ServiceRateMapper;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import jakarta.validation.Valid;

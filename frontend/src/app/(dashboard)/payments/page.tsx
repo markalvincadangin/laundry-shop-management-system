@@ -15,10 +15,10 @@ import {
 import { motion } from "framer-motion";
 import { pdf } from "@react-pdf/renderer";
 import { ReportDocument } from "@/components/features/shared/ReportDocument";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { usePayments } from "@/hooks/usePayments";
 import { useRegistry } from "@/hooks/useRegistry";
-import { PaymentResponse } from "@/services/payments.service";
+import { PaymentResponse } from "@/lib/api/payments";
 import { Button, Input, KPICard, CurrencyDisplay } from "@/components/ui";
 import { FilterBar, Pagination, AccessDenied, EmptyState, ErrorState, LoadingState } from "@/features/shared";
 import { PageHeader, PrintHeader } from "@/components/layout";

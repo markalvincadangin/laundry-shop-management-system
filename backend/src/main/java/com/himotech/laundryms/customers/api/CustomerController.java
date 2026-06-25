@@ -1,12 +1,12 @@
 package com.himotech.laundryms.customers.api;
 
-import com.himotech.laundryms.api.dto.request.CreateCustomerRequest;
-import com.himotech.laundryms.api.dto.response.CustomerResponse;
-import com.himotech.laundryms.api.dto.response.PageResponse;
-import com.himotech.laundryms.api.mapper.CustomerMapper;
+import com.himotech.laundryms.customers.dto.CreateCustomerRequest;
+import com.himotech.laundryms.customers.dto.CustomerResponse;
+import com.himotech.laundryms.shared.dto.PageResponse;
+import com.himotech.laundryms.customers.mapper.CustomerMapper;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.service.CustomerService;
-import com.himotech.laundryms.exception.NotFoundException;
+import com.himotech.laundryms.shared.exception.NotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

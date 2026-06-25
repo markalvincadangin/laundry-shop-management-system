@@ -4,8 +4,8 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLayout } from "@/contexts/LayoutContext";
+import { useAuth } from "@/stores/auth-store";
+import { useLayout } from "@/stores/layout-store";
 import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { UI_LABELS } from "@/constants/ui";

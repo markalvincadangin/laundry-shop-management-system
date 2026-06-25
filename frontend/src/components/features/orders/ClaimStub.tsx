@@ -6,7 +6,7 @@ import { Printer, Download, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Barcode from "react-barcode";
 import { Modal, Button } from "@/components/ui";
-import { OrderResponse } from "@/services/orders.service";
+import { OrderResponse } from "@/lib/api/orders";
 import { UI_LABELS } from "@/constants/ui";
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
 

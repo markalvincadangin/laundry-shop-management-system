@@ -23,14 +23,14 @@ import {
   KPICard
 } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/auth-store";
 import { DataTable, EmptyState, FilterBar, Pagination, ErrorState, AccessDenied, LoadingState } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
 import { formatDateTime } from "@/lib/utils";
 import { DataTableColumn } from "@/types/components";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { useRegistry } from "@/hooks/useRegistry";
-import { AuditLogResponse } from "@/services/audit-log.service";
+import { AuditLogResponse } from "@/lib/api/audit-log";
 import { AuditLogDetailsModal } from "@/components/features/audit-log/AuditLogDetailsModal";
 
 /**

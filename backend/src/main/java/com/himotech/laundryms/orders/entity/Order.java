@@ -1,7 +1,7 @@
 package com.himotech.laundryms.orders.entity;
 
-import com.himotech.laundryms.common.enums.OrderStatus;
-import com.himotech.laundryms.common.enums.PaymentStatus;
+import com.himotech.laundryms.orders.OrderStatus;
+import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.users.entity.User;

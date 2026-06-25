@@ -6,7 +6,7 @@ import {
   ServiceRateResponse, 
   CreateServiceRateRequest,
   UpdateServiceRateRequest 
-} from "@/services/service-rates.service";
+} from "@/lib/api/service-rates";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";
 
