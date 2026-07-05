@@ -43,7 +43,7 @@ chore: bump Spring Boot to 3.5.14
 Before submitting, verify your changes respect these constraints:
 
 ### Backend (Feature-First)
-- **Features do not import each other's services/mappers/controllers.** Entity-level JPA references are acceptable (see `docs/ARCHITECTURE.md`).
+- **Features do not import each other's services/mappers/controllers.** Entity-level JPA references are acceptable (see [`docs/05-tech-design/architecture.md`](05-tech-design/architecture.md) — ARCH-001 §Dependency Rules).
 - DTOs live inside their feature's `dto/` package, not in `shared/`.
 - `shared/` is reserved for truly cross-cutting concerns (`PageResponse`, `ErrorResponse`, `GlobalExceptionHandler`).
 

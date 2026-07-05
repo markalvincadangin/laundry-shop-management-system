@@ -129,7 +129,7 @@ pressure.
 | What rules must the system enforce? | `docs/02-requirements/business-rules.md` |
 | What does the database look like? | `docs/04-data-design/erd.dbml` |
 | What are the API endpoints? | `docs/05-tech-design/openapi.yaml` |
-| How is the system structured? | `docs/ARCHITECTURE.md` |
+| How is the system structured? | `docs/05-tech-design/architecture.md` (ARCH-001) |
 | What does the UI look like? | `docs/05-tech-design/frontend-design-spec.md` |
 | Non-functional rules? | `docs/02-requirements/non-functional-requirements.md` |
 | What's in/out of scope? | `docs/01-scope/project-scope.md` |
