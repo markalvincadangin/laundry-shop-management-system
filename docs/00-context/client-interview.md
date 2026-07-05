@@ -71,7 +71,7 @@ To understand the current operational process, identify existing problems, and g
 ### 4.3 Pricing & Services
 
 **Q8. How do you compute prices?**
-- Per load. One (1) load costs **₱120** and covers up to **8 kg**. Exceeding 8 kg is charged as another load.
+- Per load. One (1) load costs **₱140** and covers up to **8 kg**. Exceeding 8 kg is charged as another load.
 
 **Q9. Are there special pricing rules (rush orders, stains, blankets, etc.)?**
 - Standard rate applies to all items. Additional charges for extra fabric conditioner or extended washing time due to excessive dirt — **₱1 per extra minute** of machine use.

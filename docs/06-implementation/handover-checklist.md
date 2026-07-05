@@ -27,7 +27,7 @@
 
 - Walk through New Order flow: customer, weight, extra minutes, add-ons
 - Show reference number generation
-- Explain pricing: ₱120/8 kg, ₱1/extra minute
+- Explain pricing: ₱140/8 kg, ₱1/extra minute
 
 ### 3. Status Updates (10 min)
 

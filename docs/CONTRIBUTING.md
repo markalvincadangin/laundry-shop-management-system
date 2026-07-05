@@ -43,18 +43,23 @@ chore: bump Spring Boot to 3.5.14
 Before submitting, verify your changes respect these constraints:
 
 ### Backend (Feature-First)
-- **Features do not import each other's services/mappers/controllers.** Entity-level JPA references are acceptable (see `docs/ARCHITECTURE.md`).
-- DTOs live inside their feature's `dto/` package, not in `shared/`.
+- **Cross-feature coupling** at the entity and service layer is broadly accepted at this scale. See Constitution Principle I.
+- DTOs live inside their feature's `dto/` package (with `clientalert` using `api/` as an exception).
 - `shared/` is reserved for truly cross-cutting concerns (`PageResponse`, `ErrorResponse`, `GlobalExceptionHandler`).
 
 ### Frontend (App Router Layering)
 - `app/` → `components/` → `lib/` dependency direction. Never import upward.
-- API clients live in `lib/api/`, validation schemas in `lib/validation/`.
+- API clients live in `src/lib/api/`, validation schemas in `src/lib/validation/`.
 - `stores/` uses React Context API (not Zustand) — see the comment at the top of each file.
 
 ### Polyglot Contract Sync
 - Any backend DTO change **must** be accompanied by a matching frontend Zod schema update in the **same PR**.
 
+### Code Quality
+- **Checkstyle Enforcement**: All Java backend code MUST pass Checkstyle without violations.
+- **Nesting Depth**: `for` and `if` blocks MUST NOT exceed **3 levels** of nesting (enforced by `checkstyle.xml`).
+- **Thin Controllers**: Controller methods should delegate immediately to the service layer (team convention).
+
 ### UX & Business Logic Alignment
 - **UX Standards**: All frontend changes must adhere to the `docs/00-context/content-inventory.md` standards. Follow the NN/g Framework and ensure the Doherty Threshold (instant feedback) is met for loading states.
-- **Business Rules Enforcement**: All pricing calculations (e.g., the ₱120 / 8kg load rule, ₱1 per extra minute) MUST be handled by the backend engine (`OrderService`). **Never** hardcode pricing formulas in the frontend. This ensures single-source-of-truth accuracy as requested in the Case Study.
+- **Business Rules Enforcement**: All pricing calculations (e.g., the ₱140 / 8kg load rule, ₱1 per extra minute) MUST be handled by the backend engine (`OrderService`). **Never** hardcode pricing formulas in the frontend. This ensures single-source-of-truth accuracy as requested in the Case Study.

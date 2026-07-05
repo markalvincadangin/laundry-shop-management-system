@@ -137,7 +137,7 @@ Customers can track their order without logging in:
 
 ## 7. Managing Service Rates — Admin Only
 
-The default pricing is ₱120 per load (8 kg), ₱1 per extra minute. The Admin can update these in **Service Rates** if business rules change.
+The default pricing is ₱140 per load (8 kg), ₱1 per extra minute. The Admin can update these in **Service Rates** if business rules change.
 
 ---
 
@@ -146,7 +146,7 @@ The default pricing is ₱120 per load (8 kg), ₱1 per extra minute. The Admin 
 | Problem | Solution |
 |--------|----------|
 | **Cannot log in** | Check username and password. Contact Admin if locked out. |
-| **Order total seems wrong** | Verify weight and extra minutes. Base: ₱120 per 8 kg load. Extra: ₱1 per minute. |
+| **Order total seems wrong** | Verify weight and extra minutes. Base: ₱140 per 8 kg load. Extra: ₱1 per minute. |
 | **Cannot release order** | Order must be **Ready for Pickup** before release. Update status first. |
 | **Payment already exists** | Each order has one payment only. Check if payment was already recorded. |
 | **Page not loading** | Check internet/network. Ensure the application URL is correct. |
@@ -158,7 +158,7 @@ The default pricing is ₱120 per load (8 kg), ₱1 per extra minute. The Admin 
 
 | Item | Rule |
 |------|------|
-| Base load | ₱120 per load, up to 8 kg |
+| Base load | ₱140 per load, up to 8 kg |
 | Total loads | `ceil(weight_kg ÷ 8)` |
 | Extra minutes | ₱1 per minute (beyond 45 min per load) |
 | Add-ons | Per-item price × quantity |
