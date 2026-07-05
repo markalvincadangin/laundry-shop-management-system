@@ -398,7 +398,7 @@ faith-laundry-frontend/
 
 | Pattern | Reason |
 | :--- | :--- |
-| `src/lib/api/*` | **Active.** Axios client and endpoint definitions. |
+| `src/services/*` | **Deprecated.** Use `src/lib/api/*` with fetch instead. |
 | `I`-prefix on interfaces | Unnecessary — TypeScript does not require it |
 | Default exports on components | Prevents tree-shaking; use named exports |
 | Magic strings in logic | Use constants: `status === ORDER_STATUS.WASHING` |

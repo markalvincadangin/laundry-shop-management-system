@@ -38,7 +38,7 @@ DTOs MUST live inside their feature's `dto/` package. Truly cross-cutting concer
 > the API contract objects are tightly scoped to the HTTP layer.
 
 **Acknowledged Coupling Exception**: This is a Spring Data JPA monolith at small scale.
-Cross-feature coupling at the entity and service layer is **broadly accepted** — not a
+Cross-feature coupling at the entity and repository layer is **broadly accepted** — not a
 violation. A live code scan confirms ~13 cross-feature import relationships, including:
 `orders/ → customers/, rates/, payments/, clientalert/, users/`;
 `payments/ → orders/, customers/, users/`;
@@ -56,7 +56,7 @@ The Next.js frontend MUST follow a strict downward dependency direction:
   import React components.
 
 All API calls MUST go through `src/lib/api/` (e.g., `src/lib/api/orders.ts`) via the
-`api-client.ts` Axios instance — direct `axios`/`fetch` calls inside components are
+`api-client.ts` fetch client — direct `fetch` calls inside components are
 prohibited. Zod validation schemas live in `src/lib/validation/` (one file per domain:
 `auth.ts`, `order.ts`, `customer.ts`). State management lives in `src/stores/` using
 React Context API — despite the `-store.tsx` naming, Zustand is intentionally not used

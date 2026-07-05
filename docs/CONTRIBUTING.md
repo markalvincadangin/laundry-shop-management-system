@@ -43,7 +43,7 @@ chore: bump Spring Boot to 3.5.14
 Before submitting, verify your changes respect these constraints:
 
 ### Backend (Feature-First)
-- **Cross-feature coupling** at the entity and service layer is broadly accepted at this scale. See Constitution Principle I.
+- **Cross-feature coupling** at the entity and repository layer is broadly accepted at this scale. See Constitution Principle I.
 - DTOs live inside their feature's `dto/` package (with `clientalert` using `api/` as an exception).
 - `shared/` is reserved for truly cross-cutting concerns (`PageResponse`, `ErrorResponse`, `GlobalExceptionHandler`).
 
