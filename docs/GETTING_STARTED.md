@@ -349,7 +349,7 @@ class OrderServiceTest {
         
         // Given
         ServiceRate rate = new ServiceRate();
-        rate.setBasePricePerLoad(new BigDecimal("120.00"));
+        rate.setBasePricePerLoad(new BigDecimal("140.00"));
         rate.setKgLimitPerLoad(new BigDecimal("8.00"));
         rate.setPricePerExtraMinute(new BigDecimal("1.00"));
         
@@ -362,10 +362,10 @@ class OrderServiceTest {
         OrderResponseDTO result = orderService.createOrder(request);
         
         // Then
-        // base: 1 load × ₱120 = ₱120
-        // extra: 10 min × ₱1 = ₱10
-        // grand: ₱120 + ₱10 = ₱130
-        assertThat(result.getGrandTotal()).isEqualByComparingTo("130.00");
+        // base: 1 load × ₱140 = ₱140
+        // extra: 10 mins × ₱1 = ₱10
+        // grand: ₱140 + ₱10 = ₱150
+        assertThat(result.getGrandTotal()).isEqualByComparingTo("150.00");
     }
 }
 ```
@@ -386,7 +386,7 @@ class OrderServiceTest {
 
 **Step 2: Create TypeScript Types**
 ```typescript
-// frontend/lib/api/types.ts
+// frontend/src/lib/api/types.ts
 // Reference: frontend.instructions.md → "TypeScript Types"
 
 export interface CreateOrderRequest {
@@ -427,7 +427,7 @@ export enum OrderStatus {
 
 **Step 3: Create API Client**
 ```typescript
-// frontend/lib/api/orders.ts
+// frontend/src/lib/api/orders.ts
 // Reference: frontend.instructions.md → "API Integration"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -684,7 +684,7 @@ int totalLoads = (int) (weightKg / kgLimitPerLoad) + 1;  // Don't do this!
 ### ❌ DON'T: Compute on Frontend
 ```typescript
 // ❌ Wrong: Computing on frontend
-const grandTotal = totalLoads * 120 + extraMinutes;  // Don't do this!
+  const grandTotal = totalLoads * 140 + extraMinutes;  // Don't do this!
 ```
 
 ---

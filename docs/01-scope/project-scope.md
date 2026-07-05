@@ -63,7 +63,7 @@ The system shall:
 - Record order details: weight (kg), extra minutes (if applicable), optional add-ons
 - Automatically compute:
   - Total loads (8 kg per load)
-  - Base amount (₱120 per load)
+  - Base amount (₱140 per load)
   - Extra minute charge (₱1 per minute beyond 45 minutes per load)
   - Add-ons total
   - Grand total
@@ -229,7 +229,7 @@ No undocumented feature additions shall be merged into the main development bran
 
 | Term | Definition |
 |------|------------|
-| **Load** | Unit of laundry pricing: one load covers up to 8 kg; price per load is ₱120 (configurable). |
+| **Load** | Unit of laundry pricing: one load covers up to 8 kg; price per load is ₱140 (configurable). |
 | **Reference number** | Unique identifier for an order (e.g., LDR-YYYYMMDD-XXXX), used for customer tracking. |
 | **Release** | Final order status when laundry has been handed to the customer; requires status Ready for Pickup and payment recorded. |
 | **Snapshot pricing** | Copy of service rates stored on the order at creation time so historical totals remain correct when rates change. |

@@ -223,5 +223,5 @@ CREATE TRIGGER trg_audit_customers     AFTER INSERT OR UPDATE OR DELETE ON custo
 -- ==========================================
 
 INSERT INTO service_rates (service_name, base_price_per_load, kg_limit_per_load, price_per_extra_minute, is_active)
-VALUES ('Standard Wash', 120.00, 8.00, 1.00, TRUE)
+VALUES ('Standard Wash', 140.00, 8.00, 1.00, TRUE)
 ON CONFLICT (service_name) DO NOTHING;

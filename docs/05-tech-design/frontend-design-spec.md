@@ -101,7 +101,7 @@ Hick's Law (1952) states that decision time increases logarithmically with the n
 Nielsen H5 prioritizes preventing errors over recovering from them. The client interview (INT-001 Q7) confirmed that order mix-ups occur during peak hours — a direct error-prevention target.
 
 - **Constraint-based Input:** Use dropdowns or segmented controls for fixed-value fields (Service Type, Payment Method). Free-text inputs for constrained data are prohibited. This eliminates a class of data entry errors at the source.
-- **Inline Real-Time Validation:** The Order Intake form provides live validation for Weight and Pricing inputs. If staff enters a weight that crosses a load bracket (e.g., 8 kg → 8.1 kg triggers a second load at ₱120), the system signals the transition before submission — preventing the pricing disputes described in CS-001 §3.2.
+- **Inline Real-Time Validation:** The Order Intake form provides live validation for Weight and Pricing inputs. If staff enters a weight that crosses a load bracket (e.g., 8 kg → 8.1 kg triggers a second load at ₱140), the system signals the transition before submission — preventing the pricing disputes described in CS-001 §3.2.
 - **The Undo Pattern:** High-impact status transitions (e.g., "Mark as Claimed") feature a 5-second `UndoToast`. This provides graceful error recovery without the cost of a confirmation modal on every action.
 - **Validation Shield:** Critical action buttons remain disabled until all required inputs satisfy business rules. The "Settle Balance" button cannot be tapped until a payment method is selected.
 

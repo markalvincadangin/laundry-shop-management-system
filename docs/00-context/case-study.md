@@ -68,7 +68,7 @@ Payment is typically collected upon pickup rather than at drop-off.
 
 Pricing is computed on a per-load basis:
 
-- One (1) load costs **₱120**
+- One (1) load costs **₱140**
 - One load covers up to **8 kg**
 - Laundry exceeding 8 kg is charged as an additional load
 
