@@ -47,9 +47,11 @@ The Next.js frontend MUST follow a strict downward dependency direction:
 - `lib/` — contains pure TypeScript (API clients, Zod schemas, utilities) and MUST NOT
   import React components.
 
-API clients MUST reside in `lib/api/`. Validation schemas MUST reside in `lib/validation/`.
-Frontend state management uses React Context API. Per `CONTRIBUTING.md`, Zustand is
-not in use — see the comment at the top of each store file.
+All API calls MUST go through `src/services/` (e.g., `orders.service.ts`) — direct
+`axios`/`fetch` calls inside components are prohibited. Zod validation schemas live in
+`src/lib/validators.ts`. The path `lib/api/` is **decommissioned** per FRONT-002 §6.3.
+Frontend state management uses React Context API (`src/contexts/`). Per FRONT-002 §8.3,
+Zustand is not in use.
 
 ### III. Polyglot Contract Sync & Business Rule Authority
 This project is a polyglot monorepo (Java backend + TypeScript frontend). There is no
