@@ -124,7 +124,7 @@ function PipelineColumn({
   return (
     <div
       ref={colRef}
-      className={`flex flex-col h-full ${bgClass} backdrop-blur-3xl rounded-[2.5rem] border border-white/40 overflow-hidden shadow-2xl shadow-slate-300/30 transition-all duration-500 w-full group/col`}
+      className={`flex flex-col h-full ${bgClass} backdrop-blur-3xl rounded-2xl border border-white/40 overflow-hidden shadow-lg shadow-slate-300/30 transition-all duration-500 w-full group/col`}
     >
       {/* Column Header */}
       <div className="px-6 py-5 flex items-center justify-between border-b border-slate-200/40 bg-white/70 backdrop-blur-md shrink-0 shadow-sm">

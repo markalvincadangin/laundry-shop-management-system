@@ -65,50 +65,11 @@ describe("MessagingPage", () => {
       last: true
     } as any);
     renderWithProvider(<MessagingPage />);
-    expect(screen.getByText(new RegExp(UI_LABELS.modules.clientAlerts.TITLE, "i"))).toBeInTheDocument();
+    expect(screen.getAllByText(new RegExp(UI_LABELS.modules.clientAlerts.TITLE, "i"))[0]).toBeInTheDocument();
   });
 
-  it("displays messages in the communication ledger", async () => {
-    vi.mocked(clientAlertsService.list).mockResolvedValue({
-      content: [
-        { 
-          id: 1, 
-          orderId: 1, 
-          message: "Order Received", 
-          status: "SENT", 
-          createdAt: new Date().toISOString() 
-        }
-      ],
-      page: 0,
-      size: 15,
-      totalElements: 1,
-      totalPages: 1,
-      first: true,
-      last: true
-    } as any);
-
+  it("displays coming soon placeholder", () => {
     renderWithProvider(<MessagingPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Order Received/i)).toBeInTheDocument();
-    });
-  });
-
-  it("shows standardized empty state when no records exist", async () => {
-    vi.mocked(clientAlertsService.list).mockResolvedValue({
-      content: [],
-      page: 0,
-      size: 15,
-      totalElements: 0,
-      totalPages: 0,
-      first: true,
-      last: true
-    } as any);
-
-    renderWithProvider(<MessagingPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(new RegExp(UI_LABELS.feedback.empty.CLIENT_ALERTS_TITLE, "i"))).toBeInTheDocument();
-    });
+    expect(screen.getByText(/Coming Soon/i)).toBeInTheDocument();
   });
 });

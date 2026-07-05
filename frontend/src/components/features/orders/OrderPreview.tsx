@@ -7,9 +7,11 @@ import {
   Scale,
   PlusCircle,
   FileText,
-  Loader2,
+  Calendar,
+  Clock,
   Zap
 } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { formatCurrency } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { SERVICE_TYPES, ServiceType } from "@/constants/service-types";
@@ -47,7 +49,7 @@ export function OrderPreview({
         className="relative group"
       >
         {/* Visual Depth / Ambient Blue Glow (§2.1) */}
-        <div className="absolute -inset-6 bg-brand-blue/5 rounded-[3rem] blur-3xl -z-10 group-hover:bg-brand-blue/10 transition-all duration-700" />
+        {/* Removed ambient blob to comply with spec */}
 
         {/* Physical Paper Stack Effect */}
         <div className="absolute inset-0 bg-slate-900/10 translate-x-3 translate-y-3 rounded-3xl -z-10 blur-sm" />
@@ -195,7 +197,7 @@ export function OrderPreview({
                       exit={{ opacity: 0, scale: 0.9 }}
                       className="flex items-center gap-2 text-[9px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/10 px-3 py-1 rounded-full border border-brand-blue/20"
                     >
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Spinner size="sm" />
                       {UI_LABELS.modules.orders.SYNCING}
                     </motion.div>
                   )}

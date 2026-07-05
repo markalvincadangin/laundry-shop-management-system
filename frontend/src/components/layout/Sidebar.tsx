@@ -123,9 +123,14 @@ export function Sidebar() {
 
                       {/* Label */}
                       {!isSidebarCollapsed && (
-                        <span className="flex-1 truncate animate-in fade-in slide-in-from-left-2 duration-300">
-                          {item.label}
-                        </span>
+                        <div className="flex-1 flex items-center justify-between min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
+                          <span className="truncate">{item.label}</span>
+                          {item.isComingSoon && (
+                            <span className="ml-2 inline-flex shrink-0 items-center rounded bg-slate-200/60 px-1.5 py-[2px] text-[7.5px] font-black uppercase tracking-wider text-slate-500">
+                              Soon
+                            </span>
+                          )}
+                        </div>
                       )}
 
                       {/* Active indicator dot */}
@@ -154,7 +159,7 @@ export function Sidebar() {
         isSidebarCollapsed ? "flex flex-col items-center gap-4" : ""
       }`}>
         <div className={`flex items-center gap-3 px-2 mb-2 ${isSidebarCollapsed ? "justify-center" : ""}`}>
-          <Tooltip content={user?.username || "Loading..."} position="right" disabled={!isSidebarCollapsed}>
+          <Tooltip content={user?.username || UI_LABELS.shared.common.LOADING} position="right" disabled={!isSidebarCollapsed}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-blue to-blue-700 text-white shadow-md shadow-brand-blue/20">
               <span className="text-[11px] font-black">
                 {user?.username ? user.username.substring(0, 2).toUpperCase() : "..."}
@@ -164,7 +169,7 @@ export function Sidebar() {
           {!isSidebarCollapsed && (
             <div className="flex flex-col min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
               <span className="truncate text-[12px] font-black text-slate-900 leading-tight">
-                {user?.username || "Loading..."}
+                {user?.username || UI_LABELS.shared.common.LOADING}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />

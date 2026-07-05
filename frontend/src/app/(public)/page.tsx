@@ -265,7 +265,7 @@ export default function LandingPage() {
                 <div className="h-px w-full bg-slate-100" />
 
                 <a
-                  href="https://maps.app.goo.gl/aGSZK68CCE3JVQaM9"
+                  href="https://maps.app.goo.gl/ctSVqEZMKfA53JQi8"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block"
@@ -320,7 +320,7 @@ export default function LandingPage() {
                   Sitio Ilaya, Tabuc Suba Jaro,<br />
                   Iloilo City, 5000 Philippines
                   <a
-                    href="https://maps.app.goo.gl/aGSZK68CCE3JVQaM9"
+                    href="https://maps.app.goo.gl/ctSVqEZMKfA53JQi8"
                     target="_blank"
                     className="flex items-center gap-1 text-brand-cyan hover:underline mt-4 text-[10px] font-black uppercase tracking-widest"
                   >

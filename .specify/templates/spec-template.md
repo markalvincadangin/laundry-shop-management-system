@@ -103,6 +103,14 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+### Database Migrations
+- **Flyway Target**: [e.g. V6__add_entity.sql]
+- **Schema Changes**: [Describe what tables/columns need to be added or modified]
+
+### API Contracts
+- **Endpoints Needed**: [e.g. `POST /api/v1/resource`]
+- **Security**: [Role requirements, e.g. ADMIN only]
+
 ## Success Criteria *(mandatory)*
 
 <!--

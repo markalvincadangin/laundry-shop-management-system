@@ -31,3 +31,4 @@ app:
   security:
     cookie-secure: true
     cookie-same-site: Lax
+    bcrypt-strength: 12

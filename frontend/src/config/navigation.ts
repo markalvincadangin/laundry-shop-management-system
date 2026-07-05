@@ -16,6 +16,7 @@ export interface NavItem {
   label: string;
   icon: any;
   role?: string;
+  isComingSoon?: boolean;
 }
 
 export interface NavGroup {
@@ -41,7 +42,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
       { href: "/overview", label: UI_LABELS.layout.nav.DASHBOARD, icon: LayoutDashboard },
       { href: "/orders", label: UI_LABELS.layout.nav.ORDERS, icon: ClipboardList },
       { href: "/customers", label: UI_LABELS.layout.nav.CUSTOMERS, icon: Users },
-      { href: "/messaging", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare },
+      { href: "/messaging", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare, isComingSoon: true },
     ],
   },
   {

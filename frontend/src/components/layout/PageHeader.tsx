@@ -15,25 +15,9 @@ export function PageHeader({ title, subtitle, icon: Icon, actions, className, va
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={`relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white shadow-2xl shadow-slate-200/20 p-grid-8 md:p-grid-10 mb-grid-12 ${className || ""}`}
+        className={`relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-md shadow-slate-200/20 p-grid-8 md:p-grid-10 mb-grid-12 ${className || ""}`}
       >
-        {/* Animated Glow Blobs */}
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0]
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-0 right-0 -mt-20 -mr-20 h-80 w-80 rounded-full bg-brand-blue/10 blur-[80px] opacity-60" 
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.3, 1],
-            rotate: [0, -90, 0]
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-0 left-0 -mb-24 -ml-24 h-80 w-80 rounded-full bg-indigo-500/10 blur-[80px] opacity-60" 
-        />
+
 
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-grid-8">
           <div className="flex items-center gap-grid-8">

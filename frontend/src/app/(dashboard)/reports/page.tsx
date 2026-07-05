@@ -5,11 +5,12 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   Calculator,
-  Loader2,
   FileDown,
   BarChart3,
   Coins,
-  PackageCheck
+  PackageCheck,
+  ArrowUpRight,
+  ArrowDownRight
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { pdf } from "@react-pdf/renderer";
@@ -253,12 +254,9 @@ export default function ReportsPage() {
                 className="h-14 px-grid-6 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl" 
                 onClick={handleExportPDF}
                 disabled={isExporting || loading}
+                isLoading={isExporting}
+                leftIcon={<FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />}
               >
-                {isExporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
-                )}
                 {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
               <SegmentedControl

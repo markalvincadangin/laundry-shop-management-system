@@ -5,8 +5,11 @@ export const feedback = {
     UPDATED: "Successfully updated",
     SAVED: "Changes saved successfully",
     ORDER_SAVED: "Order has been added to the list.",
+    ORDER_UPDATED: "Order status updated",
     PAYMENT: "Payment recorded successfully",
     COPIED: "Reference number copied",
+    AUTH_SUCCESS: "Signed in successfully",
+    LOGOUT_SUCCESS: "Signed out successfully",
   },
   error: {
     GENERIC: "System error occurred",

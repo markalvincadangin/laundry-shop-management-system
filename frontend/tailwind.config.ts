@@ -58,6 +58,14 @@ const config: Config = {
           primary: "#ffffff",
           secondary: "#94a3b8",
         },
+        orange: {
+          500: "#f97316",
+          DEFAULT: "#f97316",
+        },
+        purple: {
+          500: "#a855f7",
+          DEFAULT: "#a855f7",
+        },
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],

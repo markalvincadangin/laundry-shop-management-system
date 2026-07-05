@@ -82,6 +82,18 @@
 
 ---
 
+### BR-PR-06 – Rush Order Pricing
+
+**Rule:** The system MAY support a special rate for "Rush" orders to accommodate expedited processing.  
+**Condition:** Order created with a rush service type.  
+**System Behavior:** Apply the designated "Rush Wash" active service rate for price calculations instead of standard rates.  
+**Constraint:** Must map to a valid `ServiceRate` definition (e.g., "Rush Wash") controlled by Admin.  
+**Applies To:** Order creation  
+**Enforcement:** Backend service  
+**Supports User Stories:** Derived from Client Interview Q7 ("multiple rush orders").
+
+---
+
 ## 2. Order Lifecycle Rules
 
 ### BR-OL-01 – Order Must Have a Unique Reference Number

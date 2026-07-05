@@ -5,6 +5,7 @@ import { ordersService, OrderListParams } from "@/lib/api/orders";
 import { OrderStatus } from "@/constants/order-status";
 import { useAuth } from "@/stores/auth-store";
 import { toast } from "sonner";
+import { UI_LABELS } from "@/constants/ui";
 
 /**
  * useOrders: Encapsulates order fetching and management logic using TanStack Query.
@@ -46,10 +47,10 @@ export function useOrders(params?: OrderListParams) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
-      toast.success("Order status updated");
+      toast.success(UI_LABELS.feedback.success.ORDER_UPDATED);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || "Failed to update order status");
+      toast.error(err.response?.data?.message || UI_LABELS.feedback.error.GENERIC);
     }
   });
 
@@ -59,7 +60,7 @@ export function useOrders(params?: OrderListParams) {
    */
   const advanceOrder = async (orderId: number, nextStatus: OrderStatus) => {
     if (!user?.userId) {
-      toast.error("You must be logged in to advance an order.");
+      toast.error(UI_LABELS.feedback.error.AUTH_REQUIRED);
       return;
     }
     statusMutation.mutate({ id: orderId, newStatus: nextStatus, changedByUserId: user.userId });

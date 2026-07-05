@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for OrderService.
- * Covers: US-01, US-02, BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
+ * Covers: US-01, US-02, BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02, BR-NOTIF-02.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -337,6 +337,33 @@ class OrderServiceTest {
             assertThatThrownBy(() -> orderService.create(command))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("User not found");
+        }
+    }
+
+    @Nested
+    @DisplayName("findByReferenceNumber - Tracking (BR-NOTIF-02)")
+    class FindByReferenceNumber {
+
+        @Test
+        @DisplayName("Should return order when valid reference number provided (BR-NOTIF-02)")
+        void findByReferenceNumber_ShouldReturnOrder_WhenValid() {
+            Order mockOrder = TestDataBuilders.order().id(1L).referenceNumber("LDR-20260220-1234").build();
+            when(orderRepository.findByReferenceNumber("LDR-20260220-1234")).thenReturn(Optional.of(mockOrder));
+
+            Order result = orderService.findByReferenceNumber("LDR-20260220-1234");
+
+            assertThat(result).isNotNull();
+            assertThat(result.getReferenceNumber()).isEqualTo("LDR-20260220-1234");
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when reference number is invalid (BR-NOTIF-02)")
+        void findByReferenceNumber_ShouldThrow_WhenInvalid() {
+            when(orderRepository.findByReferenceNumber("INVALID-REF")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> orderService.findByReferenceNumber("INVALID-REF"))
+                    .isInstanceOf(NotFoundException.class)
+                    .hasMessageContaining("Order not found for reference: INVALID-REF");
         }
     }
 

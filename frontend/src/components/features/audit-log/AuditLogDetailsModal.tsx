@@ -191,7 +191,9 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
               </div>
               <div>
                 <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Performed By</p>
-                <p className="text-body-sm font-bold text-slate-700">{selected?.actor || "System"}</p>
+                <p className="text-body-sm font-bold text-slate-700">
+                  {!selected?.actor || selected.actor === "Unknown" || selected.actor === "anonymous" ? "System" : selected.actor}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">

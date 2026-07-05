@@ -156,7 +156,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
           const path = issue.path.join(".") as any;
           setError(path, { message: issue.message });
         });
-        toast.error("Please provide valid customer details");
+        toast.error(UI_LABELS.feedback.error.GENERIC);
         return;
       }
     } else if (currentStep === "SERVICE") {
@@ -218,7 +218,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
     if (currentStep !== "CONFIRM") return;
 
     if (!data.createdByUserId) {
-      toast.error("Critical Error: Staff Identity missing. Please log out and back in.");
+      toast.error(UI_LABELS.feedback.error.AUTH_REQUIRED);
       return;
     }
 
@@ -287,12 +287,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
         className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start"
       >
         {/* ── LEFT AREA: UNIFIED STEPPER + FORM (HCI: Focused Workflow) ── */}
-        <div className="lg:col-span-7 glass rounded-[3rem] shadow-premium overflow-hidden border border-white/50 relative">
-          {/* Ambient Step Glow */}
-          <div className={`absolute -top-24 -left-24 w-64 h-64 blur-[100px] opacity-20 transition-all duration-1000 -z-10 ${stepIndex === 0 ? 'bg-brand-blue' :
-            stepIndex === 1 ? 'bg-brand-cyan' :
-              stepIndex === 2 ? 'bg-emerald-500' : 'bg-brand-blue'
-            }`} />
+        <div className="lg:col-span-7 glass rounded-2xl shadow-xl overflow-hidden border border-white/50 relative">
 
           {/* Integrated Compact Stepper */}
           <div className="p-10 border-b border-slate-100/50 bg-slate-50/20 backdrop-blur-xl">
@@ -316,7 +311,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                   <div key={step} className="flex flex-col items-center gap-4 relative z-10">
                     <div
                       className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${isActive
-                        ? "bg-brand-blue border-brand-blue text-white shadow-premium scale-110"
+                        ? "bg-brand-blue border-brand-blue text-white shadow-md scale-105"
                         : isCompleted
                           ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                           : "bg-white border-slate-200 text-slate-300"
@@ -448,7 +443,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                     <motion.div
                       initial={{ scale: 0.95, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      className="p-10 bg-white rounded-[2.5rem] border-2 border-slate-100 relative overflow-hidden shadow-sm hover:border-brand-blue/20 transition-colors"
+                      className="p-10 bg-white rounded-2xl border-2 border-slate-100 relative overflow-hidden shadow-sm hover:border-brand-blue/20 transition-colors"
                     >
                       <div className="relative z-10 flex items-center justify-between">
                         <div className="space-y-4">
@@ -552,7 +547,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                           key={service.value}
                           type="button"
                           onClick={() => setValue("serviceType", service.value)}
-                          className={`relative flex flex-col items-center p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-center group active:scale-95 ${isSelected
+                          className={`relative flex flex-col items-center p-8 rounded-2xl border-2 transition-all duration-500 text-center group active:scale-95 ${isSelected
                             ? "border-brand-blue bg-white shadow-2xl shadow-brand-blue/10 -translate-y-2"
                             : "border-slate-100 bg-slate-50/50 hover:border-slate-200 hover:bg-white hover:-translate-y-1"
                             }`}
@@ -560,7 +555,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                           {isSelected && (
                             <motion.div
                               layoutId="service-highlight"
-                              className="absolute inset-0 rounded-[2.5rem] border-4 border-brand-blue/10 animate-pulse"
+                              className="absolute inset-0 rounded-2xl border-4 border-brand-blue/10 animate-pulse"
                             />
                           )}
                           <div className={`p-5 rounded-2xl mb-6 transition-all duration-500 ${isSelected
@@ -663,7 +658,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                         variant="primary"
                         onClick={handleAddAddOn}
                         disabled={!tempAddOnName || !tempAddOnPrice}
-                        className="h-14 px-6 rounded-xl shadow-premium group"
+                        className="h-14 px-6 rounded-xl shadow-md group"
                       >
                         <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
                         <span>Add</span>
@@ -736,11 +731,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
 
                   <div className="relative">
                     {/* The "Review Receipt" Card - Hardened for FRONT-001/002 */}
-                    <div className="bg-brand-blue rounded-[3rem] text-white p-10 pb-20 shadow-2xl relative border border-brand-blue/20">
-                      {/* Decorative Brand Elements */}
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-brand-cyan/10 rounded-full blur-[80px] -mr-32 -mt-32" />
-                      <div className="absolute bottom-0 left-0 w-48 h-48 bg-brand-cyan/5 rounded-full blur-[60px] -ml-24 -mb-24" />
-
+                    <div className="bg-brand-blue rounded-2xl text-white p-10 pb-20 shadow-2xl relative border border-brand-blue/20">
                       <div className="relative z-10 space-y-10">
                         {/* Header: Reference & Total */}
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-10">
@@ -893,7 +884,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
               variant={stepIndex < steps.length - 1 ? "primary" : "action"}
               size="lg"
               onClick={stepIndex < steps.length - 1 ? nextStep : undefined}
-              className={`h-14 transition-all duration-500 rounded-2xl shadow-premium ${stepIndex < steps.length - 1 ? "px-12" : "px-16"
+              className={`h-14 transition-all duration-500 rounded-2xl shadow-md ${stepIndex < steps.length - 1 ? "px-12" : "px-16"
                 } group`}
               isLoading={loading}
               disabled={loading || isClaimStubOpen || !isStepValid}
@@ -917,9 +908,6 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
         <div className="lg:col-span-5 relative">
           <div className="sticky top-12 space-y-8 lg:pl-8">
             <div className="relative group">
-              {/* Visual Depth Glow */}
-              <div className="absolute -inset-10 bg-brand-blue/5 rounded-[4rem] blur-[60px] -z-10 opacity-0 group-hover:opacity-100 transition-all duration-700" />
-
               <OrderPreview
                 customerName={customerLookup.selected ? `${customerLookup.selected.firstName} ${customerLookup.selected.lastName}` : watch("customer.firstName") ? `${watch("customer.firstName")} ${watch("customer.lastName") || ""}` : "Walk-in Customer"}
                 serviceType={watch("serviceType")}

@@ -46,23 +46,6 @@ chmod 700 "$BACKUP_DIR"
 # Set secure umask for temp file creation
 umask 077
 
-# Option A: pg_dump directly (if PostgreSQL client installed)
-if command -v pg_dump >/dev/null 2>&1; then
-  export PGPASSWORD="$DB_PASSWORD"
-  # Write to temp file first, then compress to ensure pg_dump succeeds
-  if pg_dump -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl > "$TEMP_FILE"; then
-    gzip < "$TEMP_FILE" > "$OUTPUT_FILE"
-    unset PGPASSWORD
-    echo "Backup created: $OUTPUT_FILE"
-    exit 0
-  else
-    unset PGPASSWORD
-    echo "Error: pg_dump failed"
-    exit 1
-  fi
-fi
-
-# Option B: via Docker (if postgres container running)
 # Check prod container first, then dev container
 if docker ps --format '{{.Names}}' | grep -qx 'laundry-postgres-prod'; then
   CONTAINER="laundry-postgres-prod"

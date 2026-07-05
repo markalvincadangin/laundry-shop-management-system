@@ -51,6 +51,7 @@ be re-refactored without an explicit architectural decision.
 The Next.js frontend MUST follow a strict downward dependency direction:
 
 - `app/` — can import from anywhere.
+- `components/features/[feature-name]/` — Feature-First Organization applies to the frontend. All domain-specific UI components MUST reside within their respective feature folders.
 - `components/` — can import from `lib/`, `stores/`, `hooks/`, but NEVER from `app/`.
 - `lib/` — contains pure TypeScript (API clients, Zod schemas, utilities) and MUST NOT
   import React components.
@@ -134,12 +135,11 @@ pressure.
 ## Pull Request & Branching Workflow
 
 - **Branch Base**: All feature branches MUST be cut from and target `develop`.
-- **Branch Naming**: Branches MUST use prefixes: `feat/`, `fix/`, `refactor/`, `docs/`,
-  `chore/` (e.g., `feat/order-cancellation`, `fix/cors-403`).
+- **Branch Naming**: Branches MUST use prefixes that reflect actual practice: `feature/`, `polish/`, `chore/`, `docs/`, `test/`, `appmod/`, `copilot/`, or `dependabot/`.
 - **Commit Messages**: All commits MUST conform to [Conventional Commits](https://www.conventionalcommits.org/).
 - **Local Verification**: Before opening a PR, tests MUST pass locally:
-  - `make test-backend` (Maven compile + unit tests)
-  - `make test-frontend` (lint + typecheck + vitest)
+  - `make test-backend` (Maven compile + JUnit/Testcontainers)
+  - `make test-frontend` (lint + typecheck + Vitest)
 - **Review**: PRs MUST request review from `@markalvincadangin`. CI (GitHub Actions)
   must pass before merge.
 
