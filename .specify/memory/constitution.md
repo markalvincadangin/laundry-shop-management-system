@@ -1,21 +1,21 @@
 <!--
 Sync Impact Report:
-- Version change: 1.0.0 -> 1.1.0
+- Version change: 1.1.0 -> 1.2.0
 - List of modified principles:
-  - I. Feature-First Backend Organization: Added explicit acknowledgement of the accepted
-       pragmatic data-layer coupling (orders/ importing customers/ repos) as a known,
-       deliberate architectural decision per docs/05-tech-design/architecture.md (ARCH-001).
-  - II. Frontend App Router Layering & State: Corrected dependency rules to match
-       ARCH-001 (app/ can import anywhere; components/ may use lib/, stores/,
-       hooks/ but NEVER app/; lib/ MUST NOT import React). Confirmed React Context per
-       CONTRIBUTING.md.
-  - III. Polyglot Contract Sync: Added OpenAPI/type-generation rule from API.md
-       (npm run generate:types keeps api.generated.ts in sync). Zod = runtime enforcer.
+  - I. Feature-First Backend Organization: Generalized coupling exception from one named
+       case to the full real scope (~13 cross-feature relationships confirmed by code scan).
+       Added note that clientalert/ uses api/ subpackage for DTOs, not dto/.
+  - II. Frontend App Router Layering & State: No change — confirmed accurate.
+  - III. Polyglot Contract Sync: No change — confirmed accurate.
   - IV. UX Standards & Doherty Threshold: No change — confirmed accurate.
   - V. Containerized Development: No change — confirmed accurate.
-- Added sections:
-  - Credential & Security Rules (from development-credentials.md)
-- Removed sections: None
+- Modified sections:
+  - Coding Standards: Restored NestedForDepth/NestedIfDepth max=3 (confirmed in
+    checkstyle.xml via NestedForDepth + NestedIfDepth modules — previously removed
+    due to wrong grep term). Added thin-controller as team convention.
+  - Credential & Security Rules: Corrected seed gate mechanism (Flyway placeholder
+    seed_environment=dev, not Spring profile directly). Softened BCrypt prod factor
+    from MUST to SHOULD (policy intent, not code-enforced).
 - Templates requiring updates:
   - plan-template.md: ✅ in sync
   - spec-template.md: ✅ in sync
@@ -33,11 +33,19 @@ Features MUST NOT import services, mappers, or controllers from other features.
 DTOs MUST live inside their feature's `dto/` package. Truly cross-cutting concerns
 (e.g., `PageResponse`, `ErrorResponse`, `GlobalExceptionHandler`) belong in `shared/`.
 
-**Acknowledged Coupling Exception**: Because this is a Spring Data JPA monolith, entities
-natively reference each other at the data layer (e.g., `Order @ManyToOne Customer`).
-`OrderService` directly using `CustomerRepository` is a **deliberate, accepted tradeoff**
-for our scale — not a violation. This is documented in `docs/05-tech-design/architecture.md`
-(ARCH-001) and MUST NOT be re-refactored without an explicit architectural decision.
+> **Exception — DTO location**: `clientalert/` places response DTOs and mappers in its
+> `api/` subpackage rather than `dto/`. This is an accepted pattern for features where
+> the API contract objects are tightly scoped to the HTTP layer.
+
+**Acknowledged Coupling Exception**: This is a Spring Data JPA monolith at small scale.
+Cross-feature coupling at the entity and service layer is **broadly accepted** — not a
+violation. A live code scan confirms ~13 cross-feature import relationships, including:
+`orders/ → customers/, rates/, payments/, clientalert/, users/`;
+`payments/ → orders/, customers/, users/`;
+`clientalert/ → orders/, customers/`;
+`reports/ → payments/`; `auditlog/ → users/, auth/`.
+This is documented in `docs/05-tech-design/architecture.md` (ARCH-001) and MUST NOT
+be re-refactored without an explicit architectural decision.
 
 ### II. Frontend App Router Layering & State
 The Next.js frontend MUST follow a strict downward dependency direction:
@@ -94,6 +102,11 @@ pressure.
   on all control structures.
 - **File Length**: Java source files MUST NOT exceed **500 lines**.
 - **Line Length**: Source lines MUST NOT exceed **300 characters**.
+- **Nesting Depth**: `for` and `if` blocks MUST NOT exceed **3 levels** of nesting
+  (enforced by `NestedForDepth` and `NestedIfDepth` modules in `checkstyle.xml`, max=3).
+- **Controllers Must Be Thin** *(team convention)*: Controller methods should delegate
+  immediately to the service layer. Business logic in controllers is a code-review
+  rejection criterion even though it is not a Checkstyle rule.
 - **No Hardcoded Values**: Pricing rates (base price, kg limit, extra-minute rate) MUST
   be read from the `service_rates` table — never hardcoded in source.
 
@@ -101,11 +114,16 @@ pressure.
 
 - **No Hardcoded Credentials**: Credentials MUST NEVER be hardcoded in source control.
   All secrets MUST be provided via environment variables (root `.env` file, gitignored).
-- **Dev Seed Users**: Development seed accounts (Admin, Staff) are created only by
-  Flyway migration `V2__seed_users.sql` when `SPRING_PROFILES_ACTIVE=dev` and all four
-  `SEED_*` environment variables are set.
-- **BCrypt Cost Factor**: Use cost factor **10** for development/test environments
-  (faster iteration). Production deployments MUST use cost factor **12–14**.
+- **Dev Seed Users**: Development seed accounts (Admin, Staff) are inserted by Flyway
+  migration `V2__seed_users.sql`. The migration is gated by the Flyway placeholder
+  `${seed_environment} = 'dev'` — it runs on all profiles but only inserts rows when
+  that placeholder resolves to `dev`. All four `SEED_*` environment variables must also
+  be non-empty (`SEED_ADMIN_USERNAME`, `SEED_ADMIN_PASSWORD_HASH`, `SEED_STAFF_USERNAME`,
+  `SEED_STAFF_PASSWORD_HASH`). See `docs/development-credentials.md` for setup.
+- **BCrypt Cost Factor**: `SecurityConfig` hardcodes cost factor **10** for all
+  environments. Production deployments SHOULD use a higher cost factor (12–14) — this
+  requires overriding `SecurityConfig` or externalizing the value; it is a security
+  recommendation, not currently code-enforced.
 - **Production Discipline**: Production MUST NOT activate the `dev` Spring profile.
   Admin accounts in production MUST be created through the application's user management
   interface with strong, unique passwords.
@@ -148,4 +166,4 @@ pressure.
   - **MINOR**: New principles or sections added.
   - **PATCH**: Clarifications, wording fixes, non-semantic refinements.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-05 | **Last Amended**: 2026-07-05
+**Version**: 1.2.0 | **Ratified**: 2026-07-05 | **Last Amended**: 2026-07-05
