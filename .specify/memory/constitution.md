@@ -47,11 +47,12 @@ The Next.js frontend MUST follow a strict downward dependency direction:
 - `lib/` — contains pure TypeScript (API clients, Zod schemas, utilities) and MUST NOT
   import React components.
 
-All API calls MUST go through `src/services/` (e.g., `orders.service.ts`) — direct
-`axios`/`fetch` calls inside components are prohibited. Zod validation schemas live in
-`src/lib/validators.ts`. The path `lib/api/` is **decommissioned** per FRONT-002 §6.3.
-Frontend state management uses React Context API (`src/contexts/`). Per FRONT-002 §8.3,
-Zustand is not in use.
+All API calls MUST go through `src/lib/api/` (e.g., `src/lib/api/orders.ts`) via the
+`api-client.ts` Axios instance — direct `axios`/`fetch` calls inside components are
+prohibited. Zod validation schemas live in `src/lib/validation/` (one file per domain:
+`auth.ts`, `order.ts`, `customer.ts`). State management lives in `src/stores/` using
+React Context API — despite the `-store.tsx` naming, Zustand is intentionally not used
+(confirmed in the comment at the top of each store file).
 
 ### III. Polyglot Contract Sync & Business Rule Authority
 This project is a polyglot monorepo (Java backend + TypeScript frontend). There is no
@@ -93,9 +94,6 @@ pressure.
   on all control structures.
 - **File Length**: Java source files MUST NOT exceed **500 lines**.
 - **Line Length**: Source lines MUST NOT exceed **300 characters**.
-- **Nesting Depth**: `for`/`if` nesting MUST NOT exceed **3 levels**.
-- **Controllers Must Be Thin**: Controller methods MUST be fewer than 10 lines;
-  business logic belongs in the service layer.
 - **No Hardcoded Values**: Pricing rates (base price, kg limit, extra-minute rate) MUST
   be read from the `service_rates` table — never hardcoded in source.
 
