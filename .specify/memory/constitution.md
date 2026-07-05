@@ -4,13 +4,13 @@ Sync Impact Report:
 - List of modified principles:
   - I. Feature-First Backend Organization: Added explicit acknowledgement of the accepted
        pragmatic data-layer coupling (orders/ importing customers/ repos) as a known,
-       deliberate architectural decision per ARCHITECTURE.md.
+       deliberate architectural decision per docs/05-tech-design/architecture.md (ARCH-001).
   - II. Frontend App Router Layering & State: Corrected dependency rules to match
-       ARCHITECTURE.md (app/ can import anywhere; components/ may use lib/, stores/,
+       ARCH-001 (app/ can import anywhere; components/ may use lib/, stores/,
        hooks/ but NEVER app/; lib/ MUST NOT import React). Confirmed React Context per
        CONTRIBUTING.md.
   - III. Polyglot Contract Sync: Added OpenAPI/type-generation rule from API.md
-       (npm run generate-api keeps api.generated.ts in sync). Zod = runtime enforcer.
+       (npm run generate:types keeps api.generated.ts in sync). Zod = runtime enforcer.
   - IV. UX Standards & Doherty Threshold: No change — confirmed accurate.
   - V. Containerized Development: No change — confirmed accurate.
 - Added sections:
@@ -36,8 +36,8 @@ DTOs MUST live inside their feature's `dto/` package. Truly cross-cutting concer
 **Acknowledged Coupling Exception**: Because this is a Spring Data JPA monolith, entities
 natively reference each other at the data layer (e.g., `Order @ManyToOne Customer`).
 `OrderService` directly using `CustomerRepository` is a **deliberate, accepted tradeoff**
-for our scale — not a violation. This is documented in `ARCHITECTURE.md` and MUST NOT
-be re-refactored without an explicit architectural decision.
+for our scale — not a violation. This is documented in `docs/05-tech-design/architecture.md`
+(ARCH-001) and MUST NOT be re-refactored without an explicit architectural decision.
 
 ### II. Frontend App Router Layering & State
 The Next.js frontend MUST follow a strict downward dependency direction:
@@ -58,12 +58,13 @@ automatic type sharing across the language barrier. The following rules MUST be 
 1. **Dual Updates**: Any backend DTO change MUST be accompanied by a matching frontend
    Zod schema update in the **same Pull Request**.
 2. **Type Generation**: When backend endpoints change, regenerate frontend types
-   (`npm run generate-api` or equivalent) so `api.generated.ts` remains accurate.
+   (`npm run generate:types`) so `api.generated.ts` remains accurate.
 3. **Zod as Client Runtime Enforcer**: OpenAPI types describe shape; Zod schemas in
    `lib/validation/` are the active runtime enforcers for forms and mutations.
-4. **Backend Pricing Authority**: All business calculations (8kg base load limit ₱120,
-   extra minutes at ₱1/min, add-ons) MUST be computed exclusively by `OrderService`.
-   **Never** hardcode or replicate pricing formulas on the frontend.
+4. **Backend Pricing Authority**: All pricing computations (base load price, kg limit,
+   extra-minute rate, add-ons — per `docs/02-requirements/business-rules.md` BR-PR-01
+   through BR-PR-04) MUST be computed exclusively by `OrderService`. **Never** hardcode
+   or replicate pricing formulas on the frontend.
 
 ### IV. UX Standards & Doherty Threshold
 All frontend changes MUST adhere to the UX standards documented in
