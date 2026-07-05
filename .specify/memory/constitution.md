@@ -109,6 +109,9 @@ pressure.
   rejection criterion even though it is not a Checkstyle rule.
 - **No Hardcoded Values**: Pricing rates (base price, kg limit, extra-minute rate) MUST
   be read from the `service_rates` table — never hardcoded in source.
+- **Frontend UI Constants**: Hardcoded strings MUST NEVER be used inside React components.
+  All UI copy MUST be extracted to `src/constants/ui/` and referenced via `UI_LABELS`.
+  This is enforced by the `react/jsx-no-literals` ESLint rule.
 
 ## Credential & Security Rules
 
