@@ -46,7 +46,7 @@
 **So that** pricing errors and manual calculations are avoided.
 
 **Acceptance Criteria**
-- One (1) load costs **₱120** and covers up to **8 kg**
+- One (1) load costs **₱140** and covers up to **8 kg**
 - Total loads: `ceil(weight_kg / 8)`; exact multiples of 8 kg use `weight_kg / 8`
 - Each load includes up to **45 minutes** of washing time in the base price
 - Extra minutes (beyond 45 per load) are charged at **₱1 per minute**

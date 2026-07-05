@@ -14,7 +14,7 @@ When a field is added to `CustomerDto.java` in the backend, the frontend does no
 To maintain integrity across the stack, developers must follow these manual synchronization rules:
 
 1. **Dual Updates**: Any change to a backend DTO (e.g., `orders/dto/CreateOrderRequest.java`) MUST be accompanied by a matching change in the corresponding frontend Zod schema (e.g., `frontend/src/lib/validation/order.ts`) in the **same Pull Request**.
-2. **Type Generation**: The frontend uses OpenAPI schema generation. When backend endpoints change, the Swagger/OpenAPI spec updates. Make sure to regenerate the frontend types (`npm run generate-api` or equivalent, if set up) so `api.generated.ts` remains accurate.
+2. **Type Generation**: The frontend uses OpenAPI schema generation. When backend endpoints change, the Swagger/OpenAPI spec updates. Make sure to regenerate the frontend types (`npm run generate:types`) so `api.generated.ts` remains accurate.
 3. **Zod as the Source of Truth on the Client**: While OpenAPI types describe the shape of the data, Zod schemas in `lib/validation/` are the active runtime enforcers for form inputs and mutations.
 
 ## Domain-Driven Endpoints (Business Alignment)

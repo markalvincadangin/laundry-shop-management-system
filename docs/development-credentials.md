@@ -38,7 +38,7 @@ Depending on your chosen development setup (see `GETTING_STARTED.md`), these var
 - **Hybrid Native Mode**: Must be exported to your shell before running Maven (`export $(grep -v '^#' .env | xargs)`).
 
 The seed users are created by Flyway migration `V2__seed_users.sql` only when all conditions are true:
-1. `SPRING_PROFILES_ACTIVE=dev`
+1. The Flyway placeholder `${seed_environment}` resolves to `dev`
 2. `SEED_ADMIN_USERNAME` and `SEED_ADMIN_PASSWORD_HASH` are set
 3. `SEED_STAFF_USERNAME` and `SEED_STAFF_PASSWORD_HASH` are set
 

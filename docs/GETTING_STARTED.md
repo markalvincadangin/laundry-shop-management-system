@@ -43,7 +43,7 @@ This guide shows you how to leverage the instruction files (`.github/copilot-ins
 - During code review to validate alignment
 
 ### 2. Backend Instructions
-**File:** `.github/instructions/backend.instructions.md`
+**File:** `docs/02-requirements/business-rules.md`
 
 **Use this for:**
 - **Architecture patterns** (Controller → Service → Repository)
@@ -60,7 +60,7 @@ This guide shows you how to leverage the instruction files (`.github/copilot-ins
 - When implementing security/RBAC
 
 ### 3. Frontend Instructions
-**File:** `.github/instructions/frontend.instructions.md`
+**File:** `docs/05-tech-design/frontend-structure.md`
 
 **Use this for:**
 - **App Router structure** (folder organization)
@@ -96,8 +96,8 @@ This guide shows you how to leverage the instruction files (`.github/copilot-ins
 #### Step 2: Bookmark Instruction Files
 Keep these open in your IDE or browser:
 - `.github/copilot-instructions.md` - Main reference
-- `.github/instructions/backend.instructions.md` - For backend work
-- `.github/instructions/frontend.instructions.md` - For frontend work
+- `docs/02-requirements/business-rules.md` - For backend work
+- `docs/05-tech-design/frontend-structure.md` - For frontend work
 
 #### Step 3: Set Up Environment
 
@@ -150,14 +150,14 @@ npm run dev
 
 **Step 3: Use Backend Instructions**
 ```markdown
-📖 Open: .github/instructions/backend.instructions.md
+📖 Open: docs/02-requirements/business-rules.md
 → Section: "Data Model & Schema Rules" → Orders entity
 → Section: "Business Rules Implementation (BR-*)" → Pricing Rules
 → Copy code example for load calculation:
 ```
 
 ```java
-// From backend.instructions.md (BR-PR-02)
+// From docs/02-requirements/business-rules.md (BR-PR-02)
 int totalLoads = (int) Math.ceil(
     weightKg.divide(kgLimitPerLoad, 10, RoundingMode.HALF_UP).doubleValue()
 );
@@ -166,7 +166,7 @@ int totalLoads = (int) Math.ceil(
 **Step 4: Implement Entity**
 ```java
 // backend/src/main/java/com/himotech/laundryms/orders/Order.java
-// Reference: backend.instructions.md → "Orders" entity definition
+// Reference: docs/02-requirements/business-rules.md → "Orders" entity definition
 
 @Entity
 @Table(name = "orders")
@@ -229,7 +229,7 @@ public class Order {
 **Step 5: Implement Service**
 ```java
 // backend/src/main/java/com/himotech/laundryms/orders/OrderService.java
-// Reference: backend.instructions.md → "OrderService" section
+// Reference: docs/02-requirements/business-rules.md → "OrderService" section
 
 @Service
 @Slf4j
@@ -248,7 +248,7 @@ public class OrderService {
             .orElseThrow(() -> new IllegalStateException("No active service rate found"));
         
         // 2. Compute loads (BR-PR-02)
-        // Reference: backend.instructions.md → BR-PR-02
+        // Reference: docs/02-requirements/business-rules.md → BR-PR-02
         int totalLoads = (int) Math.ceil(
             request.getWeightKg()
                 .divide(activeRate.getKgLimitPerLoad(), 10, RoundingMode.HALF_UP)
@@ -308,7 +308,7 @@ public class OrderService {
 
 **Step 6: Write Tests**
 ```java
-// Reference: backend.instructions.md → "Testing Standards" section
+// Reference: docs/02-requirements/business-rules.md → "Testing Standards" section
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -345,11 +345,11 @@ class OrderServiceTest {
     @Test
     void shouldComputeCorrectGrandTotal() {
         // Test: base + extra_minutes + addons = grand_total
-        // Reference: backend.instructions.md → "Grand Total Computation"
+        // Reference: Business Rules → "Grand Total Computation"
         
         // Given
         ServiceRate rate = new ServiceRate();
-        rate.setBasePricePerLoad(new BigDecimal("120.00"));
+        rate.setBasePricePerLoad(new BigDecimal("140.00"));
         rate.setKgLimitPerLoad(new BigDecimal("8.00"));
         rate.setPricePerExtraMinute(new BigDecimal("1.00"));
         
@@ -362,10 +362,10 @@ class OrderServiceTest {
         OrderResponseDTO result = orderService.createOrder(request);
         
         // Then
-        // base: 1 load × ₱120 = ₱120
-        // extra: 10 min × ₱1 = ₱10
-        // grand: ₱120 + ₱10 = ₱130
-        assertThat(result.getGrandTotal()).isEqualByComparingTo("130.00");
+        // base: 1 load × ₱140 = ₱140
+        // extra: 10 mins × ₱1 = ₱10
+        // grand: ₱140 + ₱10 = ₱150
+        assertThat(result.getGrandTotal()).isEqualByComparingTo("150.00");
     }
 }
 ```
@@ -376,18 +376,17 @@ class OrderServiceTest {
 
 #### Example: Building Order Creation Form (US-01, US-02)
 
-**Step 1: Check Frontend Instructions**
+**Step 1: Verify OpenAPI Types**
 ```markdown
-📖 Open: .github/instructions/frontend.instructions.md
-→ Section: "Order Creation Form (US-01, US-02)"
-→ Copy the component structure example
+📖 Run: npm run generate:types
+→ Check: frontend/src/types/api.generated.ts
 → Note: "NEVER hardcode pricing calculations"
 ```
 
 **Step 2: Create TypeScript Types**
 ```typescript
-// frontend/lib/api/types.ts
-// Reference: frontend.instructions.md → "TypeScript Types"
+// frontend/src/lib/api/types.ts
+// Reference: Generated OpenAPI Types
 
 export interface CreateOrderRequest {
   customerId: number;
@@ -427,8 +426,8 @@ export enum OrderStatus {
 
 **Step 3: Create API Client**
 ```typescript
-// frontend/lib/api/orders.ts
-// Reference: frontend.instructions.md → "API Integration"
+// frontend/src/lib/api/orders.ts
+// Reference: docs/05-tech-design/frontend-structure.md → "API Integration"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -456,7 +455,7 @@ export const ordersApi = {
 **Step 4: Build Form Component**
 ```typescript
 // frontend/app/(dashboard)/orders/new/page.tsx
-// Reference: frontend.instructions.md → "Order Creation Form"
+// Reference: docs/05-tech-design/frontend-structure.md → "Order Creation Form"
 
 'use client';
 
@@ -582,7 +581,7 @@ export default function NewOrderPage() {
 ### Method 1: Reference in Comments
 ```java
 // Implement BR-PR-02: Load calculation using ceil(weight_kg / kg_limit_per_load)
-// Reference: .github/instructions/backend.instructions.md
+// Reference: docs/02-requirements/business-rules.md
 
 public int computeTotalLoads(BigDecimal weightKg, BigDecimal kgLimit) {
     // Copilot will suggest code based on instructions
@@ -592,14 +591,14 @@ public int computeTotalLoads(BigDecimal weightKg, BigDecimal kgLimit) {
 ### Method 2: Ask Copilot Chat
 ```
 @workspace Implement order creation service following the OrderService 
-specification in backend.instructions.md. Ensure BR-PR-01, BR-PR-02, 
+specification in docs/02-requirements/business-rules.md. Ensure BR-PR-01, BR-PR-02, 
 BR-PR-03, BR-OL-01, and BR-OL-02 are enforced.
 ```
 
 ### Method 3: Use Inline Chat
 1. Select the `OrderService` interface
 2. Press `Ctrl+I` (inline chat)
-3. Type: "Implement this following backend.instructions.md business rules"
+3. Type: "Implement this following docs/02-requirements/business-rules.md business rules"
 
 ---
 
@@ -608,7 +607,7 @@ BR-PR-03, BR-OL-01, and BR-OL-02 are enforced.
 Before submitting PR, use the checklists from instruction files:
 
 ### Backend Checklist
-From `.github/instructions/backend.instructions.md`:
+From `docs/02-requirements/business-rules.md`:
 - [ ] All entities match ERD schema
 - [ ] Business rules enforced in service layer
 - [ ] Controllers are thin (< 10 lines per method)
@@ -624,7 +623,7 @@ From `.github/instructions/backend.instructions.md`:
 - [ ] `.\mvnw.cmd test` passes
 
 ### Frontend Checklist
-From `.github/instructions/frontend.instructions.md`:
+From `docs/05-tech-design/frontend-structure.md`:
 - [ ] No hardcoded business logic (pricing, validation)
 - [ ] All API calls use centralized client module
 - [ ] Types match OpenAPI schemas exactly
@@ -648,7 +647,7 @@ From `.github/instructions/frontend.instructions.md`:
 2. **Check Business Rules** → `docs/02-requirements/business-rules.md`
 3. **Check Data Model** → `docs/04-data-design/erd.dbml`
 4. **Check API Contract** → `docs/05-tech-design/openapi.yaml`
-5. **Use Code Examples** → `.github/instructions/backend.instructions.md` or `frontend.instructions.md`
+5. **Use Code Examples** → `docs/02-requirements/business-rules.md` or `docs/05-tech-design/frontend-structure.md`
 6. **Validate Against Checklist** → Same instruction files
 
 ### When stuck or unsure:
@@ -663,7 +662,7 @@ From `.github/instructions/frontend.instructions.md`:
 
 ### ✅ DO: Follow the Instructions
 ```java
-// ✅ Correct: Using exact formula from backend.instructions.md (BR-PR-02)
+// ✅ Correct: Using exact formula from docs/02-requirements/business-rules.md (BR-PR-02)
 int totalLoads = (int) Math.ceil(
     weightKg.divide(kgLimitPerLoad, 10, RoundingMode.HALF_UP).doubleValue()
 );
@@ -684,7 +683,7 @@ int totalLoads = (int) (weightKg / kgLimitPerLoad) + 1;  // Don't do this!
 ### ❌ DON'T: Compute on Frontend
 ```typescript
 // ❌ Wrong: Computing on frontend
-const grandTotal = totalLoads * 120 + extraMinutes;  // Don't do this!
+  const grandTotal = totalLoads * 140 + extraMinutes;  // Don't do this!
 ```
 
 ---
@@ -721,8 +720,8 @@ If you're unsure about something:
 
 The instruction files are your **implementation playbook**:
 - **copilot-instructions.md** = What to build and why
-- **backend.instructions.md** = How to build backend (with code)
-- **frontend.instructions.md** = How to build frontend (with code)
+- **docs/02-requirements/business-rules.md** = How to build backend (with code)
+- **docs/05-tech-design/frontend-structure.md** = How to build frontend (with code)
 
 **Golden Rule:** When in doubt, check the instructions. They contain the answers.
 

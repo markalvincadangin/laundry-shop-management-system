@@ -88,7 +88,7 @@ To ensure seamless compatibility between the Java/JPA layer and PostgreSQL, all 
 |--------|------|----------|---------|
 | `id` | `SERIAL` | No | PK |
 | `service_name` | `VARCHAR(100)` | No | Unique name (e.g., "Standard Wash") |
-| `base_price_per_load` | `DECIMAL(10,2)` | No | ₱120 default (BR-PR-01) |
+| `base_price_per_load` | `DECIMAL(10,2)` | No | ₱140 default (BR-PR-01) |
 | `kg_limit_per_load` | `DECIMAL(5,2)` | No | 8 kg default (BR-PR-01) |
 | `price_per_extra_minute` | `DECIMAL(10,2)` | No | ₱1 default (BR-PR-03) |
 | `is_active` | `BOOLEAN` | No | Active rate flag |
