@@ -7,9 +7,9 @@
 
 **Goal**: Establish a single source of truth for ports and configuration.
 
-- [ ] T001 Update `.env.example` to set `BACKEND_PORT=8080` and improve comments.
-- [ ] T002 Update `.env` to match `.env.example`.
-- [ ] T003 Update `frontend/.env.local.example` to point `NEXT_PUBLIC_API_URL` to `http://localhost:8080/api`.
+- [x] T001 Update `.env.example` to set `BACKEND_PORT=8080` and improve comments.
+- [x] T002 Update `.env` to match `.env.example`.
+- [x] T003 Update `frontend/.env.local.example` to point `NEXT_PUBLIC_API_URL` to `http://localhost:8080/api`.
 
 ## Phase 2: Containerization Standardization (Priority: P1)
 

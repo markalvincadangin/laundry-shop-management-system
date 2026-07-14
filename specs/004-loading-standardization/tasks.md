@@ -33,5 +33,5 @@
 
 **Goal**: Ensure no layout regressions and verify Doherty compliance.
 
-- [ ] T013 Run `make test-frontend` to ensure lint/types pass.
-- [ ] T014 Trigger a simulated loading state to visually verify the SVG gradients and animations function without layout jank.
+- [x] T013 Run `make test-frontend` to ensure lint/types pass.
+- [x] T014 Trigger a simulated loading state to visually verify the SVG gradients and animations function without layout jank.

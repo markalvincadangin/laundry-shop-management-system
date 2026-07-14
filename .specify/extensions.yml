@@ -1,6 +1,8 @@
 installed:
 - brownfield
 - bugfix
+- harness
+- security-review
 - superspec
 settings:
   auto_execute_hooks: false
@@ -50,4 +52,22 @@ hooks:
     priority: 10
     prompt: Run bugfix consistency check after implementation?
     description: Verify spec artifact consistency after implementation completes
+    condition: null
+  after_specify:
+  - extension: harness
+    command: speckit.harness.init
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Set up a state-externalized research harness for this feature?
+    description: Initialize harness state after specification
+    condition: null
+  after_plan:
+  - extension: harness
+    command: speckit.harness.verify
+    enabled: true
+    optional: true
+    priority: 10
+    prompt: Verify plan claims against primary sources and the harness evidence base?
+    description: Run claim verification after planning
     condition: null

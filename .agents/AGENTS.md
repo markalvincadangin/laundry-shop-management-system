@@ -45,3 +45,7 @@ Never use generic prefixes like `feat/` or `fix/` unless explicitly requested.
 ## Tooling Constraints: Shadcn
 - **WARNING**: The `shadcn` CLI is considered dangerous in this repository because it destructively modifies `utils.ts`. 
 - If you must use the `shadcn` CLI to add components, you MUST backup and manually restore `utils.ts` to its exact prior state immediately afterward.
+
+## Scripting & Dependencies
+- **Avoid non-standard CLI tools in bash scripts**: Do not assume tools like `jq` are installed in the environment. When parsing configuration files or command outputs, prefer standard POSIX/GNU tools like `grep`, `awk`, and `sed`. If a tool like `jq` is absolutely necessary, the script must explicitly check for its existence and handle its absence gracefully.
+- **Cross-Platform Scripting**: When creating or modifying utility scripts (e.g., in `scripts/`), maintain both Linux/WSL (`.sh`) and Windows (`.ps1`) versions if the project requires cross-platform support. Ensure `Makefile` targets delegate to the `.sh` versions.
