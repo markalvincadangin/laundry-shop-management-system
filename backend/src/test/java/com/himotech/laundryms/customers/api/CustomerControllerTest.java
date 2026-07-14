@@ -60,7 +60,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 201 and CustomerResponse when valid request")
-        void create_ShouldReturn201_WhenValidRequest() throws Exception {
+        void createShouldreturn201Whenvalidrequest() throws Exception {
             // Given
             CreateCustomerRequest request = new CreateCustomerRequest();
             request.setFirstName("Juan");
@@ -102,7 +102,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 400 when firstName is blank")
-        void create_ShouldReturn400_WhenFirstNameBlank() throws Exception {
+        void createShouldreturn400Whenfirstnameblank() throws Exception {
             CreateCustomerRequest request = new CreateCustomerRequest();
             request.setFirstName("   ");
             request.setLastName("Dela Cruz");
@@ -119,7 +119,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 400 when lastName is missing")
-        void create_ShouldReturn400_WhenLastNameMissing() throws Exception {
+        void createShouldreturn400Whenlastnamemissing() throws Exception {
             CreateCustomerRequest request = new CreateCustomerRequest();
             request.setFirstName("Juan");
             request.setContactNumber("09171234567");
@@ -133,7 +133,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 400 when contactNumber is blank")
-        void create_ShouldReturn400_WhenContactNumberBlank() throws Exception {
+        void createShouldreturn400Whencontactnumberblank() throws Exception {
             CreateCustomerRequest request = new CreateCustomerRequest();
             request.setFirstName("Juan");
             request.setLastName("Dela Cruz");
@@ -153,7 +153,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 200 and array when query provided")
-        void search_ShouldReturn200_WhenQueryProvided() throws Exception {
+        void searchShouldreturn200Whenqueryprovided() throws Exception {
             Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
             CustomerResponse resp = CustomerResponse.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
             when(customerService.search(eq("Juan"), any(), any(), any(), any(org.springframework.data.domain.Pageable.class))).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(c)));
@@ -170,7 +170,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 200 and empty array when query blank")
-        void search_ShouldReturn200_WhenQueryBlank() throws Exception {
+        void searchShouldreturn200Whenqueryblank() throws Exception {
             when(customerService.search(eq("   "), any(), any(), any(), any(org.springframework.data.domain.Pageable.class)))
                     .thenReturn(org.springframework.data.domain.Page.empty());
 
@@ -189,7 +189,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 200 and CustomerResponse when found")
-        void getById_ShouldReturn200_WhenFound() throws Exception {
+        void getByIdShouldreturn200Whenfound() throws Exception {
             Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
             CustomerResponse resp = CustomerResponse.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
             when(customerService.findById(1L)).thenReturn(Optional.of(c));
@@ -205,7 +205,7 @@ class CustomerControllerTest {
 
         @Test
         @DisplayName("Should return 404 when not found")
-        void getById_ShouldReturn404_WhenNotFound() throws Exception {
+        void getByIdShouldreturn404Whennotfound() throws Exception {
             when(customerService.findById(999L)).thenReturn(Optional.empty());
 
             mockMvc.perform(get("/api/v1/customers/999"))

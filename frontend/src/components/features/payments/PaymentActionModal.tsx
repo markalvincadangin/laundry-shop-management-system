@@ -106,7 +106,7 @@ export function PaymentActionModal({
                     {isSelected && (
                       <motion.div
                         layoutId="active-check"
-                        className="absolute top-2 right-2 bg-white/20 rounded-full p-0.5"
+                        className="absolute top-2 right-2 bg-white/20 rounded-full p-1"
                       >
                         <Check className="h-3 w-3 text-white" />
                       </motion.div>

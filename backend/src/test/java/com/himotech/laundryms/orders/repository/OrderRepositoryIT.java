@@ -107,7 +107,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("save - Should persist order when all FKs are valid")
-    void save_ShouldPersistOrder_WhenAllFKsAreValid() {
+    void saveShouldpersistorderWhenallfksarevalid() {
         // Given
         Order order = Order.builder()
                 .referenceNumber("LDR-20260425-0001")
@@ -168,7 +168,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("save - Should throw violation when reference_number is duplicated")
-    void save_ShouldThrowViolation_WhenReferenceNumberDuplicated() {
+    void saveShouldthrowviolationWhenreferencenumberduplicated() {
         // Given - First order with reference number "REF-001"
         Order order1 = Order.builder()
                 .referenceNumber("LDR-20260425-0002")
@@ -230,7 +230,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("save - Should persist order with enum values (validates stringtype=unspecified fix)")
-    void save_ShouldPersistOrder_WithEnumValues() {
+    void saveShouldpersistorderWithenumvalues() {
         // Given - Order with various enum statuses
         Order order = Order.builder()
                 .referenceNumber("LDR-20260425-0003")

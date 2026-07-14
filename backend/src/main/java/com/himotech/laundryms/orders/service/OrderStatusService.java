@@ -9,6 +9,11 @@ import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
+import com.himotech.laundryms.settings.service.SystemSettingsService;
+import com.himotech.laundryms.machines.repository.MachineRepository;
+import com.himotech.laundryms.machines.entity.Machine;
+import java.util.List;
+import java.util.HashSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,10 +49,12 @@ public class OrderStatusService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ClientAlertService clientAlertService;
+    private final SystemSettingsService systemSettingsService;
+    private final MachineRepository machineRepository;
 
     @Auditable(action = "ORDER_STATUS_UPDATE", description = "Update order lifecycle status")
     @Transactional
-    public Order updateStatus(Long orderId, OrderStatus newStatus, UUID changedByUserId, String notes) {
+    public Order updateStatus(Long orderId, OrderStatus newStatus, UUID changedByUserId, String notes, Set<Long> machineIds) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         User changedBy = userRepository.findById(changedByUserId)
@@ -68,6 +75,41 @@ public class OrderStatusService {
             throw new IllegalStateException(
                     "Invalid status transition: " + current + " -> " + newStatus
                             + ". Allowed: " + allowed);
+        }
+
+        if (newStatus == OrderStatus.WASHING || newStatus == OrderStatus.DRYING) {
+            if (systemSettingsService.getSettings().isSystemPaused()) {
+                throw new IllegalStateException("System is currently paused due to power interruption. Cannot transition to " + newStatus);
+            }
+            if (machineIds == null || machineIds.isEmpty()) {
+                throw new IllegalArgumentException("At least one machine must be assigned when transitioning to " + newStatus);
+            }
+            if (machineIds.size() > order.getTotalLoads()) {
+                throw new IllegalArgumentException("Cannot assign more machines (" + machineIds.size() + ") than the total number of loads (" + order.getTotalLoads() + ")");
+            }
+            if (machineIds.size() > 10) {
+                throw new IllegalArgumentException("Cannot assign more than 10 machines to a single order");
+            }
+            
+            long conflicts = orderRepository.countConflictingMachines(machineIds, List.of(OrderStatus.WASHING, OrderStatus.DRYING), orderId);
+            if (conflicts > 0) {
+                throw new IllegalStateException("One or more selected machines are currently assigned to another active order in WASHING or DRYING state.");
+            }
+            
+            List<Machine> machines = machineRepository.findAllById(machineIds);
+            if (machines.size() != machineIds.size()) {
+                throw new IllegalArgumentException("One or more selected machines do not exist.");
+            }
+            
+            for (Machine m : machines) {
+                if (!"OPERATIONAL".equals(m.getStatus().name()) || !m.getIsActive()) {
+                    throw new IllegalStateException("Machine " + m.getName() + " is not available for assignment.");
+                }
+            }
+            order.setAssignedMachines(new HashSet<>(machines));
+        } else if (newStatus == OrderStatus.READY_FOR_PICKUP || newStatus == OrderStatus.CANCELLED) {
+             // Clear machines once done
+             order.getAssignedMachines().clear();
         }
 
         if (newStatus == OrderStatus.RELEASED) {

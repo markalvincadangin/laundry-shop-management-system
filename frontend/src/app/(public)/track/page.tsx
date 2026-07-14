@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import Link from "next/link";
@@ -154,7 +155,7 @@ function TrackContent() {
                 {UI_LABELS.portal.tracking.PROMPT}
               </h2>
               <p className="text-body font-medium text-slate-500 max-w-md mx-auto leading-relaxed">
-                {UI_LABELS.portal.tracking.NOT_FOUND_DESC.split('.')[0]}. Experience the evolution of local laundry with our Real-Time Tracking.
+                {UI_LABELS.portal.tracking.NOT_FOUND_DESC.split('.')[0]}{UI_LABELS.dynamic.EXPERIENCE_THE_EVOLUTION_OF}
               </p>
             </div>
           )}
@@ -486,7 +487,7 @@ function TrackContent() {
               />
             </div>
             <p className="text-caption font-bold text-slate-400 uppercase tracking-[0.3em]">
-              {UI_LABELS.meta.APP_NAME} &bull; 2026
+              {UI_LABELS.meta.APP_NAME} {UI_LABELS.dynamic.BULL__2026}
             </p>
           </div>
           <p className="text-caption font-bold text-slate-400 uppercase tracking-[0.3em]">

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -46,6 +47,7 @@ import { ClaimStub } from "./ClaimStub";
 import { OrderPreview } from "./OrderPreview";
 import { OrderResponse } from "@/lib/api/orders";
 import { ProcessStepper } from "@/components/features/shared/ProcessStepper";
+import { useMachines } from "@/hooks/useMachines";
 
 type IntakeStep = "CUSTOMER" | "SERVICE" | "ADDONS" | "CONFIRM";
 
@@ -55,7 +57,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<IntakeStep>("CUSTOMER");
   const [collectPaymentNow, setCollectPaymentNow] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [referenceNumber, setReferenceNumber] = useState("");
   const [isClaimStubOpen, setIsClaimStubOpen] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<OrderResponse | null>(null);
@@ -73,7 +75,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
     trigger,
     setError,
     reset,
-    formState: { errors }
+    formState: { errors, isDirty }
   } = useForm<OrderIntakeInput>({
     resolver: zodResolver(OrderIntakeSchema),
     defaultValues: {
@@ -81,6 +83,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
       serviceType: "WASH_DRY_FOLD",
       weightKg: undefined,
       extraMinutes: undefined,
+      isRush: false,
       initialAddOns: [],
       customer: {
         firstName: "",
@@ -90,8 +93,26 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
     }
   });
 
+  const { machines, loading: machinesLoading } = useMachines();
+
   // Watch values
   const weightKg = watch("weightKg");
+  const machineIds = watch("machineIds") || [];
+
+  // T011: Discard unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // If the form has been modified and we haven't submitted (shown claim stub)
+      if (isDirty && !isClaimStubOpen) {
+        e.preventDefault();
+        // Chrome requires returnValue to be set
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty, isClaimStubOpen]);
 
   // Sync staffUserId if it arrives late from context (§8.6)
   useEffect(() => {
@@ -102,6 +123,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   const extraMinutes = watch("extraMinutes");
   const addOns = watch("initialAddOns") || [];
   const serviceType = watch("serviceType");
+  const isRush = watch("isRush");
   const customerId = watch("customerId");
   const customerInput = watch("customer");
 
@@ -116,7 +138,8 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
     weightKg: String(weightKg),
     extraMinutes: String(extraMinutes),
     addOns,
-    serviceType
+    serviceType,
+    isRush
   });
 
   const { selectById, selected, isRegistering } = customerLookup;
@@ -207,9 +230,13 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
       return true; // Optional step
     }
     if (currentStep === "CONFIRM") {
-      const needsRef = collectPaymentNow && paymentMethod !== "CASH";
-      const hasRef = !!referenceNumber.trim();
-      return canSubmit && (!needsRef || hasRef);
+      if (collectPaymentNow) {
+        if (!paymentMethod) return false;
+        const needsRef = paymentMethod !== "CASH";
+        const hasRef = !!referenceNumber.trim();
+        return canSubmit && (!needsRef || hasRef);
+      }
+      return canSubmit;
     }
     return false;
   }, [currentStep, customerId, isRegistering, serviceType, weightKg, canSubmit, collectPaymentNow, paymentMethod, referenceNumber]);
@@ -230,7 +257,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
         await paymentsService.create({
           orderId: order.id,
           amountPaid: pricing.preview.grandTotal,
-          paymentMethod: paymentMethod,
+          paymentMethod: paymentMethod!,
           paymentReference: referenceNumber || undefined,
           receivedByUserId: createdByUserId ?? undefined
         });
@@ -273,7 +300,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto min-h-[800px]">
+    <div className="max-w-screen-2xl mx-auto min-h-[800px]">
       <form
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={(e) => {
@@ -308,7 +335,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                 const label = ["CLIENT", "SERVICE", "EXTRAS", "REVIEW"][i];
 
                 return (
-                  <div key={step} className="flex flex-col items-center gap-4 relative z-10">
+                  <div key={step} data-testid="wizard-step-indicator" className="flex flex-col items-center gap-4 relative z-10">
                     <div
                       className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${isActive
                         ? "bg-brand-blue border-brand-blue text-white shadow-md scale-105"
@@ -337,7 +364,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
           <motion.div
             layout
             initial={false}
-            className="p-10 min-h-[500px]"
+            className="p-10 min-h-[512px]"
           >
             <AnimatePresence mode="wait" initial={false}>
               {currentStep === "CUSTOMER" && (
@@ -387,7 +414,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                           </div>
                         ) : (customerLookup.search.length >= 2 && !customerLookup.loading) ? (
                           <div className="absolute z-20 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-200 p-10 text-center shadow-brand-blue/10 animate-in fade-in slide-in-from-top-2">
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8">No matching customers found</p>
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-8">{UI_LABELS.dynamic.NO_MATCHING_CUSTOMERS_FOUND}</p>
                             <Button
                               type="button"
                               variant="outline"
@@ -404,7 +431,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                               className="w-full h-12 rounded-xl text-[10px] font-black uppercase tracking-widest border-slate-200 hover:border-brand-blue hover:text-brand-blue"
                             >
                               <UserPlus className="h-4 w-4 mr-2" />
-                              Register &quot;{customerLookup.search}&quot;
+                              Register {UI_LABELS.dynamic.STR_eb6439}{customerLookup.search}{UI_LABELS.dynamic.STR_eb6439}
                             </Button>
                           </div>
                         ) : null}
@@ -412,7 +439,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
 
                       <div className="flex items-center gap-4">
                         <div className="h-px flex-1 bg-slate-100" />
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Or</span>
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{UI_LABELS.dynamic.OR}</span>
                         <div className="h-px flex-1 bg-slate-100" />
                       </div>
 
@@ -435,7 +462,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                           <UserPlus className="h-5 w-5" />
                         </div>
                         <div className="text-left">
-                          <span className="block font-black text-xs uppercase tracking-tight">Register New Customer</span>
+                          <span className="block font-black text-xs uppercase tracking-tight">{UI_LABELS.dynamic.REGISTER_NEW_CUSTOMER}</span>
                         </div>
                       </Button>
                     </div>
@@ -480,7 +507,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                     <div className="space-y-6">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="px-3 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20">
-                          <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">Registering New Account</span>
+                          <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest">{UI_LABELS.dynamic.REGISTERING_NEW_ACCOUNT}</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
@@ -583,7 +610,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                       placeholder="0.0"
                       rightElement={
                         <div className="px-4 py-2 bg-slate-100 rounded-lg mr-2">
-                          <span className="text-[10px] font-black text-slate-500 uppercase">KG</span>
+                          <span className="text-[10px] font-black text-slate-500 uppercase">{UI_LABELS.dynamic.KG}</span>
                         </div>
                       }
                       {...register("weightKg", {
@@ -605,7 +632,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                         placeholder="0"
                         rightElement={
                           <div className="px-4 py-2 bg-slate-100 rounded-lg mr-2">
-                            <span className="text-[10px] font-black text-slate-500 uppercase">MINS</span>
+                            <span className="text-[10px] font-black text-slate-500 uppercase">{UI_LABELS.dynamic.MINS_c047}</span>
                           </div>
                         }
                         {...register("extraMinutes", { valueAsNumber: true })}
@@ -613,6 +640,28 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                         className="h-16 rounded-2xl border-slate-200 text-xl font-black pr-20 tabular-nums"
                       />
                     </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-slate-100/50">
+                    <label className="flex items-center gap-3 cursor-pointer group p-4 rounded-2xl border-2 border-slate-100 hover:border-brand-blue/30 hover:bg-brand-blue/5 transition-all">
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          className="peer sr-only"
+                          {...register("isRush")}
+                        />
+                        <div className="h-6 w-6 rounded-lg border-2 border-slate-300 peer-checked:border-brand-blue peer-checked:bg-brand-blue transition-colors flex items-center justify-center">
+                          <Check className="h-4 w-4 text-white opacity-0 peer-checked:opacity-100 scale-50 peer-checked:scale-100 transition-all" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-slate-900 uppercase tracking-tight">Rush Order</span>
+                          <span className="text-[10px] font-bold bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full uppercase tracking-widest">+ Rush Fee Add-on</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Priority processing for fast turnaround</span>
+                      </div>
+                    </label>
                   </div>
                 </motion.div>
               )}
@@ -627,7 +676,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                 >
                   <div className="space-y-1">
                     <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight uppercase">{UI_LABELS.modules.orders.EXTRAS || "Extras & Notes"}</h2>
-                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Add consumables or special instructions.</p>
+                    <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{UI_LABELS.dynamic.ADD_CONSUMABLES_OR_SPECIAL_INS}</p>
                   </div>
 
                   <div className="space-y-6">
@@ -661,7 +710,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                         className="h-14 px-6 rounded-xl shadow-md group"
                       >
                         <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
-                        <span>Add</span>
+                        <span>{UI_LABELS.dynamic.ADD}</span>
                       </Button>
                     </div>
 
@@ -704,13 +753,51 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                     <div className="pt-8 border-t border-slate-100/50">
                       <div className="flex items-center gap-2 mb-4">
                         <FileText className="h-4 w-4 text-slate-400" />
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Special Instructions</label>
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{UI_LABELS.dynamic.SPECIAL_INSTRUCTIONS}</label>
                       </div>
                       <textarea
                         {...register("notes")}
                         placeholder="e.g. Separate whites, low heat drying..."
-                        className="w-full min-h-[140px] rounded-[2rem] border border-slate-200 bg-slate-50/30 p-6 text-sm text-slate-900 focus:bg-white focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none resize-none shadow-inner font-medium placeholder:text-slate-300"
+                        className="w-full min-h-36 rounded-[2rem] border border-slate-200 bg-slate-50/30 p-6 text-sm text-slate-900 focus:bg-white focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 transition-all outline-none resize-none shadow-inner font-medium placeholder:text-slate-300"
                       />
+                    </div>
+                    
+                    <div className="pt-8 border-t border-slate-100/50">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Package className="h-4 w-4 text-slate-400" />
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{UI_LABELS.dynamic.ASSIGN_MACHINES}</label>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {machinesLoading ? (
+                          <span className="text-xs text-slate-400">{UI_LABELS.dynamic.LOADING_MACHINES}</span>
+                        ) : machines.length === 0 ? (
+                          <span className="text-xs text-slate-400">{UI_LABELS.dynamic.NO_MACHINES_AVAILABLE}</span>
+                        ) : (
+                          machines.map(m => (
+                            <Button
+                              key={m.id}
+                              type="button"
+                              variant={machineIds.includes(m.id) ? "primary" : "outline"}
+                              size="sm"
+                              className={`h-10 px-4 rounded-xl text-xs font-bold transition-all ${
+                                machineIds.includes(m.id) 
+                                  ? 'bg-brand-blue text-white border-transparent' 
+                                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                              }`}
+                              onClick={() => {
+                                const current = getValues("machineIds") || [];
+                                setValue(
+                                  "machineIds",
+                                  current.includes(m.id) ? current.filter((id: number) => id !== m.id) : [...current, m.id],
+                                  { shouldDirty: true }
+                                );
+                              }}
+                            >
+                              {m.name}
+                            </Button>
+                          ))
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -737,7 +824,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-10">
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/30 block">Grand Total</span>
+                              <span className="text-[11px] font-black uppercase tracking-[0.5em] text-white/30 block">{UI_LABELS.dynamic.GRAND_TOTAL_1985}</span>
                               <div className="flex items-baseline">
                                 <CurrencyDisplay
                                   amount={pricing.preview?.grandTotal}
@@ -788,7 +875,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                                 <div className="space-y-6 pt-4 pb-6 px-4">
                                   <div className="flex items-center gap-3">
                                     <div className="flex-1 h-[1px] bg-white/10" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">Payment Method</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">{UI_LABELS.dynamic.PAYMENT_METHOD}</span>
                                     <div className="flex-1 h-[1px] bg-white/10" />
                                   </div>
                                   <div className="grid grid-cols-3 gap-4">

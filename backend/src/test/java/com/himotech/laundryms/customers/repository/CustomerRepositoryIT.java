@@ -41,7 +41,7 @@ class CustomerRepositoryIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("save - Should persist customer when valid")
-    void save_ShouldPersistCustomer_WhenValid() {
+    void saveShouldpersistcustomerWhenvalid() {
         // Given
         Customer customer = Customer.builder()
                 .firstName("Juan")
@@ -80,7 +80,7 @@ class CustomerRepositoryIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("save - Should throw DataIntegrityViolation when duplicate (lastName, firstName, contact)")
-    void save_ShouldThrowDataIntegrityViolation_WhenDuplicateProfile() {
+    void saveShouldthrowdataintegrityviolationWhenduplicateprofile() {
         // Given - First customer
         Customer customer1 = Customer.builder()
                 .firstName("Juan")

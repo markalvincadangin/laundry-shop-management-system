@@ -43,7 +43,7 @@ class CustomerServiceTest {
 
         @Test
         @DisplayName("Should persist when new customer")
-        void create_ShouldPersist_WhenNewCustomer() {
+        void createShouldpersistWhennewcustomer() {
             // Given - no existing customer with same identity
             when(customerRepository.findByLastNameAndFirstNameAndContactNumber("Dela Cruz", "Juan", "09171234567"))
                     .thenReturn(Optional.empty());
@@ -63,7 +63,7 @@ class CustomerServiceTest {
 
         @Test
         @DisplayName("Should throw when duplicate identity (same last name, first name, contact)")
-        void create_ShouldThrow_WhenDuplicateIdentity() {
+        void createShouldthrowWhenduplicateidentity() {
             // Given - customer already exists
             Customer existing = TestDataBuilders.customer().build();
             when(customerRepository.findByLastNameAndFirstNameAndContactNumber("Dela Cruz", "Juan", "09171234567"))
@@ -83,7 +83,7 @@ class CustomerServiceTest {
 
         @Test
         @DisplayName("Should return customer when found")
-        void findById_ShouldReturnCustomer_WhenFound() {
+        void findByIdShouldreturncustomerWhenfound() {
             Customer customer = TestDataBuilders.customer().build();
             when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
 
@@ -95,7 +95,7 @@ class CustomerServiceTest {
 
         @Test
         @DisplayName("Should return empty when not found")
-        void findById_ShouldReturnEmpty_WhenNotFound() {
+        void findByIdShouldreturnemptyWhennotfound() {
             when(customerRepository.findById(999L)).thenReturn(Optional.empty());
 
             Optional<Customer> result = customerService.findById(999L);
@@ -110,7 +110,7 @@ class CustomerServiceTest {
 
         @Test
         @DisplayName("Should delegate to repository with correct specification")
-        void search_ShouldDelegateToRepository() {
+        void searchShoulddelegatetorepository() {
             // Given
             when(customerRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(org.springframework.data.domain.Pageable.class)))
                     .thenReturn(new org.springframework.data.domain.PageImpl<>(
@@ -127,7 +127,7 @@ class CustomerServiceTest {
 
         @Test
         @DisplayName("Should handle date range conversion correctly")
-        void search_ShouldHandleDateRangeConversion() {
+        void searchShouldhandledaterangeconversion() {
             // Given
             java.time.LocalDate from = java.time.LocalDate.parse("2026-01-01");
             java.time.LocalDate to = java.time.LocalDate.parse("2026-01-31");

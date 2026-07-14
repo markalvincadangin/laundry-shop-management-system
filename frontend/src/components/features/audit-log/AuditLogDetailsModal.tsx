@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import { motion } from "framer-motion";
@@ -76,18 +77,18 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
           <div className={`mt-1 h-12 w-12 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${operationColors[op]}`}>
             <ClipboardList className="h-6 w-6" />
           </div>
-          <div className="space-y-1.5 min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Activity Overview</p>
+          <div className="space-y-2 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{UI_LABELS.dynamic.ACTIVITY_OVERVIEW}</p>
             <div className="flex flex-wrap items-center gap-2">
               <h4 className="text-lg font-bold text-slate-900 leading-tight truncate">
                 {UI_LABELS.modules.auditLog.ACTION_MAP[selected?.operation || ''] || selected?.operation}
               </h4>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300">{UI_LABELS.dynamic.STR_53fe08}</span>
               <span className="text-body-sm font-semibold text-brand-blue">
                 {UI_LABELS.modules.auditLog.TABLE_MAP[selected?.entityType || ''] || selected?.entityType}
               </span>
               {selected?.entityId && selected.entityId !== "N/A" && (
-                <span className="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-500">
+                <span className="text-[10px] font-mono font-bold bg-white px-2 py-1 rounded border border-slate-200 text-slate-500">
                   ID: {selected?.entityId}
                 </span>
               )}
@@ -109,13 +110,13 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
+            <div className="max-h-96 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
               {allKeys.length === 0 ? (
                 <div className="py-12 px-6 text-center space-y-3">
                   <div className="h-14 w-14 rounded-full bg-slate-50 flex items-center justify-center mx-auto">
                     <Database className="h-6 w-6 text-slate-200" />
                   </div>
-                  <p className="text-body-sm font-medium text-slate-400">No specific field changes recorded for this activity.</p>
+                  <p className="text-body-sm font-medium text-slate-400">{UI_LABELS.dynamic.NO_SPECIFIC_FIELD_CHANGES_RECO}</p>
                 </div>
               ) : (
                 allKeys.map((key) => {
@@ -190,7 +191,7 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                 <User className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Performed By</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">{UI_LABELS.dynamic.PERFORMED_BY}</p>
                 <p className="text-body-sm font-bold text-slate-700">
                   {!selected?.actor || selected.actor === "Unknown" || selected.actor === "anonymous" ? "System" : selected.actor}
                 </p>
@@ -201,7 +202,7 @@ export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDeta
                 <Clock className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Timestamp</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">{UI_LABELS.dynamic.TIMESTAMP}</p>
                 <p className="text-body-sm font-bold text-slate-700">{selected?.createdAt ? formatDateTime(selected.createdAt) : "—"}</p>
               </div>
             </div>

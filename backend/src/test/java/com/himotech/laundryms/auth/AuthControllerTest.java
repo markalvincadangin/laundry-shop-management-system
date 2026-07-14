@@ -69,7 +69,7 @@ class AuthControllerTest {
 
         @Test
         @DisplayName("Should return 200 and set cookie when valid credentials")
-        void login_ShouldReturn200_WhenValidCredentials() throws Exception {
+        void loginShouldreturn200Whenvalidcredentials() throws Exception {
             User user = User.builder()
                     .id(USER_ID)
                     .username(TEST_USERNAME)
@@ -95,7 +95,7 @@ class AuthControllerTest {
 
         @Test
         @DisplayName("Should return 401 when invalid credentials")
-        void login_ShouldReturn401_WhenInvalidCredentials() throws Exception {
+        void loginShouldreturn401Wheninvalidcredentials() throws Exception {
             when(authService.authenticate(anyString(), anyString()))
                     .thenThrow(new InvalidCredentialsException());
 
@@ -118,7 +118,7 @@ class AuthControllerTest {
 
         @Test
         @DisplayName("Should return 401 when not authenticated")
-        void me_ShouldReturn401_WhenNotAuthenticated() throws Exception {
+        void meShouldreturn401Whennotauthenticated() throws Exception {
             mvc.perform(get("/api/v1/auth/me"))
                     .andExpect(status().isUnauthorized());
         }

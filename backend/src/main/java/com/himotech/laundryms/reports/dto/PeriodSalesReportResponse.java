@@ -13,4 +13,6 @@ public class PeriodSalesReportResponse {
     private String period;
     private Double totalIncome;
     private Integer paidOrdersCount;
+    private Double revenueDelta;
+    private Integer ordersDelta;
 }

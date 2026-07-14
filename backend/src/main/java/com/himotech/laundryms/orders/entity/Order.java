@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import com.himotech.laundryms.machines.entity.Machine;
 
 @Entity
 @Table(name = "orders")
@@ -88,9 +91,22 @@ public class Order {
     @Column(name = "notes", length = 500)
     private String notes;
 
+    @Column(name = "is_rush", nullable = false)
+    @Builder.Default
+    private Boolean isRush = false;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderAddOn> addOns = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "order_machines",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "machine_id")
+    )
+    @Builder.Default
+    private Set<Machine> assignedMachines = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

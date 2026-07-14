@@ -79,6 +79,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("INVALID_CREDENTIALS", "Invalid username or password"));
     }
 
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("FORBIDDEN", "Access denied"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         return ResponseEntity

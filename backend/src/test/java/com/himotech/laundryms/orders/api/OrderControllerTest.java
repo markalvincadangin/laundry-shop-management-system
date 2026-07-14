@@ -111,7 +111,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 201 and OrderResponse when valid request")
-        void create_ShouldReturn201_WhenValidRequest() throws Exception {
+        void createShouldreturn201Whenvalidrequest() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
             request.setCustomerId(1L);
             request.setCreatedByUserId(USER_ID);
@@ -152,7 +152,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 400 when weightKg is null")
-        void create_ShouldReturn400_WhenWeightNull() throws Exception {
+        void createShouldreturn400Whenweightnull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
             request.setCustomerId(1L);
             request.setCreatedByUserId(USER_ID);
@@ -167,7 +167,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 400 when weightKg is zero")
-        void create_ShouldReturn400_WhenWeightZero() throws Exception {
+        void createShouldreturn400Whenweightzero() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
             request.setCustomerId(1L);
             request.setCreatedByUserId(USER_ID);
@@ -182,7 +182,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 401 when createdByUserId is null and no principal")
-        void create_ShouldReturn401_WhenCreatedByUserIdNull() throws Exception {
+        void createShouldreturn401Whencreatedbyuseridnull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
             request.setCustomerId(1L);
             request.setWeightKg(new BigDecimal("10.00"));
@@ -196,7 +196,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 404 when customer not found")
-        void create_ShouldReturn404_WhenCustomerNotFound() throws Exception {
+        void createShouldreturn404Whencustomernotfound() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
             request.setCustomerId(999L);
             request.setCreatedByUserId(USER_ID);
@@ -219,7 +219,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 200 and paginated orders")
-        void list_ShouldReturn200_WithOrders() throws Exception {
+        void listShouldreturn200Withorders() throws Exception {
             Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
             Page<Order> page = new PageImpl<>(List.of(order), PageRequest.of(0, 20), 1);
@@ -246,7 +246,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 200 and OrderResponse when found")
-        void getById_ShouldReturn200_WhenFound() throws Exception {
+        void getByIdShouldreturn200Whenfound() throws Exception {
             OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
             when(orderService.getOrderDetails(1L)).thenReturn(orderResp);
 
@@ -260,7 +260,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 404 when not found")
-        void getById_ShouldReturn404_WhenNotFound() throws Exception {
+        void getByIdShouldreturn404Whennotfound() throws Exception {
             when(orderService.getOrderDetails(999L)).thenThrow(new NotFoundException("Order not found: 999"));
 
             mockMvc.perform(get("/api/v1/orders/999"))
@@ -275,7 +275,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 200 and OrderTrackingResponse when found")
-        void trackByReference_ShouldReturn200_WhenFound() throws Exception {
+        void trackByReferenceShouldreturn200Whenfound() throws Exception {
             Order order = sampleOrder();
             OrderTrackingResponse trackResp = OrderTrackingResponse.builder()
                     .referenceNumber("LDR-20260213-1234")
@@ -298,7 +298,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 404 when reference not found")
-        void trackByReference_ShouldReturn404_WhenNotFound() throws Exception {
+        void trackByReferenceShouldreturn404Whennotfound() throws Exception {
             when(orderService.findByReferenceNumber("INVALID")).thenThrow(new NotFoundException("Order not found for reference: INVALID"));
 
             mockMvc.perform(get("/api/v1/orders/reference/INVALID"))
@@ -313,7 +313,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 200 and OrderResponse when valid transition")
-        void updateStatus_ShouldReturn200_WhenValidTransition() throws Exception {
+        void updateStatusShouldreturn200Whenvalidtransition() throws Exception {
             UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
             request.setNewStatus("WASHING");
             request.setChangedByUserId(USER_ID);
@@ -321,7 +321,7 @@ class OrderControllerTest {
             Order order = sampleOrder();
             order.setCurrentStatus(OrderStatus.WASHING);
             OrderResponse orderResp = OrderResponse.builder().id(1L).currentStatus("WASHING").build();
-            when(orderStatusService.updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any())).thenReturn(order);
+            when(orderStatusService.updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any(), any())).thenReturn(order);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
             mockMvc.perform(patch("/api/v1/orders/1/status")
@@ -331,12 +331,12 @@ class OrderControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.currentStatus").value("WASHING"));
 
-            verify(orderStatusService).updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any());
+            verify(orderStatusService).updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any(), any());
         }
 
         @Test
         @DisplayName("Should return 400 when newStatus is blank")
-        void updateStatus_ShouldReturn400_WhenNewStatusBlank() throws Exception {
+        void updateStatusShouldreturn400Whennewstatusblank() throws Exception {
             UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
             request.setNewStatus("  ");
             request.setChangedByUserId(USER_ID);
@@ -350,7 +350,7 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 401 when changedByUserId is null and no principal")
-        void updateStatus_ShouldReturn401_WhenChangedByUserIdNull() throws Exception {
+        void updateStatusShouldreturn401Whenchangedbyuseridnull() throws Exception {
             UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
             request.setNewStatus("WASHING");
 
@@ -363,12 +363,12 @@ class OrderControllerTest {
 
         @Test
         @DisplayName("Should return 404 when order not found")
-        void updateStatus_ShouldReturn404_WhenOrderNotFound() throws Exception {
+        void updateStatusShouldreturn404Whenordernotfound() throws Exception {
             UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
             request.setNewStatus("WASHING");
             request.setChangedByUserId(USER_ID);
 
-            when(orderStatusService.updateStatus(eq(999L), any(), any(), any()))
+            when(orderStatusService.updateStatus(eq(999L), any(), any(), any(), any()))
                     .thenThrow(new NotFoundException("Order not found: 999"));
 
             mockMvc.perform(patch("/api/v1/orders/999/status")

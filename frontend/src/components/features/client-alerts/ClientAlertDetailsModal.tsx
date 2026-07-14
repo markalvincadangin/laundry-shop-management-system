@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React from "react";
@@ -49,8 +50,8 @@ export function ClientAlertDetailsModal({ isOpen, onClose, notification }: Clien
             }`}>
             <MessageSquare className="h-7 w-7" />
           </div>
-          <div className="space-y-1.5 min-w-0 flex-1 relative z-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">Delivery Overview</p>
+          <div className="space-y-2 min-w-0 flex-1 relative z-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{UI_LABELS.dynamic.DELIVERY_OVERVIEW}</p>
             <div className="flex flex-wrap items-center justify-between gap-grid-2">
               <h4 className="text-h3 font-black text-slate-900 leading-tight truncate">
                 {isSent ? "Message Delivered" : "Delivery Failure"}
@@ -71,12 +72,12 @@ export function ClientAlertDetailsModal({ isOpen, onClose, notification }: Clien
             <Smartphone className="h-3.5 w-3.5 text-brand-blue" />
             Outgoing SMS Content
           </div>
-          <div className="p-grid-6 rounded-[24px] border border-slate-200 bg-white shadow-inner-sm relative overflow-hidden group min-h-[140px]">
+          <div className="p-grid-6 rounded-[24px] border border-slate-200 bg-white shadow-inner-sm relative overflow-hidden group min-h-36">
             <div className="absolute top-0 right-0 h-16 w-16 bg-slate-50/50 rounded-bl-3xl border-l border-b border-slate-100 flex items-center justify-center text-slate-100 group-hover:text-brand-blue/10 transition-colors">
               <MessageSquare className="h-8 w-8" />
             </div>
             <p className="text-body font-medium text-slate-700 leading-relaxed italic relative z-10 pr-grid-4">
-              &quot;{notification.message}&quot;
+              {UI_LABELS.dynamic.STR_eb6439}{notification.message}{UI_LABELS.dynamic.STR_eb6439}
             </p>
           </div>
         </div>

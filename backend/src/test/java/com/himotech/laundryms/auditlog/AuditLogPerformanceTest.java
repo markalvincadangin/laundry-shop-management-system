@@ -13,22 +13,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 
+import com.himotech.laundryms.support.PostgresTestContainerConfig;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+
 @SpringBootTest
-@Testcontainers
+@ActiveProfiles("test")
+@Import(PostgresTestContainerConfig.class)
 public class AuditLogPerformanceTest {
 
-    @Container
-    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("laundry_db")
-            .withUsername("postgres")
-            .withPassword("postgres");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -46,40 +39,65 @@ public class AuditLogPerformanceTest {
         jdbcTemplate.execute("INSERT INTO service_rates (id, service_name, base_price_per_load, kg_limit_per_load, price_per_extra_minute) " +
                 "VALUES (1001, 'PerfWash', 100, 8, 1) ON CONFLICT DO NOTHING;");
 
-        // Warm up
-        for (int i = 0; i < 10; i++) {
-            insertOrder(i);
-        }
-
-        // Measure with Audit Log Trigger Active
-        long startAudit = System.currentTimeMillis();
-        for (int i = 10; i < 110; i++) {
-            insertOrder(i);
-        }
-        long durationAudit = System.currentTimeMillis() - startAudit;
-
-        // Disable Audit Log Trigger on orders
+        // Disable Audit Log Trigger for baseline
         jdbcTemplate.execute("ALTER TABLE orders DISABLE TRIGGER trg_audit_log_orders");
 
-        // Measure Without Audit Log Trigger
-        long startNoAudit = System.currentTimeMillis();
-        for (int i = 110; i < 210; i++) {
-            insertOrder(i);
+        // Warm up (10 iterations)
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) insertOrder(i * 10 + j);
         }
-        long durationNoAudit = System.currentTimeMillis() - startNoAudit;
 
-        // Re-enable trigger
+        // Measure Without Audit Log Trigger (10 measured iterations)
+        long[] noAuditTimes = new long[10];
+        for (int i = 0; i < 10; i++) {
+            long start = System.nanoTime();
+            for (int j = 0; j < 10; j++) insertOrder(100 + i * 10 + j);
+            noAuditTimes[i] = System.nanoTime() - start;
+        }
+
+        // Re-enable trigger for audit measurement
         jdbcTemplate.execute("ALTER TABLE orders ENABLE TRIGGER trg_audit_log_orders");
 
-        System.out.println("Duration with audit: " + durationAudit + "ms");
-        System.out.println("Duration without audit: " + durationNoAudit + "ms");
+        // Warm up (10 iterations)
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) insertOrder(200 + i * 10 + j);
+        }
 
-        // Calculate degradation: allowed up to 5% (SC-003) in prod
-        // TestContainers IO can be noisy, so we assert it's less than 30% overhead in CI environment
-        double degradation = (double)(durationAudit - durationNoAudit) / Math.max(1, durationNoAudit) * 100;
-        System.out.println("Degradation: " + degradation + "%");
+        // Measure With Audit Log Trigger (10 measured iterations)
+        long[] auditTimes = new long[10];
+        for (int i = 0; i < 10; i++) {
+            long start = System.nanoTime();
+            for (int j = 0; j < 10; j++) insertOrder(300 + i * 10 + j);
+            auditTimes[i] = System.nanoTime() - start;
+        }
+
+        // Calculate mean and stddev for baseline
+        double sumNoAudit = 0;
+        for (long t : noAuditTimes) sumNoAudit += t;
+        double meanNoAudit = sumNoAudit / 10.0;
         
-        assertThat(degradation).isLessThan(30.0);
+        double variance = 0;
+        for (long t : noAuditTimes) variance += Math.pow(t - meanNoAudit, 2);
+        double stddevNoAudit = Math.sqrt(variance / 10.0);
+
+        // Calculate mean for audit
+        double sumAudit = 0;
+        for (long t : auditTimes) sumAudit += t;
+        double meanAudit = sumAudit / 10.0;
+
+        // The dynamic threshold is mean + 2 * stddev
+        double dynamicThreshold = meanNoAudit + (2 * stddevNoAudit);
+        
+        // Add a base buffer in case stddev is incredibly small (e.g. 5% overhead minimum)
+        double absoluteMinimumThreshold = meanNoAudit * 1.05;
+        double finalThreshold = Math.max(dynamicThreshold, absoluteMinimumThreshold);
+
+        System.out.println("Mean No Audit: " + meanNoAudit + " ns");
+        System.out.println("StdDev No Audit: " + stddevNoAudit + " ns");
+        System.out.println("Mean Audit: " + meanAudit + " ns");
+        System.out.println("Final Threshold: " + finalThreshold + " ns");
+
+        assertThat(meanAudit).isLessThan(finalThreshold);
     }
 
     private void insertOrder(int i) {

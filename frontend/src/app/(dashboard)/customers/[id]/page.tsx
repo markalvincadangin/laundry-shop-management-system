@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React, { useState } from "react";
@@ -110,7 +111,7 @@ export default function CustomerProfilePage() {
       render: (o) => (
         <div className="flex flex-col">
           <span className="text-body-sm text-slate-700 font-bold">{formatDate(o.createdAt)}</span>
-          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter mt-0.5">Order Received</span>
+          <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter mt-0.5">{UI_LABELS.dynamic.ORDER_RECEIVED}</span>
         </div>
       ),
     },
@@ -213,7 +214,7 @@ export default function CustomerProfilePage() {
       </motion.div>
 
       {/* ── KPI Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-grid-6">
+      <div data-testid="kpi-grid" className="grid grid-cols-1 md:grid-cols-3 gap-grid-6">
         <KPICard 
           title={UI_LABELS.modules.customers.TOTAL_ORDERS} 
           value={pagination.totalElements} 

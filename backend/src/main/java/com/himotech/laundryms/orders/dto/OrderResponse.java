@@ -37,6 +37,8 @@ public class OrderResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private String notes;
+    private Boolean isRush;
     private List<AddOnResponse> addOns;
     private List<AuditLogResponse> auditLogs;
+    private List<Long> machineIds;
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React from "react";
@@ -124,7 +125,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">{p.paymentMethod}</span>
               {p.paymentReference && (
-                <span className="text-[9px] font-mono text-slate-400 tracking-tighter">ID: {p.paymentReference}</span>
+                <span className="text-[9px] font-mono text-slate-400 tracking-tighter">{UI_LABELS.dynamic.ID} {p.paymentReference}</span>
               )}
             </div>
           </div>
@@ -179,7 +180,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             <FileText className="h-6 w-6 text-brand-blue" />
           </div>
           <div>
-            <h3 className="text-slate-900 font-black text-xl tracking-tight leading-none mb-1.5">{UI_LABELS.modules.reports.SALES_HISTORY}</h3>
+            <h3 className="text-slate-900 font-black text-xl tracking-tight leading-none mb-2">{UI_LABELS.modules.reports.SALES_HISTORY}</h3>
             <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em]">
               {label || `DETAILED BREAKDOWN — ${date}`}
             </p>

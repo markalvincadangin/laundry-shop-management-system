@@ -9,6 +9,10 @@ import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.support.TestDataBuilders;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
+import com.himotech.laundryms.settings.service.SystemSettingsService;
+import com.himotech.laundryms.settings.dto.SystemSettingsResponse;
+import com.himotech.laundryms.machines.entity.Machine;
+import com.himotech.laundryms.machines.repository.MachineRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,6 +26,8 @@ import org.mockito.quality.Strictness;
 import org.mockito.junit.jupiter.MockitoSettings;
 
 import java.util.Optional;
+import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,6 +52,10 @@ class OrderStatusServiceTest {
     private UserRepository userRepository;
     @Mock
     private ClientAlertService clientAlertService;
+    @Mock
+    private SystemSettingsService systemSettingsService;
+    @Mock
+    private MachineRepository machineRepository;
 
     @InjectMocks
     private OrderStatusService orderStatusService;
@@ -62,8 +72,12 @@ class OrderStatusServiceTest {
 
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
+        when(systemSettingsService.getSettings()).thenReturn(new SystemSettingsResponse(false));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Machine machine = Machine.builder().id(1L).name("Washer 1").status(com.himotech.laundryms.machines.entity.MachineStatus.OPERATIONAL).isActive(true).build();
+        when(machineRepository.findAllById(any())).thenReturn(List.of(machine));
+        when(orderRepository.countConflictingMachines(any(), any(), any())).thenReturn(0L);
     }
 
     @Nested
@@ -72,12 +86,12 @@ class OrderStatusServiceTest {
 
         @Test
         @DisplayName("Should succeed when valid transition RECEIVED -> WASHING")
-        void updateStatus_ShouldSucceed_WhenValidTransition() {
+        void updateStatusShouldsucceedWhenvalidtransition() {
             // Given
             assertThat(order.getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);
 
             // When
-            Order result = orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null);
+            Order result = orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L));
 
             // Then
             assertThat(result.getCurrentStatus()).isEqualTo(OrderStatus.WASHING);
@@ -86,13 +100,13 @@ class OrderStatusServiceTest {
 
         @Test
         @DisplayName("Should succeed when transitioning READY_FOR_PICKUP -> RELEASED (BR-OL-05) and payment is PAID")
-        void updateStatus_ShouldSucceed_WhenReleasingFromReadyForPickupAndPaid() {
+        void updateStatusShouldsucceedWhenreleasingfromreadyforpickupandpaid() {
             // Given - order is READY_FOR_PICKUP and PAID (BR-PAY-01: payment upon pickup)
             order.setCurrentStatus(OrderStatus.READY_FOR_PICKUP);
             order.setPaymentStatus(PaymentStatus.PAID);
 
             // When
-            Order result = orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, "Verified");
+            Order result = orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, "Verified", null);
 
             // Then
             assertThat(result.getCurrentStatus()).isEqualTo(OrderStatus.RELEASED);
@@ -100,12 +114,12 @@ class OrderStatusServiceTest {
 
         @Test
         @DisplayName("Should create notification when status -> READY_FOR_PICKUP (BR-NOTIF-01)")
-        void updateStatus_ShouldCreateNotification_WhenReadyForPickup() {
+        void updateStatusShouldcreatenotificationWhenreadyforpickup() {
             // Given - order is FOLDING
             order.setCurrentStatus(OrderStatus.FOLDING);
 
             // When
-            orderStatusService.updateStatus(ORDER_ID, OrderStatus.READY_FOR_PICKUP, USER_ID, null);
+            orderStatusService.updateStatus(ORDER_ID, OrderStatus.READY_FOR_PICKUP, USER_ID, null, null);
 
             // Then
             verify(clientAlertService).createForReadyForPickup(eq(order));
@@ -118,55 +132,55 @@ class OrderStatusServiceTest {
 
         @Test
         @DisplayName("Should reject RELEASED when current status is RECEIVED (BR-OL-04)")
-        void updateStatus_ShouldRejectRelease_WhenCurrentIsReceived() {
+        void updateStatusShouldrejectreleaseWhencurrentisreceived() {
             // Given - order is RECEIVED
             assertThat(order.getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);
 
             // When/Then - BR-OL-04: RECEIVED can only transition to WASHING or CANCELLED
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null, null))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Invalid status transition");
         }
 
         @Test
         @DisplayName("Should reject RELEASED when current status is WASHING (BR-OL-04)")
-        void updateStatus_ShouldRejectRelease_WhenCurrentIsWashing() {
+        void updateStatusShouldrejectreleaseWhencurrentiswashing() {
             order.setCurrentStatus(OrderStatus.WASHING);
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null, null))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Invalid status transition");
         }
 
         @Test
         @DisplayName("Should reject RELEASED when current status is DRYING (BR-OL-04)")
-        void updateStatus_ShouldRejectRelease_WhenCurrentIsDrying() {
+        void updateStatusShouldrejectreleaseWhencurrentisdrying() {
             order.setCurrentStatus(OrderStatus.DRYING);
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null, null))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Invalid status transition");
         }
 
         @Test
         @DisplayName("Should reject RELEASED when current status is FOLDING (BR-OL-04)")
-        void updateStatus_ShouldRejectRelease_WhenCurrentIsFolding() {
+        void updateStatusShouldrejectreleaseWhencurrentisfolding() {
             order.setCurrentStatus(OrderStatus.FOLDING);
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null, null))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Invalid status transition");
         }
 
         @Test
         @DisplayName("Should reject RELEASED when payment is UNPAID (BR-PAY-01: payment upon pickup)")
-        void updateStatus_ShouldRejectRelease_WhenPaymentUnpaid() {
+        void updateStatusShouldrejectreleaseWhenpaymentunpaid() {
             // Given - order is READY_FOR_PICKUP but UNPAID
             order.setCurrentStatus(OrderStatus.READY_FOR_PICKUP);
             order.setPaymentStatus(PaymentStatus.UNPAID);
 
             // When/Then
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RELEASED, USER_ID, null, null))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Order must be paid before release")
                     .hasMessageContaining("Record payment first");
@@ -179,28 +193,48 @@ class OrderStatusServiceTest {
 
         @Test
         @DisplayName("Should reject when new status is null (BR-OL-03)")
-        void updateStatus_ShouldReject_WhenStatusNull() {
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, null, USER_ID, null))
+        void updateStatusShouldrejectWhenstatusnull() {
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, null, USER_ID, null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Invalid order status");
         }
 
         @Test
         @DisplayName("Should reject when new status equals current status")
-        void updateStatus_ShouldReject_WhenSameStatus() {
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RECEIVED, USER_ID, null))
+        void updateStatusShouldrejectWhensamestatus() {
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RECEIVED, USER_ID, null, null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("New status cannot be the same as the current status");
         }
 
         @Test
         @DisplayName("Should reject invalid transition e.g. WASHING -> RECEIVED (BR-OL-04)")
-        void updateStatus_ShouldReject_WhenInvalidTransition() {
+        void updateStatusShouldrejectWheninvalidtransition() {
             order.setCurrentStatus(OrderStatus.WASHING);
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RECEIVED, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.RECEIVED, USER_ID, null, null))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Invalid status transition");
+        }
+
+        @Test
+        @DisplayName("Should reject WASHING transition when system is paused")
+        void updateStatusShouldrejectWhensystempaused() {
+            when(systemSettingsService.getSettings()).thenReturn(new SystemSettingsResponse(true));
+
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("System is currently paused");
+        }
+
+        @Test
+        @DisplayName("Should reject WASHING transition when machine assignment has conflict")
+        void updateStatusShouldrejectWhenmachineassignmenthasconflict() {
+            when(orderRepository.countConflictingMachines(any(), any(), any())).thenReturn(1L);
+
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("currently assigned to another active order");
         }
     }
 
@@ -210,20 +244,20 @@ class OrderStatusServiceTest {
 
         @Test
         @DisplayName("Should throw when order not found (US-03)")
-        void updateStatus_ShouldThrow_WhenOrderNotFound() {
+        void updateStatusShouldthrowWhenordernotfound() {
             when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("Order not found");
         }
 
         @Test
         @DisplayName("Should throw when user not found")
-        void updateStatus_ShouldThrow_WhenUserNotFound() {
+        void updateStatusShouldthrowWhenusernotfound() {
             when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("User not found");
         }

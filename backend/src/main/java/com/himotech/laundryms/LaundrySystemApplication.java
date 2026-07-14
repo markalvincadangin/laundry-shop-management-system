@@ -8,9 +8,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.TimeZone;
 
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+
 @SpringBootApplication
 @EnableAsync
 @EnableAspectJAutoProxy
+@ConfigurationPropertiesScan
 public class LaundrySystemApplication {
 
 	public static void main(String[] args) {

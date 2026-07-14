@@ -7,7 +7,8 @@ import {
   CreditCard,
   BarChart3,
   History,
-  UserCog
+  UserCog,
+  WashingMachine
 } from "lucide-react";
 import { UI_LABELS } from "@/constants/ui";
 
@@ -51,6 +52,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
     role: "ADMIN",
     items: [
       { href: "/reports", label: UI_LABELS.layout.nav.REPORTS, icon: BarChart3 },
+      { href: "/machines", label: UI_LABELS.layout.nav.MACHINES, icon: WashingMachine },
       { href: "/payments", label: UI_LABELS.layout.nav.PAYMENTS, icon: CreditCard },
       { href: "/users", label: UI_LABELS.layout.nav.USERS, icon: UserCog },
       { href: "/rates", label: UI_LABELS.layout.nav.RATES, icon: Tag },

@@ -83,7 +83,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should succeed when amount matches grand total (BR-PAY-03)")
-        void create_ShouldSucceed_WhenAmountMatchesGrandTotal() {
+        void createShouldsucceedWhenamountmatchesgrandtotal() {
             // Given
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, GRAND_TOTAL, USER_ID);
 
@@ -102,7 +102,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should update order payment_status to PAID (BR-PAY-04)")
-        void create_ShouldUpdateOrderPaymentStatus_ToPaid() {
+        void createShouldupdateorderpaymentstatusTopaid() {
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, GRAND_TOTAL, USER_ID);
 
             paymentService.create(command);
@@ -112,7 +112,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should save payment with correct method and remarks")
-        void create_ShouldSavePayment_WithMethodAndRemarks() {
+        void createShouldsavepaymentWithmethodandremarks() {
             var command = TestDataBuilders.recordPaymentCommand(
                     ORDER_ID, GRAND_TOTAL, PaymentMethod.GCASH, USER_ID, "Paid via GCash", "GCASH-REF-123"
             );
@@ -133,7 +133,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should throw ConflictException when payment already exists (BR-PAY-02)")
-        void create_ShouldThrowConflict_WhenPaymentAlreadyExists() {
+        void createShouldthrowconflictWhenpaymentalreadyexists() {
             // Given - payment already recorded for this order
             when(paymentRepository.existsByOrder_Id(ORDER_ID)).thenReturn(true);
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, GRAND_TOTAL, USER_ID);
@@ -153,7 +153,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should throw when amount is less than grand total")
-        void create_ShouldThrow_WhenAmountLessThanGrandTotal() {
+        void createShouldthrowWhenamountlessthangrandtotal() {
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, new BigDecimal("200.00"), USER_ID);
 
             assertThatThrownBy(() -> paymentService.create(command))
@@ -167,7 +167,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should throw when amount is greater than grand total")
-        void create_ShouldThrow_WhenAmountGreaterThanGrandTotal() {
+        void createShouldthrowWhenamountgreaterthangrandtotal() {
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, new BigDecimal("250.00"), USER_ID);
 
             assertThatThrownBy(() -> paymentService.create(command))
@@ -182,7 +182,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should throw when order not found (US-06)")
-        void create_ShouldThrow_WhenOrderNotFound() {
+        void createShouldthrowWhenordernotfound() {
             when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, GRAND_TOTAL, USER_ID);
 
@@ -193,7 +193,7 @@ class PaymentServiceTest {
 
         @Test
         @DisplayName("Should throw when user not found")
-        void create_ShouldThrow_WhenUserNotFound() {
+        void createShouldthrowWhenusernotfound() {
             when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
             var command = TestDataBuilders.recordPaymentCommand(ORDER_ID, GRAND_TOTAL, USER_ID);
 

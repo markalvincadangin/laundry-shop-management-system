@@ -72,4 +72,13 @@ describe("MessagingPage", () => {
     renderWithProvider(<MessagingPage />);
     expect(screen.getByText(/Coming Soon/i)).toBeInTheDocument();
   });
+
+  it("aligns delivery status indicators with Dashboard indicators per FR-MSG-1", () => {
+    renderWithProvider(<MessagingPage />);
+    const kpiGrid = screen.getByTestId("messaging-kpi-grid");
+    expect(kpiGrid).toBeInTheDocument();
+    expect(kpiGrid).toHaveTextContent("Messages Sent");
+    expect(kpiGrid).toHaveTextContent("Delivered");
+    expect(kpiGrid).toHaveTextContent("Failed");
+  });
 });

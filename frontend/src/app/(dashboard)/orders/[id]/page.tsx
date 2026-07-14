@@ -24,7 +24,8 @@ import {
   Copy,
   Check,
   ShieldCheck,
-  FileText
+  FileText,
+  WashingMachine
 } from "lucide-react";
 import { useAuth } from "@/stores/auth-store";
 import { ApiError } from "@/lib/api-client";
@@ -45,6 +46,7 @@ import { ProcessStepper } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
 import { STATUS_TRANSITIONS, ORDER_STATUS, type OrderStatus } from "@/constants/order-status";
 import { PAYMENT_STATUS } from "@/constants/payment";
+import { useMachines } from "@/hooks/useMachines";
 
 type AddOnInput = components["schemas"]["AddOnInput"];
 
@@ -69,6 +71,8 @@ function OrderEditForm({
     }))
   );
   const [newAddOn, setNewAddOn] = useState({ name: "", price: "" });
+  const [machineIds, setMachineIds] = useState<number[]>(order.machineIds ?? []);
+  const { machines, loading: machinesLoading } = useMachines();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +82,7 @@ function OrderEditForm({
       const body: UpdateOrderRequest = {
         extraMinutes: isNaN(parsedMin) ? 0 : parsedMin,
         addOns: addOns.length > 0 ? addOns : undefined,
+        machineIds: machineIds.length > 0 ? machineIds : undefined,
       };
       await ordersService.update(order.id!, body);
       toast.success(UI_LABELS.feedback.success.GENERIC);
@@ -123,7 +128,7 @@ function OrderEditForm({
             <div className="space-y-2">
               {addOns.map((a, i) => (
                 <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group">
-                  <span className="text-sm font-bold text-slate-700">{a.name} <span className="mx-2 opacity-30">|</span> <span className="font-mono tabular-nums">{UI_LABELS.units.PRICE_SYMBOL}{a.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
+                  <span className="text-sm font-bold text-slate-700">{a.name} <span className="mx-2 opacity-30">{UI_LABELS.dynamic.STR_b99834}</span> <span className="font-mono tabular-nums">{UI_LABELS.units.PRICE_SYMBOL}{a.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
                   <Button variant="ghost" size="sm" onClick={() => setAddOns(prev => prev.filter((_, idx) => idx !== i))} className="h-8 w-8 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -136,6 +141,38 @@ function OrderEditForm({
               <Button variant="secondary" size="sm" onClick={addAddOn} className="h-14 w-14 p-0 shadow-sm border-slate-200">
                 <Plus className="h-5 w-5" />
               </Button>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-500 ml-1">{UI_LABELS.dynamic.ASSIGNED_MACHINES}</label>
+            <div className="flex flex-wrap gap-2">
+              {machinesLoading ? (
+                <span className="text-xs text-slate-400">{UI_LABELS.dynamic.LOADING_MACHINES}</span>
+              ) : machines.length === 0 ? (
+                <span className="text-xs text-slate-400">{UI_LABELS.dynamic.NO_MACHINES_AVAILABLE}</span>
+              ) : (
+                machines.map(m => (
+                  <Button
+                    key={m.id}
+                    type="button"
+                    variant={machineIds.includes(m.id) ? "primary" : "outline"}
+                    size="sm"
+                    className={`h-10 px-4 rounded-xl text-xs font-bold transition-all ${
+                      machineIds.includes(m.id) 
+                        ? 'bg-brand-blue text-white border-transparent' 
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                    onClick={() => {
+                      setMachineIds(prev => 
+                        prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]
+                      );
+                    }}
+                  >
+                    {m.name}
+                  </Button>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -185,15 +222,32 @@ export default function OrderDetailPage() {
   };
 
   const doUpdateStatus = async () => {
-    if (!staffUserId || !confirmStatusModal) return;
+    if (!staffUserId || !confirmStatusModal || !order) return;
     const newStatus = confirmStatusModal;
+    const previousStatus = order.currentStatus;
     setUpdating(true);
     try {
       await ordersService.updateStatus(orderId, {
         newStatus: newStatus as OrderResponse["currentStatus"],
         changedByUserId: staffUserId,
       });
-      toast.success(UI_LABELS.feedback.success.GENERIC);
+      toast.success(UI_LABELS.feedback.success.GENERIC, {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            try {
+               await ordersService.updateStatus(orderId, {
+                 newStatus: previousStatus as OrderResponse["currentStatus"],
+                 changedByUserId: staffUserId,
+               });
+               toast.success("Status reverted successfully");
+               fetchOrder();
+            } catch (err) {
+               toast.error("Failed to revert status");
+            }
+          }
+        }
+      });
       setConfirmStatusModal(null);
       fetchOrder();
     } catch (err) {
@@ -301,7 +355,7 @@ export default function OrderDetailPage() {
                     <div className="flex items-center gap-2">
                       <Phone className="h-3.5 w-3.5 text-brand-blue/40" />
                       <span className="text-[11px] font-black uppercase tracking-tight">
-                        {UI_LABELS.shared.common.CONTACT}:{" "}
+                        {UI_LABELS.shared.common.CONTACT}{UI_LABELS.dynamic.STR_853ae9}{" "}
                         <span className="text-slate-900 font-mono tabular-nums">
                           {order.contactNumber || "None"}
                         </span>
@@ -407,6 +461,24 @@ export default function OrderDetailPage() {
                     </p>
                     <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{order.createdByUsername || "System Agent"}</p>
                   </div>
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                      <WashingMachine className="h-3 w-3" /> {UI_LABELS.modules.orders.ASSIGNED_MACHINES}
+                    </p>
+                    {order.assignedMachines && order.assignedMachines.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {order.assignedMachines.map((machine, i) => (
+                          <span key={i} className="px-2.5 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20 text-[10px] font-black uppercase tracking-wider text-brand-cyan-dark">
+                            {machine}
+                          </span>
+                        ))}
+                      </div>
+                    ) : order.machineIds && order.machineIds.length > 0 ? (
+                      <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{order.machineIds.length} {order.machineIds.length === 1 ? UI_LABELS.modules.machines.MACHINE_SINGULAR : UI_LABELS.modules.machines.MACHINE_PLURAL}</p>
+                    ) : (
+                      <p className="text-sm font-bold text-slate-400 italic">{UI_LABELS.modules.orders.UNASSIGNED}</p>
+                    )}
+                  </div>
                 </div>
 
                 {order.notes && (
@@ -415,7 +487,7 @@ export default function OrderDetailPage() {
                       <FileText className="h-3 w-3" /> {UI_LABELS.modules.orders.SPECIAL_INSTRUCTIONS}
                     </p>
                     <p className="text-sm font-medium text-slate-600 bg-brand-blue/5 p-5 rounded-2xl border border-brand-blue/10 italic leading-relaxed break-words whitespace-pre-wrap">
-                      &quot;{order.notes}&quot;
+                      {UI_LABELS.dynamic.STR_eb6439}{order.notes}{UI_LABELS.dynamic.STR_eb6439}
                     </p>
                   </div>
                 )}
@@ -436,7 +508,7 @@ export default function OrderDetailPage() {
                       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">{UI_LABELS.modules.orders.ADD_ONS}</p>
                       {order.addOns.map((addon, idx) => (
                         <div key={idx} className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 font-bold italic text-xs">+ {addon.name} (x{addon.quantity})</span>
+                          <span className="text-slate-500 font-bold italic text-xs">{UI_LABELS.dynamic.STR_26b172} {addon.name} {UI_LABELS.dynamic.X}{addon.quantity}{UI_LABELS.dynamic.STR_9371d7}</span>
                           <span className="font-mono font-black text-slate-700 tabular-nums">{UI_LABELS.units.PRICE_SYMBOL}{((addon.price || 0) * (addon.quantity || 1)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                       ))}

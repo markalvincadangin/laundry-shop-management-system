@@ -40,4 +40,10 @@ export const feedback = {
     SALES_DESC: "Revenue data will appear once payments are recorded.",
     SEARCH_TITLE: "No matches found",
   },
+  inactivity: {
+    TITLE: "Session Paused",
+    DESC: "This terminal has been idle for 5 minutes. Customer data is hidden for privacy.",
+    DISMISS: "Click anywhere to continue",
+    DISMISS_BTN: "Resume Session",
+  },
 } as const;

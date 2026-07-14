@@ -8,6 +8,7 @@ spring:
 
   # --- Flyway: production settings ---
   flyway:
+    enabled: true
     clean-disabled: true
     baseline-on-migrate: true
     group: true

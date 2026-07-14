@@ -11,13 +11,14 @@ import com.himotech.laundryms.clientalert.SmsAdapter;
 import com.himotech.laundryms.orders.entity.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+
+import com.himotech.laundryms.config.AppProperties;
 
 /**
  * Unified Client Alert Service.
@@ -28,9 +29,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class ClientAlertService {
 
-    @Value("${app.sms.template}")
-    private String messageTemplate;
-
+    private final AppProperties appProperties;
     private final ClientAlertRepository clientAlertRepository;
     private final ClientAlertMapper clientAlertMapper;
     private final SmsAdapter smsAdapter;
@@ -60,7 +59,7 @@ public class ClientAlertService {
     @Transactional
     public ClientAlert createForReadyForPickup(Order order) {
         Customer customer = order.getCustomer();
-        String message = String.format(messageTemplate, 
+        String message = String.format(appProperties.getSms().getTemplate(), 
                 customer.getFirstName(), 
                 order.getReferenceNumber(), 
                 order.getGrandTotal());

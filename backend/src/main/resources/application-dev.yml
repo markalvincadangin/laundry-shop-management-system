@@ -4,11 +4,13 @@ spring:
     lazy-initialization: true
   jpa:
     show-sql: true
+  flyway:
+    locations: classpath:db/migration,classpath:db/migration/dev
 
 logging:
   level:
     org:
       hibernate:
         SQL: debug
-    com.himotech.laundryms.config.RequestResponseLoggingFilter: DEBUG
-    com.himotech: DEBUG
+    com.himotech.laundryms.config.RequestResponseLoggingFilter: debug
+    com.himotech: debug

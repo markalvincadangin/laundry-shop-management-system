@@ -58,6 +58,8 @@ export default function ReportsPage() {
     totalIncome: number;
     paidOrdersCount: number;
     revenueByMethod?: Record<string, number>;
+    revenueDelta?: number;
+    ordersDelta?: number;
   } | null>(null);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [chartLoading, setChartLoading] = useState(false);
@@ -295,8 +297,8 @@ export default function ReportsPage() {
               </>
             ) : (
               <>
-                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Coins} variant="accent" />
-                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={PackageCheck} variant="success" />
+                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Coins} variant="accent" delta={report?.revenueDelta} />
+                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={PackageCheck} variant="success" delta={report?.ordersDelta} />
                 <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<div className="font-black"><CurrencyDisplay amount={avgOrderValue} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={Calculator} variant="default" />
               </>
             )}

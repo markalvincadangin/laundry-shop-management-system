@@ -203,6 +203,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Custom scrollbar — applies to both vertical and horizontal axes (FRONT-001 §2.5) */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
@@ -212,6 +213,7 @@
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;

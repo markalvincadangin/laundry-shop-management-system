@@ -39,18 +39,59 @@ export function useOrders(params?: OrderListParams) {
   });
 
   const statusMutation = useMutation({
-    mutationFn: (variables: { id: number; newStatus: OrderStatus; changedByUserId: string }) =>
+    mutationFn: (variables: { id: number; newStatus: OrderStatus; changedByUserId: string; machineIds?: number[] }) =>
       ordersService.updateStatus(variables.id, {
         newStatus: variables.newStatus,
         changedByUserId: variables.changedByUserId,
+        machineIds: variables.machineIds,
       }),
-    onSuccess: () => {
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["orders"] });
+      const previousOrders = queryClient.getQueryData(["orders", params]);
+
+      if (previousOrders) {
+        queryClient.setQueryData(["orders", params], (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            content: old.content.map((order: any) =>
+              order.id === variables.id
+                ? { 
+                    ...order, 
+                    currentStatus: variables.newStatus,
+                    machineIds: variables.machineIds || order.machineIds 
+                  }
+                : order
+            ),
+          };
+        });
+      }
+
+      return { previousOrders };
+    },
+    onError: (err: any, variables, context) => {
+      if (context?.previousOrders) {
+        queryClient.setQueryData(["orders", params], context.previousOrders);
+      }
+      
+      // If there's a conflict (e.g. machine assignment failed), refresh the machines list
+      if (err.status === 409) {
+        queryClient.invalidateQueries({ queryKey: ["machines"] });
+      }
+
+      const isServerError = err.status >= 500;
+      const errorMessage = isServerError 
+        ? UI_LABELS.feedback.error.GENERIC 
+        : (err.message || UI_LABELS.feedback.error.GENERIC);
+        
+      toast.error(errorMessage);
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       queryClient.invalidateQueries({ queryKey: ["order-stats"] });
-      toast.success(UI_LABELS.feedback.success.ORDER_UPDATED);
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.message || UI_LABELS.feedback.error.GENERIC);
+    onSuccess: () => {
+      toast.success(UI_LABELS.feedback.success.ORDER_UPDATED);
     }
   });
 
@@ -58,12 +99,12 @@ export function useOrders(params?: OrderListParams) {
    * Advances an order to the next process stage.
    * userId is pulled from AuthContext (D1 — no prop drilling).
    */
-  const advanceOrder = async (orderId: number, nextStatus: OrderStatus) => {
+  const advanceOrder = async (orderId: number, nextStatus: OrderStatus, machineIds?: number[]) => {
     if (!user?.userId) {
       toast.error(UI_LABELS.feedback.error.AUTH_REQUIRED);
       return;
     }
-    statusMutation.mutate({ id: orderId, newStatus: nextStatus, changedByUserId: user.userId });
+    statusMutation.mutate({ id: orderId, newStatus: nextStatus, changedByUserId: user.userId, machineIds });
   };
 
   return {

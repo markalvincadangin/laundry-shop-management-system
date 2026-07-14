@@ -54,7 +54,7 @@ export default function Home() {
     referenceNumber: "",
   });
 
-  const handleAdvance = (orderId: number, nextStatus: string) => {
+  const handleAdvance = (orderId: number, nextStatus: string, machineIds?: number[]) => {
     if (nextStatus === "RELEASED") {
       const order = orders.find((o) => o.id === orderId);
       if (order && order.paymentStatus === "UNPAID") {
@@ -67,7 +67,7 @@ export default function Home() {
         return;
       }
     }
-    advanceOrder(orderId, nextStatus as any);
+    advanceOrder(orderId, nextStatus as any, machineIds);
   };
 
   return (

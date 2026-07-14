@@ -1,11 +1,12 @@
 package com.himotech.laundryms.clientalert;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.himotech.laundryms.config.AppProperties;
 
 /**
  * Implementation for Semaphore.co SMS Gateway.
@@ -17,20 +18,19 @@ public class SemaphoreSmsAdapter implements SmsAdapter {
 
     private static final String API_URL = "https://api.semaphore.co/api/v4/messages";
 
-    @Value("${app.sms.semaphore.api-key:}")
-    private String apiKey;
-
-    @Value("${app.sms.semaphore.sender-name:Semaphore}")
-    private String senderName;
-
+    private final AppProperties appProperties;
     private final RestTemplate restTemplate;
 
-    public SemaphoreSmsAdapter(RestTemplate restTemplate) {
+    public SemaphoreSmsAdapter(AppProperties appProperties, RestTemplate restTemplate) {
+        this.appProperties = appProperties;
         this.restTemplate = restTemplate;
     }
 
     @Override
     public void send(String recipient, String message) {
+        String apiKey = appProperties.getSms().getSemaphore().getApiKey();
+        String senderName = appProperties.getSms().getSemaphore().getSenderName();
+
         if (apiKey == null || apiKey.isEmpty()) {
             log.warn("Semaphore API Key is missing. SMS not sent to {}.", recipient);
             return;

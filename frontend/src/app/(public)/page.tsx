@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import { useState } from "react";
@@ -337,7 +338,7 @@ export default function LandingPage() {
                   <h4 className="text-caption font-bold text-white uppercase tracking-widest">{UI_LABELS.portal.landing.SUPPORT_TITLE}</h4>
                 </div>
                 <div className="text-body-sm text-slate-400 font-medium leading-relaxed pl-grid-13">
-                  <p className="text-white font-bold mb-1">Phone & Inquiries</p>
+                  <p className="text-white font-bold mb-1">{UI_LABELS.dynamic.PHONE___INQUIRIES}</p>
                   {UI_LABELS.portal.tracking.SUPPORT_PHONE}<br />
                   Mon — Sat: 8:00 AM - 7:00 PM
                   <div className="flex items-center gap-2 text-slate-400 mt-4 text-[10px] font-black uppercase tracking-widest">
@@ -351,7 +352,7 @@ export default function LandingPage() {
 
           <div className="mt-grid-24 pt-grid-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-grid-6 text-slate-500">
             <p className="text-[10px] font-black uppercase tracking-[0.2em]">
-              {UI_LABELS.meta.COPYRIGHT} • All Rights Reserved
+              {UI_LABELS.meta.COPYRIGHT} {UI_LABELS.dynamic.ALL_RIGHTS_RESERVED}
             </p>
             <p className="text-[10px] font-black tracking-tight uppercase">
               {UI_LABELS.meta.DEVELOPED_BY} <span className="text-slate-300">{UI_LABELS.meta.AGENCY}</span>

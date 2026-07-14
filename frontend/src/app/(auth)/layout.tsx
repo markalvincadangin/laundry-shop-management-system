@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 import Image from "next/image";
 import { UI_LABELS } from "@/constants/ui";
 
@@ -48,7 +49,7 @@ export default function AuthLayout({
         <div className="relative z-10">
           <h3 className="text-6xl font-display font-black tracking-tighter leading-[0.9] mb-8 animate-in fade-in slide-in-from-left duration-1000">
             ELEVATING THE <br />
-            <span className="text-brand-cyan">LAUNDRY <br /> EXPERIENCE</span>
+            <span className="text-brand-cyan">{UI_LABELS.dynamic.LAUNDRY} <br /> {UI_LABELS.dynamic.EXPERIENCE}</span>
           </h3>
           <p className="text-base font-medium text-slate-300 leading-relaxed max-w-md opacity-90">
             Streamlining every load, wash, and fold with professional-grade management tools. 
@@ -57,7 +58,7 @@ export default function AuthLayout({
         </div>
 
         <div className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 opacity-60">
-          &copy; {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} &bull; {UI_LABELS.meta.AGENCY}
+          &copy; {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} {UI_LABELS.dynamic.BULL} {UI_LABELS.meta.AGENCY}
         </div>
       </div>
 

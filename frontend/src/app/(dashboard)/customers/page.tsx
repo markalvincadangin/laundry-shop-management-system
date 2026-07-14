@@ -54,7 +54,8 @@ export default function CustomersPage() {
   } = useRegistry({
     defaultSortBy: "lastName",
     defaultSortDir: "asc",
-    defaultPageSize: 15
+    defaultPageSize: 15,
+    minSearchLength: 2,
   });
 
   const { customers, loading, error, pagination, refresh } = useCustomers(params as any);
@@ -79,7 +80,7 @@ export default function CustomersPage() {
               {c.firstName} {c.lastName}
             </p>
             <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-0.5">
-              {UI_LABELS.shared.common.ID}: {c.id}
+              {UI_LABELS.shared.common.ID}{UI_LABELS.dynamic.STR_853ae9} {c.id}
             </p>
           </div>
         </div>
