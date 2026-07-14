@@ -57,3 +57,6 @@ ngrok.yml
 
 # Docker overrides
 docker-compose.override.yml
+
+# Backups
+backups/
