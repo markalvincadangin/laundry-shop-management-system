@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.rates.dto.CreateServiceRateRequest;
 import com.himotech.laundryms.rates.dto.UpdateServiceRateRequest;
@@ -34,7 +36,7 @@ public class ServiceRateService {
     }
 
     @Transactional(readOnly = true)
-    public ServiceRate findById(Integer id) {
+    public ServiceRate findById(UUID id) {
         return serviceRateRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Service rate not found: " + id));
     }
@@ -70,7 +72,7 @@ public class ServiceRateService {
     @Auditable(action = "RATE_UPDATE", description = "Update service rate pricing")
     @Transactional
     @CacheEvict(value = CacheConfig.CACHE_SERVICE_RATES, allEntries = true)
-    public ServiceRate update(Integer id, UpdateServiceRateRequest request) {
+    public ServiceRate update(UUID id, UpdateServiceRateRequest request) {
         ServiceRate rate = findById(id);
         if (request.getServiceName() != null) {
             rate.setServiceName(request.getServiceName());

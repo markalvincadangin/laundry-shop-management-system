@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.rates.dto.AddOnCatalogResponse;
 import com.himotech.laundryms.rates.dto.CreateAddOnCatalogRequest;
 import com.himotech.laundryms.rates.dto.UpdateAddOnCatalogRequest;
@@ -50,7 +52,7 @@ public class AddOnCatalogService {
     }
 
     @Transactional
-    public AddOnCatalogResponse update(Integer id, UpdateAddOnCatalogRequest request) {
+    public AddOnCatalogResponse update(UUID id, UpdateAddOnCatalogRequest request) {
         AddOnCatalog addOn = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Add-on not found"));
 

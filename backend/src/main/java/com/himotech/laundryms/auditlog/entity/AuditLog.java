@@ -1,5 +1,7 @@
 package com.himotech.laundryms.auditlog.entity;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -18,8 +20,8 @@ import java.util.Map;
 public class AuditLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "user_id")
     private String userId;

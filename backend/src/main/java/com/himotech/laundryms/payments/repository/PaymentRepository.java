@@ -1,5 +1,7 @@
 package com.himotech.laundryms.payments.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.payments.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -17,7 +19,7 @@ import java.util.List;
  * Provides database access for payment-related operations.
  */
 @Repository
-public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpecificationExecutor<Payment> {
+public interface PaymentRepository extends JpaRepository<Payment, UUID>, JpaSpecificationExecutor<Payment> {
 
         @Query("SELECT p.paymentMethod, COALESCE(SUM(p.amountPaid), 0) FROM Payment p JOIN p.order o WHERE p.paymentDate >= :from AND p.paymentDate < :to AND o.paymentStatus NOT IN ('VOIDED', 'REFUNDED') GROUP BY p.paymentMethod")
         List<Object[]> sumAmountPaidByPaymentMethodBetween(@Param("from") Instant from, @Param("to") Instant to);
@@ -41,11 +43,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpec
          * @param orderId the order ID to check (maps to order.id)
          * @return true if a payment exists for this order, false otherwise
          */
-        boolean existsByOrder_Id(Long orderId);
+        boolean existsByOrder_Id(UUID orderId);
 
-        Optional<Payment> findByOrder_Id(Long orderId);
+        Optional<Payment> findByOrder_Id(UUID orderId);
 
-        void deleteByOrder_Id(Long orderId);
+        void deleteByOrder_Id(UUID orderId);
 
         @Query("SELECT COALESCE(SUM(p.amountPaid), 0) FROM Payment p JOIN p.order o WHERE p.paymentDate >= :from AND p.paymentDate < :to AND o.paymentStatus NOT IN ('VOIDED', 'REFUNDED')")
         BigDecimal sumAmountPaidByPaymentDateBetween(@Param("from") Instant from, @Param("to") Instant to);

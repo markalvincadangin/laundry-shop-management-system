@@ -183,7 +183,7 @@ public class OrderController {
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> getById(
-            @PathVariable final Long orderId) {
+            @PathVariable final UUID orderId) {
         return ResponseEntity.ok(orderService.getOrderDetails(orderId));
     }
 
@@ -197,7 +197,7 @@ public class OrderController {
     @PatchMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> update(
-            @PathVariable final Long orderId,
+            @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderRequest request) {
         final Order order = orderService.update(orderId, request);
         return ResponseEntity.ok(orderMapper.toResponse(order));
@@ -214,7 +214,7 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable final Long orderId,
+            @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderStatusRequest request,
             @AuthenticationPrincipal final JwtPrincipal principal) {
 
@@ -244,8 +244,8 @@ public class OrderController {
      */
     @DeleteMapping("/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable final Long orderId) {
+    public ResponseEntity<Void> delete(@PathVariable final UUID orderId) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.noContent().build();
     }
-}
+}

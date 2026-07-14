@@ -4,10 +4,10 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** ARCH-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
-> **Purpose:** Define implementation-ready architecture aligned to scope and requirements  
-> **Status:** Baseline (MVP)
+> **Version:** 2.0 (Offline-First Amendment)  
+> **Date:** 2026-07-14  
+> **Purpose:** Define implementation-ready architecture aligned to the Standalone, Offline-First shift  
+> **Status:** Baseline
 
 ---
 
@@ -20,11 +20,12 @@
 
 ## 1. Goals
 
-- Replace paper-based tracking (tags, logbooks) with a centralized system
-- Enable order tracking via unique reference number
-- Automate pricing computation (load-based, extra minutes, add-ons) and store transaction history
-- Provide income reports (daily, monthly, yearly) from recorded payments
-- Support customer notifications when an order is ready for pickup (MVP optional)
+- Replace paper-based tracking (tags, logbooks) with a centralized system.
+- Enable order tracking via unique reference number and QR codes linked to generated UUIDs.
+- Automate pricing computation (load-based, extra minutes, add-ons) and store transaction history.
+- Provide income reports (daily, monthly, yearly) from recorded payments.
+- **Provide a highly resilient, zero-downtime offline-first local operation at the shop counter.**
+- **Securely synchronize local operations to a remote cloud database for administrative tracking and digital notifications without blocking local transactions.**
 
 ---
 
@@ -35,10 +36,11 @@
 - Admin and Staff authentication (username/password)
 - Customer management (create, search by name/contact)
 - Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique reference number
+- Business Rules: Standard pricing at ₱140 per load (up to 8 kg). Weight overages trigger automatic additional load charges. Time penalties require manual input to add ₱1 per extra minute.
 - Order status updates with audit trail (order_status_logs)
 - Payment recording (one payment per order; amount must equal order grand total)
 - Sales reporting (daily, monthly, yearly) from payments
-- Public order tracking by reference number
+- QR-Code powered public order tracking by reference number
 
 ### 2.2 Out of Scope (MVP+)
 
@@ -55,48 +57,45 @@
 | Layer      | Technology                            |
 |------------|---------------------------------------|
 | Backend    | Java 21, Spring Boot 3.5+, Maven      |
-| Frontend   | Next.js 15+, TypeScript, Tailwind CSS |
-| Database   | PostgreSQL 16                         |
+| Frontend   | Next.js 15+ (Statically Exported), TypeScript, Tailwind CSS |
+| Database   | PostgreSQL 16 (Local Background Service) |
+| Sync Engine| Java `@Scheduled` Worker + Transactional Outbox |
 | Migrations | Flyway                                |
-| Local Dev  | Docker Compose                        |
-| Testing    | Testcontainers                        |
-| Config     | `.env` (local only; never committed)  |
+| Packaging  | `jpackage` native installer, PowerShell |
+| Hardware   | Windows OS (Desktop/Tablet)           |
 
 ---
 
-## 4. High-Level Architecture (C4-lite)
+## 4. System Architecture (Standalone, Offline-First)
 
 ### 4.1 System Context
 
 **Actors**
 - **Admin:** Views reports, manages rates, oversees operations
 - **Staff:** Encodes orders, updates status, records payments
-- **Customer:** Tracks order status via reference number (public endpoint)
+- **Customer:** Scans QR code on receipt to track order status via the public cloud-hosted web portal
 
-**External Services (Optional)**
-- SMS provider for ready-for-pickup notifications (post-MVP)
+**Hardware Constraint**
+- The system enforces a strict hardware constraint: It is deployed on a single physical Windows device (laptop or tablet) located at the shop counter. It achieves absolute local autonomy, functioning flawlessly during local network outages.
 
 ### 4.2 Containers
 
-1. **Web App (Frontend)** — Next.js 14+, TypeScript, Tailwind
-   - Order intake, status updates, payment recording
-   - Reports dashboard (Admin only)
-   - Public tracking page (reference number lookup)
+1. **Web App (Frontend)** — Next.js 15+, TypeScript, Tailwind
+   - Statically exported and served directly from the Java backend's static resources directory.
+   - Order intake, status updates, payment recording, and reports dashboard (Admin only).
 
-2. **API Server (Backend)** — Java Spring Boot 3.5+
-   - Business rules enforcement (Service layer only)
-   - Reference number generation and uniqueness
-   - Auth and role-based access (ADMIN vs STAFF)
-   - Reporting queries from payments
-   - Notification triggers (MVP optional)
+2. **API Server & Sync Engine (Backend)** — Java Spring Boot 3.5+
+   - Business rules enforcement (Service layer only).
+   - Reference number generation and uniqueness.
+   - Auth and role-based access.
+   - **Sync Worker:** Polling engine that securely bridges local data to the cloud when internet access is restored.
 
-3. **Database** — PostgreSQL 16
-   - Persistent storage per [ERD](../04-data-design/erd.dbml)
-   - Enforces unique constraints, foreign keys
+3. **Local Database** — PostgreSQL 16
+   - Persistent offline storage running as a silent OS background service.
+   - Employs Universal Unique Identifiers (UUIDs) for all primary keys to prevent data collisions.
 
-4. **Notification Service** — Optional / post-MVP
-   - Queue or send SMS
-   - Track sent/failed status
+4. **Cloud API (Remote)** 
+   - A remote Next.js/PHP endpoint that receives synchronization payloads to execute idempotent operations against the remote PostgreSQL database.
 
 ---
 
@@ -123,72 +122,40 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 - **activity** — Read-only access to `activity_logs`; surfaces forensic audit trail to the dashboard (US-03, US-05)
 - **payments** — Create payment (1:1), validate amount equals grand total, update payment status (US-06)
 - **reports** — Daily, monthly, yearly sales from payments (US-08, US-09)
-- **notifications** (optional) — Record and send on READY_FOR_PICKUP (US-10)
+- **sync** — Background synchronization worker and Transactional Outbox event publishing
 
 ---
 
-## 7. Core Data Flows (MVP)
+## 7. Data Flow (Outbox Pattern)
 
-### 7.1 Order Intake
+The system is engineered for a distributed, eventual-consistency model. To ensure operations never freeze during local network outages, data synchronization utilizes the **Transactional Outbox Pattern**:
 
-1. Staff selects or creates a customer
-2. Staff inputs weight (kg), optional extra minutes, optional add-ons
-3. Backend loads active service rate and snapshots pricing
-4. Backend computes: `total_loads = ceil(weight_kg / kg_limit)`, `base_amount`, `extra_minutes_amount`, `addons_total_amount`, `grand_total`
-5. Backend generates unique `reference_number`
-6. Backend stores order with `current_status = RECEIVED`, `payment_status = UNPAID`
-
-### 7.2 Status Updates and Audit Trail
-
-1. Staff requests a status update via the API
-2. Backend validates the allowed status and transition (BR-OL-03, BR-OL-04, BR-OL-05)
-3. Backend updates `orders.current_status`
-4. **Hybrid Auditing Synergy**:
-   - **Database Layer**: The `trg_audit_orders` trigger fires automatically, invoking `fn_audit_activity()`, which writes a full JSONB snapshot (old and new row) to `activity_logs`.
-   - **Application Layer**: The `@Auditable` aspect intercepts the call and publishes an asynchronous `AuditEvent` to capture high-level intent, outcome (SUCCESS/FAILURE), and forensic context (IP Address, User Agent).
-5. Both layers write to the same `activity_logs` table, providing a complete forensic record.
-
-### 7.3 Payment Recording
-
-1. Staff records payment upon pickup (payment method: Cash, GCash, or Bank Transfer — BR-PAY-05)
-2. Backend validates: no existing payment for order (BR-PAY-02), amount equals `orders.grand_total` (BR-PAY-03)
-3. Backend inserts payment (including payment_method) and sets `orders.payment_status = PAID` (BR-PAY-04)
-4. MVP: Partial payments are not supported; PARTIAL is reserved for post-MVP
-
-### 7.4 Reporting
-
-1. Admin requests report (daily, monthly, yearly)
-2. Backend aggregates totals from payments within the date range
-
-### 7.5 Customer Tracking (Public)
-
-1. Customer enters `reference_number`
-2. Backend returns a limited subset: status, created date, reference number, basic summary (no internal IDs, staff info)
+1. **Local Transaction**: When an operational event occurs (e.g., Order Created, Status Updated), the system saves the primary record and simultaneously inserts a serialized payload into a tracking table (`outbox_events` with `sync_status`, `retry_count`) within the exact same database transaction.
+2. **Sync Worker**: A `@Scheduled` Java background worker continually polls the `outbox_events` table for `PENDING` transactions.
+3. **Cloud Push**: When an active internet connection is detected, the worker securely pushes the payloads to the remote Cloud API.
+4. **Conflict Resolution (Local Wins)**: The system enforces a strict "Local Wins" policy. The shop counter is the absolute source of truth. The Cloud API executes idempotent `UPSERT` operations, blindly overwriting any cloud-side changes with the local data to resolve conflicts.
+5. **Mark Completed**: Upon a successful HTTP acknowledgment from the Cloud API, the local worker updates the event's `sync_status` to `COMPLETED`.
 
 ---
 
-## 8. Environment and Deployment
+## 8. Deployment Strategy
 
-### 8.1 Local Development
+### 8.1 Zero-Friction Client Execution
+The system must run entirely locally without requiring the end user (the shop owner) to launch developer tools, terminals, or Docker.
 
-- **Frontend:** `localhost:3001`
-- **Backend:** `localhost:8080` (mapped to host via `BACKEND_PORT`)
-- **Database:** PostgreSQL 16 via Docker Compose
-- **Configuration:** Unified `.env` at project root — gitignored; use `.env.example` as template
-- **Secrets:** Never committed; JWT secret, DB credentials in root `.env`
-- **Orchestration:** `docker compose up -d`
-
-### 8.2 CI
-
-- Testcontainers for integration tests (PostgreSQL 16)
-- No secrets in the repository
+- **Frontend Bundling:** The Next.js UI is statically exported during the build process and bundled directly into the Java application.
+- **Executable Packaging:** The Java application and JRE are bundled into a native desktop executable (e.g., an `.msi` Windows Installer) using the `jpackage` tool.
+- **Database Provisioning:** The local PostgreSQL instance is installed and configured automatically via a provided PowerShell setup script. It runs as a silent, automated Windows background service, invisible to the operator.
 
 ---
 
-## 9. Security (MVP)
+## 9. Security & Hardening
 
-- Role-based access: Admin (reports, rates); Staff (orders, status, payments, customers)
-- Public tracking endpoint returns only: reference number, current status, created date, basic customer/payment summary — no internal IDs or staff information
+To protect the system within a potentially unmanaged shop environment, a Zero-Trust Local Network posture is maintained:
+
+- **Local Bindings (Strict Localhost):** Both the Java backend and the PostgreSQL database are strictly bound to `127.0.0.1` (localhost). This prevents unauthorized access or API calls from other devices connected to the shop's local Wi-Fi.
+- **Sync Authentication:** Mutual token-based authentication (JWT/HMAC) secures the synchronization channel between the local Java worker and the Cloud API.
+- **Public API Protection:** Strict rate-limiting is applied to the cloud-hosted Next.js tracking endpoint to prevent UUID brute-forcing and malicious data scraping.
 
 ---
 
@@ -201,7 +168,7 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ## 11. Architecture Decisions (ADR-lite)
 
-- Markdown documentation under `/docs` as a source of truth
-- OpenAPI contract as an API source of truth
-- DBML ERD as a data design source of truth
-- Pricing snapshot stored in `orders` for historical accuracy when rates change
+- **Universal Unique Identifiers (UUIDs):** Complete migration of all database entities to use UUIDs for primary keys to categorically prevent data collisions in the distributed database environment.
+- **Protect the Stack (Hardware Enforcement):** Opted to mandate a Windows OS deployment rather than rewriting the reliable Java/PostgreSQL stack into a mobile-friendly or browser-based offline application (e.g., PWA/IndexedDB).
+- **Markdown Documentation:** maintained under `/docs` as a source of truth.
+- **OpenAPI Contract:** maintained as an API source of truth.

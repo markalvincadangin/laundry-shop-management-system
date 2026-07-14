@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.orders.dto.CreateOrderRequest;
 import com.himotech.laundryms.orders.dto.OrderListParams;
@@ -29,6 +31,7 @@ import com.himotech.laundryms.payments.repository.PaymentRepository;
 import com.himotech.laundryms.orders.dto.OrderResponse;
 import com.himotech.laundryms.orders.mapper.OrderMapper;
 import com.himotech.laundryms.auditlog.service.AuditLogService;
+import com.himotech.laundryms.sync.service.OutboxService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -59,6 +62,7 @@ public class OrderService {
     private final AuditLogService auditLogService;
     private final OrderMapper orderMapper;
     private final AddOnCatalogRepository addOnCatalogRepository;
+    private final OutboxService outboxService;
 
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
 
@@ -85,7 +89,7 @@ public class OrderService {
     @Transactional
     public Order createFromRequest(CreateOrderRequest request) {
         // Resolve customer ID
-        Long customerId = resolveCustomerId(request);
+        UUID customerId = resolveCustomerId(request);
         
         // Normalize add-ons
         List<CreateOrderCommand.AddOnItem> addOns = normalizeAddOns(request);
@@ -113,7 +117,7 @@ public class OrderService {
      * @return the customer ID
      * @throws IllegalArgumentException if neither customerId nor customer is provided
      */
-    private Long resolveCustomerId(CreateOrderRequest request) {
+    private UUID resolveCustomerId(CreateOrderRequest request) {
         if (request.getCustomerId() != null) {
             return request.getCustomerId();
         }
@@ -255,6 +259,9 @@ public class OrderService {
         }
 
         order = orderRepository.save(order);
+        
+        // Publish outbox event
+        outboxService.publishEvent("Order", order.getId(), orderMapper.toResponse(order));
 
         log.info("Order created successfully: Reference={}, Customer={} {}, Total=₱{}", 
                 order.getReferenceNumber(), 
@@ -360,7 +367,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrderDetails(Long id) {
+    public OrderResponse getOrderDetails(UUID id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
         
@@ -370,7 +377,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order findById(Long id) {
+    public Order findById(UUID id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
     }
@@ -386,7 +393,7 @@ public class OrderService {
      */
     @Auditable(action = "ORDER_UPDATE", description = "Update order details")
     @Transactional
-    public Order update(Long orderId, UpdateOrderRequest request) {
+    public Order update(UUID orderId, UpdateOrderRequest request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
@@ -448,7 +455,12 @@ public class OrderService {
         BigDecimal grandTotal = order.getBaseAmount().add(extraMinutesAmount).add(addonsTotalAmount);
         order.setGrandTotal(grandTotal);
 
-        return orderRepository.save(order);
+        order = orderRepository.save(order);
+        
+        // Publish outbox event
+        outboxService.publishEvent("Order", order.getId(), orderMapper.toResponse(order));
+        
+        return order;
     }
 
     @Transactional(readOnly = true)
@@ -487,10 +499,13 @@ public class OrderService {
 
     @Auditable(action = "ORDER_DELETE", description = "Delete laundry order")
     @Transactional
-    public void deleteOrder(Long orderId) {
+    public void deleteOrder(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         orderRepository.delete(order);
+        
+        // Publish outbox event for deletion
+        outboxService.publishEvent("OrderDeleted", orderId, "{}");
     }
 
 }

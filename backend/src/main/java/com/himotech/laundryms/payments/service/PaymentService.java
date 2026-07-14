@@ -1,5 +1,7 @@
 package com.himotech.laundryms.payments.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
@@ -32,6 +34,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final com.himotech.laundryms.sync.service.OutboxService outboxService;
 
     @Auditable(action = "PAYMENT_RECORD", description = "Record payment for order")
     @Transactional
@@ -83,6 +86,9 @@ public class PaymentService {
                 .build();
         payment = paymentRepository.save(payment);
 
+        // Publish outbox event
+        outboxService.publishEvent("Payment", payment.getId(), payment);
+
         log.info("Payment recorded successfully: OrderRef={}, Amount=₱{}, Method={}", 
                 order.getReferenceNumber(), 
                 payment.getAmountPaid(), 
@@ -92,7 +98,7 @@ public class PaymentService {
     }
     @Auditable(action = "PAYMENT_VOID", description = "Void existing payment")
     @Transactional
-    public void voidPayment(Long orderId) {
+    public void voidPayment(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
@@ -107,18 +113,21 @@ public class PaymentService {
         // To allow re-payment in MVP (due to 1-to-1 unique constraint), we delete the failed record.
         // The Audit Log aspect will capture this deletion for the audit trail.
         paymentRepository.deleteByOrder_Id(orderId);
+        
+        // Publish outbox event
+        outboxService.publishEvent("PaymentVoided", orderId, "{}");
 
         log.info("Payment voided successfully: OrderRef={}", order.getReferenceNumber());
     }
 
     @Transactional(readOnly = true)
-    public Payment findById(Long id) {
+    public Payment findById(UUID id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Payment not found: " + id));
     }
 
     @Transactional(readOnly = true)
-    public Page<Payment> findAll(Long orderId, LocalDate from, LocalDate to, String q, Pageable pageable) {
+    public Page<Payment> findAll(UUID orderId, LocalDate from, LocalDate to, String q, Pageable pageable) {
         Instant fromTs = from != null ? from.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         Instant toTs = to != null ? to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
         

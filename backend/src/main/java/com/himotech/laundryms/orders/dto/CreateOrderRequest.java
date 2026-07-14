@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Data
 public class CreateOrderRequest {
-    private Long customerId;
+    private UUID customerId;
     private CreateCustomerRequest customer;
 
     private UUID createdByUserId;

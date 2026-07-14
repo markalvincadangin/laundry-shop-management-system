@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.entity;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.customers.entity.Customer;
@@ -30,9 +32,9 @@ import com.himotech.laundryms.machines.entity.Machine;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    private Long id;
+    private UUID id;
 
     @Column(name = "reference_number", nullable = false, unique = true, length = 30)
     private String referenceNumber;

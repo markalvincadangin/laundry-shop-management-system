@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.shared.dto.PageResponse;
 import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +63,7 @@ public class ClientAlertController {
     }
 
     @PatchMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<Void> markAsRead(@PathVariable UUID id) {
         clientAlertService.markAsRead(id);
         return ResponseEntity.ok().build();
     }

@@ -1,5 +1,7 @@
 package com.himotech.laundryms.machines.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.machines.dto.CreateMachineRequest;
 import com.himotech.laundryms.machines.dto.MachineResponse;
 import com.himotech.laundryms.machines.dto.UpdateMachineStatusRequest;
@@ -43,7 +45,7 @@ public class MachineController {
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MachineResponse> updateStatus(
-            final @PathVariable Long id,
+            final @PathVariable UUID id,
             final @Valid @RequestBody UpdateMachineStatusRequest request) {
         Machine machine = machineService.updateStatus(id, request.getStatus());
         return ResponseEntity.ok(machineMapper.toResponse(machine));
@@ -51,7 +53,7 @@ public class MachineController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(final @PathVariable Long id) {
+    public ResponseEntity<Void> delete(final @PathVariable UUID id) {
         machineService.deleteMachine(id);
         return ResponseEntity.noContent().build();
     }

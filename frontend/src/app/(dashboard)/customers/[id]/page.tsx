@@ -37,7 +37,6 @@ import { OrderResponse } from "@/lib/api/orders";
 /**
  * Customer Profile Page — High Fidelity (v4.0)
  * A premium view for managing customer relationships and viewing order history.
- * Adheres to FRONT-001 design standards.
  */
 export default function CustomerProfilePage() {
   const params = useParams();

@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.orders.entity.Order;
@@ -28,8 +30,8 @@ public final class OrderSpecification {
             Instant fromTs,
             Instant toTs,
             String q,
-            Long customerId,
-            Integer serviceRateId) {
+            UUID customerId,
+            UUID serviceRateId) {
         return (root, query, cb) -> {
             // Performance Optimization: Eagerly fetch associations to prevent N+1 issues in registries
             // We skip fetch for count queries (Long.class) to prevent JPA exceptions

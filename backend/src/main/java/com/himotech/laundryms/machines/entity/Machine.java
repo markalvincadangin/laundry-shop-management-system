@@ -1,5 +1,7 @@
 package com.himotech.laundryms.machines.entity;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,8 +22,8 @@ import java.time.OffsetDateTime;
 public class Machine {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;

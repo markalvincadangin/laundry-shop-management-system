@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.entity;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,9 +26,9 @@ import java.time.Instant;
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    private Long id;
+    private UUID id;
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;

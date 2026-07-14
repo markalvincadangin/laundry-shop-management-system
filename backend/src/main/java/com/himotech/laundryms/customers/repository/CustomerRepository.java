@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.customers.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -12,7 +14,7 @@ import java.util.Optional;
  * Provides database access for customer-related operations.
  */
 @Repository
-public interface CustomerRepository extends JpaRepository<Customer, Long>, JpaSpecificationExecutor<Customer> {
+public interface CustomerRepository extends JpaRepository<Customer, UUID>, JpaSpecificationExecutor<Customer> {
 
         /**
          * Finds a customer by their unique identity (last name, first name, and contact

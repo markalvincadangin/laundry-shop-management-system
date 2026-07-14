@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ServiceRateResponse {
-    private Integer id;
+    private UUID id;
     private String serviceName;
     private Double basePricePerLoad;
     private Double kgLimitPerLoad;

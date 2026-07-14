@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.customers.dto.CreateCustomerRequest;
 import com.himotech.laundryms.customers.dto.CustomerResponse;
 import com.himotech.laundryms.shared.dto.PageResponse;
@@ -74,7 +76,7 @@ public class CustomerController {
 
     @GetMapping("/{customerId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<CustomerResponse> getById(@PathVariable Long customerId) {
+    public ResponseEntity<CustomerResponse> getById(@PathVariable UUID customerId) {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new NotFoundException("Customer not found: " + customerId));
         return ResponseEntity.ok(customerMapper.toResponse(customer));
@@ -82,7 +84,7 @@ public class CustomerController {
 
     @PatchMapping("/{customerId}/toggle-active")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CustomerResponse> toggleActive(@PathVariable Long customerId) {
+    public ResponseEntity<CustomerResponse> toggleActive(@PathVariable UUID customerId) {
         Customer customer = customerService.toggleActive(customerId);
         return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
@@ -90,7 +92,7 @@ public class CustomerController {
     @PatchMapping("/{customerId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomerResponse> update(
-            @PathVariable Long customerId,
+            @PathVariable UUID customerId,
             @Valid @RequestBody CreateCustomerRequest request) {
         Customer customer = customerService.update(
                 customerId,

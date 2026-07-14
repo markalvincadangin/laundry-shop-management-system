@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.clientalert.api.ClientAlertResponse;
 import com.himotech.laundryms.clientalert.api.ClientAlertMapper;
@@ -93,7 +95,7 @@ public class ClientAlertService {
      */
     @Auditable(action = "CLIENT_ALERT_READ", description = "Mark client alert as read")
     @Transactional
-    public void markAsRead(Long id) {
+    public void markAsRead(UUID id) {
         clientAlertRepository.findById(id).ifPresent(n -> {
             n.setRead(true);
             clientAlertRepository.save(n);

@@ -1,5 +1,7 @@
 package com.himotech.laundryms.payments.entity;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.payments.PaymentMethod;
 import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.users.entity.User;
@@ -20,9 +22,9 @@ import java.time.Instant;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    private Long id;
+    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", unique = true, nullable = false)

@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.api;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,10 +14,10 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClientAlertResponse {
-    private Long id;
-    private Long orderId;
+    private UUID id;
+    private UUID orderId;
     private String referenceNumber;
-    private Long customerId;
+    private UUID customerId;
     private String customerName;
     private String contactNumber;
     private String message;
