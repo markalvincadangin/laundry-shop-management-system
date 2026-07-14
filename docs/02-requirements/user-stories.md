@@ -33,8 +33,9 @@
 - Order date is recorded automatically
 - System generates a unique reference number
 - Initial order status is set to **Received**
+- Staff MAY assign machines during intake if they are immediately available
 
-**Related Business Rules:** [BR-OL-01](business-rules.md#br-ol-01-order-must-have-a-unique-reference-number), [BR-OL-02](business-rules.md#br-ol-02-initial-order-status), [BR-REC-01](business-rules.md#br-rec-01-core-data-to-record)  
+**Related Business Rules:** [BR-OL-01](business-rules.md#br-ol-01-order-must-have-a-unique-reference-number), [BR-OL-02](business-rules.md#br-ol-02-initial-order-status), [BR-REC-01](business-rules.md#br-rec-01-core-data-to-record), [BR-MAC-03](business-rules.md#br-mac-03-hoarding-prevention)
 **Scope:** [§ 3.1.1 Order Intake & Management](../01-scope/project-scope.md#311-order-intake-management)
 
 ---
@@ -68,9 +69,44 @@
 - Allowed statuses: Received, Washing, Drying, Folding, Ready for Pickup, Released, Cancelled
 - Status changes are recorded with a timestamp
 - Only existing orders can have their status updated
+- When moving to WASHING or DRYING, staff MUST assign machines without exceeding the total loads required.
 
-**Related Business Rules:** [BR-OL-03](business-rules.md#br-ol-03-allowed-order-status-values), [BR-OL-04](business-rules.md#br-ol-04-status-transition-control-recommended)  
+**Related Business Rules:** [BR-OL-03](business-rules.md#br-ol-03-allowed-order-status-values), [BR-OL-04](business-rules.md#br-ol-04-status-transition-control-recommended), [BR-MAC-03](business-rules.md#br-mac-03-hoarding-prevention)
 **Scope:** [§ 3.1.2 Order Lifecycle Tracking](../01-scope/project-scope.md#312-order-lifecycle-tracking)
+
+---
+
+### US-13 – Process Rush Orders
+
+**As a** customer or staff  
+**I want** to record orders as "Rush"  
+**So that** expedited processing is priced correctly and prioritized.
+
+**Acceptance Criteria**
+- System applies a special "Rush Wash" active service rate instead of standard rates.
+- Rush orders are clearly marked/badged in the UI so staff can prioritize them during peak hours.
+
+**Related Business Rules:** [BR-PR-06](business-rules.md#br-pr-06-rush-order-pricing)
+**Scope:** [§ 3.1.1 Order Intake & Management](../01-scope/project-scope.md#311-order-intake-management)
+
+---
+
+## 8. Epic 8: System Configuration
+
+### US-14 – Manage Service Rates & Pricing
+
+**As the** admin  
+**I want** to manage the available laundry service rates  
+**So that** I can fully customize my laundry business offerings (e.g., Blankets, Rush) in the future without needing developer assistance.
+
+**Acceptance Criteria**
+- Admin can view, add, edit, and deactivate service rates.
+- Each rate defines a base price, kg limit per load, and extra minute charge.
+- Deactivating a rate prevents it from being used in new orders but preserves it for historical order integrity.
+- At least one active rate MUST always exist to prevent order intake from failing.
+
+**Related Business Rules:** [BR-PR-05](business-rules.md#br-pr-05-admin-controls-service-rates)
+**Scope:** [§ 3.1.6 User Roles](../01-scope/project-scope.md#316-user-roles-basic-access-control)
 
 ---
 
@@ -126,7 +162,6 @@
 - Order payment status is updated to **Paid** or **Unpaid** based on full payment received
 
 **Related Business Rules:** [BR-PAY-01](business-rules.md#br-pay-01-payment-timing), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](business-rules.md#br-pay-03-payment-amount-validation), [BR-PAY-04](business-rules.md#br-pay-04-payment-status), [BR-PAY-05](business-rules.md#br-pay-05-payment-method-recorded)  
-**Scope:** [§ 3.1.3 Payment Recording](../01-scope/project-scope.md#313-payment-recording)  
 **Scope:** [§ 3.1.3 Payment Recording](../01-scope/project-scope.md#313-payment-recording)
 
 ---
@@ -228,6 +263,28 @@ The following user stories are required for the MVP (aligned with [Project Scope
 - US-05 Verify Laundry Before Release
 - US-06 Record Payment
 - US-07 View Payment History
-- US-08 View Daily Sales Report
 - US-09 View Monthly and Yearly Income Reports
 - US-11 User Login and Role-Based Access
+- US-12 Track Machine Inventory
+- US-13 Process Rush Orders
+- US-14 Manage Service Rates & Pricing
+
+---
+
+## 8. Epic 7: Machine & Inventory Management
+
+### US-12 – Track Machine Inventory
+
+**As a** staff or admin
+**I want** to track the physical laundry machines
+**So that** I know which machines are available, in-use, or out of service.
+
+**Acceptance Criteria**
+- View a list of all laundry machines.
+- Add or remove machines from the inventory (max 50 machines).
+- Assign available machines to orders during intake or when changing status to WASHING or DRYING.
+- A machine cannot be double-assigned to multiple active orders.
+- The UI MUST visually disable machines that are already in-use or out of service.
+
+**Related Business Rules:** [BR-MAC-01](business-rules.md#br-mac-01-multi-load-capacity-guarantee), [BR-MAC-02](business-rules.md#br-mac-02-assignment-flexibility), [BR-MAC-03](business-rules.md#br-mac-03-hoarding-prevention), [BR-MAC-04](business-rules.md#br-mac-04-max-machine-limit)
+**Scope:** [§ 3.1.1 Order Intake & Management](../01-scope/project-scope.md#311-order-intake-management)
