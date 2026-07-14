@@ -16,4 +16,5 @@ public class SecurityProperties {
     private String[] allowedOriginPatterns;
     private boolean cookieSecure = false;
     private String cookieSameSite = "Lax";
+    private int bcryptStrength = 10;
 }

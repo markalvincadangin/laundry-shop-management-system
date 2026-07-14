@@ -11,6 +11,10 @@ export type OrderResponse = components["schemas"]["OrderResponse"] & {
   serviceType?: string;
   serviceName?: string;
   notes?: string;
+  machineIds?: number[];
+  addOns?: components["schemas"]["AddOnResponse"][];
+  assignedMachines?: string[];
+  isRush?: boolean;
 };
 
 export type OrderPageResponse = components["schemas"]["OrderPageResponse"] & {
@@ -31,12 +35,33 @@ export type OrderListParams = {
   sortDir?: "asc" | "desc";
 };
 
-export type OrderPreviewRequest = components["schemas"]["OrderPreviewRequest"];
+export type OrderPreviewRequest = components["schemas"]["OrderPreviewRequest"] & { isRush?: boolean };
 export type OrderPreviewResponse = components["schemas"]["OrderPreviewResponse"];
 export type OrderStatsResponse = components["schemas"]["OrderStatsResponse"];
-export type CreateOrderRequest = components["schemas"]["CreateOrderRequest"];
-export type UpdateOrderStatusRequest = components["schemas"]["UpdateOrderStatusRequest"];
-export type UpdateOrderRequest = components["schemas"]["UpdateOrderRequest"];
+export type UpdateOrderStatusRequest = components["schemas"]["UpdateOrderStatusRequest"] & { machineIds?: number[] };
+
+export interface UpdateOrderRequest {
+  extraMinutes?: number;
+  addOns?: Array<{ name: string; price: number; quantity: number }>;
+  machineIds?: number[];
+}
+
+export interface CreateOrderRequest {
+  customerId?: number;
+  customer?: {
+    firstName: string;
+    lastName: string;
+    contactNumber?: string;
+  };
+  createdByUserId: string;
+  weightKg: number;
+  extraMinutes?: number;
+  initialAddOns?: Array<{ name: string; price: number; quantity: number }>;
+  serviceType?: string;
+  notes?: string;
+  machineIds?: number[];
+  isRush?: boolean;
+}
 
 /**
  * Orders Service: Authoritative layer for all order-related API interactions.

@@ -21,4 +21,5 @@ public class OrderTrackingResponse {
     private String paymentStatus;
     private Double weightKg;
     private Integer totalLoads;
+    private Boolean isRush;
 }

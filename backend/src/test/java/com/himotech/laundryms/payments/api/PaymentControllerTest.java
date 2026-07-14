@@ -63,7 +63,7 @@ class PaymentControllerTest {
 
         @Test
         @DisplayName("Should return 201 when valid request")
-        void create_ShouldReturn201_WhenValid() throws Exception {
+        void createShouldreturn201Whenvalid() throws Exception {
             CreatePaymentRequest request = new CreatePaymentRequest();
             request.setOrderId(1L);
             request.setAmountPaid(new BigDecimal("240.00"));
@@ -94,7 +94,7 @@ class PaymentControllerTest {
 
         @Test
         @DisplayName("Should return 400 when orderId is null")
-        void create_ShouldReturn400_WhenOrderIdNull() throws Exception {
+        void createShouldreturn400Whenorderidnull() throws Exception {
             CreatePaymentRequest request = new CreatePaymentRequest();
             request.setAmountPaid(new BigDecimal("240.00"));
             request.setReceivedByUserId(TEST_USER_ID);
@@ -108,7 +108,7 @@ class PaymentControllerTest {
 
         @Test
         @DisplayName("Should return 401 when receivedByUserId is null and no principal")
-        void create_ShouldReturn400_WhenReceivedByUserIdNull() throws Exception {
+        void createShouldreturn400Whenreceivedbyuseridnull() throws Exception {
             CreatePaymentRequest request = new CreatePaymentRequest();
             request.setOrderId(1L);
             request.setAmountPaid(new BigDecimal("240.00"));
@@ -128,7 +128,7 @@ class PaymentControllerTest {
 
         @Test
         @DisplayName("Should return 200 and paginated list")
-        void list_ShouldReturn200() throws Exception {
+        void listShouldreturn200() throws Exception {
             Payment payment = Payment.builder().id(1L).build();
             PaymentResponse response = PaymentResponse.builder().id(1L).build();
             Page<Payment> page = new PageImpl<>(List.of(payment), PageRequest.of(0, 20), 1);
@@ -148,7 +148,7 @@ class PaymentControllerTest {
     class GetById {
         @Test
         @DisplayName("Should return 200 when found")
-        void getById_ShouldReturn200() throws Exception {
+        void getByIdShouldreturn200() throws Exception {
             Payment payment = Payment.builder().id(1L).build();
             PaymentResponse response = PaymentResponse.builder().id(1L).build();
 
@@ -162,7 +162,7 @@ class PaymentControllerTest {
 
         @Test
         @DisplayName("Should return 404 when not found")
-        void getById_ShouldReturn404() throws Exception {
+        void getByIdShouldreturn404() throws Exception {
             when(paymentService.findById(999L)).thenThrow(new NotFoundException("Payment not found"));
 
             mockMvc.perform(get("/api/v1/payments/999"))

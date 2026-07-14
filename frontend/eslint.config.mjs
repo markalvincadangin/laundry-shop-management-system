@@ -14,6 +14,15 @@ const eslintConfig = [
     ignores: [".next/**", "node_modules/**", "dist/**"],
   },
   ...compat.extends("next/core-web-vitals"),
+  {
+    rules: {
+      "react/jsx-no-literals": ["warn", { 
+        "noStrings": true, 
+        "ignoreProps": true,
+        "noAttributeStrings": false
+      }]
+    }
+  }
 ];
 
 export default eslintConfig;

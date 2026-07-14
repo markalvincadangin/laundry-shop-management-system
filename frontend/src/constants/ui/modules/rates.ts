@@ -23,4 +23,8 @@ export const rates = {
   PER_MINUTE: "Per Extra Minute",
   CREATE_RATE: "Add New Rate",
   EDIT_RATE: "Modify Service Rate",
+  ADD_ON_CATALOG: "Add-On Catalog",
+  ADD_ITEM: "Add Item",
+  DEFAULT_PRICE: "Default Price",
+  NO_ADD_ONS_FOUND: "No Add-Ons found.",
 } as const;

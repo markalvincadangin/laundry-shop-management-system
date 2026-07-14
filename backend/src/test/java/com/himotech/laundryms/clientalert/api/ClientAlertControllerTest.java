@@ -38,7 +38,7 @@ class ClientAlertControllerTest {
 
     @Test
     @DisplayName("GET /api/v1/client-alerts - Should return 200 and paginated list")
-    void list_ShouldReturn200_WhenAuthenticated() throws Exception {
+    void listShouldreturn200Whenauthenticated() throws Exception {
         ClientAlertResponse resp = ClientAlertResponse.builder()
                 .id(1L)
                 .orderId(10L)
@@ -63,7 +63,7 @@ class ClientAlertControllerTest {
 
     @Test
     @DisplayName("PATCH /api/v1/client-alerts/{id}/read - Should return 200")
-    void markAsRead_ShouldReturn200() throws Exception {
+    void markAsReadShouldreturn200() throws Exception {
         mockMvc.perform(patch("/api/v1/client-alerts/1/read")
                 .with(csrf()))
                 .andExpect(status().isOk());
@@ -73,7 +73,7 @@ class ClientAlertControllerTest {
 
     @Test
     @DisplayName("PATCH /api/v1/client-alerts/read-all - Should return 200")
-    void markAllAsRead_ShouldReturn200() throws Exception {
+    void markAllAsReadShouldreturn200() throws Exception {
         mockMvc.perform(patch("/api/v1/client-alerts/read-all")
                 .with(csrf()))
                 .andExpect(status().isOk());

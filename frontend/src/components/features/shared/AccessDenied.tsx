@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 import { ShieldAlert, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";

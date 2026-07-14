@@ -11,6 +11,7 @@ interface UsePriceCalculationProps {
   extraMinutes: string;
   addOns: AddOnInput[];
   serviceType: string;
+  isRush?: boolean;
   debounceMs?: number;
 }
 
@@ -23,6 +24,7 @@ export function usePriceCalculation({
   extraMinutes,
   addOns,
   serviceType,
+  isRush = false,
   debounceMs = 300
 }: UsePriceCalculationProps) {
   const [preview, setPreview] = useState<OrderPreviewResponse | null>(null);
@@ -47,6 +49,7 @@ export function usePriceCalculation({
         extraMinutes: parseInt(extraMinutes, 10) || 0,
         initialAddOns: addOns.length > 0 ? addOns : undefined,
         serviceType: serviceType,
+        isRush: isRush,
       });
       setPreview(res);
     } catch (err) {
@@ -55,12 +58,12 @@ export function usePriceCalculation({
     } finally {
       setLoading(false);
     }
-  }, [weightKg, extraMinutes, addOns, serviceType]);
+  }, [weightKg, extraMinutes, addOns, serviceType, isRush]);
 
   useEffect(() => {
     const timer = setTimeout(fetchPreview, debounceMs);
     return () => clearTimeout(timer);
-  }, [fetchPreview, debounceMs, serviceType]);
+  }, [fetchPreview, debounceMs, serviceType, isRush]);
 
   return { preview, loading, error, refetch: fetchPreview };
 }

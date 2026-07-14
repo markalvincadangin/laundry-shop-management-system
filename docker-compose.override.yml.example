@@ -1,19 +1,44 @@
-# Docker Compose Override Example
-#
-# Copy this file to docker-compose.override.yml to customize local development.
-# This file is gitignored and will not be committed.
-#
-# Example: expose additional debug ports, mount custom configs, etc.
-
 services:
+  db:
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./backend/infrastructure/db-init/01-enable-pgcrypto.sql:/docker-entrypoint-initdb.d/01-enable-pgcrypto.sql:ro
+
   backend:
-    # Uncomment to enable remote debugging
-    # ports:
-    #   - "${DEBUG_PORT:-5006}:5005"
+    build:
+      target: development
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      - /app/target
+      - maven_cache:/root/.m2
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+      - "${DEBUG_PORT:-5005}:5005"
     environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      # - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+      TESTCONTAINERS_HOST_OVERRIDE: host.docker.internal
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+      SPRING_PROFILES_ACTIVE: dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   frontend:
+    profiles: ["full"]
+    build:
+      target: development
+    volumes:
+      - ./frontend:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
-      - WATCHPACK_POLLING=true  # Enable polling for file watching in WSL2
+      DOCKER_DEV: "true"
+      HOSTNAME: "0.0.0.0"
+
+volumes:
+  postgres_dev_data:
+  maven_cache:
+  node_modules:

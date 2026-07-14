@@ -37,4 +37,6 @@ export const orders = {
   AWAITING_DATA: "Awaiting data...",
   SYNCING: "Syncing...",
   TOTAL: "Total",
+  ASSIGNED_MACHINES: "Assigned Machines",
+  UNASSIGNED: "Unassigned",
 } as const;

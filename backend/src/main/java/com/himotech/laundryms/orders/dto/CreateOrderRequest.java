@@ -30,4 +30,5 @@ public class CreateOrderRequest {
 
     private String serviceType;
     private String notes;
+    private Boolean isRush = false;
 }

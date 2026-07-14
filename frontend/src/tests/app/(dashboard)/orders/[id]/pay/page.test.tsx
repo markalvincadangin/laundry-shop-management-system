@@ -108,4 +108,22 @@ describe("PayOrderPage", () => {
       }));
     });
   });
+
+  it("constrains Payment inputs to restricted choices per FR-PAY-1", async () => {
+    vi.mocked(ordersService.getById).mockResolvedValue(mockOrder as any);
+
+    renderWithProvider(<PayOrderPage />);
+
+    // Verify only the three restricted methods are available
+    await waitFor(() => {
+      expect(screen.getByText(UI_LABELS.modules.payments.METHOD_CASH)).toBeInTheDocument();
+      expect(screen.getByText(UI_LABELS.modules.payments.METHOD_GCASH)).toBeInTheDocument();
+      expect(screen.getByText(UI_LABELS.modules.payments.METHOD_BANK)).toBeInTheDocument();
+    });
+
+    // There should be no generic "Amount" input editable by the user for full settlement
+    // since the grandTotal is automatically applied.
+    const amountInputs = screen.queryAllByRole("spinbutton");
+    expect(amountInputs).toHaveLength(0); // the amount is read-only
+  });
 });

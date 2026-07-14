@@ -1,21 +1,14 @@
 <!--
 Sync Impact Report:
-- Version change: 1.1.0 -> 1.2.0
+- Version change: 1.4.1 -> 1.5.0
 - List of modified principles:
-  - I. Feature-First Backend Organization: Generalized coupling exception from one named
-       case to the full real scope (~13 cross-feature relationships confirmed by code scan).
-       Added note that clientalert/ uses api/ subpackage for DTOs, not dto/.
-  - II. Frontend App Router Layering & State: No change — confirmed accurate.
-  - III. Polyglot Contract Sync: No change — confirmed accurate.
-  - IV. UX Standards & Doherty Threshold: No change — confirmed accurate.
-  - V. Containerized Development: No change — confirmed accurate.
+  - Credential & Security Rules: Replaced `V2__seed_users.sql` and `SEED_*` vars with `R__demo_data.sql` and `dev` profile.
+  - Coding Standards & Code Quality: Added rules for Type-Safe Configuration (`@ConfigurationProperties`) and explicit Filter Chain Ordering (`@Order`).
+  - V. Containerized Development: Mandated Makefile as primary orchestrator and defined `docker-compose.override.yml` boundary.
 - Modified sections:
-  - Coding Standards: Restored NestedForDepth/NestedIfDepth max=3 (confirmed in
-    checkstyle.xml via NestedForDepth + NestedIfDepth modules — previously removed
-    due to wrong grep term). Added thin-controller as team convention.
-  - Credential & Security Rules: Corrected seed gate mechanism (Flyway placeholder
-    seed_environment=dev, not Spring profile directly). Softened BCrypt prod factor
-    from MUST to SHOULD (policy intent, not code-enforced).
+  - V. Containerized Development & Hot Reloading Discipline
+  - Coding Standards & Code Quality
+  - Credential & Security Rules
 - Templates requiring updates:
   - plan-template.md: ✅ in sync
   - spec-template.md: ✅ in sync
@@ -51,6 +44,7 @@ be re-refactored without an explicit architectural decision.
 The Next.js frontend MUST follow a strict downward dependency direction:
 
 - `app/` — can import from anywhere.
+- `components/features/[feature-name]/` — Feature-First Organization applies to the frontend. All domain-specific UI components MUST reside within their respective feature folders.
 - `components/` — can import from `lib/`, `stores/`, `hooks/`, but NEVER from `app/`.
 - `lib/` — contains pure TypeScript (API clients, Zod schemas, utilities) and MUST NOT
   import React components.
@@ -73,8 +67,8 @@ automatic type sharing across the language barrier. The following rules MUST be 
 3. **Zod as Client Runtime Enforcer**: OpenAPI types describe shape; Zod schemas in
    `lib/validation/` are the active runtime enforcers for forms and mutations.
 4. **Backend Pricing Authority**: All pricing computations (base load price, kg limit,
-   extra-minute rate, add-ons — per `docs/02-requirements/business-rules.md` BR-PR-01
-   through BR-PR-04) MUST be computed exclusively by `OrderService`. **Never** hardcode
+   extra-minute rate, add-ons, rush pricing — per `docs/02-requirements/business-rules.md` BR-PR-01
+   through BR-PR-06) MUST be computed exclusively by `OrderService`. **Never** hardcode
    or replicate pricing formulas on the frontend.
 
 ### IV. UX Standards & Doherty Threshold
@@ -86,16 +80,39 @@ order tracking page (`/track`).
 
 ### V. Containerized Development & Hot Reloading Discipline
 Docker and Docker Compose are the canonical local development environment, using
-multi-stage builds (`backend/Dockerfile`, `frontend/Dockerfile`). The `development`
-stage is targeted in `docker-compose.yml`. Hot-reloading operates via bind mounts
-(`./backend` and `./frontend` → `/app`). `make` is the primary entry point.
+multi-stage builds (`backend/Dockerfile`, `frontend/Dockerfile`).
 
-**Rollback Rule**: If hot-reload breaks for any developer after a `docker-compose.yml`
+**Orchestration and Configuration:**
+- **Makefile Orchestration**: The `Makefile` is the primary interface for environment orchestration (e.g., `make setup-env`, `make up-dev`, `make fresh`, `make backup`).
+- **Clean Compose Structure**: The base `docker-compose.yml` MUST remain clean and focused on core services. Development-specific overrides (volume mounts for hot-reloading, host port forwards) MUST reside exclusively in `docker-compose.override.yml`.
+
+**Rollback Rule**: If hot-reload breaks for any developer after a compose file
 change, the change MUST be reverted via `git revert` — never patched forward under
 pressure.
 
+### VI. Physical Asset & Machine Management
+Physical tracking (laundry machines) introduces strict concurrency requirements to avoid 
+operational overlaps. The following rules MUST be maintained:
+1. **Double-Assignment Prevention**: A machine MUST NOT be assigned to more than one active order in `WASHING` or `DRYING` states simultaneously. The backend MUST enforce this via `409 Conflict`.
+2. **BR-MAC-01: Multi-Load Capacity Guarantee.** The system treats one (1) physical machine as covering exactly one (1) order load.
+3. **BR-MAC-02: Assignment Flexibility.** Staff may assign up to N machines in parallel (up to the order's `totalLoads`), or use 1 machine repeatedly for the same order.
+4. **BR-MAC-03: Hoarding Prevention.** An order MUST NEVER be assigned more unique machines than its computed `totalLoads`. Exceeding this limit results in a `400 Bad Request`.
+5. **BR-MAC-04: Max Machine Limit.** The system supports a physical maximum of 50 active machines. Attempting to add more results in a `400 Bad Request`.
+6. **Inventory UI Reality**: The UI MUST present machine availability honestly. Out of service machines or already-assigned machines must be displayed but heavily disabled to avoid operational blind spots.
+7. **Resiliency**: If a machine breaks down mid-cycle, staff MUST be able to reassign the order to a different machine without altering the order's internal status lifecycle.
+
+### VII. Graphify Knowledge Graph & Codebase Investigation
+This project maintains a graphify knowledge graph at `graphify-out/`.
+- Agents and developers SHOULD run `graphify query`, `graphify explain`, and `graphify path` commands to navigate and reason about cross-file, cross-service, and front-to-back relationships before initiating deep file-by-file reading or architectural changes.
+- After cloning the repository, developers MUST run `graphify hook install` once, which will automatically set up git hooks to keep the graph current on every commit.
+
+### VIII. Frontend React/Next.js Best Practices
+All React/Next.js code MUST follow the Vercel React Best Practices rules (including App Router conventions, waterfall elimination, Suspense, and memoization discipline) as detailed in the Coding Standards section.
+
 ## Coding Standards & Code Quality
 
+- **Type-Safe Configuration**: Strictly prefer `@ConfigurationProperties` over `@Value` for injecting properties. Always bind configuration via dedicated properties classes (e.g., `AppProperties`, `SecurityProperties`).
+- **Filter Chain Ordering**: Always declare explicit execution orders for custom Spring Web and Security filters using `@Order` (e.g., `Ordered.HIGHEST_PRECEDENCE` or `Ordered.LOWEST_PRECEDENCE`). Do not rely on implicit default ordering.
 - **Checkstyle Enforcement**: All Java backend code MUST pass Checkstyle without
   violations (severity: warning, configured in `backend/checkstyle.xml`). No unused,
   redundant, or illegal imports. Boolean expressions must be simplified. Braces required
@@ -109,17 +126,21 @@ pressure.
   rejection criterion even though it is not a Checkstyle rule.
 - **No Hardcoded Values**: Pricing rates (base price, kg limit, extra-minute rate) MUST
   be read from the `service_rates` table — never hardcoded in source.
+- **Frontend UI Constants**: Hardcoded strings MUST NEVER be used inside React components.
+  All UI copy MUST be extracted to `src/constants/ui/` and referenced via `UI_LABELS`.
+  This is enforced by the `react/jsx-no-literals` ESLint rule.
+- **Vercel React Best Practices**: All React/Next.js code MUST adhere to strict TypeScript mode and follow the rules defined in the `vercel-react-best-practices` skill:
+  - App Router Conventions: Properly separate Server and Client Components; optimize resource fetching.
+  - Waterfall Elimination: Pre-load queries or run them in parallel (`Promise.all`) to eliminate sequential rendering waterfalls.
+  - Suspense & Error Boundaries: Wrap lazy-loaded components and heavy fetch trees in appropriate Suspense boundaries.
+  - Memoization Discipline: Use `useMemo` and `useCallback` appropriately to prevent unnecessary child re-renders.
+  - Verification: Reviewers (human or agent) MUST verify compliance before a task is marked complete.
 
 ## Credential & Security Rules
 
 - **No Hardcoded Credentials**: Credentials MUST NEVER be hardcoded in source control.
   All secrets MUST be provided via environment variables (root `.env` file, gitignored).
-- **Dev Seed Users**: Development seed accounts (Admin, Staff) are inserted by Flyway
-  migration `V2__seed_users.sql`. The migration is gated by the Flyway placeholder
-  `${seed_environment} = 'dev'` — it runs on all profiles but only inserts rows when
-  that placeholder resolves to `dev`. All four `SEED_*` environment variables must also
-  be non-empty (`SEED_ADMIN_USERNAME`, `SEED_ADMIN_PASSWORD_HASH`, `SEED_STAFF_USERNAME`,
-  `SEED_STAFF_PASSWORD_HASH`). See `docs/development-credentials.md` for setup.
+- **Dev Seed Users**: Development seed accounts and demo data MUST NOT use hardcoded Java seeders or clutter the `.env` file with `SEED_*` variables. Instead, use a repeatable Flyway script (e.g., `R__demo_data.sql`) mapped exclusively to the `dev` migration location. This ensures seed data is tightly scoped to the `dev` Spring profile and never leaks into production.
 - **BCrypt Cost Factor**: `SecurityConfig` hardcodes cost factor **10** for all
   environments. Production deployments SHOULD use a higher cost factor (12–14) — this
   requires overriding `SecurityConfig` or externalizing the value; it is a security
@@ -131,12 +152,11 @@ pressure.
 ## Pull Request & Branching Workflow
 
 - **Branch Base**: All feature branches MUST be cut from and target `develop`.
-- **Branch Naming**: Branches MUST use prefixes: `feat/`, `fix/`, `refactor/`, `docs/`,
-  `chore/` (e.g., `feat/order-cancellation`, `fix/cors-403`).
+- **Branch Naming**: Branches MUST use prefixes that reflect actual practice: `feature/`, `polish/`, `chore/`, `docs/`, `test/`, `appmod/`, `copilot/`, or `dependabot/`.
 - **Commit Messages**: All commits MUST conform to [Conventional Commits](https://www.conventionalcommits.org/).
 - **Local Verification**: Before opening a PR, tests MUST pass locally:
-  - `make test-backend` (Maven compile + unit tests)
-  - `make test-frontend` (lint + typecheck + vitest)
+  - `make test-backend` (Maven compile + JUnit/Testcontainers)
+  - `make test-frontend` (lint + typecheck + Vitest)
 - **Review**: PRs MUST request review from `@markalvincadangin`. CI (GitHub Actions)
   must pass before merge.
 
@@ -166,4 +186,4 @@ pressure.
   - **MINOR**: New principles or sections added.
   - **PATCH**: Clarifications, wording fixes, non-semantic refinements.
 
-**Version**: 1.2.0 | **Ratified**: 2026-07-05 | **Last Amended**: 2026-07-05
+**Version**: 1.5.0 | **Ratified**: 2026-07-05 | **Last Amended**: 2026-07-14

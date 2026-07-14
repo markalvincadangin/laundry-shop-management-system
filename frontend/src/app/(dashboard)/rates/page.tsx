@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,6 +22,8 @@ import { ErrorState, AccessDenied } from "@/features/shared";
 import { PageHeader } from "@/components/layout";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { RateModal } from "@/components/features/rates/RateModal";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { AddOnCatalogList } from "@/components/features/rates/AddOnCatalogList";
 
 /**
  * Service Rates Management — High Fidelity (v5.0)
@@ -63,6 +66,7 @@ function RatesContent() {
   const { rates, loading, error, refresh } = useRates();
   const [selectedRate, setSelectedRate] = useState<ServiceRateResponse | null | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("rates");
 
   if (authLoading) {
     return <RatesLoading />;
@@ -93,7 +97,20 @@ function RatesContent() {
         }
       />
 
-      {loading ? (
+      <div className="flex justify-center mb-8">
+        <SegmentedControl 
+          options={[
+            { label: "Service Rates", value: "rates" },
+            { label: "Add-On Catalog", value: "addons" }
+          ]} 
+          value={activeTab} 
+          onChange={setActiveTab} 
+        />
+      </div>
+
+      {activeTab === "addons" ? (
+        <AddOnCatalogList />
+      ) : loading ? (
         <div className="space-y-grid-6">
           <CardSkeleton />
           <CardSkeleton />
@@ -126,6 +143,7 @@ function RatesContent() {
         rate={selectedRate}
         onSuccess={() => refresh()}
       />
+
     </div>
   );
 }
@@ -185,7 +203,7 @@ function RateCard({
             </dd>
             <div className="flex items-center gap-2">
               <p className="text-[10px] font-black uppercase tracking-widest text-brand-blue/60 bg-brand-blue/5 inline-block px-3 py-1.5 rounded-xl border border-brand-blue/10">
-                Per {rate.kgLimitPerLoad}{UI_LABELS.shared.units.WEIGHT.toLowerCase()} load
+                Per {rate.kgLimitPerLoad}{UI_LABELS.shared.units.WEIGHT.toLowerCase()} {UI_LABELS.dynamic.LOAD}
               </p>
             </div>
           </div>

@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UI_LABELS } from "@/constants/ui";
 import { WashingMachine } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 
 interface LoadingStateProps {
   label?: string;
@@ -23,41 +24,7 @@ export function LoadingState({
     <div className={`flex flex-col items-center gap-grid-6 ${fullPage ? 'scale-110' : ''}`}>
       <div className="relative flex items-center justify-center">
         {/* Advanced SVG Spinner: Dual-Layer Ring */}
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
-          className={`${compact ? 'h-grid-12 w-grid-12' : 'h-grid-24 w-grid-24'}`}
-        >
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm">
-            <defs>
-              <linearGradient id="spinner-gradient-premium" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#15489d" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#30a8d4" />
-              </linearGradient>
-            </defs>
-            <circle
-              cx="50"
-              cy="50"
-              r="44"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="6"
-              className="text-slate-100"
-            />
-            <motion.circle
-              cx="50"
-              cy="50"
-              r="44"
-              fill="none"
-              stroke="url(#spinner-gradient-premium)"
-              strokeWidth="6"
-              strokeLinecap="round"
-              strokeDasharray="160 300"
-              animate={{ strokeDasharray: ["160 300", "80 300", "160 300"] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </svg>
-        </motion.div>
+        <Spinner size={compact ? "md" : "lg"} className="drop-shadow-sm" />
 
         {/* Central Icon: Semantic Anchor */}
         <div className="absolute inset-0 flex items-center justify-center">

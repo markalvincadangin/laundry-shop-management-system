@@ -57,11 +57,34 @@
         <module name="ModifiedControlVariable"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
+        <module name="JavadocMethod">
+            <property name="accessModifiers" value="public"/>
+            <property name="allowMissingParamTags" value="true"/>
+            <property name="allowMissingReturnTag" value="true"/>
+        </module>
+        <module name="MissingJavadocMethod">
+            <property name="scope" value="public"/>
+            <property name="minLineCount" value="2"/>
+            <property name="allowedAnnotations" value="Override, Test, BeforeEach, AfterEach, BeforeAll, AfterAll"/>
+        </module>
+        <module name="JavadocType">
+            <property name="scope" value="public"/>
+        </module>
+        <module name="MissingJavadocType">
+            <property name="scope" value="public"/>
+        </module>
+        <module name="FinalParameters"/>
+        <module name="DesignForExtension">
+            <property name="ignoredAnnotations" value="Override, Test, BeforeEach, AfterEach, BeforeAll, AfterAll, Configuration, Entity, Service, Controller, RestController, Component, Repository, Aspect"/>
+        </module>
     </module>
     <module name="FileLength">
         <property name="max" value="500"/>
     </module>
     <module name="LineLength">
         <property name="max" value="300"/>
+    </module>
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyle.suppressions.file}" default="checkstyle-suppressions.xml"/>
     </module>
 </module>

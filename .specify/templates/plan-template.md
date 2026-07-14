@@ -65,43 +65,23 @@ specs/[###-feature]/
 -->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
 backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
+├── src/main/java/com/himotech/laundryms/[feature]/
+│   ├── controller/
+│   ├── dto/
+│   ├── entity/
+│   ├── repository/
+│   └── service/
+└── src/test/java/com/himotech/laundryms/[feature]/
 
 frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+├── src/app/(dashboard)/[feature]/
+├── src/components/features/[feature]/
+├── src/lib/api/[feature].ts
+└── src/lib/validation/[feature].ts
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: This project uses a strict Frontend + Backend monorepo layout matching the Option 2 standard. Backend follows a Feature-First package structure. Frontend layers components in `features/[feature-name]`.
 
 ## Complexity Tracking
 

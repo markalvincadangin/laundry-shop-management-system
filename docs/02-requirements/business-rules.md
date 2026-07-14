@@ -82,6 +82,18 @@
 
 ---
 
+### BR-PR-06 – Rush Order Pricing
+
+**Rule:** The system MAY support a special rate for "Rush" orders to accommodate expedited processing.  
+**Condition:** Order created with a rush service type.  
+**System Behavior:** Apply the designated "Rush Wash" active service rate for price calculations instead of standard rates.  
+**Constraint:** Must map to a valid `ServiceRate` definition (e.g., "Rush Wash") controlled by Admin.  
+**Applies To:** Order creation  
+**Enforcement:** Backend service  
+**Supports User Stories:** Derived from Client Interview Q7 ("multiple rush orders"), [US-13](user-stories.md#us-13-process-rush-orders), [US-14](user-stories.md#us-14-manage-service-rates--pricing)
+
+---
+
 ## 2. Order Lifecycle Rules
 
 ### BR-OL-01 – Order Must Have a Unique Reference Number
@@ -207,10 +219,10 @@
 
 ### BR-PAY-04 – Payment Status
 
-**Rule:** Payment status MUST be recorded as **Paid** or **Unpaid** (or derived from presence of payment).  
+**Rule:** Payment status MUST be recorded as one of: **Unpaid**, **Paid**, **Partial**, **Voided**, or **Refunded**.  
 **Condition:** Order/payment view or reporting.  
 **System Behavior:** Update or derive status from payment record.  
-**Constraint:** MVP uses Paid and Unpaid only.  
+**Constraint:** MVP primarily uses Paid, Unpaid, and Voided. Partial and Refunded are supported by data model for future phases.  
 **Applies To:** Order/payment view and reporting  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order), [US-08](user-stories.md#us-08-view-daily-sales-report), [US-09](user-stories.md#us-09-view-monthly-and-yearly-income-reports)
@@ -316,3 +328,53 @@
 **Recommended next:**
 - BR-OL-04 (status transitions)
 - BR-NOTIF-01 (ready notifications)
+
+---
+
+## 7. Machine & Inventory Rules
+
+### BR-MAC-01 – Multi-Load Capacity Guarantee
+
+**Rule:** One (1) machine accommodates exactly one (1) load.
+**Condition:** Machine assignment.
+**System Behavior:** Ensure physical mapping limits.
+**Constraint:** Absolute mapping.
+**Applies To:** Machine assignment
+**Enforcement:** Backend service
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)
+
+---
+
+### BR-MAC-02 – Assignment Flexibility
+
+**Rule:** Staff can choose to execute multi-load orders in parallel (assigning multiple machines) or sequentially (assigning a single machine and running it multiple times).
+**Condition:** Machine assignment.
+**System Behavior:** Allows 1 to N machines up to totalLoads.
+**Constraint:** Staff discretion based on shop busyness.
+**Applies To:** Machine assignment
+**Enforcement:** Backend service
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)
+
+---
+
+### BR-MAC-03 – Hoarding Prevention
+
+**Rule:** An order MUST NEVER be assigned more machines than its required `totalLoads`.
+**Condition:** Machine assignment via Create, Update, or Status Change.
+**System Behavior:** Throw HTTP 400 error if `assigned_machines > totalLoads`.
+**Constraint:** Max machines per order equals `totalLoads`.
+**Applies To:** Machine assignment
+**Enforcement:** Backend service (OrderService, OrderStatusService)
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)
+
+---
+
+### BR-MAC-04 – Max Machine Limit
+
+**Rule:** The system supports a maximum of 50 active machines in the physical inventory.
+**Condition:** Machine Creation.
+**System Behavior:** Throw HTTP 400 error if limit is exceeded.
+**Constraint:** Hard limit of 50 machines.
+**Applies To:** Machine Creation
+**Enforcement:** Backend service (MachineService)
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)

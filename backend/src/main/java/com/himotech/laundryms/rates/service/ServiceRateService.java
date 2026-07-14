@@ -85,6 +85,13 @@ public class ServiceRateService {
             rate.setPricePerExtraMinute(request.getPricePerExtraMinute());
         }
         if (request.getIsActive() != null) {
+            if (!request.getIsActive() && rate.getIsActive()) {
+                // We are attempting to deactivate an active rate
+                long activeCount = serviceRateRepository.findByIsActiveTrue().size();
+                if (activeCount <= 1) {
+                    throw new IllegalStateException("Cannot deactivate the last active service rate.");
+                }
+            }
             rate.setIsActive(request.getIsActive());
         }
         return serviceRateRepository.save(rate);

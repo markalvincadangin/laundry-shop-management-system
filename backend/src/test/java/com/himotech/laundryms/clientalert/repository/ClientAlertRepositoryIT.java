@@ -127,7 +127,7 @@ class ClientAlertRepositoryIT extends AbstractIntegrationTest {
          */
         @Test
         @DisplayName("save - Should persist ClientAlert when valid")
-        void save_ShouldPersistClientAlert_WhenValid() {
+        void saveShouldpersistclientalertWhenvalid() {
                 // Given
                 ClientAlert clientAlert = ClientAlert.builder()
                                 .order(testOrder)
@@ -192,7 +192,7 @@ class ClientAlertRepositoryIT extends AbstractIntegrationTest {
          */
         @Test
         @DisplayName("save - Should throw violation when order does not exist")
-        void save_ShouldThrowViolation_WhenOrderDoesNotExist() {
+        void saveShouldthrowviolationWhenorderdoesnotexist() {
                 // Given - ClientAlert with non-existent order
                 Order detachedOrder = Order.builder()
                                 .id(99999L) // Non-existent order ID

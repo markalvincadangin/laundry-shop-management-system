@@ -44,7 +44,7 @@ export function DataTable<T extends { id: string | number }>({
   return (
     <div 
       className={`
-        rounded-[2.5rem] border border-slate-200/60 bg-white shadow-2xl shadow-slate-200/30 overflow-hidden transition-all duration-500
+        rounded-2xl border border-slate-200/60 bg-white shadow-lg shadow-slate-200/30 overflow-hidden transition-all duration-500
         ${isStickyHeader ? "flex flex-col" : ""}
       `}
       style={maxHeight ? { maxHeight } : undefined}

@@ -14,14 +14,6 @@ export const SERVICE_TYPES = {
     pricePerLoad: 140,
     maxKgPerLoad: 8,
   },
-  WASH_DRY_FOLD_RUSH: {
-    label: UI_LABELS.services.WASH_DRY_FOLD_RUSH,
-    value: "WASH_DRY_FOLD_RUSH",
-    description: UI_LABELS.services.WASH_DRY_FOLD_RUSH_DESC,
-    icon: Zap,
-    pricePerLoad: 160,
-    maxKgPerLoad: 8,
-  },
   BLANKETS: {
     label: UI_LABELS.services.BLANKETS,
     value: "BLANKETS",

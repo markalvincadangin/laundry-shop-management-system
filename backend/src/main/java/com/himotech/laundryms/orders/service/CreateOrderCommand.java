@@ -11,7 +11,8 @@ public record CreateOrderCommand(
         int extraMinutes,
         List<AddOnItem> addOns,
         String serviceType,
-        String notes
+        String notes,
+        boolean isRush
 ) {
     public record AddOnItem(String name, BigDecimal price, int quantity) {}
 }

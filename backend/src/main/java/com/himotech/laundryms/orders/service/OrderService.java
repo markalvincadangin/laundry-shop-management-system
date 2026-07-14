@@ -20,6 +20,8 @@ import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.orders.repository.OrderSpecification;
 import com.himotech.laundryms.rates.entity.ServiceRate;
+import com.himotech.laundryms.rates.entity.AddOnCatalog;
+import com.himotech.laundryms.rates.repository.AddOnCatalogRepository;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
@@ -56,6 +58,7 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final AuditLogService auditLogService;
     private final OrderMapper orderMapper;
+    private final AddOnCatalogRepository addOnCatalogRepository;
 
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
 
@@ -95,7 +98,8 @@ public class OrderService {
                 request.getExtraMinutes() != null ? request.getExtraMinutes() : 0,
                 addOns,
                 request.getServiceType(),
-                request.getNotes()
+                request.getNotes(),
+                request.getIsRush() != null ? request.getIsRush() : false
         );
         
         return create(command);
@@ -134,17 +138,33 @@ public class OrderService {
      * @return normalized list of add-on items
      */
     private List<CreateOrderCommand.AddOnItem> normalizeAddOns(CreateOrderRequest request) {
-        if (request.getInitialAddOns() == null) {
-            return List.of();
+        List<CreateOrderCommand.AddOnItem> normalized = new java.util.ArrayList<>();
+        if (request.getInitialAddOns() != null) {
+            normalized.addAll(request.getInitialAddOns().stream()
+                    .map(a -> new CreateOrderCommand.AddOnItem(
+                            a.getName(),
+                            a.getPrice(),
+                            a.getQuantity() > 0 ? a.getQuantity() : 1
+                    ))
+                    .collect(Collectors.toList()));
+        }
+
+        if (Boolean.TRUE.equals(request.getIsRush())) {
+            boolean hasRush = normalized.stream().anyMatch(a -> a.name().equalsIgnoreCase("Rush Fee"));
+            if (!hasRush) {
+                addOnCatalogRepository.findByNameIgnoreCase("Rush Fee").ifPresent(catalogItem -> {
+                    if (catalogItem.getIsActive()) {
+                        normalized.add(new CreateOrderCommand.AddOnItem(
+                                catalogItem.getName(),
+                                catalogItem.getDefaultPrice(),
+                                1
+                        ));
+                    }
+                });
+            }
         }
         
-        return request.getInitialAddOns().stream()
-                .map(a -> new CreateOrderCommand.AddOnItem(
-                        a.getName(),
-                        a.getPrice(),
-                        a.getQuantity() > 0 ? a.getQuantity() : 1
-                ))
-                .collect(Collectors.toList());
+        return normalized;
     }
 
     @Auditable(action = "ORDER_CREATE", description = "Create new laundry order")
@@ -177,7 +197,21 @@ public class OrderService {
                 .multiply(BigDecimal.valueOf(command.extraMinutes()))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        List<CreateOrderCommand.AddOnItem> addOnList = command.addOns() != null ? command.addOns() : List.of();
+        List<CreateOrderCommand.AddOnItem> addOnList = new java.util.ArrayList<>(command.addOns() != null ? command.addOns() : List.of());
+        if (command.isRush()) {
+            boolean hasRush = addOnList.stream().anyMatch(a -> a.name().equalsIgnoreCase("Rush Fee"));
+            if (!hasRush) {
+                addOnCatalogRepository.findByNameIgnoreCase("Rush Fee").ifPresent(catalogItem -> {
+                    if (catalogItem.getIsActive()) {
+                        addOnList.add(new CreateOrderCommand.AddOnItem(
+                                catalogItem.getName(),
+                                catalogItem.getDefaultPrice(),
+                                1
+                        ));
+                    }
+                });
+            }
+        }
         BigDecimal addonsTotalAmount = addOnList.stream()
                 .map(addOnItem -> addOnItem.price().multiply(BigDecimal.valueOf(addOnItem.quantity())).setScale(2, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -202,16 +236,22 @@ public class OrderService {
                 .grandTotal(grandTotal)
                 .currentStatus(OrderStatus.RECEIVED)   // BR-OL-02
                 .paymentStatus(PaymentStatus.UNPAID)
+                .isRush(command.isRush())
                 .notes(command.notes())
                 .build();
 
         for (CreateOrderCommand.AddOnItem item : addOnList) {
-            order.getAddOns().add(OrderAddOn.builder()
+            OrderAddOn addOn = OrderAddOn.builder()
                     .order(order)
                     .name(item.name())
                     .price(item.price())
                     .quantity(item.quantity())
-                    .build());
+                    .build();
+            
+            addOnCatalogRepository.findByNameIgnoreCase(item.name())
+                    .ifPresent(addOn::setAddOnCatalog);
+                    
+            order.getAddOns().add(addOn);
         }
 
         order = orderRepository.save(order);
@@ -257,14 +297,30 @@ public class OrderService {
                 .multiply(BigDecimal.valueOf(extraMins))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        List<CreateOrderCommand.AddOnItem> addOnList = request.getInitialAddOns() != null
-                ? request.getInitialAddOns().stream()
-                        .map(a -> new CreateOrderCommand.AddOnItem(
-                                a.getName(),
-                                a.getPrice(),
-                                a.getQuantity() > 0 ? a.getQuantity() : 1))
-                        .collect(Collectors.toList())
-                : List.of();
+        List<CreateOrderCommand.AddOnItem> addOnList = new java.util.ArrayList<>();
+        if (request.getInitialAddOns() != null) {
+            addOnList.addAll(request.getInitialAddOns().stream()
+                    .map(a -> new CreateOrderCommand.AddOnItem(
+                            a.getName(),
+                            a.getPrice(),
+                            a.getQuantity() > 0 ? a.getQuantity() : 1))
+                    .collect(Collectors.toList()));
+        }
+
+        if (Boolean.TRUE.equals(request.getIsRush())) {
+            boolean hasRush = addOnList.stream().anyMatch(a -> a.name().equalsIgnoreCase("Rush Fee"));
+            if (!hasRush) {
+                addOnCatalogRepository.findByNameIgnoreCase("Rush Fee").ifPresent(catalogItem -> {
+                    if (catalogItem.getIsActive()) {
+                        addOnList.add(new CreateOrderCommand.AddOnItem(
+                                catalogItem.getName(),
+                                catalogItem.getDefaultPrice(),
+                                1
+                        ));
+                    }
+                });
+            }
+        }
 
         BigDecimal addonsTotalAmount = addOnList.stream()
                 .map(addOnItem -> addOnItem.price().multiply(BigDecimal.valueOf(addOnItem.quantity())).setScale(2, RoundingMode.HALF_UP))
@@ -422,7 +478,6 @@ public class OrderService {
         if (serviceType == null) return serviceRateService.getActiveRate();
         
         String dbName = switch (serviceType) {
-            case "WASH_DRY_FOLD_RUSH" -> "Rush Wash";
             case "BLANKETS" -> "Blankets";
             default -> "Standard Wash";
         };

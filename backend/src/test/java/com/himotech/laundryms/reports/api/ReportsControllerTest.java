@@ -46,7 +46,7 @@ class ReportsControllerTest {
 
         @Test
         @DisplayName("Should return 200 and DailySalesReportResponse when valid date")
-        void getDaily_ShouldReturn200_WhenValidDate() throws Exception {
+        void getDailyShouldreturn200Whenvaliddate() throws Exception {
             DailySalesReportResponse response = DailySalesReportResponse.builder()
                     .date(LocalDate.of(2026, 2, 13))
                     .totalIncome(1500.0)
@@ -71,7 +71,7 @@ class ReportsControllerTest {
 
         @Test
         @DisplayName("Should return 200 and PeriodSalesReportResponse when valid year and month")
-        void getMonthly_ShouldReturn200_WhenValidParams() throws Exception {
+        void getMonthlyShouldreturn200Whenvalidparams() throws Exception {
             PeriodSalesReportResponse response = PeriodSalesReportResponse.builder()
                     .period("2026-02")
                     .totalIncome(12000.0)
@@ -98,7 +98,7 @@ class ReportsControllerTest {
 
         @Test
         @DisplayName("Should return 200 and PeriodSalesReportResponse when valid year")
-        void getYearly_ShouldReturn200_WhenValidYear() throws Exception {
+        void getYearlyShouldreturn200Whenvalidyear() throws Exception {
             PeriodSalesReportResponse response = PeriodSalesReportResponse.builder()
                     .period("2026")
                     .totalIncome(150000.0)

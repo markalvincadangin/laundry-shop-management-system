@@ -23,8 +23,8 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+    PasswordEncoder passwordEncoder(SecurityProperties props) {
+        return new BCryptPasswordEncoder(props.getBcryptStrength());
     }
 
     @Bean

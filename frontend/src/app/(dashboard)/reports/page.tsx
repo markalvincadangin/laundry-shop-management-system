@@ -5,11 +5,12 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   Calculator,
-  Loader2,
   FileDown,
   BarChart3,
   Coins,
-  PackageCheck
+  PackageCheck,
+  ArrowUpRight,
+  ArrowDownRight
 } from "lucide-react";
 import { toPng } from "html-to-image";
 import { pdf } from "@react-pdf/renderer";
@@ -57,6 +58,8 @@ export default function ReportsPage() {
     totalIncome: number;
     paidOrdersCount: number;
     revenueByMethod?: Record<string, number>;
+    revenueDelta?: number;
+    ordersDelta?: number;
   } | null>(null);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [chartLoading, setChartLoading] = useState(false);
@@ -253,12 +256,9 @@ export default function ReportsPage() {
                 className="h-14 px-grid-6 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl" 
                 onClick={handleExportPDF}
                 disabled={isExporting || loading}
+                isLoading={isExporting}
+                leftIcon={<FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />}
               >
-                {isExporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
-                )}
                 {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
               <SegmentedControl
@@ -297,8 +297,8 @@ export default function ReportsPage() {
               </>
             ) : (
               <>
-                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Coins} variant="accent" />
-                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={PackageCheck} variant="success" />
+                <KPICard title={UI_LABELS.modules.reports.TOTAL_REVENUE} value={<div className="font-black"><CurrencyDisplay amount={report?.totalIncome ?? 0} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PROCESSED_PAYMENTS} icon={Coins} variant="accent" delta={report?.revenueDelta} />
+                <KPICard title={UI_LABELS.modules.reports.PAID_ORDERS} value={report?.paidOrdersCount ?? 0} subtitle={UI_LABELS.modules.reports.COMPLETED_TRANS} icon={PackageCheck} variant="success" delta={report?.ordersDelta} />
                 <KPICard title={UI_LABELS.modules.reports.AVG_SALE} value={<div className="font-black"><CurrencyDisplay amount={avgOrderValue} size="xl" /></div>} subtitle={UI_LABELS.modules.reports.PER_ORDER_REV} icon={Calculator} variant="default" />
               </>
             )}

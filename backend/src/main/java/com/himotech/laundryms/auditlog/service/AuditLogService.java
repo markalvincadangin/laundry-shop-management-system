@@ -55,8 +55,14 @@ public class AuditLogService {
 
     private AuditLogResponse toResponse(AuditLog log) {
         String username = "System";
-        if (log.getUserId() != null) {
-            username = getUsername(log.getUserId());
+        String userId = log.getUserId();
+        
+        if (userId != null && !userId.trim().isEmpty()) {
+            if ("anonymousUser".equals(userId) || "anonymous".equals(userId) || "SYSTEM".equalsIgnoreCase(userId)) {
+                username = "System";
+            } else {
+                username = getUsername(userId);
+            }
         }
 
         return AuditLogResponse.builder()
@@ -85,5 +91,20 @@ public class AuditLogService {
         } catch (Exception e) {
             return "Unknown";
         }
+    }
+
+    @Transactional
+    public void logViewerAccess(String userId, String ipAddress, String userAgent) {
+        AuditLog log = AuditLog.builder()
+            .userId(userId)
+            .ipAddress(ipAddress)
+            .userAgent(userAgent)
+            .actionType("VIEW")
+            .tableName("audit_logs")
+            .recordId("viewer_accessed")
+            .description("User accessed the audit log viewer")
+            .createdAt(Instant.now())
+            .build();
+        auditLogRepository.save(log);
     }
 }

@@ -9,6 +9,7 @@ import { useOrders } from "@/hooks/useOrders";
 import { useAuth } from "@/stores/auth-store";
 import { Button } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
+import { SystemPauseToggle } from "@/components/features/settings/SystemPauseToggle";
 import { TopbarProps } from "@/types/components";
 
 /**
@@ -46,6 +47,11 @@ export function Topbar({ title }: TopbarProps) {
 
       {/* Right zone — Controls */}
       <div className="flex items-center gap-2 shrink-0">
+
+        {/* Admin System Pause Toggle */}
+        {user?.role === "ADMIN" && (
+          <SystemPauseToggle />
+        )}
 
         {/* Date chip — hidden at xl to save space, shown at 2xl */}
         <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 shadow-inner">

@@ -22,6 +22,10 @@ public class OrderAddOn {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "add_on_catalog_id")
+    private com.himotech.laundryms.rates.entity.AddOnCatalog addOnCatalog;
+
     @Column(nullable = false, length = 100)
     private String name;
 

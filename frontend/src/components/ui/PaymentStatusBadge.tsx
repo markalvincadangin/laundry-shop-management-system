@@ -2,6 +2,7 @@
 
 import { CheckCircle2, AlertCircle, Circle } from "lucide-react";
 import { UI_LABELS } from "@/constants/ui";
+import { Badge } from "./Badge";
 
 const PAYMENT_CONFIG: Record<
   string,
@@ -38,13 +39,14 @@ export function PaymentStatusBadge({
   const Icon = config.icon;
 
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${config.bgClass} ${config.textClass} ${className}`}
+    <Badge
+      variant="custom"
+      className={`${config.bgClass} ${config.textClass} ${className}`}
       role="status"
       aria-label={`Payment: ${config.label}`}
     >
-      {Icon && <Icon className="h-3 w-3" aria-hidden="true" />}
+      {Icon && <Icon className="h-3.5 w-3.5" aria-hidden="true" />}
       {config.label}
-    </span>
+    </Badge>
   );
 }

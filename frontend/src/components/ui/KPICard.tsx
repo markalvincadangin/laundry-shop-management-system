@@ -5,6 +5,7 @@ import { Card } from "./Card";
 import { UI_LABELS } from "@/constants/ui";
 import { KPICardProps } from "@/types/components";
 import { motion } from "framer-motion";
+import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 
 /**
  * KPICard — High-impact metric display for dashboard and registries — v5.0
@@ -18,6 +19,7 @@ export function KPICard({
   icon: Icon,
   variant = "default",
   pulse = false,
+  delta,
   onClick,
   className = "",
 }: KPICardProps) {
@@ -42,7 +44,7 @@ export function KPICard({
   const content = (
     <Card
       variant="glass"
-      className={`group relative h-full overflow-hidden transition-all duration-500 rounded-[2.5rem] border-slate-200/50 shadow-2xl shadow-slate-200/40 ${interactiveClasses} ${className}`}
+      className={`group relative h-full overflow-hidden transition-all duration-500 rounded-2xl border-slate-200/50 shadow-md shadow-slate-200/40 ${interactiveClasses} ${className}`}
     >
       {/* Glossy Overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/20 pointer-events-none" />
@@ -79,6 +81,12 @@ export function KPICard({
               {subtitle}
             </p>
           )}
+          {delta !== undefined && (
+            <div className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-widest mt-2 ${delta > 0 ? "text-emerald-500" : delta < 0 ? "text-red-500" : "text-slate-400"}`}>
+              {delta > 0 ? <ArrowUpRight className="h-3 w-3" /> : delta < 0 ? <ArrowDownRight className="h-3 w-3" /> : null}
+              {Math.abs(delta).toFixed(1)}{UI_LABELS.dynamic.VS_PREV_PERIOD}
+            </div>
+          )}
         </div>
 
         {/* Decorative highlight line (HCI: visual progress indicator) */}
@@ -106,7 +114,7 @@ export function KPICard({
       <button
         type="button"
         onClick={onClick}
-        className="block w-full text-left rounded-[2.5rem] focus:outline-none"
+        className="block w-full text-left rounded-2xl focus:outline-none"
         aria-label={`${title}: ${value}. Click for details.`}
       >
         {motionWrapper}
@@ -122,7 +130,7 @@ export function KPICard({
  */
 export function KPICardSkeleton() {
   return (
-    <div className="h-full rounded-[2.5rem] border border-slate-200/50 bg-white/50 p-grid-10 space-y-grid-8 animate-pulse shadow-sm">
+    <div className="h-full rounded-2xl border border-slate-200/50 bg-white/50 p-grid-10 space-y-grid-8 animate-pulse shadow-sm">
       <div className="h-14 w-14 rounded-[20px] bg-slate-100" />
       <div className="space-y-grid-3">
         <div className="h-2 w-24 bg-slate-100 rounded" />

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ButtonProps } from "@/types/components";
+import { Spinner } from "./Spinner";
 
 /**
  * Standardized Button Atom — v5.0 Premium
@@ -43,7 +44,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && (
           <span className="inline-flex items-center shrink-0">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <Spinner size="sm" />
           </span>
         )}
         {!isLoading && leftIcon && (

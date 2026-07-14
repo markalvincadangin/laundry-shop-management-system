@@ -239,11 +239,22 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- Checkstyle for code quality -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>3.5.0</version>
+				<configuration>
+					<configLocation>checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>false</failsOnError>
+					<failOnViolation>false</failOnViolation>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<propertyExpansion>checkstyle.suppressions.file=${project.basedir}/checkstyle-suppressions.xml</propertyExpansion>
+					<sourceDirectories>
+						<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+					</sourceDirectories>
+					<excludes>**/generated-sources/**</excludes>
+				</configuration>
 				<executions>
 					<execution>
 					  <?m2e execute onConfiguration?>
@@ -252,16 +263,6 @@
 						<goals>
 							<goal>check</goal>
 						</goals>
-						<configuration>
-							<configLocation>checkstyle.xml</configLocation>
-							<consoleOutput>true</consoleOutput>
-							<failsOnError>false</failsOnError>
-							<failOnViolation>false</failOnViolation>
-							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-							<sourceDirectories>
-								<sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-							</sourceDirectories>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

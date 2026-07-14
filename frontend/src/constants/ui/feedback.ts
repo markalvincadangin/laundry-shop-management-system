@@ -5,8 +5,11 @@ export const feedback = {
     UPDATED: "Successfully updated",
     SAVED: "Changes saved successfully",
     ORDER_SAVED: "Order has been added to the list.",
+    ORDER_UPDATED: "Order status updated",
     PAYMENT: "Payment recorded successfully",
     COPIED: "Reference number copied",
+    AUTH_SUCCESS: "Signed in successfully",
+    LOGOUT_SUCCESS: "Signed out successfully",
   },
   error: {
     GENERIC: "System error occurred",
@@ -36,5 +39,11 @@ export const feedback = {
     SALES_TITLE: "No Sales Data",
     SALES_DESC: "Revenue data will appear once payments are recorded.",
     SEARCH_TITLE: "No matches found",
+  },
+  inactivity: {
+    TITLE: "Session Paused",
+    DESC: "This terminal has been idle for 5 minutes. Customer data is hidden for privacy.",
+    DISMISS: "Click anywhere to continue",
+    DISMISS_BTN: "Resume Session",
   },
 } as const;

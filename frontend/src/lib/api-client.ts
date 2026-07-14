@@ -121,4 +121,16 @@ export const apiClient = {
     }));
     return handleResponse<T>(response);
   },
+
+  async delete<T>(path: string): Promise<T> {
+    const base = getBaseUrl();
+    const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+    const headers: Record<string, string> = { Accept: "application/json" };
+
+    const response = await fetch(url, fetchOptions({
+      method: "DELETE",
+      headers,
+    }));
+    return handleResponse<T>(response);
+  },
 };
