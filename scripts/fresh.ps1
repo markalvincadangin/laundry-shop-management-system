@@ -9,12 +9,12 @@ Write-Host "Initializing Optimized Fresh Start..." -ForegroundColor Cyan
 
 # 1. Stop services
 Write-Host "Stopping services..." -ForegroundColor Yellow
-docker compose down
+docker compose -f docker-compose.yml -f docker-compose.override.yml --profile full down
 
 # 2. Wipe ONLY the Database Volume (Keep Maven/Node cache)
 Write-Host "Wiping database only..." -ForegroundColor Yellow
 # Dynamically get the volume name from docker-compose config to avoid hardcoding
-$VolumeName = (docker compose config --format json | ConvertFrom-Json).volumes.postgres_dev_data.name
+$VolumeName = (docker compose -f docker-compose.yml -f docker-compose.override.yml config --format json | ConvertFrom-Json).volumes.postgres_dev_data.name
 
 if ($VolumeName) {
     Write-Host "Removing volume: $VolumeName" -ForegroundColor Gray
@@ -25,7 +25,7 @@ if ($VolumeName) {
 
 # 3. Start and Re-migrate
 Write-Host "Starting services and reseeding..." -ForegroundColor Yellow
-docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.override.yml --profile full up -d
 
 Pop-Location
 Write-Host "System is back online!" -ForegroundColor Green
