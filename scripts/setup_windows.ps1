@@ -1,6 +1,6 @@
 # Setup PostgreSQL as a Windows Service silently (Production Ready)
 $pgVersion = "16.2-1"
-$installerPath = "postgresql-$pgVersion-windows-x64.exe"
+$installerPath = Join-Path $env:TEMP "postgresql-$pgVersion-windows-x64.exe"
 $installDir = "C:\Program Files\PostgreSQL\16"
 $dataDir = "$installDir\data"
 
