@@ -25,3 +25,12 @@ if (Test-Path $confFile) {
 }
 
 Write-Host "PostgreSQL Installation Complete."
+
+Write-Host "Setting System Environment Variables for FaithLaundryMS..."
+[Environment]::SetEnvironmentVariable("DB_HOST", "localhost", "Machine")
+[Environment]::SetEnvironmentVariable("DB_PORT", "5432", "Machine")
+[Environment]::SetEnvironmentVariable("DB_NAME", "postgres", "Machine")
+[Environment]::SetEnvironmentVariable("DB_USER", "postgres", "Machine")
+[Environment]::SetEnvironmentVariable("DB_PASSWORD", $password, "Machine")
+[Environment]::SetEnvironmentVariable("JWT_SECRET", "default-offline-jwt-secret-key-123456", "Machine")
+Write-Host "Environment Variables Set."
