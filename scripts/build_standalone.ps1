@@ -17,6 +17,7 @@ jpackage --name $appName `
   --win-dir-chooser `
   --win-shortcut `
   --win-menu `
-  --java-options "-Xmx512m"
+  --java-options "-Xmx512m" `
+  --verbose
 
 Write-Host "MSI Installer generated successfully!"
