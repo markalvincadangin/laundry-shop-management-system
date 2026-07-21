@@ -41,7 +41,7 @@ import { OrderResponse } from "@/lib/api/orders";
 export default function CustomerProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const customerId = Number(params.id);
+  const customerId = String(params.id);
 
   const [page, setPage] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

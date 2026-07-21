@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 
 export interface SystemSettings {
-  id?: number;
+  id?: string;
   isSystemPaused: boolean;
 }
 

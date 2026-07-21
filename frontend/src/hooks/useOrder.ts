@@ -7,7 +7,7 @@ import { ordersService } from "@/lib/api/orders";
  * useOrder: Fetches full details for a specific order.
  * Mandated by FRONT-002 Strategy 1 for logic extraction.
  */
-export function useOrder(orderId: number) {
+export function useOrder(orderId: string) {
   const {
     data: order,
     isLoading: loading,

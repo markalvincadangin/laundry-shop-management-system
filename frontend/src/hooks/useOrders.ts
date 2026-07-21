@@ -39,7 +39,7 @@ export function useOrders(params?: OrderListParams) {
   });
 
   const statusMutation = useMutation({
-    mutationFn: (variables: { id: number; newStatus: OrderStatus; changedByUserId: string; machineIds?: number[] }) =>
+    mutationFn: (variables: { id: string; newStatus: OrderStatus; changedByUserId: string; machineIds?: string[] }) =>
       ordersService.updateStatus(variables.id, {
         newStatus: variables.newStatus,
         changedByUserId: variables.changedByUserId,
@@ -99,7 +99,7 @@ export function useOrders(params?: OrderListParams) {
    * Advances an order to the next process stage.
    * userId is pulled from AuthContext (D1 — no prop drilling).
    */
-  const advanceOrder = async (orderId: number, nextStatus: OrderStatus, machineIds?: number[]) => {
+  const advanceOrder = async (orderId: string, nextStatus: OrderStatus, machineIds?: string[]) => {
     if (!user?.userId) {
       toast.error(UI_LABELS.feedback.error.AUTH_REQUIRED);
       return;

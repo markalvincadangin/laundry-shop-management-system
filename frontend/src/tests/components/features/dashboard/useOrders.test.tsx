@@ -43,7 +43,7 @@ describe("useOrders hook optimistic updates", () => {
 
   it("optimistically updates order status", async () => {
     (ordersService.list as any).mockResolvedValue({
-      content: [{ id: 1, currentStatus: "RECEIVED" }],
+      content: [{ id: "1", currentStatus: "RECEIVED" }],
       page: 0,
       size: 10,
       totalElements: 1,
@@ -63,7 +63,7 @@ describe("useOrders hook optimistic updates", () => {
     });
 
     // Advance order
-    result.current.advanceOrder(1, "WASHING" as any);
+    result.current.advanceOrder("1", "WASHING" as any);
 
     // It should optimistically update immediately
     await waitFor(() => {
@@ -73,7 +73,7 @@ describe("useOrders hook optimistic updates", () => {
 
   it("sanitizes 500 errors to prevent raw stack traces in UI toast", async () => {
     (ordersService.list as any).mockResolvedValue({
-      content: [{ id: 1, currentStatus: "RECEIVED" }],
+      content: [{ id: "1", currentStatus: "RECEIVED" }],
       page: 0,
       size: 10,
       totalElements: 1,
@@ -96,7 +96,7 @@ describe("useOrders hook optimistic updates", () => {
     });
 
     // Advance order
-    result.current.advanceOrder(1, "WASHING" as any);
+    result.current.advanceOrder("1", "WASHING" as any);
 
     // Verify the error toast was sanitized
     await waitFor(() => {

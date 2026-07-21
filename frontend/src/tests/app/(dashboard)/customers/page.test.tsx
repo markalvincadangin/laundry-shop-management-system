@@ -85,7 +85,7 @@ describe("CustomersPage", () => {
     vi.mocked(customersService.list).mockResolvedValue({
       content: [
         {
-          id: 1,
+          id: "1",
           firstName: "Mark",
           lastName: "Alvin",
           contactNumber: "09123456789",

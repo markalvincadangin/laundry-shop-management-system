@@ -10,7 +10,7 @@ import { UI_LABELS } from "@/constants/ui";
 
 interface OrderCardProps {
   order: OrderResponse;
-  onAdvance: (orderId: number, nextStatus: OrderStatus) => void;
+  onAdvance: (orderId: string, nextStatus: OrderStatus) => void;
   isLoading?: boolean;
   /** When true, applies Urgent State left-border accent (§11.5 — Ready for Pickup column) */
   isUrgent?: boolean;

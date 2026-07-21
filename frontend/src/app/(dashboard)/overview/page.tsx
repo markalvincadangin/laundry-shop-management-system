@@ -44,17 +44,17 @@ export default function Home() {
 
   const [paymentModalState, setPaymentModalState] = useState<{
     isOpen: boolean;
-    orderId: number;
+    orderId: string;
     grandTotal: number;
     referenceNumber: string;
   }>({
     isOpen: false,
-    orderId: 0,
+    orderId: "",
     grandTotal: 0,
     referenceNumber: "",
   });
 
-  const handleAdvance = (orderId: number, nextStatus: string, machineIds?: number[]) => {
+  const handleAdvance = (orderId: string, nextStatus: string, machineIds?: string[]) => {
     if (nextStatus === "RELEASED") {
       const order = orders.find((o) => o.id === orderId);
       if (order && order.paymentStatus === "UNPAID") {

@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface PaymentActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  orderId: number;
+  orderId: string;
   grandTotal: number;
   referenceNumber: string;
   onSuccess?: () => void;

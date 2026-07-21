@@ -20,7 +20,7 @@ import { useSystemSettings } from "@/hooks/useSystemSettings";
 
 interface OrderPipelineProps {
   orders: OrderResponse[];
-  onAdvance: (orderId: number, nextStatus: OrderStatus, machineIds?: number[]) => void;
+  onAdvance: (orderId: string, nextStatus: OrderStatus, machineIds?: string[]) => void;
   loading?: boolean;
   /** Ref forwarded to the "Ready for Pickup" column for KPI card scroll-to (§11.2) */
   readyColumnRef?: React.RefObject<HTMLDivElement | null>;
@@ -105,7 +105,7 @@ const PIPELINE_COLUMNS: ColumnConfig[] = [
 
 interface PipelineColumnProps extends ColumnConfig {
   orders: OrderResponse[];
-  onAdvance: (orderId: number, nextStatus: OrderStatus) => void;
+  onAdvance: (orderId: string, nextStatus: OrderStatus) => void;
   isLoading?: boolean;
   colRef?: React.RefObject<HTMLDivElement | null>;
   isSystemPaused?: boolean;
@@ -224,9 +224,9 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
 
   const [modalState, setModalState] = React.useState<{
     isOpen: boolean;
-    orderId: number;
+    orderId: string;
     nextStatus: string;
-  }>({ isOpen: false, orderId: 0, nextStatus: "" });
+  }>({ isOpen: false, orderId: "", nextStatus: "" });
 
   const unavailableMachineIds = React.useMemo(() => {
     return orders
@@ -255,7 +255,7 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
         return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
       });
 
-  const handleInterceptAdvance = (orderId: number, nextStatus: OrderStatus) => {
+  const handleInterceptAdvance = (orderId: string, nextStatus: OrderStatus) => {
     if (nextStatus === "WASHING" || nextStatus === "DRYING") {
       setModalState({ isOpen: true, orderId, nextStatus });
     } else {
@@ -263,7 +263,7 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
     }
   };
 
-  const handleModalConfirm = (machineIds: number[]) => {
+  const handleModalConfirm = (machineIds: string[]) => {
     onAdvance(modalState.orderId, modalState.nextStatus as OrderStatus, machineIds);
     setModalState(prev => ({ ...prev, isOpen: false }));
   };

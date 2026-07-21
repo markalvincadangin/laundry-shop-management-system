@@ -285,7 +285,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    customerId: number;
+                    customerId: string;
                 };
                 cookie?: never;
             };
@@ -325,7 +325,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    customerId: number;
+                    customerId: string;
                 };
                 cookie?: never;
             };
@@ -513,7 +513,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    rateId: number;
+                    rateId: string;
                 };
                 cookie?: never;
             };
@@ -591,7 +591,7 @@ export interface paths {
                     sortBy?: string;
                     sortDir?: "asc" | "desc";
                     /** @description Filter by specific customer ID */
-                    customerId?: number;
+                    customerId?: string;
                     /** @description Filter by service type (Rate ID) */
                     serviceRateId?: number;
                 };
@@ -832,7 +832,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -874,7 +874,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -940,7 +940,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -1003,7 +1003,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    orderId?: number;
+                    orderId?: string;
                     /** @description Search by reference number, customer name, or transaction ID */
                     q?: string;
                     /** @description Start date (inclusive) */
@@ -1103,7 +1103,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    paymentId: number;
+                    paymentId: string;
                 };
                 cookie?: never;
             };
@@ -1156,7 +1156,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -1254,7 +1254,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1869,7 +1869,7 @@ export interface components {
         };
         CustomerResponse: {
             /** Format: int64 */
-            id: number;
+            id: string;
             firstName: string;
             lastName: string;
             contactNumber: string;
@@ -1890,7 +1890,7 @@ export interface components {
             last: boolean;
         };
         ServiceRateResponse: {
-            id: number;
+            id: string;
             serviceName: string;
             /** Format: double */
             basePricePerLoad: number;
@@ -1923,7 +1923,7 @@ export interface components {
         };
         CreateOrderRequest: {
             /** Format: int64 */
-            customerId?: number;
+            customerId?: string;
             /**
              * Format: uuid
              * @description Optional — overridden by JWT principal when authenticated.
@@ -1986,10 +1986,10 @@ export interface components {
         };
         OrderResponse: {
             /** Format: int64 */
-            id: number;
+            id: string;
             referenceNumber: string;
             /** Format: int64 */
-            customerId: number;
+            customerId: string;
             customerName?: string;
             /** @description UUID string */
             createdByUserId?: string;
@@ -2057,7 +2057,7 @@ export interface components {
         };
         CreatePaymentRequest: {
             /** Format: int64 */
-            orderId: number;
+            orderId: string;
             /** Format: double */
             amountPaid: number;
             /** @description Defaults to CASH if not provided. */
@@ -2072,9 +2072,9 @@ export interface components {
         };
         PaymentResponse: {
             /** Format: int64 */
-            id: number;
+            id: string;
             /** Format: int64 */
-            orderId: number;
+            orderId: string;
             orderReferenceNumber?: string;
             customerName?: string;
             /** Format: double */
@@ -2092,12 +2092,12 @@ export interface components {
         };
         ClientAlertResponse: {
             /** Format: int64 */
-            id: number;
+            id: string;
             /** Format: int64 */
-            orderId: number;
+            orderId: string;
             referenceNumber?: string;
             /** Format: int64 */
-            customerId: number;
+            customerId: string;
             customerName?: string;
             contactNumber?: string;
             message: string;
@@ -2147,7 +2147,7 @@ export interface components {
         /** @description Audit record of a system action. Capture point-in-time state for forensic inspection. */
         AuditLogResponse: {
             /** Format: int64 */
-            id: number;
+            id: string;
             /** @description Username who performed the action */
             actor: string;
             /**

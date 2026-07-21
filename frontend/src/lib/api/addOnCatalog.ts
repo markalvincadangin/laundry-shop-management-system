@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 
 export interface AddOnCatalogResponse {
-  id: number;
+  id: string;
   name: string;
   defaultPrice: number;
   isActive: boolean;
@@ -31,7 +31,7 @@ export const addOnCatalogService = {
     return response;
   },
 
-  async update(id: number, data: UpdateAddOnCatalogRequest): Promise<AddOnCatalogResponse> {
+  async update(id: string, data: UpdateAddOnCatalogRequest): Promise<AddOnCatalogResponse> {
     const response = await apiClient.patch<AddOnCatalogResponse>(`/v1/add-ons/${id}`, data);
     return response;
   },

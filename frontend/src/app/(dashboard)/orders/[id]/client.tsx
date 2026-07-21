@@ -71,7 +71,7 @@ function OrderEditForm({
     }))
   );
   const [newAddOn, setNewAddOn] = useState({ name: "", price: "" });
-  const [machineIds, setMachineIds] = useState<number[]>(order.machineIds ?? []);
+  const [machineIds, setMachineIds] = useState<string[]>(order.machineIds ?? []);
   const { machines, loading: machinesLoading } = useMachines();
 
   const handleSave = async (e: React.FormEvent) => {
@@ -188,7 +188,7 @@ function OrderEditForm({
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = Number(params.id);
+  const orderId = String(params.id);
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

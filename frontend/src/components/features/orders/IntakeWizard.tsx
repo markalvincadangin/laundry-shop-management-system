@@ -147,7 +147,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   useEffect(() => {
     const cid = searchParams.get("customerId");
     if (cid && !selected && !isRegistering) {
-      selectById(Number(cid));
+      selectById(String(cid));
     }
   }, [searchParams, selectById, selected, isRegistering]);
 
@@ -788,7 +788,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                                 const current = getValues("machineIds") || [];
                                 setValue(
                                   "machineIds",
-                                  current.includes(m.id) ? current.filter((id: number) => id !== m.id) : [...current, m.id],
+                                  current.includes(m.id) ? current.filter((id: string) => id !== m.id) : [...current, m.id],
                                   { shouldDirty: true }
                                 );
                               }}

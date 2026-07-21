@@ -32,7 +32,7 @@ import { PAYMENT_STATUS, PAYMENT_METHOD, type PaymentMethod } from "@/constants/
 export default function PayOrderPage() {
   const params = useParams();
   const router = useRouter();
-  const orderId = Number(params.id);
+  const orderId = String(params.id);
   
   // Hardened Logic via Hooks (FRONT-002 Strategy 1)
   const { order, loading, error: fetchError } = useOrder(orderId);
