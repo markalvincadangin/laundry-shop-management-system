@@ -26,5 +26,5 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     boolean existsByReferenceNumber(String referenceNumber);
 
     @Query("SELECT COUNT(o) FROM Order o JOIN o.assignedMachines m WHERE m.id IN :machineIds AND o.currentStatus IN :statuses AND o.id != :orderId")
-    long countConflictingMachines(@Param("machineIds") Set<Long> machineIds, @Param("statuses") List<OrderStatus> statuses, @Param("orderId") UUID orderId);
+    long countConflictingMachines(@Param("machineIds") Set<UUID> machineIds, @Param("statuses") List<OrderStatus> statuses, @Param("orderId") UUID orderId);
 }

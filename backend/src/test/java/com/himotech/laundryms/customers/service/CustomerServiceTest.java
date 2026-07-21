@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.customers.entity.Customer;
 import com.himotech.laundryms.customers.repository.CustomerRepository;
 import com.himotech.laundryms.support.TestDataBuilders;
@@ -85,9 +87,9 @@ class CustomerServiceTest {
         @DisplayName("Should return customer when found")
         void findByIdShouldreturncustomerWhenfound() {
             Customer customer = TestDataBuilders.customer().build();
-            when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
+            when(customerRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(customer));
 
-            Optional<Customer> result = customerService.findById(1L);
+            Optional<Customer> result = customerService.findById(UUID.randomUUID());
 
             assertThat(result).isPresent();
             assertThat(result.get()).isEqualTo(customer);
@@ -96,9 +98,9 @@ class CustomerServiceTest {
         @Test
         @DisplayName("Should return empty when not found")
         void findByIdShouldreturnemptyWhennotfound() {
-            when(customerRepository.findById(999L)).thenReturn(Optional.empty());
+            when(customerRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
 
-            Optional<Customer> result = customerService.findById(999L);
+            Optional<Customer> result = customerService.findById(UUID.randomUUID());
 
             assertThat(result).isEmpty();
         }

@@ -54,7 +54,7 @@ public class OrderStatusService {
 
     @Auditable(action = "ORDER_STATUS_UPDATE", description = "Update order lifecycle status")
     @Transactional
-    public Order updateStatus(UUID orderId, OrderStatus newStatus, UUID changedByUserId, String notes, Set<Long> machineIds) {
+    public Order updateStatus(UUID orderId, OrderStatus newStatus, UUID changedByUserId, String notes, Set<UUID> machineIds) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         User changedBy = userRepository.findById(changedByUserId)

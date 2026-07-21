@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
 import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.rates.dto.ServiceRateResponse;
@@ -50,7 +52,7 @@ class ServiceRatesControllerTest {
 
     private ServiceRate sampleRate() {
         return ServiceRate.builder()
-                .id(1)
+                .id(UUID.randomUUID())
                 .serviceName("Standard Wash")
                 .basePricePerLoad(new BigDecimal("120.00"))
                 .kgLimitPerLoad(new BigDecimal("8.00"))
@@ -68,7 +70,7 @@ class ServiceRatesControllerTest {
         void listShouldreturn200Whenactiveonlytrue() throws Exception {
             ServiceRate rate = sampleRate();
             ServiceRateResponse resp = ServiceRateResponse.builder()
-                    .id(1)
+                    .id(UUID.randomUUID())
                     .serviceName("Standard Wash")
                     .basePricePerLoad(120.0)
                     .kgLimitPerLoad(8.0)
@@ -111,7 +113,7 @@ class ServiceRatesControllerTest {
         @DisplayName("Should return 200 and ServiceRateResponse when active exists")
         void getActiveShouldreturn200Whenactiveexists() throws Exception {
             ServiceRate rate = sampleRate();
-            ServiceRateResponse resp = ServiceRateResponse.builder().id(1).basePricePerLoad(120.0).kgLimitPerLoad(8.0).build();
+            ServiceRateResponse resp = ServiceRateResponse.builder().id(UUID.randomUUID()).basePricePerLoad(120.0).kgLimitPerLoad(8.0).build();
             when(serviceRateService.getActiveRate()).thenReturn(rate);
             when(serviceRateMapper.toResponse(rate)).thenReturn(resp);
 

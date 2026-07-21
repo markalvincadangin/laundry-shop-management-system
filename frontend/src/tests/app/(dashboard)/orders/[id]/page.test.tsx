@@ -7,7 +7,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
 import { ordersService } from "@/lib/api/orders";
-import OrderDetailsPage from "@/app/(dashboard)/orders/[id]/page";
+import OrderDetailsPage from "@/app/(dashboard)/orders/[id]/client";
 
 // Mock services
 vi.mock("@/lib/api/orders", () => ({

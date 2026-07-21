@@ -60,7 +60,7 @@ class OrderStatusServiceTest {
     @InjectMocks
     private OrderStatusService orderStatusService;
 
-    private static final Long ORDER_ID = 1L;
+    private static final UUID ORDER_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private Order order;
     private User user;
@@ -75,9 +75,9 @@ class OrderStatusServiceTest {
         when(systemSettingsService.getSettings()).thenReturn(new SystemSettingsResponse(false));
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Machine machine = Machine.builder().id(1L).name("Washer 1").status(com.himotech.laundryms.machines.entity.MachineStatus.OPERATIONAL).isActive(true).build();
+        Machine machine = Machine.builder().id(java.util.UUID.randomUUID()).name("Washer 1").status(com.himotech.laundryms.machines.entity.MachineStatus.OPERATIONAL).isActive(true).build();
         when(machineRepository.findAllById(any())).thenReturn(List.of(machine));
-        when(orderRepository.countConflictingMachines(any(), any(), any())).thenReturn(0L);
+        when(orderRepository.countConflictingMachines(any(), any(), any())).thenReturn(1L);
     }
 
     @Nested
@@ -91,7 +91,7 @@ class OrderStatusServiceTest {
             assertThat(order.getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);
 
             // When
-            Order result = orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L));
+            Order result = orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(UUID.randomUUID()));
 
             // Then
             assertThat(result.getCurrentStatus()).isEqualTo(OrderStatus.WASHING);
@@ -222,7 +222,7 @@ class OrderStatusServiceTest {
         void updateStatusShouldrejectWhensystempaused() {
             when(systemSettingsService.getSettings()).thenReturn(new SystemSettingsResponse(true));
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(UUID.randomUUID())))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("System is currently paused");
         }
@@ -232,7 +232,7 @@ class OrderStatusServiceTest {
         void updateStatusShouldrejectWhenmachineassignmenthasconflict() {
             when(orderRepository.countConflictingMachines(any(), any(), any())).thenReturn(1L);
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(UUID.randomUUID())))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("currently assigned to another active order");
         }
@@ -247,7 +247,7 @@ class OrderStatusServiceTest {
         void updateStatusShouldthrowWhenordernotfound() {
             when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(UUID.randomUUID())))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("Order not found");
         }
@@ -257,7 +257,7 @@ class OrderStatusServiceTest {
         void updateStatusShouldthrowWhenusernotfound() {
             when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(1L)))
+            assertThatThrownBy(() -> orderStatusService.updateStatus(ORDER_ID, OrderStatus.WASHING, USER_ID, null, Set.of(UUID.randomUUID())))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("User not found");
         }

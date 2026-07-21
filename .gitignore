@@ -45,6 +45,11 @@ docker/.env.docker
 **/jacoco*.xml
 **/surefire-reports/
 **/test-output/
+**/playwright-report/
+**/test-results/
+
+# frontend-maven-plugin
+**/node/
 
 # Docker volumes (local)
 **/postgres_data/

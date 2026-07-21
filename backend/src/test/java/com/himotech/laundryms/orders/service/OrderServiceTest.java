@@ -62,7 +62,7 @@ class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private static final Long CUSTOMER_ID = 1L;
+    private static final UUID CUSTOMER_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private Customer customer;
     private User user;
@@ -81,7 +81,7 @@ class OrderServiceTest {
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> {
             Order o = inv.getArgument(0);
             if (o.getId() == null) {
-                o.setId(1L);
+                o.setId(UUID.randomUUID());
             }
             return o;
         });
@@ -120,7 +120,7 @@ class OrderServiceTest {
             // Given - 1 load (8kg)
             var command = TestDataBuilders.createOrderCommand(CUSTOMER_ID, USER_ID, new BigDecimal("8.00"), 0, null, null, null, true);
             var rushFee = new AddOnCatalog();
-            rushFee.setId(1);
+            rushFee.setId(UUID.randomUUID());
             rushFee.setName("Rush Fee");
             rushFee.setDefaultPrice(new BigDecimal("50.00"));
             rushFee.setIsActive(true);
@@ -145,7 +145,7 @@ class OrderServiceTest {
             // Given
             var command = TestDataBuilders.createOrderCommand(CUSTOMER_ID, USER_ID, new BigDecimal("8.00"), 0, null, null, null, true);
             var rushFee = new AddOnCatalog();
-            rushFee.setId(1);
+            rushFee.setId(UUID.randomUUID());
             rushFee.setName("Rush Fee");
             rushFee.setDefaultPrice(new BigDecimal("50.00"));
             rushFee.setIsActive(false);
@@ -419,7 +419,7 @@ class OrderServiceTest {
         @Test
         @DisplayName("Should return order when valid reference number provided (BR-NOTIF-02)")
         void findByReferenceNumberShouldreturnorderWhenvalid() {
-            Order mockOrder = TestDataBuilders.order().id(1L).referenceNumber("LDR-20260220-1234").build();
+            Order mockOrder = TestDataBuilders.order().id(UUID.randomUUID()).referenceNumber("LDR-20260220-1234").build();
             when(orderRepository.findByReferenceNumber("LDR-20260220-1234")).thenReturn(Optional.of(mockOrder));
 
             Order result = orderService.findByReferenceNumber("LDR-20260220-1234");
@@ -465,7 +465,7 @@ class OrderServiceTest {
         void setUpOrder() {
             // Create an unpaid, not-released order for updating
             existingOrder = TestDataBuilders.order()
-                    .id(1L)
+                    .id(UUID.randomUUID())
                     .extraMinutes(5)
                     .extraMinutesAmount(new BigDecimal("5.00"))
                     .grandTotal(new BigDecimal("285.00"))  // baseAmount=280 + extra=5
@@ -473,7 +473,7 @@ class OrderServiceTest {
                     .paymentStatus(PaymentStatus.UNPAID)
                     .build();
 
-            when(orderRepository.findById(1L)).thenReturn(Optional.of(existingOrder));
+            when(orderRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(existingOrder));
             when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
         }
 
@@ -486,7 +486,7 @@ class OrderServiceTest {
             request.setExtraMinutes(10);
 
             // When
-            Order result = orderService.update(1L, request);
+            Order result = orderService.update(UUID.randomUUID(), request);
 
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(10);
@@ -517,7 +517,7 @@ class OrderServiceTest {
             request.setAddOns(List.of(addOn1, addOn2));
 
             // When
-            Order result = orderService.update(1L, request);
+            Order result = orderService.update(UUID.randomUUID(), request);
 
             // Then
             assertThat(result.getAddOns()).hasSize(2);
@@ -543,7 +543,7 @@ class OrderServiceTest {
             request.setAddOns(List.of(addOn));
 
             // When
-            Order result = orderService.update(1L, request);
+            Order result = orderService.update(UUID.randomUUID(), request);
 
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(15);
@@ -563,7 +563,7 @@ class OrderServiceTest {
             request.setExtraMinutes(10);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(1L, request))
+            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Cannot update order: already paid");
             verify(orderRepository, never()).save(any());
@@ -579,7 +579,7 @@ class OrderServiceTest {
             request.setExtraMinutes(10);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(1L, request))
+            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Cannot update order: already released");
             verify(orderRepository, never()).save(any());
@@ -594,7 +594,7 @@ class OrderServiceTest {
             request.setExtraMinutes(-5);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(1L, request))
+            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Extra minutes cannot be negative");
             verify(orderRepository, never()).save(any());
@@ -609,7 +609,7 @@ class OrderServiceTest {
             request.setExtraMinutes(0);
 
             // When
-            Order result = orderService.update(1L, request);
+            Order result = orderService.update(UUID.randomUUID(), request);
 
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(0);
@@ -634,7 +634,7 @@ class OrderServiceTest {
             request.setAddOns(List.of(addOn));
 
             // When
-            Order result = orderService.update(1L, request);
+            Order result = orderService.update(UUID.randomUUID(), request);
 
             // Then - extra minutes stays at 5
             assertThat(result.getExtraMinutes()).isEqualTo(5);
@@ -665,7 +665,7 @@ class OrderServiceTest {
             request.setAddOns(null); // Don't update add-ons
 
             // When
-            Order result = orderService.update(1L, request);
+            Order result = orderService.update(UUID.randomUUID(), request);
 
             // Then - add-ons remain
             assertThat(result.getAddOns()).hasSize(1);
@@ -679,13 +679,13 @@ class OrderServiceTest {
         @DisplayName("Should throw NotFoundException when order does not exist (BR-OL-06)")
         void updateShouldthrowWhenordernotfound() {
             // Given
-            when(orderRepository.findById(999L)).thenReturn(Optional.empty());
+            when(orderRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
             com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
                 new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(999L, request))
+            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("Order not found: 999");
             verify(orderRepository, never()).save(any());

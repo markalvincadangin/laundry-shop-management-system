@@ -1,5 +1,7 @@
 package com.himotech.laundryms.machines.api;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.himotech.laundryms.machines.dto.CreateMachineRequest;
 import com.himotech.laundryms.machines.dto.UpdateMachineStatusRequest;
@@ -77,7 +79,7 @@ class MachineControllerTest {
         request.setName("Washer 1");
 
         Machine machine = new Machine();
-        machine.setId(1L);
+        machine.setId(UUID.randomUUID());
         machine.setName("Washer 1");
         
         when(machineService.createMachine(any())).thenReturn(machine);
@@ -111,9 +113,9 @@ class MachineControllerTest {
         request.setStatus(MachineStatus.MAINTENANCE);
 
         Machine machine = new Machine();
-        machine.setId(1L);
+        machine.setId(UUID.randomUUID());
         
-        when(machineService.updateStatus(eq(1L), any())).thenReturn(machine);
+        when(machineService.updateStatus(eq(UUID.randomUUID()), any())).thenReturn(machine);
 
         mockMvc.perform(patch("/api/v1/machines/1/status")
                         .with(csrf())

@@ -9,6 +9,19 @@ Write-Host "Downloading PostgreSQL installer..."
 Invoke-WebRequest -Uri "https://get.enterprisedb.com/postgresql/postgresql-$pgVersion-windows-x64.exe" -OutFile $installerPath
 
 Write-Host "Installing PostgreSQL silently..."
-Start-Process -Wait -FilePath $installerPath -ArgumentList "--mode unattended --superpassword $password --serverport 5432 --prefix `"$installDir`" --datadir `"$dataDir`"" -NoNewWindow
+$process = Start-Process -Wait -FilePath $installerPath -ArgumentList "--mode unattended --superpassword $password --serverport 5432 --prefix `"$installDir`" --datadir `"$dataDir`"" -NoNewWindow -PassThru
+
+if ($process.ExitCode -ne 0) {
+    Write-Error "PostgreSQL installation failed. Rolling back..."
+    if (Test-Path $installDir) { Remove-Item -Recurse -Force $installDir }
+    exit $process.ExitCode
+}
+
+$confFile = "$dataDir\postgresql.conf"
+if (Test-Path $confFile) {
+    (Get-Content $confFile) -replace "^#?shared_buffers\s*=.*", "shared_buffers = 128MB" | Set-Content $confFile
+    Write-Host "Configured shared_buffers=128MB"
+    Restart-Service -Name "postgresql-x64-16" -Force
+}
 
 Write-Host "PostgreSQL Installation Complete."

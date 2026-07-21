@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.api;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.himotech.laundryms.rates.dto.AddOnCatalogResponse;
 import com.himotech.laundryms.rates.dto.CreateAddOnCatalogRequest;
@@ -46,7 +48,7 @@ class AddOnCatalogControllerTest {
     @DisplayName("GET /api/v1/add-ons should return list of add-ons")
     void getAllAddOns() throws Exception {
         var response = AddOnCatalogResponse.builder()
-                .id(1)
+                .id(UUID.randomUUID())
                 .name("Rush Fee")
                 .defaultPrice(new BigDecimal("50.00"))
                 .isActive(true)
@@ -69,7 +71,7 @@ class AddOnCatalogControllerTest {
         request.setDefaultPrice(new BigDecimal("10.00"));
         
         var response = AddOnCatalogResponse.builder()
-                .id(1)
+                .id(UUID.randomUUID())
                 .name("New Addon")
                 .defaultPrice(new BigDecimal("10.00"))
                 .isActive(true)
@@ -94,15 +96,15 @@ class AddOnCatalogControllerTest {
         request.setIsActive(false);
         
         var response = AddOnCatalogResponse.builder()
-                .id(1)
+                .id(UUID.randomUUID())
                 .name("Updated")
                 .defaultPrice(new BigDecimal("15.00"))
                 .isActive(false)
                 .build();
         
-        when(service.update(eq(1), any(UpdateAddOnCatalogRequest.class))).thenReturn(response);
+        when(service.update(any(UUID.class), any(UpdateAddOnCatalogRequest.class))).thenReturn(response);
 
-        mockMvc.perform(patch("/api/v1/add-ons/1")
+        mockMvc.perform(patch("/api/v1/add-ons/" + UUID.randomUUID())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

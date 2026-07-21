@@ -1,7 +1,7 @@
 # Build Standalone Windows Installer with jpackage
 Write-Host "Building Maven Project..."
 cd ..\backend
-mvn clean package -DskipTests
+mvn clean package -P standalone -DskipTests
 
 $jarPath = "target\laundryms-backend-0.0.1-SNAPSHOT.jar"
 $appName = "FaithLaundryMS"
@@ -15,6 +15,7 @@ jpackage --name $appName `
   --type msi `
   --win-dir-chooser `
   --win-shortcut `
-  --win-menu
+  --win-menu `
+  --java-options "-Xmx512m"
 
 Write-Host "MSI Installer generated successfully!"

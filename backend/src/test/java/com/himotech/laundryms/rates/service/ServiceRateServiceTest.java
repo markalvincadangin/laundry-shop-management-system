@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import com.himotech.laundryms.rates.repository.ServiceRateRepository;
@@ -76,15 +78,15 @@ class ServiceRateServiceTest {
         @DisplayName("Should prevent deactivating last active service rate")
         void updateShouldpreventdeactivatinglastactiverate() {
             // Given
-            ServiceRate rate = TestDataBuilders.serviceRate().id(1).isActive(true).build();
-            when(serviceRateRepository.findById(1)).thenReturn(Optional.of(rate));
+            ServiceRate rate = TestDataBuilders.serviceRate().id(UUID.randomUUID()).isActive(true).build();
+            when(serviceRateRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(rate));
             when(serviceRateRepository.findByIsActiveTrue()).thenReturn(List.of(rate)); // only 1 active rate
 
             UpdateServiceRateRequest request = new UpdateServiceRateRequest();
             request.setIsActive(false);
 
             // When / Then
-            assertThatThrownBy(() -> serviceRateService.update(1, request))
+            assertThatThrownBy(() -> serviceRateService.update(UUID.randomUUID(), request))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Cannot deactivate the last active service rate");
         }

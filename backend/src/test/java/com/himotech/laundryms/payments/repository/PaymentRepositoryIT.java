@@ -1,5 +1,7 @@
 package com.himotech.laundryms.payments.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentMethod;
 import com.himotech.laundryms.payments.PaymentStatus;
@@ -281,7 +283,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
     void shouldEnforceForeignKeyConstraintForOrder() {
         // Given - Payment with non-existent order
         Order detachedOrder = Order.builder()
-                .id(99999L) // Non-existent order ID
+                .id(java.util.UUID.randomUUID()) // Non-existent order ID
                 .referenceNumber("FAKE-ORDER")
                 .build();
 

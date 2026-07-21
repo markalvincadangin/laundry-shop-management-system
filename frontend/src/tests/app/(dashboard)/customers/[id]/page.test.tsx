@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
 import { customersService } from "@/lib/api/customers";
 import { ordersService } from "@/lib/api/orders";
-import CustomerProfilePage from "@/app/(dashboard)/customers/[id]/page";
+import CustomerProfilePage from "@/app/(dashboard)/customers/[id]/client";
 
 // Mock services
 vi.mock("@/lib/api/customers", () => ({

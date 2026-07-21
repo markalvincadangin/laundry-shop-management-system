@@ -42,5 +42,5 @@ public class OrderResponse {
     private Boolean isRush;
     private List<AddOnResponse> addOns;
     private List<AuditLogResponse> auditLogs;
-    private List<Long> machineIds;
+    private List<UUID> machineIds;
 }

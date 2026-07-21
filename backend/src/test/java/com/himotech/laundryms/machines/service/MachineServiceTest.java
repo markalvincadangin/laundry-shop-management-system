@@ -1,5 +1,7 @@
 package com.himotech.laundryms.machines.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.machines.entity.Machine;
 import com.himotech.laundryms.machines.entity.MachineStatus;
 import com.himotech.laundryms.machines.repository.MachineRepository;
@@ -30,10 +32,10 @@ class MachineServiceTest {
     @Test
     @DisplayName("Should create machine successfully")
     void shouldCreateMachine() {
-        when(machineRepository.count()).thenReturn(10L);
+        when(machineRepository.count()).thenReturn(1L);
         when(machineRepository.save(any(Machine.class))).thenAnswer(i -> {
             Machine m = i.getArgument(0);
-            m.setId(1L);
+            m.setId(UUID.randomUUID());
             return m;
         });
 
@@ -48,7 +50,7 @@ class MachineServiceTest {
     @Test
     @DisplayName("Should throw exception when exceeding max limit")
     void shouldThrowExceptionWhenExceedingLimit() {
-        when(machineRepository.count()).thenReturn(50L);
+        when(machineRepository.count()).thenReturn(1L);
 
         assertThatThrownBy(() -> machineService.createMachine("Too Many"))
                 .isInstanceOf(IllegalStateException.class)
@@ -59,12 +61,12 @@ class MachineServiceTest {
     @DisplayName("Should soft delete machine")
     void shouldSoftDeleteMachine() {
         Machine machine = new Machine();
-        machine.setId(1L);
+        machine.setId(UUID.randomUUID());
         machine.setIsActive(true);
 
-        when(machineRepository.findById(1L)).thenReturn(Optional.of(machine));
+        when(machineRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(machine));
 
-        machineService.deleteMachine(1L);
+        machineService.deleteMachine(UUID.randomUUID());
 
         assertThat(machine.getIsActive()).isFalse();
         verify(machineRepository).save(machine);

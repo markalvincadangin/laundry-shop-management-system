@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
 import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import org.junit.jupiter.api.DisplayName;
@@ -40,10 +42,10 @@ class ClientAlertControllerTest {
     @DisplayName("GET /api/v1/client-alerts - Should return 200 and paginated list")
     void listShouldreturn200Whenauthenticated() throws Exception {
         ClientAlertResponse resp = ClientAlertResponse.builder()
-                .id(1L)
-                .orderId(10L)
+                .id(java.util.UUID.randomUUID())
+                .orderId(UUID.randomUUID())
                 .referenceNumber("LDR-20260215-1234")
-                .customerId(5L)
+                .customerId(UUID.randomUUID())
                 .customerName("John Doe")
                 .message("Your order LDR-20260215-1234 is ready for pickup.")
                 .status("SENT")
@@ -68,7 +70,7 @@ class ClientAlertControllerTest {
                 .with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(clientAlertService).markAsRead(1L);
+        verify(clientAlertService).markAsRead(UUID.randomUUID());
     }
 
     @Test

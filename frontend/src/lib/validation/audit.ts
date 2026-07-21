@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const auditLogSchema = z.object({
-  id: z.number(),
+  id: z.string().uuid(),
   actor: z.string().nullable().optional(),
   operation: z.string(),
   entityType: z.string(),

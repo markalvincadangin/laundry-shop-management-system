@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.shared.UserRole;

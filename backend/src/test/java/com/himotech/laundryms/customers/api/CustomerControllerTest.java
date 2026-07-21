@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.api;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.himotech.laundryms.customers.dto.CreateCustomerRequest;
 import com.himotech.laundryms.customers.dto.CustomerResponse;
@@ -68,14 +70,14 @@ class CustomerControllerTest {
             request.setContactNumber("09171234567");
 
             Customer saved = Customer.builder()
-                    .id(1L)
+                    .id(java.util.UUID.randomUUID())
                     .firstName("Juan")
                     .lastName("Dela Cruz")
                     .contactNumber("09171234567")
                     .build();
 
             CustomerResponse response = CustomerResponse.builder()
-                    .id(1L)
+                    .id(java.util.UUID.randomUUID())
                     .firstName("Juan")
                     .lastName("Dela Cruz")
                     .contactNumber("09171234567")
@@ -154,8 +156,8 @@ class CustomerControllerTest {
         @Test
         @DisplayName("Should return 200 and array when query provided")
         void searchShouldreturn200Whenqueryprovided() throws Exception {
-            Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
-            CustomerResponse resp = CustomerResponse.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+            Customer c = Customer.builder().id(java.util.UUID.randomUUID()).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+            CustomerResponse resp = CustomerResponse.builder().id(java.util.UUID.randomUUID()).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
             when(customerService.search(eq("Juan"), any(), any(), any(), any(org.springframework.data.domain.Pageable.class))).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(c)));
             when(customerMapper.toResponse(c)).thenReturn(resp);
 
@@ -190,9 +192,9 @@ class CustomerControllerTest {
         @Test
         @DisplayName("Should return 200 and CustomerResponse when found")
         void getByIdShouldreturn200Whenfound() throws Exception {
-            Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
-            CustomerResponse resp = CustomerResponse.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
-            when(customerService.findById(1L)).thenReturn(Optional.of(c));
+            Customer c = Customer.builder().id(java.util.UUID.randomUUID()).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+            CustomerResponse resp = CustomerResponse.builder().id(java.util.UUID.randomUUID()).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+            when(customerService.findById(UUID.randomUUID())).thenReturn(Optional.of(c));
             when(customerMapper.toResponse(c)).thenReturn(resp);
 
             mockMvc.perform(get("/api/v1/customers/1"))
@@ -200,19 +202,19 @@ class CustomerControllerTest {
                     .andExpect(jsonPath("$.id").value(1))
                     .andExpect(jsonPath("$.firstName").value("Juan"));
 
-            verify(customerService).findById(1L);
+            verify(customerService).findById(UUID.randomUUID());
         }
 
         @Test
         @DisplayName("Should return 404 when not found")
         void getByIdShouldreturn404Whennotfound() throws Exception {
-            when(customerService.findById(999L)).thenReturn(Optional.empty());
+            when(customerService.findById(UUID.randomUUID())).thenReturn(Optional.empty());
 
             mockMvc.perform(get("/api/v1/customers/999"))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.code").value("NOT_FOUND"));
 
-            verify(customerService).findById(999L);
+            verify(customerService).findById(UUID.randomUUID());
         }
     }
 }

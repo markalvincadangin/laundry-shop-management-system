@@ -79,11 +79,11 @@ class OrderControllerTest {
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
     private Order sampleOrder() {
-        Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+        Customer c = Customer.builder().id(java.util.UUID.randomUUID()).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
         User u = User.builder().id(USER_ID).username("staff").build();
-        ServiceRate r = ServiceRate.builder().id(1).basePricePerLoad(BigDecimal.valueOf(120)).kgLimitPerLoad(BigDecimal.valueOf(8)).pricePerExtraMinute(BigDecimal.ONE).isActive(true).build();
+        ServiceRate r = ServiceRate.builder().id(java.util.UUID.randomUUID()).basePricePerLoad(BigDecimal.valueOf(120)).kgLimitPerLoad(BigDecimal.valueOf(8)).pricePerExtraMinute(BigDecimal.ONE).isActive(true).build();
         return Order.builder()
-                .id(1L)
+                .id(java.util.UUID.randomUUID())
                 .referenceNumber("LDR-20260213-1234")
                 .customer(c)
                 .createdBy(u)
@@ -113,16 +113,16 @@ class OrderControllerTest {
         @DisplayName("Should return 201 and OrderResponse when valid request")
         void createShouldreturn201Whenvalidrequest() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.randomUUID());
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(new BigDecimal("10.00"));
             request.setExtraMinutes(0);
 
             Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder()
-                    .id(1L)
+                    .id(java.util.UUID.randomUUID())
                     .referenceNumber("LDR-20260213-1234")
-                    .customerId(1L)
+                    .customerId(UUID.randomUUID())
                     .weightKg(10.0)
                     .totalLoads(2)
                     .grandTotal(240.0)
@@ -154,7 +154,7 @@ class OrderControllerTest {
         @DisplayName("Should return 400 when weightKg is null")
         void createShouldreturn400Whenweightnull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.randomUUID());
             request.setCreatedByUserId(USER_ID);
 
             mockMvc.perform(post("/api/v1/orders")
@@ -169,7 +169,7 @@ class OrderControllerTest {
         @DisplayName("Should return 400 when weightKg is zero")
         void createShouldreturn400Whenweightzero() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.randomUUID());
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(BigDecimal.ZERO);
 
@@ -184,7 +184,7 @@ class OrderControllerTest {
         @DisplayName("Should return 401 when createdByUserId is null and no principal")
         void createShouldreturn401Whencreatedbyuseridnull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.randomUUID());
             request.setWeightKg(new BigDecimal("10.00"));
 
             mockMvc.perform(post("/api/v1/orders")
@@ -198,7 +198,7 @@ class OrderControllerTest {
         @DisplayName("Should return 404 when customer not found")
         void createShouldreturn404Whencustomernotfound() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(999L);
+            request.setCustomerId(UUID.randomUUID());
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(new BigDecimal("10.00"));
 
@@ -221,7 +221,7 @@ class OrderControllerTest {
         @DisplayName("Should return 200 and paginated orders")
         void listShouldreturn200Withorders() throws Exception {
             Order order = sampleOrder();
-            OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
+            OrderResponse orderResp = OrderResponse.builder().id(java.util.UUID.randomUUID()).referenceNumber("LDR-20260213-1234").build();
             Page<Order> page = new PageImpl<>(List.of(order), PageRequest.of(0, 20), 1);
             when(orderService.search(any(OrderListParams.class), any(Pageable.class))).thenReturn(page);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
@@ -247,21 +247,21 @@ class OrderControllerTest {
         @Test
         @DisplayName("Should return 200 and OrderResponse when found")
         void getByIdShouldreturn200Whenfound() throws Exception {
-            OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
-            when(orderService.getOrderDetails(1L)).thenReturn(orderResp);
+            OrderResponse orderResp = OrderResponse.builder().id(java.util.UUID.randomUUID()).referenceNumber("LDR-20260213-1234").build();
+            when(orderService.getOrderDetails(UUID.randomUUID())).thenReturn(orderResp);
 
             mockMvc.perform(get("/api/v1/orders/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(1))
                     .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"));
 
-            verify(orderService).getOrderDetails(1L);
+            verify(orderService).getOrderDetails(UUID.randomUUID());
         }
 
         @Test
         @DisplayName("Should return 404 when not found")
         void getByIdShouldreturn404Whennotfound() throws Exception {
-            when(orderService.getOrderDetails(999L)).thenThrow(new NotFoundException("Order not found: 999"));
+            when(orderService.getOrderDetails(UUID.randomUUID())).thenThrow(new NotFoundException("Order not found: 999"));
 
             mockMvc.perform(get("/api/v1/orders/999"))
                     .andExpect(status().isNotFound())
@@ -320,8 +320,8 @@ class OrderControllerTest {
 
             Order order = sampleOrder();
             order.setCurrentStatus(OrderStatus.WASHING);
-            OrderResponse orderResp = OrderResponse.builder().id(1L).currentStatus("WASHING").build();
-            when(orderStatusService.updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any(), any())).thenReturn(order);
+            OrderResponse orderResp = OrderResponse.builder().id(java.util.UUID.randomUUID()).currentStatus("WASHING").build();
+            when(orderStatusService.updateStatus(eq(UUID.randomUUID()), eq(OrderStatus.WASHING), eq(USER_ID), any(), any())).thenReturn(order);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
             mockMvc.perform(patch("/api/v1/orders/1/status")
@@ -331,7 +331,7 @@ class OrderControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.currentStatus").value("WASHING"));
 
-            verify(orderStatusService).updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any(), any());
+            verify(orderStatusService).updateStatus(eq(UUID.randomUUID()), eq(OrderStatus.WASHING), eq(USER_ID), any(), any());
         }
 
         @Test
@@ -368,7 +368,7 @@ class OrderControllerTest {
             request.setNewStatus("WASHING");
             request.setChangedByUserId(USER_ID);
 
-            when(orderStatusService.updateStatus(eq(999L), any(), any(), any(), any()))
+            when(orderStatusService.updateStatus(eq(UUID.randomUUID()), any(), any(), any(), any()))
                     .thenThrow(new NotFoundException("Order not found: 999"));
 
             mockMvc.perform(patch("/api/v1/orders/999/status")

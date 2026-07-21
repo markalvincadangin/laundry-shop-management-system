@@ -65,15 +65,15 @@ class PaymentControllerTest {
         @DisplayName("Should return 201 when valid request")
         void createShouldreturn201Whenvalid() throws Exception {
             CreatePaymentRequest request = new CreatePaymentRequest();
-            request.setOrderId(1L);
+            request.setOrderId(UUID.randomUUID());
             request.setAmountPaid(new BigDecimal("240.00"));
             request.setPaymentMethod(PaymentMethod.CASH);
             request.setReceivedByUserId(TEST_USER_ID);
 
-            Payment payment = Payment.builder().id(1L).build();
+            Payment payment = Payment.builder().id(java.util.UUID.randomUUID()).build();
             PaymentResponse response = PaymentResponse.builder()
-                    .id(1L)
-                    .orderId(1L)
+                    .id(java.util.UUID.randomUUID())
+                    .orderId(UUID.randomUUID())
                     .amountPaid(240.0)
                     .paymentMethod("CASH")
                     .build();
@@ -110,7 +110,7 @@ class PaymentControllerTest {
         @DisplayName("Should return 401 when receivedByUserId is null and no principal")
         void createShouldreturn400Whenreceivedbyuseridnull() throws Exception {
             CreatePaymentRequest request = new CreatePaymentRequest();
-            request.setOrderId(1L);
+            request.setOrderId(UUID.randomUUID());
             request.setAmountPaid(new BigDecimal("240.00"));
             request.setPaymentMethod(PaymentMethod.CASH);
 
@@ -129,8 +129,8 @@ class PaymentControllerTest {
         @Test
         @DisplayName("Should return 200 and paginated list")
         void listShouldreturn200() throws Exception {
-            Payment payment = Payment.builder().id(1L).build();
-            PaymentResponse response = PaymentResponse.builder().id(1L).build();
+            Payment payment = Payment.builder().id(java.util.UUID.randomUUID()).build();
+            PaymentResponse response = PaymentResponse.builder().id(java.util.UUID.randomUUID()).build();
             Page<Payment> page = new PageImpl<>(List.of(payment), PageRequest.of(0, 20), 1);
 
             when(paymentService.findAll(any(), any(), any(), any(), any(Pageable.class))).thenReturn(page);
@@ -149,10 +149,10 @@ class PaymentControllerTest {
         @Test
         @DisplayName("Should return 200 when found")
         void getByIdShouldreturn200() throws Exception {
-            Payment payment = Payment.builder().id(1L).build();
-            PaymentResponse response = PaymentResponse.builder().id(1L).build();
+            Payment payment = Payment.builder().id(java.util.UUID.randomUUID()).build();
+            PaymentResponse response = PaymentResponse.builder().id(java.util.UUID.randomUUID()).build();
 
-            when(paymentService.findById(1L)).thenReturn(payment);
+            when(paymentService.findById(UUID.randomUUID())).thenReturn(payment);
             when(paymentMapper.toResponse(payment)).thenReturn(response);
 
             mockMvc.perform(get("/api/v1/payments/1"))
@@ -163,7 +163,7 @@ class PaymentControllerTest {
         @Test
         @DisplayName("Should return 404 when not found")
         void getByIdShouldreturn404() throws Exception {
-            when(paymentService.findById(999L)).thenThrow(new NotFoundException("Payment not found"));
+            when(paymentService.findById(UUID.randomUUID())).thenThrow(new NotFoundException("Payment not found"));
 
             mockMvc.perform(get("/api/v1/payments/999"))
                     .andExpect(status().isNotFound());

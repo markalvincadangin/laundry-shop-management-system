@@ -155,6 +155,20 @@ docker compose --profile full up -d
 > **Note on Permissions:** If switching from Full Docker back to Hybrid mode, you may encounter `Permission Denied` errors because Docker creates root-owned files in `node_modules/` and `target/`. Clean them up using a dockerized remove command:
 > `docker run --rm -v $(pwd)/frontend:/app -w /app postgres:16-alpine rm -rf node_modules .next`
 
+### 💻 Option 3: Offline-First Standalone Setup (Windows Desktop)
+
+This setup provides a fully bundled `.msi` Windows installer with an embedded Java Runtime (JRE), static Next.js frontend, and a silent PostgreSQL installer. This is intended for production deployment on Windows 10/11 machines without any developer tools installed.
+
+1. **Build the Standalone Installer**:
+   Open PowerShell as Administrator:
+   ```powershell
+   cd scripts
+   .\setup_windows.ps1
+   .\build_standalone.ps1
+   ```
+2. **Install**:
+   Locate the generated `.msi` file in `backend\target\installer\` and double-click to install. It will silently configure PostgreSQL as a Windows Service and install the FaithLaundryMS application.
+
 ### Verify Everything is Running
 
 | Service | Mode | URL | Expected |

@@ -9,7 +9,7 @@ export const AddOnSchema = z.object({
 
 /** Step 1: Customer Details Base Object */
 const IntakeCustomerStepBase = z.object({
-  customerId: z.number().int().positive().optional(),
+  customerId: z.string().uuid().optional(),
   customer: CustomerSchema.optional(),
 });
 
@@ -36,7 +36,7 @@ export const IntakeServiceStepSchema = z.object({
 export const IntakeExtrasStepSchema = z.object({
   notes: z.string().max(500).optional(),
   initialAddOns: z.array(AddOnSchema).optional(),
-  machineIds: z.array(z.number()).optional(),
+  machineIds: z.array(z.string().uuid()).optional(),
 });
 
 /** Full Combined Schema for Final Submission */
@@ -58,7 +58,7 @@ export const UpdateOrderStatusSchema = z.object({
   newStatus: z.string().min(1, "Status is required"),
   notes: z.string().max(500).optional(),
   changedByUserId: z.string().uuid("Invalid staff ID format"),
-  machineIds: z.array(z.number().int().positive()).max(10, "Cannot assign more than 10 machines").optional(),
+  machineIds: z.array(z.string().uuid()).max(10, "Cannot assign more than 10 machines").optional(),
 });
 
 export type UpdateOrderStatusInput = z.infer<typeof UpdateOrderStatusSchema>;
