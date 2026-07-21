@@ -5,11 +5,11 @@ Set-Location $backendDir
 mvn clean package -P standalone -DskipTests
 
 $jarPath = "target\laundryms-backend-0.0.1-SNAPSHOT.jar"
-$appName = "FaithLaundryMS"
+$appName = "Laundry Shop Management System"
 $appVersion = "1.0.0"
 
 Write-Host "Packaging with jpackage..."
-jpackage --name $appName `
+jpackage --name "$appName" `
   --input target `
   --main-jar laundryms-backend-0.0.1-SNAPSHOT.jar `
   --app-version $appVersion `
