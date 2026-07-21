@@ -1,6 +1,7 @@
 # Build Standalone Windows Installer with jpackage
 Write-Host "Building Maven Project..."
-cd ..\backend
+$backendDir = Join-Path $PSScriptRoot "..\backend"
+Set-Location $backendDir
 mvn clean package -P standalone -DskipTests
 
 $jarPath = "target\laundryms-backend-0.0.1-SNAPSHOT.jar"
