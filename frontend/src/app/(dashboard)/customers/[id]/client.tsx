@@ -98,10 +98,10 @@ export default function CustomerProfilePage() {
 
   const columns: DataTableColumn<OrderResponse>[] = [
     {
-      header: UI_LABELS.shared.common.REFERENCE,
+      header: UI_LABELS.shared.common.TRACKING_NUMBER,
       render: (o) => (
         <span className="font-mono text-sm font-bold text-slate-900 group-hover:text-brand-blue transition-colors">
-          {o.referenceNumber}
+          {o.trackingNumber}
         </span>
       ),
     },

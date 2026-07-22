@@ -13,7 +13,7 @@ test.describe('Public Tracking & Notifications', () => {
     await loginAsAdmin(request);
     const customer = await createCustomer(request);
     
-    // Create an order via API to get a valid reference number
+    // Create an order via API to get a valid tracking number
     const orderRes = await request.post(`${API_BASE}/api/v1/orders`, {
       data: {
         customerId: customer.id,
@@ -22,7 +22,7 @@ test.describe('Public Tracking & Notifications', () => {
       },
     });
     const order = await orderRes.json();
-    validRefNumber = order.referenceNumber || order.id; // Fallback if ref number isn't populated
+    validRefNumber = order.trackingNumber || order.id; // Fallback if ref number isn't populated
   });
 
   test('NOT-02: Public Tracking omits PII', async ({ page }) => {

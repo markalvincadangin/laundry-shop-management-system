@@ -18,7 +18,7 @@ export const shared = {
     EXTRA_TIME: "Extra Time",
     NAME: "Name",
     CONTACT: "Contact",
-    REFERENCE: "Reference",
+    TRACKING_NUMBER: "Tracking Number",
     AMOUNT_DUE: "Amount Due",
     USER: "User",
     STAFF: "Staff",

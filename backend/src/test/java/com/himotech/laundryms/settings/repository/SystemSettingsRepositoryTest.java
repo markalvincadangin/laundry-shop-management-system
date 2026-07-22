@@ -1,7 +1,5 @@
 package com.himotech.laundryms.settings.repository;
 
-import java.util.UUID;
-
 import com.himotech.laundryms.settings.entity.SystemSettings;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

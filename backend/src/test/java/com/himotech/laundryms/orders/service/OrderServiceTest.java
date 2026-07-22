@@ -19,7 +19,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -77,7 +76,7 @@ class OrderServiceTest {
         when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
         when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
         when(serviceRateService.getActiveRate()).thenReturn(serviceRate);
-        when(orderRepository.existsByReferenceNumber(anyString())).thenReturn(false);
+        when(orderRepository.existsByTrackingNumber(anyString())).thenReturn(false);
         when(orderRepository.save(any(Order.class))).thenAnswer(inv -> {
             Order o = inv.getArgument(0);
             if (o.getId() == null) {
@@ -105,7 +104,7 @@ class OrderServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.getId()).isNotNull();
-            assertThat(result.getReferenceNumber()).startsWith("LDR-");
+            assertThat(result.getTrackingNumber()).startsWith("LDR-");
             assertThat(result.getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);  // BR-OL-02
             assertThat(result.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
             assertThat(result.getCustomer()).isEqualTo(customer);
@@ -190,8 +189,8 @@ class OrderServiceTest {
             Order result = orderService.create(command);
 
             // Then
-            assertThat(result.getReferenceNumber()).matches("LDR-\\d{8}-\\d{4}");
-            verify(orderRepository).existsByReferenceNumber(result.getReferenceNumber());
+            assertThat(result.getTrackingNumber()).matches("LDR-\\d{8}-\\d{4}");
+            verify(orderRepository).existsByTrackingNumber(result.getTrackingNumber());
         }
     }
 
@@ -413,27 +412,27 @@ class OrderServiceTest {
     }
 
     @Nested
-    @DisplayName("findByReferenceNumber - Tracking (BR-NOTIF-02)")
-    class FindByReferenceNumber {
+    @DisplayName("findByTrackingNumber - Tracking (BR-NOTIF-02)")
+    class FindByTrackingNumber {
 
         @Test
         @DisplayName("Should return order when valid reference number provided (BR-NOTIF-02)")
-        void findByReferenceNumberShouldreturnorderWhenvalid() {
-            Order mockOrder = TestDataBuilders.order().id(UUID.randomUUID()).referenceNumber("LDR-20260220-1234").build();
-            when(orderRepository.findByReferenceNumber("LDR-20260220-1234")).thenReturn(Optional.of(mockOrder));
+        void findByTrackingNumberShouldreturnorderWhenvalid() {
+            Order mockOrder = TestDataBuilders.order().id(UUID.randomUUID()).trackingNumber("LDR-20260220-1234").build();
+            when(orderRepository.findByTrackingNumber("LDR-20260220-1234")).thenReturn(Optional.of(mockOrder));
 
-            Order result = orderService.findByReferenceNumber("LDR-20260220-1234");
+            Order result = orderService.findByTrackingNumber("LDR-20260220-1234");
 
             assertThat(result).isNotNull();
-            assertThat(result.getReferenceNumber()).isEqualTo("LDR-20260220-1234");
+            assertThat(result.getTrackingNumber()).isEqualTo("LDR-20260220-1234");
         }
 
         @Test
         @DisplayName("Should throw NotFoundException when reference number is invalid (BR-NOTIF-02)")
-        void findByReferenceNumberShouldthrowWheninvalid() {
-            when(orderRepository.findByReferenceNumber("INVALID-REF")).thenReturn(Optional.empty());
+        void findByTrackingNumberShouldthrowWheninvalid() {
+            when(orderRepository.findByTrackingNumber("INVALID-REF")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> orderService.findByReferenceNumber("INVALID-REF"))
+            assertThatThrownBy(() -> orderService.findByTrackingNumber("INVALID-REF"))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessageContaining("Order not found for reference: INVALID-REF");
         }
@@ -473,7 +472,7 @@ class OrderServiceTest {
                     .paymentStatus(PaymentStatus.UNPAID)
                     .build();
 
-            when(orderRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(existingOrder));
+            when(orderRepository.findById(existingOrder.getId())).thenReturn(Optional.of(existingOrder));
             when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
         }
 
@@ -486,7 +485,7 @@ class OrderServiceTest {
             request.setExtraMinutes(10);
 
             // When
-            Order result = orderService.update(UUID.randomUUID(), request);
+            Order result = orderService.update(existingOrder.getId(), request);
 
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(10);
@@ -517,7 +516,7 @@ class OrderServiceTest {
             request.setAddOns(List.of(addOn1, addOn2));
 
             // When
-            Order result = orderService.update(UUID.randomUUID(), request);
+            Order result = orderService.update(existingOrder.getId(), request);
 
             // Then
             assertThat(result.getAddOns()).hasSize(2);
@@ -543,7 +542,7 @@ class OrderServiceTest {
             request.setAddOns(List.of(addOn));
 
             // When
-            Order result = orderService.update(UUID.randomUUID(), request);
+            Order result = orderService.update(existingOrder.getId(), request);
 
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(15);
@@ -563,7 +562,7 @@ class OrderServiceTest {
             request.setExtraMinutes(10);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
+            assertThatThrownBy(() -> orderService.update(existingOrder.getId(), request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Cannot update order: already paid");
             verify(orderRepository, never()).save(any());
@@ -579,7 +578,7 @@ class OrderServiceTest {
             request.setExtraMinutes(10);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
+            assertThatThrownBy(() -> orderService.update(existingOrder.getId(), request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Cannot update order: already released");
             verify(orderRepository, never()).save(any());
@@ -594,7 +593,7 @@ class OrderServiceTest {
             request.setExtraMinutes(-5);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
+            assertThatThrownBy(() -> orderService.update(existingOrder.getId(), request))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Extra minutes cannot be negative");
             verify(orderRepository, never()).save(any());
@@ -609,7 +608,7 @@ class OrderServiceTest {
             request.setExtraMinutes(0);
 
             // When
-            Order result = orderService.update(UUID.randomUUID(), request);
+            Order result = orderService.update(existingOrder.getId(), request);
 
             // Then
             assertThat(result.getExtraMinutes()).isEqualTo(0);
@@ -634,7 +633,7 @@ class OrderServiceTest {
             request.setAddOns(List.of(addOn));
 
             // When
-            Order result = orderService.update(UUID.randomUUID(), request);
+            Order result = orderService.update(existingOrder.getId(), request);
 
             // Then - extra minutes stays at 5
             assertThat(result.getExtraMinutes()).isEqualTo(5);
@@ -665,7 +664,7 @@ class OrderServiceTest {
             request.setAddOns(null); // Don't update add-ons
 
             // When
-            Order result = orderService.update(UUID.randomUUID(), request);
+            Order result = orderService.update(existingOrder.getId(), request);
 
             // Then - add-ons remain
             assertThat(result.getAddOns()).hasSize(1);
@@ -679,15 +678,16 @@ class OrderServiceTest {
         @DisplayName("Should throw NotFoundException when order does not exist (BR-OL-06)")
         void updateShouldthrowWhenordernotfound() {
             // Given
-            when(orderRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
+            UUID missingId = UUID.randomUUID();
+            when(orderRepository.findById(missingId)).thenReturn(Optional.empty());
             com.himotech.laundryms.orders.dto.UpdateOrderRequest request = 
                 new com.himotech.laundryms.orders.dto.UpdateOrderRequest();
             request.setExtraMinutes(10);
 
             // When/Then
-            assertThatThrownBy(() -> orderService.update(UUID.randomUUID(), request))
+            assertThatThrownBy(() -> orderService.update(missingId, request))
                     .isInstanceOf(NotFoundException.class)
-                    .hasMessageContaining("Order not found: 999");
+                    .hasMessageContaining("Order not found: " + missingId);
             verify(orderRepository, never()).save(any());
         }
     }

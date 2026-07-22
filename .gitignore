@@ -66,5 +66,11 @@ docker-compose.override.yml
 # Backups
 backups/
 
+# Scratch files & One-off Migration Scripts
+*.py
+scratch/
+*.tmp
+*.bak
+
 # Graphify
 graphify-out/

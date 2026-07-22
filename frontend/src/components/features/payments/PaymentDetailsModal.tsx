@@ -37,7 +37,7 @@ export function PaymentDetailsModal({ isOpen, onClose, payment }: PaymentDetails
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{UI_LABELS.modules.payments.VERIFIED_TRANSACTION}</p>
             <div className="flex items-center justify-between gap-grid-2">
               <h4 className="text-h3 font-black text-slate-900 leading-tight">
-                {payment.orderReferenceNumber || `#${payment.orderId}`}
+                {payment.orderTrackingNumber || `#${payment.orderId}`}
               </h4>
               <CurrencyDisplay amount={payment.amountPaid} size="md" className="text-brand-blue" numberClassName="font-black" />
             </div>

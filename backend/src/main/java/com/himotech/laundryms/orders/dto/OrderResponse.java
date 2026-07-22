@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderResponse {
     private UUID id;
-    private String referenceNumber;
+    private String trackingNumber;
     private UUID customerId;
     private String customerName;
     private String contactNumber;

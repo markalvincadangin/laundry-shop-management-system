@@ -513,7 +513,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    rateId: string;
+                    rateId: number;
                 };
                 cookie?: never;
             };
@@ -764,7 +764,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/reference/{referenceNumber}": {
+    "/api/v1/orders/tracking/{trackingNumber}": {
         parameters: {
             query?: never;
             header?: never;
@@ -772,7 +772,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Track order by reference number
+         * Track order by tracking number
          * @description Public endpoint for customer tracking. Returns limited data (no internal IDs).
          *     Includes weightKg and totalLoads in addition to status/payment info.
          *     Supports: US-04. Enforces: BR-NOTIF-02, BR-OL-01.
@@ -782,7 +782,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    referenceNumber: string;
+                    trackingNumber: string;
                 };
                 cookie?: never;
             };
@@ -797,7 +797,57 @@ export interface paths {
                         "application/json": components["schemas"]["OrderTrackingResponse"];
                     };
                 };
-                /** @description Reference not found */
+                /** @description Tracking number not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/reference/{trackingNumber}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Track order by reference number (Alias for tracking)
+         * @description Legacy/Alias endpoint for tracking order by tracking number.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    trackingNumber: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Order tracking view */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderTrackingResponse"];
+                    };
+                };
+                /** @description Tracking number not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -1868,7 +1918,7 @@ export interface components {
             contactNumber: string;
         };
         CustomerResponse: {
-            /** Format: int64 */
+            /** Format: uuid */
             id: string;
             firstName: string;
             lastName: string;
@@ -1890,6 +1940,7 @@ export interface components {
             last: boolean;
         };
         ServiceRateResponse: {
+            /** Format: uuid */
             id: string;
             serviceName: string;
             /** Format: double */
@@ -1922,7 +1973,7 @@ export interface components {
             isActive: boolean;
         };
         CreateOrderRequest: {
-            /** Format: int64 */
+            /** Format: uuid */
             customerId?: string;
             /**
              * Format: uuid
@@ -1985,17 +2036,18 @@ export interface components {
             changedByUserId?: string;
         };
         OrderResponse: {
-            /** Format: int64 */
+            /** Format: uuid */
             id: string;
-            referenceNumber: string;
-            /** Format: int64 */
+            trackingNumber: string;
+            /** Format: uuid */
             customerId: string;
             customerName?: string;
             /** @description UUID string */
             createdByUserId?: string;
             /** @description Username of the staff who created the order */
             createdByUsername?: string;
-            serviceRateId?: number;
+            /** Format: uuid */
+            serviceRateId?: string;
             /** Format: double */
             weightKg: number;
             totalLoads: number;
@@ -2042,7 +2094,7 @@ export interface components {
             last: boolean;
         };
         OrderTrackingResponse: {
-            referenceNumber: string;
+            trackingNumber: string;
             currentStatus: string;
             customerName: string;
             contactNumber?: string;
@@ -2054,9 +2106,10 @@ export interface components {
             /** Format: double */
             weightKg?: number;
             totalLoads?: number;
+            isRush?: boolean;
         };
         CreatePaymentRequest: {
-            /** Format: int64 */
+            /** Format: uuid */
             orderId: string;
             /** Format: double */
             amountPaid: number;
@@ -2071,11 +2124,11 @@ export interface components {
             paymentReference?: string;
         };
         PaymentResponse: {
-            /** Format: int64 */
+            /** Format: uuid */
             id: string;
-            /** Format: int64 */
+            /** Format: uuid */
             orderId: string;
-            orderReferenceNumber?: string;
+            orderTrackingNumber?: string;
             customerName?: string;
             /** Format: double */
             amountPaid: number;
@@ -2091,12 +2144,12 @@ export interface components {
             paymentReference?: string;
         };
         ClientAlertResponse: {
-            /** Format: int64 */
+            /** Format: uuid */
             id: string;
-            /** Format: int64 */
+            /** Format: uuid */
             orderId: string;
-            referenceNumber?: string;
-            /** Format: int64 */
+            trackingNumber?: string;
+            /** Format: uuid */
             customerId: string;
             customerName?: string;
             contactNumber?: string;
@@ -2146,7 +2199,7 @@ export interface components {
         };
         /** @description Audit record of a system action. Capture point-in-time state for forensic inspection. */
         AuditLogResponse: {
-            /** Format: int64 */
+            /** Format: uuid */
             id: string;
             /** @description Username who performed the action */
             actor: string;

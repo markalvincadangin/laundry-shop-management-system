@@ -49,7 +49,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
         style: { borderRadius: '0' }
       });
       const link = document.createElement("a");
-      link.download = `receipt-${order.referenceNumber}.png`;
+      link.download = `receipt-${order.trackingNumber}.png`;
       link.href = dataUrl;
       link.click();
       toast.success(UI_LABELS.modules.orders.RECEIPT_SAVED);
@@ -82,7 +82,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
           CLAIM STUB
         </div>
         <div className="text-3xl font-black tracking-tight leading-none">
-          {order.referenceNumber}
+          {order.trackingNumber}
         </div>
       </div>
 
@@ -196,7 +196,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
           <div className="flex flex-col items-center justify-center">
             <div className="bg-white p-2 border border-black rounded">
               <Barcode
-                value={order.referenceNumber}
+                value={order.trackingNumber}
                 width={1.5}
                 height={50}
                 fontSize={12}

@@ -45,9 +45,10 @@
 
 | ID    | Requirement | Priority |
 |-------|-------------|----------|
-| NFR-A1 | The system SHALL be deployable and operable on hardware available to the client (single machine or local network). | Must |
-| NFR-A2 | Database backup SHALL be supported via documented script (e.g., `scripts/backup-database.sh` / `.ps1`); backup format SHALL allow restore to PostgreSQL. | Must |
+| NFR-A1 | The system SHALL be deployed natively on a local Windows machine located at the shop counter, acting as the offline-first server. | Must |
+| NFR-A2 | Database backup SHALL be supported via documented script (e.g., `scripts/backup-database.ps1`); backup format SHALL allow restore to PostgreSQL. | Must |
 | NFR-A3 | Deployment and restore procedures SHALL be documented in [Deployment Guide](../06-implementation/deployment-guide.md). | Must |
+| NFR-A4 | The public order tracking endpoint relies on a Cloudflare Tunnel; tracking SHALL only be available while the local Windows machine is powered on and connected to the internet. | Must |
 
 ---
 
@@ -55,7 +56,7 @@
 
 | ID    | Requirement | Priority |
 |-------|-------------|----------|
-| NFR-T1 | Every order status change SHALL be recorded with timestamp and user (audit trail in `order_status_logs`). | Must |
+| NFR-T1 | Every order status change SHALL be recorded with timestamp and user (audit trail in `activity_logs`). | Must |
 | NFR-T2 | Payment records SHALL be linked to order and user who recorded the payment. | Must |
 | NFR-T3 | Reports SHALL be computed from recorded payment data only (no estimates or manual overrides in MVP). | Must |
 

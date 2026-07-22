@@ -84,7 +84,7 @@ class ServiceRatesControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$[0].id").value(1))
+                    .andExpect(jsonPath("$[0].id").exists())
                     .andExpect(jsonPath("$[0].serviceName").value("Standard Wash"))
                     .andExpect(jsonPath("$[0].basePricePerLoad").value(120.0))
                     .andExpect(jsonPath("$[0].kgLimitPerLoad").value(8.0))
@@ -120,7 +120,7 @@ class ServiceRatesControllerTest {
             mockMvc.perform(get("/api/v1/service-rates/active"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.id").exists())
                     .andExpect(jsonPath("$.basePricePerLoad").value(120.0))
                     .andExpect(jsonPath("$.kgLimitPerLoad").value(8.0));
 

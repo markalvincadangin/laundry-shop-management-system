@@ -99,7 +99,7 @@ class ClientAlertRepositoryIT extends AbstractIntegrationTest {
 
                 // Persist Order
                 testOrder = Order.builder()
-                                .referenceNumber("LDR-20260425-9999")
+                                .trackingNumber("LDR-20260425-9999")
                                 .customer(testCustomer)
                                 .createdBy(testUser)
                                 .serviceRate(testServiceRate)

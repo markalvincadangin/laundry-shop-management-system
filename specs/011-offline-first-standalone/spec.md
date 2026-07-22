@@ -19,14 +19,14 @@ The objective of this phase is to enhance the existing Java, Next.js, and Postgr
 - **Database Distribution**: PostgreSQL will be managed via a PowerShell setup script (`setup_windows.ps1`). If installation fails, standard MSI rollback actions will uninstall the partial PostgreSQL files and remove the application directory. On runtime launch, if PostgreSQL is missing, the app will show a "Database Initialization Failed" prompt.
 - **Sync Conflict Resolution ("Local Wins")**: The shop counter device acts as the absolute source of truth. The Cloud API will perform idempotent UPSERT operations, overwriting any cloud-side changes with local data regardless of timestamps, ensuring data integrity matches the physical reality of the shop.
 
-## 2. System Design & Offline-First Topology
+## 2. System Design & Tunnel Topology
 
-The system operates under a distributed topology designed for absolute local autonomy. 
+The system operates under a standalone topology designed for absolute local autonomy, with remote tracking enabled via a secure tunnel.
 
 - **Local Autonomy**: The system captures data instantly on the local machine. Network connectivity is not required for any core business operation. Local operations guarantee UI response within 100ms.
-- **Eventual Consistency**: A background synchronization engine bridges local data to a remote cloud database. Operations are queued locally and pushed to the cloud asynchronously, fulfilling administrative requirements for remote customer tracking and digital notifications without blocking local workflows.
-- **Network Partition Resilience**: During a network partition, the application continues to function normally. Queued events accumulate in the local Outbox. Upon connection restoration, the system automatically flushes the queue, achieving eventual consistency with the cloud without manual intervention.
-- **Concurrent Modifications**: If multiple offline local tabs attempt to modify the same order, PostgreSQL row-level locks guarantee atomic writes. The last committed local state is what is appended to the Outbox.
+- **Tunnel Expose**: A background `cloudflared` daemon creates an encrypted reverse tunnel to Cloudflare's network, exposing the local API to the Vercel-hosted tracking frontend without requiring port forwarding.
+- **Zero Cloud Storage**: No cloud databases are used. All public tracking requests are routed down the tunnel to read directly from the local PostgreSQL instance.
+- **Availability Tradeoff**: During a network partition or when the shop laptop is powered off, the public tracking portal will temporarily be unable to reach the local server. Operations inside the shop continue uninterrupted.
 
 ## 3. Database Migration Strategy (UUID Implementation)
 
@@ -38,15 +38,14 @@ To support distributed data creation across potentially multiple offline nodes w
 - **API Contracts**: DTOs will be updated to expect string-formatted UUIDs instead of numeric identifiers.
 - **Execution**: The `V1__init.sql` Flyway migration script will be rewritten to natively define these UUID constraints, replacing the existing sequential ID strategy. `V1.1__core_data.sql` will seed initial service rates.
 
-## 4. Synchronization Architecture (Transactional Outbox Pattern)
+## 4. Simplified Architecture (Removing the Outbox)
 
-To guarantee that no local data changes are lost before being synchronized to the cloud, the system employs the Transactional Outbox Pattern.
+To guarantee local performance and eliminate cloud costs, the system completely removes the Transactional Outbox Pattern and synchronization worker.
 
-- **Outbox Event Capture**: Core application services will be refactored to publish an `OutboxEvent` entity within the *same local database transaction* as the primary record save. This guarantees atomicity; if the HTTP push fails later, the data is not lost.
-- **Outbox Entity Structure**: The `OutboxEvent.java` entity will capture: `id` (UUID), `aggregate_type` (String), `aggregate_id` (UUID), `payload` (JSONB), `sync_status` (PENDING, COMPLETED, FAILED), and `retry_count` (Integer). The disk capacity constraint is not an issue locally, as 10 million events consume less than 10GB.
-- **Synchronization Worker**: A Spring `@Scheduled` service (`SyncWorker.java`) will periodically poll the local database for `PENDING` records. 
-- **Cloud Delivery**: The worker will push JSON payloads to the defined `CLOUD_API_URL`.
-- **Resilience**: Failed sync attempts will increment the `retry_count` and utilize an exponential backoff timeline (retry count * 5000ms: 5s, 10s, 15s). After 5 failed attempts, the status is set to `FAILED` and requires administrative attention.
+- **Direct Persistence**: Core application services will directly mutate the local PostgreSQL database. No secondary `outbox_events` are published.
+- **Removal of Sync Engine**: The `sync` package (including `OutboxEvent.java`, `SyncWorker.java`, and `OutboxService.java`) will be permanently deleted from the codebase.
+- **Schema Cleanup**: The `outbox_events` table will be removed from the Flyway migrations (`V1__init.sql`).
+- **Conflict Resolution**: Since there is only one source of truth (the local database), complex "Local Wins" conflict resolution logic is no longer required.
 
 ## 5. Build, Bundling & Execution Strategy
 
@@ -74,6 +73,6 @@ Verification will involve both automated test suites and manual validation of th
 - **Sync Logic**: Implement WireMock tests for `SyncWorker` to validate polling behavior, successful payload delivery, and error handling (retry logic) when the simulated Cloud API is unavailable.
 
 ### Manual Verification
-- **Local Autonomy Test**: Disconnect the machine from the internet, create an order, verify local persistence, reconnect to the internet, and observe the `SyncWorker` successfully flushing the event to the cloud.
+- **Local Autonomy Test**: Disconnect the machine from the internet, create an order, verify local persistence, reconnect to the internet, and observe the Tunnel successfully resuming connections.
 - **Standalone Serving Test**: Run the compiled Spring Boot application and navigate to `http://127.0.0.1:8080/` to verify that Next.js static assets and client-side routing function correctly.
 - **Installer Test**: Execute `setup_windows.ps1` and the `jpackage`-generated `.msi` in a clean Windows Sandbox environment to verify silent PostgreSQL installation and application launch.

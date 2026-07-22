@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS customers (
 -- Orders
 CREATE TABLE IF NOT EXISTS orders (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    reference_number   VARCHAR(30) NOT NULL UNIQUE,
+    tracking_number   VARCHAR(30) NOT NULL UNIQUE,
     customer_id        UUID NOT NULL REFERENCES customers(id),
     created_by_user_id UUID NOT NULL REFERENCES users(id),
     service_rate_id    UUID NOT NULL REFERENCES service_rates(id),
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS orders (
     notes              VARCHAR(500),
     created_at         TIMESTAMP NOT NULL DEFAULT now(),
     updated_at         TIMESTAMP NOT NULL DEFAULT now(),
-    CONSTRAINT ck_order_reference_format CHECK (reference_number ~ '^LDR-[0-9]{8}-[0-9]{4}$'),
+    CONSTRAINT ck_order_tracking_format CHECK (tracking_number ~ '^LDR-[0-9]{8}-[0-9]{4}$'),
     CONSTRAINT ck_order_weight_positive CHECK (weight_kg > 0),
     CONSTRAINT ck_order_loads_positive CHECK (total_loads > 0),
     CONSTRAINT ck_order_total_non_negative CHECK (grand_total >= 0)
@@ -314,17 +314,3 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Initialize the single SystemSettings row
 INSERT INTO system_settings (id, is_system_paused, updated_at) VALUES (1, FALSE, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING;
-
--- Outbox Events
-CREATE TABLE IF NOT EXISTS outbox_events (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    aggregate_type VARCHAR(100) NOT NULL,
-    aggregate_id UUID NOT NULL,
-    payload JSONB NOT NULL,
-    sync_status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
-    retry_count INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP NOT NULL DEFAULT now()
-);
-
-CREATE INDEX idx_outbox_events_status_created ON outbox_events(sync_status, created_at);

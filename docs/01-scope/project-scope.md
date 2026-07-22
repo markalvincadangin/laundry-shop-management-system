@@ -162,8 +162,8 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 1. The laundry shop operates as a single branch.
 2. Admin and staff possess basic computer literacy.
 3. Payment is typically collected upon pickup.
-4. Internet connectivity is sufficient for system use.
-5. Hardware for system operation is available.
+4. The system is deployed on a physical Windows device kept powered on at the counter.
+5. Internet connectivity is required *only* for customer online tracking (via Cloudflare Tunnel). Local operations continue seamlessly without internet.
 
 ---
 
@@ -172,10 +172,10 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 ### 7.1 Technical Constraints
 
 - Backend: Java 21, Spring Boot 3.5+
-- Database: PostgreSQL 16
+- Database: PostgreSQL 16 (Local Windows Service)
 - Migration Tool: Flyway
-- Frontend: Next.js 14+, TypeScript
-- Infrastructure: Docker & Docker Compose
+- Frontend: Next.js 15+, TypeScript
+- Infrastructure: Standalone Windows Native Application (`.msi`) + Cloudflare Tunnel
 - Testing: Testcontainers
 - CI/CD: GitHub Actions
 
@@ -204,11 +204,12 @@ The project shall be considered successful if:
 
 For the system to be considered **complete and production-ready**, the following must be in place (see [Deployment Guide](../06-implementation/deployment-guide.md) and [Handover Checklist](../06-implementation/handover-checklist.md)):
 
-- **Deployment:** Production stack deployable via Docker Compose (Nginx + Backend + Frontend + PostgreSQL); environment variables documented
-- **Backup:** Database backup script available and scheduled (e.g., nightly); backup location and restore procedure documented
-- **Security:** Strong JWT secret and DB password in production; HTTPS recommended; CORS configured for frontend origin
-- **Handover:** User manual and handover checklist completed; Admin and Staff trained; sign-off obtained
-- **Support:** Contact or process for technical support and maintenance documented
+- **Deployment:** Production stack deployable natively on Windows via the provided `.msi` installer.
+- **Tunnel:** Cloudflare Tunnel (`cloudflared`) configured to securely expose the local backend to the public tracking frontend.
+- **Backup:** Database backup script available and scheduled (e.g., nightly) using the provided `backup-database.sh`/`.ps1`.
+- **Security:** Strong JWT secret and DB password in production generated securely during Windows setup.
+- **Handover:** User manual and handover checklist completed; Admin and Staff trained; sign-off obtained.
+- **Support:** Contact or process for technical support and maintenance documented.
 
 ---
 

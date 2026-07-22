@@ -78,15 +78,16 @@ class ServiceRateServiceTest {
         @DisplayName("Should prevent deactivating last active service rate")
         void updateShouldpreventdeactivatinglastactiverate() {
             // Given
-            ServiceRate rate = TestDataBuilders.serviceRate().id(UUID.randomUUID()).isActive(true).build();
-            when(serviceRateRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(rate));
+            UUID id = UUID.randomUUID();
+            ServiceRate rate = TestDataBuilders.serviceRate().id(id).isActive(true).build();
+            when(serviceRateRepository.findById(id)).thenReturn(Optional.of(rate));
             when(serviceRateRepository.findByIsActiveTrue()).thenReturn(List.of(rate)); // only 1 active rate
 
             UpdateServiceRateRequest request = new UpdateServiceRateRequest();
             request.setIsActive(false);
 
             // When / Then
-            assertThatThrownBy(() -> serviceRateService.update(UUID.randomUUID(), request))
+            assertThatThrownBy(() -> serviceRateService.update(id, request))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Cannot deactivate the last active service rate");
         }

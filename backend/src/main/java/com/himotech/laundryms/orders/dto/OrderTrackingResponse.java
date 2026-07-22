@@ -12,7 +12,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderTrackingResponse {
-    private String referenceNumber;
+    private String trackingNumber;
     private String currentStatus;
     private String customerName;
     private String contactNumber;

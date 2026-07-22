@@ -296,7 +296,7 @@ export default function OrderDetailPage() {
           </Link>
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-display tracking-tight text-slate-900 font-mono tabular-nums">
-              {order.referenceNumber}
+              {order.trackingNumber}
             </h1>
             <StatusBadge status={order.currentStatus as any} />
           </div>

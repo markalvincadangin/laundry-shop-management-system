@@ -183,6 +183,23 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<!-- Fix for Docker volume mount "Resource busy" during clean phase -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.4.1</version>
+				<configuration>
+					<excludeDefaultDirectories>true</excludeDefaultDirectories>
+					<filesets>
+						<fileset>
+							<directory>target</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
 			<!-- Maven Surefire Plugin for test execution -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

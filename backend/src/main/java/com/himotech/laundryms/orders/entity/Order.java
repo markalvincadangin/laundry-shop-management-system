@@ -36,8 +36,8 @@ public class Order {
     @EqualsAndHashCode.Include
     private UUID id;
 
-    @Column(name = "reference_number", nullable = false, unique = true, length = 30)
-    private String referenceNumber;
+    @Column(name = "tracking_number", nullable = false, unique = true, length = 30)
+    private String trackingNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)

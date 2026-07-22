@@ -7,7 +7,7 @@ describe("OrderCard", () => {
   it("presents exactly one contextual Next Step button per FR-DASH-3", () => {
     const mockOrder: OrderResponse = {
       id: "1",
-      referenceNumber: "ORD-001",
+      trackingNumber: "ORD-001",
       customerId: "1",
       customerName: "John Doe",
       currentStatus: "WASHING",

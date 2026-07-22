@@ -22,7 +22,7 @@ interface AuditLogDetailsModalProps {
 export function AuditLogDetailsModal({ isOpen, onClose, selected }: AuditLogDetailsModalProps) {
   const getLabel = (key: string) => {
     const map: Record<string, string> = {
-      reference_number: UI_LABELS.shared.common.REFERENCE,
+      tracking_number: UI_LABELS.shared.common.TRACKING_NUMBER,
       payment_status: UI_LABELS.shared.common.STATUS,
       status: UI_LABELS.shared.common.STATUS,
       current_status: UI_LABELS.shared.common.STATUS,

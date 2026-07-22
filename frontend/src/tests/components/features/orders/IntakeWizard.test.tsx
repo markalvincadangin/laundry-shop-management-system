@@ -59,7 +59,7 @@ describe("IntakeWizard Submission", () => {
       search: "",
       results: [],
       loading: false,
-      selected: { id: 1, firstName: "John", lastName: "Doe", contactNumber: "09171234567" },
+      selected: { id: '550e8400-e29b-41d4-a716-446655440000', firstName: "John", lastName: "Doe", contactNumber: "09171234567" },
       isRegistering: false,
       setSearch: vi.fn(),
     });
@@ -84,7 +84,11 @@ describe("IntakeWizard Submission", () => {
     render(<IntakeWizard createdByUserId="user-1" />);
 
     // Step 1: Customer (already selected via mock)
-    fireEvent.click(screen.getByRole("button", { name: /Next/i }));
+    const nextBtn = screen.getByRole("button", { name: /Next/i });
+    await waitFor(() => {
+        expect(nextBtn).not.toBeDisabled();
+    });
+    fireEvent.click(nextBtn);
 
     // Step 2: Service
     const weightInput = await screen.findByPlaceholderText("0.0");
@@ -162,7 +166,11 @@ describe("IntakeWizard Submission", () => {
     render(<IntakeWizard createdByUserId="user-1" />);
 
     // Step 1: Customer (already selected via mock)
-    fireEvent.click(screen.getByRole("button", { name: /Next/i }));
+    const nextBtn = screen.getByRole("button", { name: /Next/i });
+    await waitFor(() => {
+        expect(nextBtn).not.toBeDisabled();
+    });
+    fireEvent.click(nextBtn);
 
     // Step 2: Service
     const weightInput = await screen.findByPlaceholderText("0.0");

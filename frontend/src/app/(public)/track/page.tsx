@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import Link from "next/link";
@@ -50,20 +49,20 @@ const PICKUP_STATES = [ORDER_STATUS.READY_FOR_PICKUP, ORDER_STATUS.RELEASED];
 function TrackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialRef = searchParams.get("ref") || "";
-  const [reference, setReference] = useState(initialRef);
+  const initialTracking = searchParams.get("ref") || "";
+  const [trackingNumber, setTrackingNumber] = useState(initialTracking);
   const [order, setOrder] = useState<OrderTrackingResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Track which ref the current result belongs to, for error-prevention (disable button if unchanged)
-  const [displayedRef, setDisplayedRef] = useState<string>("");
+  const [displayedTracking, setDisplayedRef] = useState<string>("");
 
   useEffect(() => {
-    if (initialRef) {
-      handleSearch(initialRef);
+    if (initialTracking) {
+      handleSearch(initialTracking);
     }
-  }, [initialRef]);
+  }, [initialTracking]);
 
   const handleSearch = async (ref: string) => {
     if (!ref) return;
@@ -71,7 +70,7 @@ function TrackContent() {
     setOrder(null);
     setLoading(true);
     try {
-      const result = await ordersService.trackByReference(ref);
+      const result = await ordersService.trackByTrackingNumber(ref);
       setOrder(result);
       setDisplayedRef(ref.trim().toUpperCase());
     } catch (err) {
@@ -90,7 +89,7 @@ function TrackContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const ref = reference.trim().toUpperCase();
+    const ref = trackingNumber.trim().toUpperCase();
     if (!ref) return;
     router.push(`/track?ref=${encodeURIComponent(ref)}`);
     handleSearch(ref);
@@ -99,7 +98,7 @@ function TrackContent() {
   const handleTrackAnother = () => {
     setOrder(null);
     setError(null);
-    setReference("");
+    setTrackingNumber("");
     setDisplayedRef("");
     router.push("/track");
   };
@@ -111,7 +110,7 @@ function TrackContent() {
 
   // Nielsen H5: Button is disabled if the query in the box matches what's already displayed
   const isAlreadyDisplayed =
-    !!order && reference.trim().toUpperCase() === displayedRef;
+    !!order && trackingNumber.trim().toUpperCase() === displayedTracking;
 
   const isPickupState =
     order && PICKUP_STATES.includes(order.currentStatus as any);
@@ -182,17 +181,17 @@ function TrackContent() {
                     <input
                       type="text"
                       placeholder={UI_LABELS.portal.tracking.PLACEHOLDER}
-                      value={reference}
+                      value={trackingNumber}
                       onChange={(e) =>
-                        setReference(e.target.value.toUpperCase())
+                        setTrackingNumber(e.target.value.toUpperCase())
                       }
                       className="w-full h-grid-18 bg-transparent rounded-[2rem] pl-grid-20 pr-grid-6 font-mono text-body text-slate-900 placeholder:text-slate-400 focus:outline-none focus-visible:outline-none uppercase tracking-wider font-bold"
                       autoFocus={!hasResult}
                     />
-                  {reference && (
+                  {trackingNumber && (
                     <button
                       type="button"
-                      onClick={() => setReference("")}
+                      onClick={() => setTrackingNumber("")}
                       className="absolute right-grid-4 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
                       aria-label={UI_LABELS.shared.buttons.CANCEL}
                     >
@@ -273,7 +272,7 @@ function TrackContent() {
             <div className="relative flex flex-col items-center gap-grid-4">
               <Button
                 variant="primary"
-                onClick={() => handleSearch(reference)}
+                onClick={() => handleSearch(trackingNumber)}
                 className="h-12 min-h-[48px] px-grid-12 gap-grid-3 font-black text-[11px] uppercase tracking-widest bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/20 rounded-2xl transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-slate-900/40 focus-visible:outline-none"
               >
                 <RefreshCcw className="h-4 w-4" strokeWidth={2.5} />
@@ -283,7 +282,7 @@ function TrackContent() {
                 onClick={handleTrackAnother}
                 className="text-caption font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600 transition-colors"
               >
-                Clear Search
+                {UI_LABELS.portal.tracking.CLEAR_SEARCH}
               </button>
             </div>
           </div>
@@ -294,7 +293,7 @@ function TrackContent() {
           <div className="space-y-grid-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Card className="overflow-hidden border border-slate-100 shadow-xl shadow-brand-blue/5 ring-1 ring-slate-900/5 rounded-3xl bg-white">
 
-              {/* Card Header — reference + status badge */}
+              {/* Card Header — tracking number + status badge */}
               <div className="px-grid-8 py-grid-6 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-grid-4">
                 <div className="flex items-center gap-grid-4">
                   <div className="h-12 w-12 bg-brand-blue/5 rounded-2xl flex items-center justify-center shrink-0">
@@ -303,10 +302,10 @@ function TrackContent() {
                   <div>
                     <div className="flex items-center gap-grid-2">
                       <span className="font-mono font-bold text-slate-900 text-h3 tracking-widest uppercase">
-                        {order.referenceNumber}
+                        {order.trackingNumber}
                       </span>
                       <button
-                        onClick={() => copyRef(order.referenceNumber!)}
+                        onClick={() => copyRef(order.trackingNumber!)}
                         className="p-1.5 hover:bg-brand-blue/5 rounded-lg transition-all text-slate-400 hover:text-brand-blue"
                         title={UI_LABELS.portal.tracking.COPY_TITLE}
                         aria-label={UI_LABELS.portal.tracking.COPY_REF}
@@ -417,7 +416,7 @@ function TrackContent() {
                       <p className={`text-[10px] font-black uppercase tracking-[0.3em] ${
                         order.currentStatus === 'RELEASED' ? 'text-emerald-200' : 'text-brand-cyan'
                       }`}>
-                        {order.currentStatus === 'RELEASED' ? "Success" : UI_LABELS.portal.tracking.LIVE_UPDATE}
+                        {order.currentStatus === 'RELEASED' ? UI_LABELS.portal.tracking.SUCCESS_HEADER : UI_LABELS.portal.tracking.LIVE_UPDATE}
                       </p>
                       <p className="text-body font-bold text-white leading-relaxed">
                         {STATUS_MESSAGES[order.currentStatus ?? ""] ||
@@ -434,11 +433,11 @@ function TrackContent() {
                           <p className="text-body-sm font-medium text-white/80 leading-relaxed">
                             {UI_LABELS.portal.tracking.CLAIM_INSTRUCTION_PREFIX}{" "}
                             <button
-                              onClick={() => copyRef(order.referenceNumber!)}
+                              onClick={() => copyRef(order.trackingNumber!)}
                               className="font-bold text-white underline decoration-dotted underline-offset-2 hover:no-underline transition-all"
                               title={UI_LABELS.portal.tracking.TAP_TO_COPY}
                             >
-                              {order.referenceNumber}
+                              {order.trackingNumber}
                             </button>{" "}
                             {UI_LABELS.portal.tracking.CLAIM_INSTRUCTION_SUFFIX}
                           </p>
@@ -448,7 +447,7 @@ function TrackContent() {
                       {order.currentStatus === 'RELEASED' && (
                         <div className="mt-grid-4 pt-grid-4 border-t border-white/10">
                           <p className="text-sm font-bold text-emerald-100">
-                             We look forward to seeing you again!
+                             {UI_LABELS.portal.tracking.SEE_YOU_AGAIN}
                           </p>
                         </div>
                       )}
@@ -461,11 +460,11 @@ function TrackContent() {
                   <p className="text-body-sm font-medium text-slate-500 text-center leading-relaxed">
                     {UI_LABELS.portal.tracking.KEEP_SAFE_PREFIX}{" "}
                     <button
-                      onClick={() => copyRef(order.referenceNumber!)}
+                      onClick={() => copyRef(order.trackingNumber!)}
                       className="font-bold text-slate-700 underline decoration-dotted underline-offset-2 hover:no-underline"
                       title={UI_LABELS.portal.tracking.TAP_TO_COPY}
                     >
-                      {order.referenceNumber}
+                      {order.trackingNumber}
                     </button>{" "}
                     {UI_LABELS.portal.tracking.KEEP_SAFE_SUFFIX}
                   </p>

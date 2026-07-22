@@ -69,8 +69,8 @@ describe("OrderDetailsPage", () => {
   });
 
   const mockOrder = {
-    id: 1,
-    referenceNumber: "ORD-TEST-123",
+    id: '1',
+    trackingNumber: "ORD-TEST-123",
     customerName: "Mark Alvin",
     contactNumber: "09123456789",
     weightKg: 5.5,
@@ -138,7 +138,7 @@ describe("OrderDetailsPage", () => {
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(ordersService.updateStatus).toHaveBeenCalledWith(1, expect.objectContaining({ newStatus: "WASHING" }));
+      expect(ordersService.updateStatus).toHaveBeenCalledWith('1', expect.objectContaining({ newStatus: "WASHING" }));
     });
 
     await waitFor(() => {

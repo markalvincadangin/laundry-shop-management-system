@@ -3,10 +3,11 @@ set -e
 
 echo "Initializing Optimized Fresh Start..."
 
-echo "Stopping services..."
-docker compose -f docker-compose.yml -f docker-compose.override.yml --profile full down
+echo "Stopping backend database service..."
+docker compose -f docker-compose.yml -f docker-compose.override.yml stop db backend
+docker compose -f docker-compose.yml -f docker-compose.override.yml rm -f db
 
-echo "Wiping database only..."
+echo "Wiping database volume..."
 VOLUME_NAME=$(docker compose -f docker-compose.yml -f docker-compose.override.yml config | grep -A 2 "^ *postgres_dev_data:" | grep "name:" | awk '{print $2}' | tr -d '"')
 
 if [ -n "$VOLUME_NAME" ] && [ "$VOLUME_NAME" != "null" ]; then
@@ -17,9 +18,9 @@ else
     docker volume rm faith-laundry_postgres_dev_data -f || true
 fi
 
-echo "Starting services and reseeding..."
-docker compose -f docker-compose.yml -f docker-compose.override.yml --profile full up -d
+echo "Starting database and backend..."
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d db backend
 
-echo "System is back online!"
+echo "Database reset complete!"
 echo "Libraries were preserved, so startup will be MUCH faster."
 echo "Run 'docker compose logs -f backend' to see the Flyway migrations and seeding."

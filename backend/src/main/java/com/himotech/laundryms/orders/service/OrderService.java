@@ -31,7 +31,7 @@ import com.himotech.laundryms.payments.repository.PaymentRepository;
 import com.himotech.laundryms.orders.dto.OrderResponse;
 import com.himotech.laundryms.orders.mapper.OrderMapper;
 import com.himotech.laundryms.auditlog.service.AuditLogService;
-import com.himotech.laundryms.sync.service.OutboxService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -62,17 +62,17 @@ public class OrderService {
     private final AuditLogService auditLogService;
     private final OrderMapper orderMapper;
     private final AddOnCatalogRepository addOnCatalogRepository;
-    private final OutboxService outboxService;
+
 
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
 
-    private String generateUniqueReferenceNumber() {
+    private String generateUniqueTrackingNumber() {
         String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE); // yyyyMMdd
         Random random = new Random();
         for (int attempt = 0; attempt < MAX_REFERENCE_ATTEMPTS; attempt++) {
             int suffix = 1000 + random.nextInt(9000); // 1000-9999
             String ref = "LDR-" + datePart + "-" + suffix;
-            if (!orderRepository.existsByReferenceNumber(ref)) {
+            if (!orderRepository.existsByTrackingNumber(ref)) {
                 return ref;
             }
         }
@@ -224,7 +224,7 @@ public class OrderService {
 
 
         Order order = Order.builder()
-                .referenceNumber(generateUniqueReferenceNumber())
+                .trackingNumber(generateUniqueTrackingNumber())
                 .customer(customer)
                 .createdBy(createdBy)
                 .serviceRate(rate)
@@ -260,11 +260,9 @@ public class OrderService {
 
         order = orderRepository.save(order);
         
-        // Publish outbox event
-        outboxService.publishEvent("Order", order.getId(), orderMapper.toResponse(order));
 
         log.info("Order created successfully: Reference={}, Customer={} {}, Total=₱{}", 
-                order.getReferenceNumber(), 
+                order.getTrackingNumber(), 
                 customer.getFirstName(), 
                 customer.getLastName(), 
                 order.getGrandTotal());
@@ -457,16 +455,14 @@ public class OrderService {
 
         order = orderRepository.save(order);
         
-        // Publish outbox event
-        outboxService.publishEvent("Order", order.getId(), orderMapper.toResponse(order));
         
         return order;
     }
 
     @Transactional(readOnly = true)
-    public Order findByReferenceNumber(String referenceNumber) {
-        return orderRepository.findByReferenceNumber(referenceNumber)
-                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + referenceNumber));
+    public Order findByTrackingNumber(String trackingNumber) {
+        return orderRepository.findByTrackingNumber(trackingNumber)
+                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + trackingNumber));
     }
 
     @Transactional(readOnly = true)
@@ -504,8 +500,6 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         orderRepository.delete(order);
         
-        // Publish outbox event for deletion
-        outboxService.publishEvent("OrderDeleted", orderId, "{}");
     }
 
 }

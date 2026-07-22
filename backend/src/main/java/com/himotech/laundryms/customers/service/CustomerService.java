@@ -18,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CustomerService {
     private final CustomerRepository customerRepository;
-    private final com.himotech.laundryms.sync.service.OutboxService outboxService;
+
 
     @Auditable(action = "CUSTOMER_CREATE", description = "Register new customer")
     @Transactional
@@ -37,7 +37,7 @@ public class CustomerService {
                 .build();
 
         customer = customerRepository.save(customer);
-        outboxService.publishEvent("Customer", customer.getId(), customer);
+
         return customer;
     }
 
@@ -91,7 +91,7 @@ public class CustomerService {
             customer.setContactNumber(contactNumber);
 
         customer = customerRepository.save(customer);
-        outboxService.publishEvent("Customer", customer.getId(), customer);
+
         return customer;
     }
 
@@ -106,7 +106,7 @@ public class CustomerService {
                 .orElseThrow(() -> new com.himotech.laundryms.shared.exception.NotFoundException("Customer not found: " + id));
         customer.setIsActive(!customer.getIsActive());
         customer = customerRepository.save(customer);
-        outboxService.publishEvent("Customer", customer.getId(), customer);
+
         return customer;
     }
 }

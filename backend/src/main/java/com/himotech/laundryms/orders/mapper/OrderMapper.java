@@ -87,7 +87,7 @@ public interface OrderMapper {
         return machines.stream().map(Machine::getId).collect(Collectors.toList());
     }
 
-    @Mapping(target = "referenceNumber", source = "referenceNumber")
+    @Mapping(target = "trackingNumber", source = "trackingNumber")
     @Mapping(target = "currentStatus", source = "currentStatus")
     @Mapping(target = "customerName", source = "order", qualifiedByName = "customerName")
     @Mapping(target = "contactNumber", source = "customer.contactNumber")

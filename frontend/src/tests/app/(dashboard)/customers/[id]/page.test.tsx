@@ -63,7 +63,7 @@ describe("CustomerProfilePage", () => {
   });
 
   const mockCustomer = {
-    id: 1,
+    id: '1',
     firstName: "Mark",
     lastName: "Alvin",
     contactNumber: "09123456789",
@@ -73,15 +73,15 @@ describe("CustomerProfilePage", () => {
   const mockOrders = {
     content: [
       {
-        id: 1,
-        referenceNumber: "ORD-HIST-01",
+        id: '1',
+        trackingNumber: "ORD-HIST-01",
         grandTotal: 150,
         currentStatus: "RELEASED",
         createdAt: new Date().toISOString(),
       },
       {
-        id: 2,
-        referenceNumber: "ORD-HIST-02",
+        id: '2',
+        trackingNumber: "ORD-HIST-02",
         grandTotal: 300,
         currentStatus: "READY_FOR_PICKUP",
         createdAt: new Date().toISOString(),

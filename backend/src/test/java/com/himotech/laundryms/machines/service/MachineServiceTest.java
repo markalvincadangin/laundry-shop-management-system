@@ -50,7 +50,7 @@ class MachineServiceTest {
     @Test
     @DisplayName("Should throw exception when exceeding max limit")
     void shouldThrowExceptionWhenExceedingLimit() {
-        when(machineRepository.count()).thenReturn(1L);
+        when(machineRepository.count()).thenReturn(50L);
 
         assertThatThrownBy(() -> machineService.createMachine("Too Many"))
                 .isInstanceOf(IllegalStateException.class)
@@ -64,9 +64,10 @@ class MachineServiceTest {
         machine.setId(UUID.randomUUID());
         machine.setIsActive(true);
 
-        when(machineRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(machine));
+        UUID id = machine.getId();
+        when(machineRepository.findById(id)).thenReturn(Optional.of(machine));
 
-        machineService.deleteMachine(UUID.randomUUID());
+        machineService.deleteMachine(id);
 
         assertThat(machine.getIsActive()).isFalse();
         verify(machineRepository).save(machine);

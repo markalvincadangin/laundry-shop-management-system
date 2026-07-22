@@ -17,7 +17,7 @@ Project Faith_Laundry_Shop_System {
 // --- AUDIT INFRASTRUCTURE --- //
 
 Table audit_logs {
-  id bigserial [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   user_id varchar [null, note: 'Captured from SET LOCAL app.current_user_id via Spring Boot AOP']
   action_type varchar(10) [not null, note: 'INSERT, UPDATE, or DELETE']
   table_name varchar(100) [not null]
@@ -31,7 +31,7 @@ Table audit_logs {
   description text [null]
   created_at timestamp [not null, default: `now()`]
 
-  Note: 'Forensic audit trail. Populated by fn_audit_activity() trigger on orders, payments, customers, service_rates. Replaces the previous order_status_logs approach.'
+  Note: 'Forensic audit trail. Populated by fn_audit_activity() trigger on orders, payments, customers, service_rates.'
   Indexes {
     (table_name, record_id) [name: 'idx_audit_logs_table_record']
     created_at [name: 'idx_audit_logs_created_at']
@@ -41,7 +41,7 @@ Table audit_logs {
 // --- CONFIGURATION --- //
 
 Table service_rates {
-  id int [pk, increment]
+  id uuid [pk, default: `gen_random_uuid()`]
   service_name varchar [default: 'Standard Wash', note: 'Standard Wash-Dry-Fold']
   base_price_per_load decimal(10,2) [default: 140.00, note: 'BR-PR-01: ₱140 per load']
   kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: 8 kg limit per load']
@@ -70,7 +70,7 @@ Table users {
 }
 
 Table customers {
-  id bigserial [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   first_name varchar [not null]
   last_name varchar [not null]
   contact_number varchar [not null]
@@ -87,13 +87,13 @@ Table customers {
 // --- ORDER MANAGEMENT --- //
 
 Table orders {
-  id bigserial [pk]
-  reference_number varchar [unique, not null, note: 'BR-OL-01: LDR-YYYYMMDD-XXXX']
-  customer_id bigint [ref: > customers.id, not null]
+  id uuid [pk, default: `gen_random_uuid()`]
+  tracking_number varchar [unique, not null, note: 'BR-OL-01: LDR-YYYYMMDD-XXXX']
+  customer_id uuid [ref: > customers.id, not null]
   created_by_user_id uuid [ref: > users.id, not null]
 
   // Load & Weight
-  service_rate_id int [ref: > service_rates.id, not null]
+  service_rate_id uuid [ref: > service_rates.id, not null]
   weight_kg decimal(10,2) [not null]
   total_loads int [not null, note: 'ceil(weight_kg / 8)']
 
@@ -121,7 +121,7 @@ Table orders {
 
   Note: 'BR-OL-05: Release requires READY_FOR_PICKUP and PAID status. Audited by trg_audit_orders trigger.'
   Indexes {
-    reference_number [unique]
+    tracking_number [unique]
     (customer_id, created_at) [name: 'idx_orders_customer_created']
     current_status [name: 'idx_orders_status']
     payment_status [name: 'idx_orders_payment_status']
@@ -129,8 +129,8 @@ Table orders {
 }
 
 Table order_add_ons {
-  id bigserial [pk]
-  order_id bigint [ref: > orders.id, not null]
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [ref: > orders.id, not null]
   name varchar [not null]
   price decimal(10,2) [not null]
   quantity int [not null, default: 1]
@@ -141,8 +141,8 @@ Table order_add_ons {
 // --- PAYMENTS --- //
 
 Table payments {
-  id bigserial [pk]
-  order_id bigint [ref: - orders.id, unique, not null]
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [ref: - orders.id, unique, not null]
   amount_paid decimal(10,2) [not null, note: 'BR-PAY-03: Must match grand_total']
   payment_method varchar [not null, default: 'CASH', note: 'CASH, GCASH, BANK_TRANSFER']
   received_by_user_id uuid [ref: > users.id, not null]
@@ -158,8 +158,8 @@ Table payments {
 // --- NOTIFICATIONS --- //
 
 Table client_alerts {
-  id bigserial [pk]
-  order_id bigint [ref: > orders.id, not null]
+  id uuid [pk, default: `gen_random_uuid()`]
+  order_id uuid [ref: > orders.id, not null]
   channel varchar(30) [not null, default: 'IN_APP', note: 'SMS, IN_APP']
   message text [not null]
   created_at timestamp [default: `now()`]
@@ -173,7 +173,7 @@ Table client_alerts {
 // --- MACHINES & INVENTORY --- //
 
 Table machines {
-  id bigserial [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   name varchar(50) [unique, not null]
   status varchar(30) [not null, default: 'OPERATIONAL', note: 'OPERATIONAL, MAINTENANCE, OUT_OF_SERVICE']
   is_active boolean [default: true, note: 'Soft delete flag']
@@ -184,8 +184,8 @@ Table machines {
 }
 
 Table order_machines {
-  order_id bigint [ref: > orders.id, not null]
-  machine_id bigint [ref: > machines.id, not null]
+  order_id uuid [ref: > orders.id, not null]
+  machine_id uuid [ref: > machines.id, not null]
 
   Indexes {
     (order_id, machine_id) [pk]

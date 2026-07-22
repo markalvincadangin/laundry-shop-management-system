@@ -115,16 +115,15 @@ public class OrderController {
     }
 
     /**
-     * Tracks an order by its reference number.
+     * Tracks an order by its tracking number or reference number (US-04 Public Tracking).
      *
-     * @param referenceNumber the unique order reference
+     * @param trackingNumber the unique order tracking number
      * @return the tracking response
      */
-    @GetMapping("/reference/{referenceNumber}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @GetMapping({"/tracking/{trackingNumber}", "/reference/{trackingNumber}"})
     public ResponseEntity<OrderTrackingResponse> trackByReference(
-            @PathVariable final String referenceNumber) {
-        final Order order = orderService.findByReferenceNumber(referenceNumber);
+            @PathVariable final String trackingNumber) {
+        final Order order = orderService.findByTrackingNumber(trackingNumber);
         return ResponseEntity.ok(orderMapper.toTrackingResponse(order));
     }
 

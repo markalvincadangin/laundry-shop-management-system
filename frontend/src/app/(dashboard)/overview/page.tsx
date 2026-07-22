@@ -46,12 +46,12 @@ export default function Home() {
     isOpen: boolean;
     orderId: string;
     grandTotal: number;
-    referenceNumber: string;
+    trackingNumber: string;
   }>({
     isOpen: false,
     orderId: "",
     grandTotal: 0,
-    referenceNumber: "",
+    trackingNumber: "",
   });
 
   const handleAdvance = (orderId: string, nextStatus: string, machineIds?: string[]) => {
@@ -62,7 +62,7 @@ export default function Home() {
           isOpen: true,
           orderId,
           grandTotal: order.grandTotal,
-          referenceNumber: order.referenceNumber,
+          trackingNumber: order.trackingNumber,
         });
         return;
       }
@@ -177,7 +177,7 @@ export default function Home() {
         onClose={() => setPaymentModalState((prev) => ({ ...prev, isOpen: false }))}
         orderId={paymentModalState.orderId}
         grandTotal={paymentModalState.grandTotal}
-        referenceNumber={paymentModalState.referenceNumber}
+        trackingNumber={paymentModalState.trackingNumber}
         onSuccess={() => {
           advanceOrder(paymentModalState.orderId, "RELEASED" as any);
         }}

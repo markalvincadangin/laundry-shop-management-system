@@ -100,10 +100,10 @@ export const ordersService = {
     return response;
   },
 
-  /** Public tracking lookup by reference number (US-04) */
-  async trackByReference(referenceNumber: string): Promise<components["schemas"]["OrderTrackingResponse"]> {
+  /** Public tracking lookup by tracking number (US-04) */
+  async trackByTrackingNumber(trackingNumber: string): Promise<components["schemas"]["OrderTrackingResponse"]> {
     const response = await apiClient.get<components["schemas"]["OrderTrackingResponse"]>(
-      `/v1/orders/reference/${encodeURIComponent(referenceNumber)}`
+      `/v1/orders/tracking/${encodeURIComponent(trackingNumber)}`
     );
     return response;
   },

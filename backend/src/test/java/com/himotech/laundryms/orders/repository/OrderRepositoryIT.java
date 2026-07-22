@@ -1,7 +1,5 @@
 package com.himotech.laundryms.orders.repository;
 
-import java.util.UUID;
-
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.shared.UserRole;
@@ -35,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * <p><b>UNIQUE Constraint:</b>
  * <ul>
- *   <li><b>reference_number</b> UNIQUE (for public tracking)</li>
+ *   <li><b>tracking_number</b> UNIQUE (for public tracking)</li>
  * </ul>
  *
  * <p><b>Test Strategy:</b>
@@ -112,7 +110,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
     void saveShouldpersistorderWhenallfksarevalid() {
         // Given
         Order order = Order.builder()
-                .referenceNumber("LDR-20260425-0001")
+                .trackingNumber("LDR-20260425-0001")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -138,7 +136,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
 
         // Then
         assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getReferenceNumber()).isEqualTo("LDR-20260425-0001");
+        assertThat(saved.getTrackingNumber()).isEqualTo("LDR-20260425-0001");
         assertThat(saved.getCustomer().getId()).isEqualTo(testCustomer.getId());
         assertThat(saved.getCreatedBy().getId()).isEqualTo(testUser.getId());
         assertThat(saved.getServiceRate().getId()).isEqualTo(testServiceRate.getId());
@@ -154,26 +152,26 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
 
         // Verify persistence
         Order retrieved = orderRepository.findById(saved.getId()).orElseThrow();
-        assertThat(retrieved.getReferenceNumber()).isEqualTo("LDR-20260425-0001");
+        assertThat(retrieved.getTrackingNumber()).isEqualTo("LDR-20260425-0001");
     }
 
     /**
-     * Test 2: CRITICAL - Verify UNIQUE constraint on reference_number.
+     * Test 2: CRITICAL - Verify UNIQUE constraint on tracking_number.
      *
      * <p><b>Constraint from V1__init.sql:</b>
      * <pre>
-     * reference_number VARCHAR NOT NULL UNIQUE
+     * tracking_number VARCHAR NOT NULL UNIQUE
      * </pre>
      *
-     * <p>Attempting to insert two orders with the same reference_number must throw
+     * <p>Attempting to insert two orders with the same tracking_number must throw
      * {@link DataIntegrityViolationException}.
      */
     @Test
-    @DisplayName("save - Should throw violation when reference_number is duplicated")
+    @DisplayName("save - Should throw violation when tracking_number is duplicated")
     void saveShouldthrowviolationWhenreferencenumberduplicated() {
         // Given - First order with reference number "REF-001"
         Order order1 = Order.builder()
-                .referenceNumber("LDR-20260425-0002")
+                .trackingNumber("LDR-20260425-0002")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -197,7 +195,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
 
         // When/Then - Attempt to save second order with same reference number
         Order order2 = Order.builder()
-                .referenceNumber("LDR-20260425-0002")  // DUPLICATE reference number
+                .trackingNumber("LDR-20260425-0002")  // DUPLICATE reference number
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -221,7 +219,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
             entityManager.flush();
         })
                 .isInstanceOf(DataIntegrityViolationException.class)
-                .hasMessageContaining("reference_number");
+                .hasMessageContaining("tracking_number");
     }
 
     /**
@@ -235,7 +233,7 @@ class OrderRepositoryIT extends AbstractIntegrationTest {
     void saveShouldpersistorderWithenumvalues() {
         // Given - Order with various enum statuses
         Order order = Order.builder()
-                .referenceNumber("LDR-20260425-0003")
+                .trackingNumber("LDR-20260425-0003")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)

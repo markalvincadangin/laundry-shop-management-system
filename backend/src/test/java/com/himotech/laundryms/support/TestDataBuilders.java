@@ -92,7 +92,7 @@ public final class TestDataBuilders {
         ServiceRate r = serviceRate().build();
         return Order.builder()
                 .id(java.util.UUID.randomUUID())
-                .referenceNumber("LDR-20260213-1234")
+                .trackingNumber("LDR-20260213-1234")
                 .customer(c)
                 .createdBy(u)
                 .serviceRate(r)
@@ -113,7 +113,7 @@ public final class TestDataBuilders {
     public static Order order(final UUID id, final String ref, final OrderStatus status, final BigDecimal grandTotal) {
         return order()
                 .id(id)
-                .referenceNumber(ref)
+                .trackingNumber(ref)
                 .currentStatus(status)
                 .grandTotal(grandTotal)
                 .build();

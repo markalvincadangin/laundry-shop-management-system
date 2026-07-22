@@ -139,7 +139,7 @@ public class OrderStatusService {
         orderRepository.save(order);
 
         log.info("Order status updated: Reference={}, {} → {}, ChangedBy={}", 
-                order.getReferenceNumber(), previousStatus, newStatus, changedBy.getUsername());
+                order.getTrackingNumber(), previousStatus, newStatus, changedBy.getUsername());
 
         // BR-ALERT-01: Create client alert when status → READY_FOR_PICKUP
         if (newStatus == OrderStatus.READY_FOR_PICKUP) {

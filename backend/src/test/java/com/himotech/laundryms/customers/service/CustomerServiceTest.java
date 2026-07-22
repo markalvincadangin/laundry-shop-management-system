@@ -87,9 +87,10 @@ class CustomerServiceTest {
         @DisplayName("Should return customer when found")
         void findByIdShouldreturncustomerWhenfound() {
             Customer customer = TestDataBuilders.customer().build();
-            when(customerRepository.findById(UUID.randomUUID())).thenReturn(Optional.of(customer));
+            UUID id = UUID.randomUUID();
+            when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
 
-            Optional<Customer> result = customerService.findById(UUID.randomUUID());
+            Optional<Customer> result = customerService.findById(id);
 
             assertThat(result).isPresent();
             assertThat(result.get()).isEqualTo(customer);
@@ -98,9 +99,10 @@ class CustomerServiceTest {
         @Test
         @DisplayName("Should return empty when not found")
         void findByIdShouldreturnemptyWhennotfound() {
-            when(customerRepository.findById(UUID.randomUUID())).thenReturn(Optional.empty());
+            UUID id = UUID.randomUUID();
+            when(customerRepository.findById(id)).thenReturn(Optional.empty());
 
-            Optional<Customer> result = customerService.findById(UUID.randomUUID());
+            Optional<Customer> result = customerService.findById(id);
 
             assertThat(result).isEmpty();
         }

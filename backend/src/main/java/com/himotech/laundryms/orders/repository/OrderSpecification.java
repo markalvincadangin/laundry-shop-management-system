@@ -63,7 +63,7 @@ public final class OrderSpecification {
             if (q != null && !q.trim().isEmpty()) {
                 String searchPattern = "%" + q.trim().toLowerCase() + "%";
                 Predicate searchPredicate = cb.or(
-                        cb.like(cb.lower(root.get("referenceNumber")), searchPattern),
+                        cb.like(cb.lower(root.get("trackingNumber")), searchPattern),
                         cb.like(cb.lower(root.get("customer").get("firstName")), searchPattern),
                         cb.like(cb.lower(root.get("customer").get("lastName")), searchPattern),
                         cb.like(cb.lower(cb.concat(cb.concat(root.get("customer").get("firstName"), " "), root.get("customer").get("lastName"))), searchPattern),

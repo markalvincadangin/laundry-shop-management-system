@@ -41,7 +41,7 @@ export default function PayOrderPage() {
   
   const [localError, setLocalError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState<{
-    referenceNumber: string;
+    trackingNumber: string;
     amount: number;
   } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(PAYMENT_METHOD.CASH);
@@ -75,7 +75,7 @@ export default function PayOrderPage() {
       });
       
       setPaymentSuccess({
-        referenceNumber: order.referenceNumber,
+        trackingNumber: order.trackingNumber,
         amount: order.grandTotal,
       });
     } catch (err: any) {
@@ -126,7 +126,7 @@ export default function PayOrderPage() {
                     <div className="absolute top-0 left-0 w-1 h-full bg-brand-blue" />
                     <div className="space-y-1">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{UI_LABELS.shared.common.ORDER_NUMBER}</p>
-                      <p className="text-sm font-mono font-bold text-slate-900 tracking-wider tabular-nums">{order.referenceNumber}</p>
+                      <p className="text-sm font-mono font-bold text-slate-900 tracking-wider tabular-nums">{order.trackingNumber}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{UI_LABELS.shared.common.TOTAL}</p>
@@ -198,14 +198,14 @@ export default function PayOrderPage() {
                       >
                         <div className="space-y-4 pt-2">
                           <label className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
-                            Reference Number / Trace ID
+                            Tracking Number / Trace ID
                           </label>
                           <div className="relative group">
                             <ShieldCheck className="h-5 w-5 text-slate-300 group-focus-within:text-brand-blue absolute left-6 top-1/2 -translate-y-1/2 transition-colors" />
                             <input
                               type="text"
                               required
-                              placeholder="Enter Reference #"
+                              placeholder="Enter Tracking Number"
                               value={paymentReference}
                               onChange={(e) => setPaymentReference(e.target.value)}
                               className="w-full bg-slate-50 border border-slate-100 rounded-2xl h-16 pl-16 pr-6 text-sm font-bold placeholder:text-slate-300 focus:bg-white focus:border-brand-blue transition-all outline-none shadow-inner"
@@ -254,10 +254,10 @@ export default function PayOrderPage() {
                 </h2>
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">
-                    {UI_LABELS.shared.common.REFERENCE}
+                    {UI_LABELS.shared.common.TRACKING_NUMBER}
                   </span>
                   <span className="text-xs font-bold text-slate-600 font-mono">
-                    {paymentSuccess.referenceNumber}
+                    {paymentSuccess.trackingNumber}
                   </span>
                 </div>
               </div>

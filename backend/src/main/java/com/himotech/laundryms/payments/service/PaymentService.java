@@ -34,7 +34,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final com.himotech.laundryms.sync.service.OutboxService outboxService;
+
 
     @Auditable(action = "PAYMENT_RECORD", description = "Record payment for order")
     @Transactional
@@ -86,11 +86,9 @@ public class PaymentService {
                 .build();
         payment = paymentRepository.save(payment);
 
-        // Publish outbox event
-        outboxService.publishEvent("Payment", payment.getId(), payment);
 
         log.info("Payment recorded successfully: OrderRef={}, Amount=₱{}, Method={}", 
-                order.getReferenceNumber(), 
+                order.getTrackingNumber(), 
                 payment.getAmountPaid(), 
                 payment.getPaymentMethod());
 
@@ -114,10 +112,8 @@ public class PaymentService {
         // The Audit Log aspect will capture this deletion for the audit trail.
         paymentRepository.deleteByOrder_Id(orderId);
         
-        // Publish outbox event
-        outboxService.publishEvent("PaymentVoided", orderId, "{}");
 
-        log.info("Payment voided successfully: OrderRef={}", order.getReferenceNumber());
+        log.info("Payment voided successfully: OrderRef={}", order.getTrackingNumber());
     }
 
     @Transactional(readOnly = true)

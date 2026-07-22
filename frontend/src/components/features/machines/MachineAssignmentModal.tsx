@@ -82,7 +82,7 @@ export function MachineAssignmentModal({
         
         <div className="space-y-4">
           <p className="text-body-sm text-slate-500">
-            {order ? `${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_PREFIX}${order.referenceNumber}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX}${nextStatus}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX_2}` : ''}
+            {order ? `${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_PREFIX}${order.trackingNumber}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX}${nextStatus}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX_2}` : ''}
           </p>
 
           {order && order.totalLoads > 1 && selectedIds.length > 0 && (

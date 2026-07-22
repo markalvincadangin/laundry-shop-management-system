@@ -1,4 +1,4 @@
-.PHONY: up down build logs clean config test-backend test-frontend backup restore reset fresh setup-env up-dev up-prod
+.PHONY: up down build logs clean config test-backend test-frontend test backup restore reset fresh setup-env up-dev up-prod
 
 setup-env:
 	cp -n .env.example .env || true
@@ -37,6 +37,8 @@ test-backend:
 
 test-frontend:
 	docker compose --profile full run --rm frontend npm test
+
+test: test-backend test-frontend
 
 backup:
 	@echo "Creating database backup via Docker..."

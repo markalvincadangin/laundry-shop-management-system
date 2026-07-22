@@ -49,12 +49,12 @@ After login, you will see the main dashboard with quick links to:
 The system will:
 - Compute total loads: `ceil(weight ÷ 8 kg)`
 - Apply pricing based on selected **Service Type**.
-- Generate a unique reference number.
+- Generate a unique tracking number.
 - **Open the Claim Stub Modal:** From here you can print the thermal receipt or download a digital copy for the customer.
 
-### 2.2 Give Reference Number to Customer
+### 2.2 Give Tracking Number to Customer
 
-Share the **reference number** with the customer so they can track their order at the **Track Order** page (no login required).
+Share the **tracking number** with the customer so they can track their order at the **Track Order** page (no login required).
 
 ---
 
@@ -129,28 +129,30 @@ Payments are typically collected when the customer picks up the laundry.
 Customers can track their order without logging in:
 
 1. Go to the **Track Order** page (public link, e.g., `/track`).
-2. Enter the reference number (e.g., LDR-20260217-1234).
-3. Click **Track**.
-4. View current status, order date, and total.
+2. Enter the tracking number (e.g., LDR-20260217-1234).
+3. View current status, weight, loads, and live updates.
 
 ---
 
-## 7. Managing Service Rates — Admin Only
+## 6. Business Insights (Admin Only)
 
-The default pricing is ₱140 per load (8 kg), ₱1 per extra minute. The Admin can update these in **Service Rates** if business rules change.
+Admin users have access to **Business Insights** (`/reports`):
+- **Daily Sales Summary:** Total revenue, order count, and payment method breakdown (Cash, GCash, Bank Transfer).
+- **Date Filtering:** Select custom date ranges.
+- **Detailed Sales Table:** View individual paid transactions.
 
 ---
 
-## 8. Troubleshooting
+## 7. Troubleshooting & FAQs
 
-| Problem | Solution |
-|--------|----------|
+| Issue | Solution |
+| :--- | :--- |
+| **Tracking number not found** | Ask customer to double-check the tracking number. Ensure no extra spaces. |
 | **Cannot log in** | Check username and password. Contact Admin if locked out. |
 | **Order total seems wrong** | Verify weight and extra minutes. Base: ₱140 per 8 kg load. Extra: ₱1 per minute. |
 | **Cannot release order** | Order must be **Ready for Pickup** before release. Update status first. |
 | **Payment already exists** | Each order has one payment only. Check if payment was already recorded. |
-| **Page not loading** | Check internet/network. Ensure the application URL is correct. |
-| **Reference number not found** | Ask customer to double-check the reference. Ensure no extra spaces. |
+| **Page not loading** | Check internet/network connection. Ensure the application URL is correct. |
 
 ---
 

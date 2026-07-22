@@ -92,14 +92,14 @@ export default function PaymentsPage() {
         ],
         table: {
           columns: [
-            { header: "Reference", width: "25%", isMono: true },
+            { header: "Tracking #", width: "25%", isMono: true },
             { header: "Customer", width: "25%", isBold: true },
             { header: "Method", width: "20%" },
             { header: "Amount", width: "15%", align: "right", isBold: true },
             { header: "Status", width: "15%", align: "right" }
           ],
           rows: payments.map(p => [
-            p.orderReferenceNumber,
+            p.orderTrackingNumber,
             p.customerName || "Walk-in",
             p.paymentMethod,
             `PHP ${p.amountPaid.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,

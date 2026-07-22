@@ -16,7 +16,7 @@ import java.time.Instant;
 public class PaymentResponse {
     private UUID id;
     private UUID orderId;
-    private String orderReferenceNumber;
+    private String orderTrackingNumber;
     private String customerName;
     private Double amountPaid;
     private String paymentMethod;

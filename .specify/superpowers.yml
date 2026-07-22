@@ -1,4 +1,4 @@
-superpowers:
+skills:
   - speckit-analyze
   - speckit-brownfield-bootstrap
   - speckit-brownfield-migrate
@@ -33,3 +33,4 @@ superpowers:
   - speckit-superspec-tasks
   - speckit-tasks
   - speckit-taskstoissues
+  - vercel-react-best-practices

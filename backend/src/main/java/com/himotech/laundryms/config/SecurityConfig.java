@@ -1,7 +1,7 @@
 package com.himotech.laundryms.config;
 
-import com.himotech.laundryms.auth.JwtCookieAuthFilter;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,7 +16,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.himotech.laundryms.auth.JwtCookieAuthFilter;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableMethodSecurity
@@ -29,18 +31,22 @@ public class SecurityConfig {
 
     @Bean
     org.springframework.security.core.userdetails.UserDetailsService userDetailsService() {
-        return username -> { throw new org.springframework.security.core.userdetails.UsernameNotFoundException("No internal users"); };
+        return username -> {
+            throw new org.springframework.security.core.userdetails.UsernameNotFoundException("No internal users");
+        };
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(SecurityProperties props) {
         CorsConfiguration config = new CorsConfiguration();
-        // Use origin patterns from environment for maximum flexibility without hardcoding
+        // Use origin patterns from environment for maximum flexibility without
+        // hardcoding
         if (props.getAllowedOriginPatterns() != null && props.getAllowedOriginPatterns().length > 0) {
             config.setAllowedOriginPatterns(List.of(props.getAllowedOriginPatterns()));
         } else {
             // Safe fallback for local development
-            config.setAllowedOrigins(List.of(props.getAllowedOrigin() != null ? props.getAllowedOrigin() : "http://localhost:3000"));
+            config.setAllowedOrigins(
+                    List.of(props.getAllowedOrigin() != null ? props.getAllowedOrigin() : "http://localhost:3000"));
         }
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
@@ -61,22 +67,20 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource(props)))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
-                )
+                        .authenticationEntryPoint((request, response, authException) -> response
+                                .sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/orders/reference/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/orders/reference/**", "/api/v1/orders/tracking/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/service-rates/**").permitAll()
                         .requestMatchers("/api/test/public").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
-                        .anyRequest().permitAll()
-                )
+                        .anyRequest().permitAll())
                 .addFilterBefore(jwtCookieAuthFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 

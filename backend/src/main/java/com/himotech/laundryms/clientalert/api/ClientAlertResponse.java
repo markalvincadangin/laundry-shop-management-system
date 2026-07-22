@@ -16,7 +16,7 @@ import java.time.Instant;
 public class ClientAlertResponse {
     private UUID id;
     private UUID orderId;
-    private String referenceNumber;
+    private String trackingNumber;
     private UUID customerId;
     private String customerName;
     private String contactNumber;

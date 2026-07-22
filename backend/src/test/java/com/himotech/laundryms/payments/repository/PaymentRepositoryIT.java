@@ -1,7 +1,5 @@
 package com.himotech.laundryms.payments.repository;
 
-import java.util.UUID;
-
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentMethod;
 import com.himotech.laundryms.payments.PaymentStatus;
@@ -103,7 +101,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         // Persist Order
         testOrder = Order.builder()
-                .referenceNumber("REF-PAY-001")
+                .trackingNumber("REF-PAY-001")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -240,7 +238,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 entityManager.find(ServiceRate.class, testOrder.getServiceRate().getId()).getId());
 
         Order anotherOrder = Order.builder()
-                .referenceNumber("REF-PAY-002")
+                .trackingNumber("REF-PAY-002")
                 .customer(anotherCustomer)
                 .createdBy(testUser)
                 .serviceRate(rate)
@@ -284,7 +282,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
         // Given - Payment with non-existent order
         Order detachedOrder = Order.builder()
                 .id(java.util.UUID.randomUUID()) // Non-existent order ID
-                .referenceNumber("FAKE-ORDER")
+                .trackingNumber("FAKE-ORDER")
                 .build();
 
         Payment payment = Payment.builder()
@@ -334,7 +332,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             ServiceRate rate = entityManager.find(ServiceRate.class, testOrder.getServiceRate().getId());
 
             order1 = Order.builder()
-                    .referenceNumber("REF-FILTER-001")
+                    .trackingNumber("REF-FILTER-001")
                     .customer(customer1)
                     .createdBy(testUser)
                     .serviceRate(rate)
@@ -354,7 +352,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             order1 = entityManager.persist(order1);
 
             order2 = Order.builder()
-                    .referenceNumber("REF-FILTER-002")
+                    .trackingNumber("REF-FILTER-002")
                     .customer(customer2)
                     .createdBy(testUser)
                     .serviceRate(rate)
@@ -374,7 +372,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             order2 = entityManager.persist(order2);
 
             order3 = Order.builder()
-                    .referenceNumber("REF-FILTER-003")
+                    .trackingNumber("REF-FILTER-003")
                     .customer(customer1)
                     .createdBy(testUser)
                     .serviceRate(rate)
@@ -580,7 +578,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             // Then - Accessing associations should not trigger LazyInitializationException
             result.getContent().forEach(payment -> {
                 assertThat(payment.getOrder()).isNotNull();
-                assertThat(payment.getOrder().getReferenceNumber()).isNotNull();
+                assertThat(payment.getOrder().getTrackingNumber()).isNotNull();
                 assertThat(payment.getOrder().getCustomer()).isNotNull();
                 assertThat(payment.getOrder().getCustomer().getFirstName()).isNotNull();
                 assertThat(payment.getReceivedBy()).isNotNull();
