@@ -48,13 +48,18 @@ if (-not (Test-Path $winswCache)) {
 }
 Copy-Item -Path $winswCache -Destination "$deployDir\laundryms-service.exe" -Force
 
-# Download PostgreSQL installer if not cached
+# Download PostgreSQL installer if not cached or if corrupt (< 200MB)
 $pgVersion = "16.2-1"
 $pgCache = Join-Path $env:TEMP "postgresql-$pgVersion-windows-x64.exe"
+if ((Test-Path $pgCache) -and ((Get-Item $pgCache).Length -lt 200MB)) {
+    Write-Host "[PostgreSQL] Cached installer is incomplete or corrupt. Re-downloading..." -ForegroundColor Red
+    Remove-Item $pgCache -Force
+}
 if (-not (Test-Path $pgCache)) {
-    Write-Host "[PostgreSQL] Downloading PostgreSQL $pgVersion installer for silent bundling..." -ForegroundColor Yellow
+    Write-Host "[PostgreSQL] Downloading PostgreSQL $pgVersion installer (~330MB)..." -ForegroundColor Yellow
     $pgUrl = "https://get.enterprisedb.com/postgresql/postgresql-$pgVersion-windows-x64.exe"
-    Invoke-WebRequest -Uri $pgUrl -OutFile $pgCache -UseBasicParsing
+    $userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    Invoke-WebRequest -Uri $pgUrl -OutFile $pgCache -UserAgent $userAgent -UseBasicParsing
 }
 Copy-Item -Path $pgCache -Destination "$deployDir\postgresql-$pgVersion-windows-x64.exe" -Force
 

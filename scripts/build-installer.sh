@@ -50,12 +50,16 @@ if [ ! -f "$WINSW_CACHE" ]; then
 fi
 cp "$WINSW_CACHE" "$DEPLOY_DIR/laundryms-service.exe"
 
-# Download PostgreSQL installer if not cached
+# Download PostgreSQL installer if not cached or corrupt (<200MB)
 PG_VERSION="16.2-1"
 PG_CACHE="/tmp/postgresql-$PG_VERSION-windows-x64.exe"
+if [ -f "$PG_CACHE" ] && [ $(stat -c%s "$PG_CACHE" 2>/dev/null || stat -f%z "$PG_CACHE" 2>/dev/null || echo 0) -lt 200000000 ]; then
+    echo "[PostgreSQL] Cached installer is incomplete or corrupt. Re-downloading..."
+    rm -f "$PG_CACHE"
+fi
 if [ ! -f "$PG_CACHE" ]; then
-    echo "[PostgreSQL] Downloading PostgreSQL $PG_VERSION installer..."
-    curl -sSL "https://get.enterprisedb.com/postgresql/postgresql-$PG_VERSION-windows-x64.exe" -o "$PG_CACHE"
+    echo "[PostgreSQL] Downloading PostgreSQL $PG_VERSION installer (~330MB)..."
+    curl -sSL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "https://get.enterprisedb.com/postgresql/postgresql-$PG_VERSION-windows-x64.exe" -o "$PG_CACHE"
 fi
 cp "$PG_CACHE" "$DEPLOY_DIR/postgresql-$PG_VERSION-windows-x64.exe"
 

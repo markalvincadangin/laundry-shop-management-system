@@ -171,12 +171,14 @@ begin
     begin
       if (ResultCode <> 0) and not FileExists('C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe') then
       begin
-        MsgBox('PostgreSQL installation finished with exit code ' + IntToStr(ResultCode) + '. Please check Windows event logs.', mbError, MB_OK);
+        SuppressibleMsgBox('PostgreSQL database installation failed with exit code ' + IntToStr(ResultCode) + '.' + #13#10 + 'Setup will now abort.', mbCriticalError, MB_OK, MB_OK);
+        RaiseException('PostgreSQL installation failed.');
       end;
     end
     else
     begin
-      MsgBox('Failed to execute PostgreSQL silent installer process. Error code: ' + IntToStr(ResultCode), mbError, MB_OK);
+      SuppressibleMsgBox('Failed to launch PostgreSQL silent installer process (error code ' + IntToStr(ResultCode) + ').' + #13#10 + 'Setup will now abort.', mbCriticalError, MB_OK, MB_OK);
+      RaiseException('PostgreSQL launch failed.');
     end;
   end;
 end;
