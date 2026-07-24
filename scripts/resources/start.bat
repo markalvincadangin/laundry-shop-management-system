@@ -7,5 +7,5 @@ echo  Starting local server on port 8080...
 echo  Press Ctrl+C to stop the server.
 echo ============================================
 echo.
-java -Xmx512m -jar laundryms.jar --spring.profiles.active=prod
+java -Xmx512m -jar laundryms.jar --spring.profiles.active=prod --spring.config.additional-location=config/application-prod.properties
 pause

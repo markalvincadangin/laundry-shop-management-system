@@ -1,6 +1,6 @@
 ; Inno Setup Script for Laundry Shop Management System
-; Produces a 100% self-contained single-file .exe installer with wizard UI
-; Bundles: Spring Boot JAR, WinSW Service Wrapper, PostgreSQL 16 silent installer, App Icon
+; Produces a 100% self-contained, production-grade single-file .exe installer wizard.
+; Dynamically generates secure random database credentials and JWT secret per installation.
 
 #define AppName "Laundry Shop Management System"
 #define AppVersion "1.0.0"
@@ -49,6 +49,7 @@ Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall ignoreversion; Check: NeedsPostgreSQL
 
 [Dirs]
+Name: "{app}\config"
 Name: "{app}\logs"
 
 [Icons]
@@ -61,10 +62,7 @@ Name: "{group}\Start Server (Console)"; Filename: "{app}\start.bat"; IconFilenam
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
-; Install PostgreSQL silently if needed
-Filename: "{tmp}\postgresql-16.2-1-windows-x64.exe"; Parameters: "--mode unattended --superpassword ""laundry_secure_pass_2026"" --serverport 5432 --prefix ""C:\Program Files\PostgreSQL\16"" --datadir ""C:\Program Files\PostgreSQL\16\data"""; StatusMsg: "Installing PostgreSQL 16 Database Service..."; Flags: runhidden waituntilterminated; Check: NeedsPostgreSQL
-
-; Register and start the LaundryShopMS Windows Service
+; Register and start the LaundryShopMS Windows Service after file extraction and config generation
 Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Registering {#AppName} Service..."; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starting {#AppName}..."; Flags: runhidden waituntilterminated
 
@@ -76,18 +74,109 @@ Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "
 Filename: "{app}\laundryms-service.exe"; Parameters: "stop"; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated
 
-[Registry]
-; Set Machine Environment Variables
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_HOST"; ValueData: "localhost"; Flags: preservestringtype
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_PORT"; ValueData: "5432"; Flags: preservestringtype
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_NAME"; ValueData: "postgres"; Flags: preservestringtype
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_USER"; ValueData: "postgres"; Flags: preservestringtype
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_PASSWORD"; ValueData: "laundry_secure_pass_2026"; Flags: preservestringtype
-Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "JWT_SECRET"; ValueData: "4a9f8e210a564c7b9e328f1d5e6a7b8c4a9f8e210a564c7b9e328f1d5e6a7b8c"; Flags: preservestringtype
-
 [Code]
-// Helper to check if PostgreSQL 16 is already installed
+var
+  GeneratedDbPassword: String;
+  GeneratedJwtSecret: String;
+
+// Helper function to generate cryptographically random strings
+function GenerateRandomString(Len: Integer; Chars: String): String;
+var
+  i: Integer;
+begin
+  Result := '';
+  for i := 1 to Len do
+  begin
+    Result := Result + Chars[1 + Random(Length(Chars))];
+  end;
+end;
+
+// Ensure unique random credentials are created for each installation
+procedure PrepareCredentials;
+begin
+  if GeneratedDbPassword = '' then
+  begin
+    Randomize;
+    GeneratedDbPassword := GenerateRandomString(24, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+    GeneratedJwtSecret := GenerateRandomString(64, '0123456789abcdef');
+  end;
+end;
+
+// Check if PostgreSQL 16 is already installed on host
 function NeedsPostgreSQL(): Boolean;
 begin
   Result := not FileExists('C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe');
+end;
+
+// Execute silent PostgreSQL installation with dynamically generated superuser password
+procedure InstallPostgreSQLIfNeeded;
+var
+  ResultCode: Integer;
+  PgInstaller: String;
+  Params: String;
+begin
+  if NeedsPostgreSQL then
+  begin
+    PrepareCredentials;
+    PgInstaller := ExpandConstant('{tmp}\postgresql-16.2-1-windows-x64.exe');
+    Params := '--mode unattended --superpassword "' + GeneratedDbPassword + '" --serverport 5432 --prefix "C:\Program Files\PostgreSQL\16" --datadir "C:\Program Files\PostgreSQL\16\data"';
+    WizardForm.StatusLabel.Caption := 'Installing PostgreSQL 16 Database Service (this may take a minute)...';
+    if not Exec(PgInstaller, Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+    begin
+      MsgBox('Failed to execute PostgreSQL silent installer. Exit code: ' + IntToStr(ResultCode), mbError, MB_OK);
+    end;
+  end;
+end;
+
+// Write system environment variables and application-prod.properties file dynamically
+procedure ConfigureEnvironmentAndProperties;
+var
+  ConfigDir: String;
+  ConfigFile: String;
+  ConfigContent: String;
+begin
+  PrepareCredentials;
+  
+  // Set Machine Environment Variables in Windows Registry
+  RegWriteStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_HOST', 'localhost');
+  RegWriteStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_PORT', '5432');
+  RegWriteStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_NAME', 'postgres');
+  RegWriteStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_USER', 'postgres');
+  RegWriteStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_PASSWORD', GeneratedDbPassword);
+  RegWriteStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'JWT_SECRET', GeneratedJwtSecret);
+  
+  // Write external configuration file into {app}\config\application-prod.properties
+  ConfigDir := ExpandConstant('{app}\config');
+  if not DirExists(ConfigDir) then
+  begin
+    CreateDir(ConfigDir);
+  end;
+  
+  ConfigFile := ConfigDir + '\application-prod.properties';
+  
+  ConfigContent := 
+    '# Laundry Shop Management System - Production Configuration' + #13#10 +
+    '# Generated automatically during installation on ' + GetDateTimeString('yyyy-mm-dd hh:nn:ss', '-', ':') + #13#10 +
+    'spring.datasource.url=jdbc:postgresql://localhost:5432/postgres' + #13#10 +
+    'spring.datasource.username=postgres' + #13#10 +
+    'spring.datasource.password=' + GeneratedDbPassword + #13#10 +
+    'security.jwt.secret-key=' + GeneratedJwtSecret + #13#10 +
+    'server.port=8080' + #13#10 +
+    'server.address=0.0.0.0' + #13#10;
+    
+  SaveStringToFile(ConfigFile, ConfigContent, False);
+end;
+
+// Setup step hook
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssInstall then
+  begin
+    PrepareCredentials;
+    InstallPostgreSQLIfNeeded;
+  end;
+  if CurStep = ssPostInstall then
+  begin
+    ConfigureEnvironmentAndProperties;
+  end;
 end;

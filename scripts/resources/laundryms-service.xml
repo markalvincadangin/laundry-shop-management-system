@@ -3,7 +3,7 @@
   <name>Laundry Shop Management System</name>
   <description>Laundry Shop Management System - Local POS Server</description>
   <executable>java</executable>
-  <arguments>-Xmx512m -jar "%BASE%\laundryms.jar" --spring.profiles.active=prod</arguments>
+  <arguments>-Xmx512m -jar "%BASE%\laundryms.jar" --spring.profiles.active=prod --spring.config.additional-location="%BASE%\config\application-prod.properties"</arguments>
   <logpath>%BASE%\logs</logpath>
   <logmode>rotate</logmode>
   <onfailure action="restart" delay="10 sec"/>
