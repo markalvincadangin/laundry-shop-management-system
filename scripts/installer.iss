@@ -41,8 +41,7 @@ Source: "..\backend\target\deploy-staging\laundryms.jar"; DestDir: "{app}"; Flag
 Source: "..\backend\target\deploy-staging\laundryms-service.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "resources\laundryms-service.xml"; DestDir: "{app}"; Flags: ignoreversion
 
-; Launcher, License, and Icon
-Source: "resources\start.bat"; DestDir: "{app}"; Flags: ignoreversion
+; License and App Icon
 Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; PostgreSQL Silent Installer (staged during build)
@@ -58,7 +57,6 @@ Name: "{commondesktop}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\
 
 ; Start Menu shortcuts
 Name: "{group}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"; Comment: "Open {#AppName}"
-Name: "{group}\Start Server (Console)"; Filename: "{app}\start.bat"; IconFilename: "{app}\app.ico"; Comment: "Start {#AppName} with console output"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
