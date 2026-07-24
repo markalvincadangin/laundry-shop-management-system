@@ -1,4 +1,5 @@
-# Build Standalone Windows Installer with jpackage
+# Build Laundry Shop Management System Deployment Package
+# Produces: backend/target/LaundryShopMS-deploy.zip
 Param(
     [string]$AppVersion = "1.0.0"
 )
@@ -6,96 +7,61 @@ Param(
 $ErrorActionPreference = "Stop"
 
 Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host " Building Faith Laundry Management System (v$AppVersion) " -ForegroundColor Cyan
+Write-Host " Building Laundry Shop Management System (v$AppVersion) " -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
 # 1. Build Frontend Static Export
-Write-Host "`n[1/5] Building Frontend Static Export..." -ForegroundColor Yellow
+Write-Host "`n[1/4] Building Frontend Static Export..." -ForegroundColor Yellow
 $frontendDir = Resolve-Path (Join-Path $PSScriptRoot "..\frontend")
 Set-Location $frontendDir
 npm run build
 
 # 2. Copy Static Export into Spring Boot static resources
-Write-Host "`n[2/5] Copying Static Frontend into Backend Resources..." -ForegroundColor Yellow
+Write-Host "`n[2/4] Copying Static Frontend into Backend Resources..." -ForegroundColor Yellow
 $backendDir = Resolve-Path (Join-Path $PSScriptRoot "..\backend")
 $staticDir = Join-Path $backendDir "src\main\resources\static"
 if (Test-Path $staticDir) { Remove-Item $staticDir -Recurse -Force }
 New-Item -ItemType Directory -Path $staticDir -Force | Out-Null
 Copy-Item -Path "$frontendDir\out\*" -Destination $staticDir -Recurse -Force
 
-# 3. Build Executable Jar via Maven
-Write-Host "`n[3/5] Packaging Spring Boot Executable JAR via Maven..." -ForegroundColor Yellow
+# 3. Build Executable JAR via Maven
+Write-Host "`n[3/4] Packaging Spring Boot Executable JAR via Maven..." -ForegroundColor Yellow
 Set-Location $backendDir
 mvn clean package -DskipTests
 
-# 4. Prepare Clean Isolated Staging Directory for jpackage
-Write-Host "`n[4/5] Preparing Isolated Staging Directory for Installer..." -ForegroundColor Yellow
-$stagingDir = Join-Path $backendDir "target\installer-input"
-if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
-New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+# 4. Assemble Deployment Package
+Write-Host "`n[4/4] Assembling Deployment Package..." -ForegroundColor Yellow
+$deployDir = Join-Path $backendDir "target\deploy-staging"
+if (Test-Path $deployDir) { Remove-Item $deployDir -Recurse -Force }
+New-Item -ItemType Directory -Path $deployDir -Force | Out-Null
+New-Item -ItemType Directory -Path "$deployDir\logs" -Force | Out-Null
 
+# Copy application JAR
 $jarName = "laundryms-backend-0.0.1-SNAPSHOT.jar"
-Copy-Item -Path "$backendDir\target\$jarName" -Destination "$stagingDir\$jarName" -Force
+Copy-Item -Path "$backendDir\target\$jarName" -Destination "$deployDir\laundryms.jar" -Force
 
-# 5. Build Complete Self-Contained JRE Runtime via jlink
-Write-Host "`n[5/5] Building Complete Self-Contained JRE Runtime via jlink & Packaging MSI..." -ForegroundColor Yellow
-$runtimeDir = Join-Path $backendDir "target\custom-runtime"
-if (Test-Path $runtimeDir) { Remove-Item $runtimeDir -Recurse -Force }
+# Copy WinSW service wrapper and config
+$resourcesDir = Join-Path $PSScriptRoot "resources"
+Copy-Item -Path "$resourcesDir\laundryms-service.xml" -Destination "$deployDir\laundryms-service.xml" -Force
+Copy-Item -Path "$resourcesDir\start.bat" -Destination "$deployDir\start.bat" -Force
 
-$jlinkModules = @(
-    "java.base",
-    "java.compiler",
-    "java.desktop",
-    "java.instrument",
-    "java.logging",
-    "java.management",
-    "java.naming",
-    "java.net.http",
-    "java.prefs",
-    "java.rmi",
-    "java.scripting",
-    "java.security.jgss",
-    "java.security.sasl",
-    "java.sql",
-    "java.sql.rowset",
-    "java.transaction.xa",
-    "java.xml",
-    "jdk.charsets",
-    "jdk.crypto.ec",
-    "jdk.httpserver",
-    "jdk.management",
-    "jdk.management.agent",
-    "jdk.naming.dns",
-    "jdk.unsupported",
-    "jdk.zipfs"
-) -join ","
+# Download WinSW if not cached
+$winswCache = Join-Path $env:TEMP "WinSW-x64.exe"
+if (-not (Test-Path $winswCache)) {
+    Write-Host "[WinSW] Downloading Windows Service Wrapper..." -ForegroundColor Yellow
+    $winswUrl = "https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe"
+    Invoke-WebRequest -Uri $winswUrl -OutFile $winswCache -UseBasicParsing
+}
+Copy-Item -Path $winswCache -Destination "$deployDir\laundryms-service.exe" -Force
 
-jlink --add-modules $jlinkModules `
-      --output $runtimeDir `
-      --strip-debug `
-      --no-header-files `
-      --no-man-pages
-
-$appName = "Laundry Shop Management System"
-$winUpgradeUuid = "4d9f8e21-0a56-4c7b-9e32-8f1d5e6a7b8c"
-
-jpackage --name "$appName" `
-  --input "$stagingDir" `
-  --main-jar $jarName `
-  --main-class "org.springframework.boot.loader.launch.JarLauncher" `
-  --runtime-image $runtimeDir `
-  --app-version $AppVersion `
-  --win-upgrade-uuid $winUpgradeUuid `
-  --type msi `
-  --win-dir-chooser `
-  --win-shortcut `
-  --win-menu `
-  --java-options "-Xmx512m -Dspring.profiles.active=prod" `
-  --verbose
+# Create ZIP
+$zipPath = Join-Path $backendDir "target\LaundryShopMS-$AppVersion.zip"
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+Compress-Archive -Path "$deployDir\*" -DestinationPath $zipPath -Force
 
 Write-Host "`n==================================================" -ForegroundColor Green
-Write-Host " SUCCESS! Professional MSI Installer generated: " -ForegroundColor Green
-Write-Host " $backendDir\$appName-$AppVersion.msi" -ForegroundColor Green
-Write-Host "`n To install/upgrade smoothly on Windows, run: " -ForegroundColor Cyan
+Write-Host " SUCCESS! Deployment package generated:           " -ForegroundColor Green
+Write-Host " $zipPath" -ForegroundColor Green
+Write-Host "`n To install on Windows, run:" -ForegroundColor Cyan
 Write-Host " .\scripts\install_standalone.ps1" -ForegroundColor Yellow
 Write-Host "==================================================" -ForegroundColor Green
