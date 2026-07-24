@@ -96,7 +96,6 @@ var
 begin
   if GeneratedDbPassword = '' then
   begin
-    Randomize;
     if RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_PASSWORD', ExistingPass) and (ExistingPass <> '') then
     begin
       GeneratedDbPassword := ExistingPass;
