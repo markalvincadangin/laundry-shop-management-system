@@ -212,8 +212,8 @@ begin
   ConfigContent := 
     '# Laundry Shop Management System - Production Configuration' + #13#10 +
     '# Generated automatically during installation on ' + GetDateTimeString('yyyy-mm-dd hh:nn:ss', '-', ':') + #13#10 +
-    'spring.datasource.url=jdbc:postgresql://localhost:5432/postgres' + #13#10 +
-    'spring.datasource.username=postgres' + #13#10 +
+    'spring.datasource.url=jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:postgres}' + #13#10 +
+    'spring.datasource.username=${DB_USER:postgres}' + #13#10 +
     'spring.datasource.password=' + GeneratedDbPassword + #13#10 +
     'security.jwt.secret-key=' + GeneratedJwtSecret + #13#10 +
     'server.port=${SERVER_PORT:8765}' + #13#10 +
