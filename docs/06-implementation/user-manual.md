@@ -1,7 +1,7 @@
 # Faith Laundry Shop — User Manual
 
-> **Version:** 1.0  
-> **Date:** 2026-02-17  
+> **Version:** 1.1  
+> **Date:** 2026-07-24  
 > **Audience:** Admin and Staff  
 > **Purpose:** End-user guide for the Laundry Shop Management System
 
@@ -11,7 +11,7 @@
 
 ### 1.1 Logging In
 
-1. Open the application in your web browser (e.g., `http://laundry.local` or the URL provided by your administrator).
+1. Open the application in your web browser (e.g., `http://localhost:8080` or the shortcut provided on your counter device).
 2. Enter your **username** and **password**.
 3. Click **Login**.
 
@@ -25,7 +25,7 @@ After login, you will see the main dashboard with quick links to:
 - **Orders** — View and manage laundry orders
 - **New Order** — Create a new order
 - **Customers** — Search and add customers
-- **Reports** — Daily, monthly, yearly sales (Admin only)
+- **Reports** — Daily, monthly, yearly sales and business insights (Admin only)
 
 ---
 
@@ -49,12 +49,12 @@ After login, you will see the main dashboard with quick links to:
 The system will:
 - Compute total loads: `ceil(weight ÷ 8 kg)`
 - Apply pricing based on selected **Service Type**.
-- Generate a unique reference number.
+- Generate a unique tracking number (`tracking_number`).
 - **Open the Claim Stub Modal:** From here you can print the thermal receipt or download a digital copy for the customer.
 
-### 2.2 Give Reference Number to Customer
+### 2.2 Give Tracking Number to Customer
 
-Share the **reference number** with the customer so they can track their order at the **Track Order** page (no login required).
+Share the **tracking number** with the customer so they can track their order at the **Track Order** page (no login required).
 
 ---
 
@@ -67,11 +67,11 @@ Orders move through these stages:
 
 An order can be **Cancelled** from any stage before release.
 
-### 3.2 Rush Order Alerts (Req #7)
+### 3.2 Rush Order Alerts
 
 Orders designated as **Rush** will display a pulsing red badge in the Dashboard and Order Queue. These should be prioritized by staff to ensure fast turnaround.
 
-### 3.2 How to Update Status
+### 3.3 How to Update Status
 
 1. Go to **Orders** and click the order.
 2. Click **Update Status**.
@@ -102,59 +102,40 @@ Payments are typically collected when the customer picks up the laundry.
 
 ---
 
-## 5. Viewing Reports (US-08, US-09) — Admin Only
-
-### 5.1 Daily Report
-
-1. Go to **Reports → Daily**.
-2. Select the date.
-3. View **Total Income** and **Orders Completed** for that day.
-
-### 5.2 Monthly Report
-
-1. Go to **Reports → Monthly**.
-2. Select year and month.
-3. View total income and order count.
-
-### 5.3 Yearly Report
-
-1. Go to **Reports → Yearly**.
-2. Select the year.
-3. View annual totals.
-
----
-
-## 6. Customer Order Tracking (US-04)
+## 5. Customer Order Tracking (US-04)
 
 Customers can track their order without logging in:
 
-1. Go to the **Track Order** page (public link, e.g., `/track`).
-2. Enter the reference number (e.g., LDR-20260217-1234).
-3. Click **Track**.
-4. View current status, order date, and total.
+1. Go to the **Track Order** page (public link, e.g., `https://track.faithlaundry.com` or `/track`).
+2. Enter the tracking number (e.g., LDR-20260724-1234).
+3. View current status, weight, loads, and live updates.
 
 ---
 
-## 7. Managing Service Rates — Admin Only
+## 6. Business Insights & Reports (US-08, US-09) — Admin Only
 
-The default pricing is ₱140 per load (8 kg), ₱1 per extra minute. The Admin can update these in **Service Rates** if business rules change.
+Admin users have access to **Business Insights & Reports** (`/reports`):
+- **Daily Sales Summary:** Total revenue, order count, and payment method breakdown (Cash, GCash, Bank Transfer).
+- **Monthly & Yearly Income Reports:** Aggregated revenue by month and year.
+- **Date Filtering:** Select custom date ranges.
+- **Detailed Sales Table:** View individual paid transactions.
 
 ---
 
-## 8. Troubleshooting
+## 7. Troubleshooting & FAQs
 
-| Problem | Solution |
-|--------|----------|
+| Issue | Solution |
+| :--- | :--- |
+| **Tracking number not found** | Ask customer to double-check the tracking number. Ensure no extra spaces. |
 | **Cannot log in** | Check username and password. Contact Admin if locked out. |
 | **Order total seems wrong** | Verify weight and extra minutes. Base: ₱140 per 8 kg load. Extra: ₱1 per minute. |
 | **Cannot release order** | Order must be **Ready for Pickup** before release. Update status first. |
 | **Payment already exists** | Each order has one payment only. Check if payment was already recorded. |
-| **Page not loading** | Check internet/network. Ensure the application URL is correct. |
-| **Reference number not found** | Ask customer to double-check the reference. Ensure no extra spaces. |
+| **Page not loading** | Check internet/network connection. Ensure the application URL is correct. |
 
 ---
 
-## 9. Quick Reference — Pricing (BR-PR-01 to BR-PR-04)
+## 8. Quick Reference — Pricing (BR-PR-01 to BR-PR-04)
 
 | Item | Rule |
 |------|------|
@@ -163,10 +144,10 @@ The default pricing is ₱140 per load (8 kg), ₱1 per extra minute. The Admin 
 | Extra minutes | ₱1 per minute (beyond 45 min per load) |
 | Add-ons | Per-item price × quantity |
 
-**Example:** 16.5 kg = 3 loads → Base ₱360. 10 extra minutes → ₱10. Total ₱370 (+ add-ons if any).
+**Example:** 16.5 kg = 3 loads → Base ₱420. 10 extra minutes → ₱10. Total ₱430 (+ add-ons if any).
 
 ---
 
-## 10. Support
+## 9. Support
 
 For technical issues or training, contact **HIMÓTECH** or your system administrator.

@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
 import com.himotech.laundryms.clientalert.service.ClientAlertService;
 import org.junit.jupiter.api.DisplayName;
@@ -40,10 +42,10 @@ class ClientAlertControllerTest {
     @DisplayName("GET /api/v1/client-alerts - Should return 200 and paginated list")
     void listShouldreturn200Whenauthenticated() throws Exception {
         ClientAlertResponse resp = ClientAlertResponse.builder()
-                .id(1L)
-                .orderId(10L)
-                .referenceNumber("LDR-20260215-1234")
-                .customerId(5L)
+                .id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+                .orderId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+                .trackingNumber("LDR-20260215-1234")
+                .customerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
                 .customerName("John Doe")
                 .message("Your order LDR-20260215-1234 is ready for pickup.")
                 .status("SENT")
@@ -54,8 +56,8 @@ class ClientAlertControllerTest {
 
         mockMvc.perform(get("/api/v1/client-alerts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].id").value(1))
-                .andExpect(jsonPath("$.content[0].referenceNumber").value("LDR-20260215-1234"))
+                .andExpect(jsonPath("$.content[0].id").exists())
+                .andExpect(jsonPath("$.content[0].trackingNumber").value("LDR-20260215-1234"))
                 .andExpect(jsonPath("$.content[0].status").value("SENT"));
 
         verify(clientAlertService).search(any(), any(), any(), any(), any(Pageable.class));
@@ -64,11 +66,11 @@ class ClientAlertControllerTest {
     @Test
     @DisplayName("PATCH /api/v1/client-alerts/{id}/read - Should return 200")
     void markAsReadShouldreturn200() throws Exception {
-        mockMvc.perform(patch("/api/v1/client-alerts/1/read")
+        mockMvc.perform(patch("/api/v1/client-alerts/123e4567-e89b-12d3-a456-426614174000/read")
                 .with(csrf()))
                 .andExpect(status().isOk());
 
-        verify(clientAlertService).markAsRead(1L);
+        verify(clientAlertService).markAsRead(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
     }
 
     @Test

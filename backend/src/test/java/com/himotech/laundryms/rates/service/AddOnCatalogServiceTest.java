@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.rates.dto.CreateAddOnCatalogRequest;
 import com.himotech.laundryms.rates.dto.UpdateAddOnCatalogRequest;
 import com.himotech.laundryms.rates.entity.AddOnCatalog;
@@ -87,7 +89,8 @@ class AddOnCatalogServiceTest {
                 .defaultPrice(new BigDecimal("10.00"))
                 .isActive(true)
                 .build();
-        when(repository.findById(1)).thenReturn(Optional.of(existing));
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
         when(repository.save(any(AddOnCatalog.class))).thenAnswer(inv -> inv.getArgument(0));
 
         UpdateAddOnCatalogRequest request = new UpdateAddOnCatalogRequest();
@@ -95,7 +98,7 @@ class AddOnCatalogServiceTest {
         request.setDefaultPrice(new BigDecimal("15.00"));
         request.setIsActive(false);
 
-        var result = service.update(1, request);
+        var result = service.update(id, request);
 
         assertThat(result.getName()).isEqualTo("New Name");
         assertThat(result.getDefaultPrice()).isEqualTo(new BigDecimal("15.00"));
@@ -105,13 +108,14 @@ class AddOnCatalogServiceTest {
     @Test
     @DisplayName("Should throw NotFoundException if update target doesn't exist")
     void updateAddOn_NotFound() {
-        when(repository.findById(1)).thenReturn(Optional.empty());
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
         UpdateAddOnCatalogRequest request = new UpdateAddOnCatalogRequest();
         request.setName("New Name");
         request.setDefaultPrice(new BigDecimal("15.00"));
         request.setIsActive(false);
 
-        assertThatThrownBy(() -> service.update(1, request))
+        assertThatThrownBy(() -> service.update(id, request))
                 .isInstanceOf(NotFoundException.class);
     }
 }

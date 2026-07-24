@@ -53,7 +53,7 @@ class PaymentServiceTest {
     @InjectMocks
     private PaymentService paymentService;
 
-    private static final Long ORDER_ID = 1L;
+    private static final UUID ORDER_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final BigDecimal GRAND_TOTAL = new BigDecimal("240.00");
 
@@ -71,7 +71,7 @@ class PaymentServiceTest {
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> {
             Payment p = inv.getArgument(0);
             if (p.getId() == null) {
-                p.setId(1L);
+                p.setId(UUID.randomUUID());
             }
             return p;
         });

@@ -155,6 +155,19 @@ docker compose --profile full up -d
 > **Note on Permissions:** If switching from Full Docker back to Hybrid mode, you may encounter `Permission Denied` errors because Docker creates root-owned files in `node_modules/` and `target/`. Clean them up using a dockerized remove command:
 > `docker run --rm -v $(pwd)/frontend:/app -w /app postgres:16-alpine rm -rf node_modules .next`
 
+### 💻 Option 3: Offline-First Standalone Setup (Windows Desktop)
+
+This setup provides a single double-clickable `.exe` Windows installer wizard (built via Inno Setup) with the statically exported Next.js frontend, Spring Boot backend, custom app icon, and automated WinSW background service configuration. This is intended for production deployment on Windows 10/11 machines without any developer tools installed.
+
+1. **Build the Standalone Installer**:
+   Open PowerShell:
+   ```powershell
+   cd scripts
+   .\build-installer.ps1
+   ```
+2. **Install**:
+   Double-click the generated `LaundryShopMS-Setup-1.0.0.exe` installer wizard in `backend\target\`. The installer automatically provisions PostgreSQL silently, sets environment variables, installs the `LaundryShopMS` background Windows service, creates Desktop & Start Menu shortcuts, registers in Add/Remove Programs, and opens `http://localhost:8765` in Edge App Mode.
+
 ### Verify Everything is Running
 
 | Service | Mode | URL | Expected |

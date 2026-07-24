@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 public interface PaymentMapper {
 
     @Mapping(target = "orderId", expression = "java(payment.getOrder() != null ? payment.getOrder().getId() : null)")
-    @Mapping(target = "orderReferenceNumber", expression = "java(payment.getOrder() != null && payment.getOrder().getReferenceNumber() != null ? payment.getOrder().getReferenceNumber() : null)")
+    @Mapping(target = "orderTrackingNumber", expression = "java(payment.getOrder() != null && payment.getOrder().getTrackingNumber() != null ? payment.getOrder().getTrackingNumber() : null)")
     @Mapping(target = "customerName", expression = "java(payment.getOrder() != null && payment.getOrder().getCustomer() != null ? payment.getOrder().getCustomer().getFirstName() + \" \" + payment.getOrder().getCustomer().getLastName() : null)")
     @Mapping(target = "amountPaid", expression = "java(payment.getAmountPaid() != null ? payment.getAmountPaid().doubleValue() : null)")
     @Mapping(target = "paymentMethod", expression = "java(payment.getPaymentMethod() != null ? payment.getPaymentMethod().name() : null)")

@@ -10,7 +10,7 @@ import { UI_LABELS } from "@/constants/ui";
 
 interface OrderCardProps {
   order: OrderResponse;
-  onAdvance: (orderId: number, nextStatus: OrderStatus) => void;
+  onAdvance: (orderId: string, nextStatus: OrderStatus) => void;
   isLoading?: boolean;
   /** When true, applies Urgent State left-border accent (§11.5 — Ready for Pickup column) */
   isUrgent?: boolean;
@@ -59,7 +59,7 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent, isSystemPause
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="px-2 py-1 rounded-md bg-slate-50 border border-slate-200/50 text-[9px] font-mono font-black text-slate-800 tracking-widest uppercase shadow-sm">
-              {order.referenceNumber}
+              {order.trackingNumber}
             </span>
             {isRush && (
               <StatusBadge label="RUSH" variant="rush" className="px-2 py-1 text-[8px] h-auto" />

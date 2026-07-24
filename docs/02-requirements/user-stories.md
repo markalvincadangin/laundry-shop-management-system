@@ -3,9 +3,9 @@
 
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
-> **Document ID:** US-CATALOG (US-01 through US-11)  
-> **Version:** 1.1  
-> **Date:** 2026-02-20  
+> **Document ID:** US-CATALOG (US-01 through US-14)  
+> **Version:** 1.2  
+> **Date:** 2026-07-24  
 > **Source:** Client Interview & Case Study  
 > **Purpose:** Define functional behavior for implementation  
 > **Status:** Baseline (MVP)
@@ -16,6 +16,13 @@
 - **Document Type:** Requirements — User Stories
 - **Related Documents:** [Project Scope](../01-scope/project-scope.md), [Business Rules](business-rules.md), [Non-Functional Requirements](non-functional-requirements.md), [Case Study](../00-context/case-study.md), [Client Interview](../00-context/client-interview.md), [OpenAPI Spec](../05-tech-design/openapi.yaml)
 - **Confidentiality:** Internal / Academic Use
+
+### Revision History
+| Version | Date       | Author   | Changes |
+|---------|------------|----------|---------|
+| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
+| 1.1     | 2026-02-20 | HIMÓTECH  | Baseline MVP release |
+| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and UUID data model |
 
 ---
 
@@ -31,11 +38,11 @@
 - Customer name and contact number are required
 - Laundry weight (kg) is required
 - Order date is recorded automatically
-- System generates a unique reference number
+- System generates a unique tracking number (`tracking_number`)
 - Initial order status is set to **Received**
 - Staff MAY assign machines during intake if they are immediately available
 
-**Related Business Rules:** [BR-OL-01](business-rules.md#br-ol-01-order-must-have-a-unique-reference-number), [BR-OL-02](business-rules.md#br-ol-02-initial-order-status), [BR-REC-01](business-rules.md#br-rec-01-core-data-to-record), [BR-MAC-03](business-rules.md#br-mac-03-hoarding-prevention)
+**Related Business Rules:** [BR-OL-01](business-rules.md#br-ol-01-order-must-have-a-unique-tracking-number), [BR-OL-02](business-rules.md#br-ol-02-initial-order-status), [BR-REC-01](business-rules.md#br-rec-01-core-data-to-record), [BR-MAC-03](business-rules.md#br-mac-03-hoarding-prevention)
 **Scope:** [§ 3.1.1 Order Intake & Management](../01-scope/project-scope.md#311-order-intake-management)
 
 ---
@@ -112,18 +119,18 @@
 
 ## 2. Epic 2: Order Tracking & Release
 
-### US-04 – Track Laundry Order by Reference Number
+### US-04 – Track Laundry Order by Tracking Number
 
 **As a** customer  
-**I want** to track my laundry order using a reference number  
+**I want** to track my laundry order using a tracking number  
 **So that** I can check the status without asking the staff.
 
 **Acceptance Criteria**
-- Customer can enter an order reference number
+- Customer can enter an order tracking number (`tracking_number`)
 - System displays current order status, order date, and service summary
-- Invalid reference numbers show a clear error message
+- Invalid tracking numbers show a clear error message
 
-**Related Business Rules:** [BR-NOTIF-02](business-rules.md#br-notif-02-tracking-by-reference-number), [BR-OL-01](business-rules.md#br-ol-01-order-must-have-a-unique-reference-number)  
+**Related Business Rules:** [BR-NOTIF-02](business-rules.md#br-notif-02-tracking-by-tracking-number), [BR-OL-01](business-rules.md#br-ol-01-order-must-have-a-unique-tracking-number)  
 **Scope:** [§ 3.1.5 Order Tracking](../01-scope/project-scope.md#315-order-tracking-customer-facing)
 
 ---
@@ -135,33 +142,30 @@
 **So that** incorrect items are not given to customers.
 
 **Acceptance Criteria**
-- Staff can view order and customer details
-- Order MUST be **Ready for Pickup** before release
-- Payment MUST be recorded (**Paid**) before release — release is not allowed for unpaid orders
-- Order status is updated to **Released** after verification
+- System displays order details, current status, and payment status
+- Release button is disabled unless (1) status is **Ready for Pickup** and (2) payment status is **Paid**
+- Confirmation prompt before completing release
 
-**Related Business Rules:** [BR-OL-05](business-rules.md#br-ol-05-release-preconditions), [BR-OL-03](business-rules.md#br-ol-03-allowed-order-status-values)  
+**Related Business Rules:** [BR-OL-05](business-rules.md#br-ol-05-release-preconditions-ready--paid)  
 **Scope:** [§ 3.1.2 Order Lifecycle Tracking](../01-scope/project-scope.md#312-order-lifecycle-tracking)
 
 ---
 
-## 3. Epic 3: Payments & Transactions
+## 3. Epic 3: Payments & Financials
 
-### US-06 – Record Payment for Laundry Order
+### US-06 – Record Payment
 
 **As a** staff or admin  
-**I want** to record customer payments  
-**So that** payment history is properly tracked.
+**I want** to record customer payment for an order  
+**So that** the system tracks order payment status and revenue.
 
 **Acceptance Criteria**
-- Payment is linked to exactly one order
-- MVP: full payments only; payment amount MUST exactly match the order grand total
-- **Payment method** (Cash, GCash, Bank Transfer) is recorded for each payment
-- Partial payments, overpayments, and change/refunds are not supported in MVP
-- Payment date is recorded automatically
-- Order payment status is updated to **Paid** or **Unpaid** based on full payment received
+- Payment amount must equal order grand total (full payment only for MVP)
+- Payment method (Cash, GCash, Bank Transfer) is recorded
+- Payment timestamp and recording user are saved
+- Payment status automatically updates to **Paid**
 
-**Related Business Rules:** [BR-PAY-01](business-rules.md#br-pay-01-payment-timing), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](business-rules.md#br-pay-03-payment-amount-validation), [BR-PAY-04](business-rules.md#br-pay-04-payment-status), [BR-PAY-05](business-rules.md#br-pay-05-payment-method-recorded)  
+**Related Business Rules:** [BR-PAY-01](business-rules.md#br-pay-01-full-payment-required-mvp-restriction), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](business-rules.md#br-pay-03-supported-payment-methods), [BR-PAY-04](business-rules.md#br-pay-04-payment-status)  
 **Scope:** [§ 3.1.3 Payment Recording](../01-scope/project-scope.md#313-payment-recording)
 
 ---
@@ -174,7 +178,7 @@
 
 **Acceptance Criteria**
 - Payments can be filtered by date range
-- Each payment shows order reference number and amount
+- Each payment shows order tracking number (`tracking_number`) and amount
 - Only the admin can access the full payment history
 
 **Related Business Rules:** [BR-REC-01](business-rules.md#br-rec-01-core-data-to-record), [BR-PAY-02](business-rules.md#br-pay-02-payment-must-be-linked-to-an-order)  
@@ -226,7 +230,7 @@
 
 **Acceptance Criteria**
 - Notification is triggered when status becomes **Ready for Pickup**
-- Notification includes order reference number
+- Notification includes order tracking number (`tracking_number`)
 - Notification channel may be SMS or digital message
 
 **Related Business Rules:** [BR-NOTIF-01](business-rules.md#br-notif-01-customer-ready-notification-trigger), [BR-OL-03](business-rules.md#br-ol-03-allowed-order-status-values)  
@@ -259,10 +263,11 @@ The following user stories are required for the MVP (aligned with [Project Scope
 - US-01 Record Laundry Order
 - US-02 Automatically Compute Laundry Price
 - US-03 Update Laundry Order Status
-- US-04 Track Laundry Order by Reference Number
+- US-04 Track Laundry Order by Tracking Number
 - US-05 Verify Laundry Before Release
 - US-06 Record Payment
 - US-07 View Payment History
+- US-08 View Daily Sales Report
 - US-09 View Monthly and Yearly Income Reports
 - US-11 User Login and Role-Based Access
 - US-12 Track Machine Inventory

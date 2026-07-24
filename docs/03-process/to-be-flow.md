@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** PROC-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
+> **Version:** 1.1  
+> **Date:** 2026-07-24  
 > **Purpose:** Define future-state operational process flows after system implementation  
 > **Status:** Baseline (MVP Reference)
 
@@ -15,6 +15,12 @@
 - **Document Type:** Process Modeling (To-Be State)
 - **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Architecture](../05-tech-design/architecture.md)
 - **Confidentiality:** Internal / Academic Use
+
+### Revision History
+| Version | Date       | Author   | Changes |
+|---------|------------|----------|---------|
+| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
+| 1.1     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and Standalone Cloudflare Tunnel flow |
 
 ---
 
@@ -68,7 +74,7 @@ Reporting
 
 **Related Requirements**
 - **User Stories:** [US-01](../02-requirements/user-stories.md#us-01-record-laundry-order), [US-02](../02-requirements/user-stories.md#us-02-automatically-compute-laundry-price)
-- **Business Rules:** [BR-PR-01](../02-requirements/business-rules.md#br-pr-01-base-load-pricing), [BR-PR-02](../02-requirements/business-rules.md#br-pr-02-additional-load-for-excess-weight), [BR-PR-03](../02-requirements/business-rules.md#br-pr-03-extra-washing-time-charge), [BR-PR-04](../02-requirements/business-rules.md#br-pr-04-optional-add-ons-eg-fabric-conditioner), [BR-OL-01](../02-requirements/business-rules.md#br-ol-01-order-must-have-a-unique-reference-number), [BR-OL-02](../02-requirements/business-rules.md#br-ol-02-initial-order-status)
+- **Business Rules:** [BR-PR-01](../02-requirements/business-rules.md#br-pr-01-base-load-pricing), [BR-PR-02](../02-requirements/business-rules.md#br-pr-02-additional-load-for-excess-weight), [BR-PR-03](../02-requirements/business-rules.md#br-pr-03-extra-washing-time-charge), [BR-PR-04](../02-requirements/business-rules.md#br-pr-04-optional-add-ons-eg-fabric-conditioner), [BR-OL-01](../02-requirements/business-rules.md#br-ol-01-order-must-have-a-unique-tracking-number), [BR-OL-02](../02-requirements/business-rules.md#br-ol-02-initial-order-status)
 
 **Steps**
 1. Staff or Admin enters customer details: first name, last name, contact number.
@@ -78,7 +84,7 @@ Reporting
    - Computes base amount (₱140 per load)
    - Computes extra minute charge (₱1 per minute beyond 45 minutes per load)
    - Computes add-ons total and grand total
-   - Generates unique reference number
+   - Generates unique tracking number (`tracking_number`)
    - Sets order status to **Received**
    - Stores timestamp
 4. Order record is saved.
@@ -86,11 +92,11 @@ Reporting
 **Rules/Constraints**
 - Weight is required; reject if missing or invalid (BR-PR-01).
 - Total loads = `ceil(weight_kg / 8)` (BR-PR-02).
-- Reference number MUST be unique (BR-OL-01).
+- Tracking number MUST be unique (BR-OL-01).
 - Initial status MUST be Received (BR-OL-02).
 
 **Output**
-- Order reference number issued
+- Order tracking number issued
 - Grand total displayed
 
 ---
@@ -102,7 +108,7 @@ Reporting
 
 **Related Requirements**
 - **User Stories:** [US-03](../02-requirements/user-stories.md#us-03-update-laundry-order-status), [US-05](../02-requirements/user-stories.md#us-05-verify-laundry-before-release)
-- **Business Rules:** [BR-OL-03](../02-requirements/business-rules.md#br-ol-03-allowed-order-status-values), [BR-OL-04](../02-requirements/business-rules.md#br-ol-04-status-transition-control-recommended), [BR-OL-05](../02-requirements/business-rules.md#br-ol-05-release-preconditions)
+- **Business Rules:** [BR-OL-03](../02-requirements/business-rules.md#br-ol-03-allowed-order-status-values), [BR-OL-04](../02-requirements/business-rules.md#br-ol-04-status-transition-control-recommended), [BR-OL-05](../02-requirements/business-rules.md#br-ol-05-release-preconditions-ready--paid)
 
 **Valid Status Flow (Normal Sequence)**
 
@@ -137,11 +143,11 @@ RELEASED
 **Trigger:** Customer arrives for pickup.
 
 **Related Requirements**
-- **User Stories:** [US-06](../02-requirements/user-stories.md#us-06-record-payment-for-laundry-order)
-- **Business Rules:** [BR-PAY-01](../02-requirements/business-rules.md#br-pay-01-payment-timing), [BR-PAY-02](../02-requirements/business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](../02-requirements/business-rules.md#br-pay-03-payment-amount-validation), [BR-PAY-04](../02-requirements/business-rules.md#br-pay-04-payment-status)
+- **User Stories:** [US-06](../02-requirements/user-stories.md#us-06-record-payment)
+- **Business Rules:** [BR-PAY-01](../02-requirements/business-rules.md#br-pay-01-full-payment-required-mvp-restriction), [BR-PAY-02](../02-requirements/business-rules.md#br-pay-02-payment-must-be-linked-to-an-order), [BR-PAY-03](../02-requirements/business-rules.md#br-pay-03-supported-payment-methods), [BR-PAY-04](../02-requirements/business-rules.md#br-pay-04-payment-status)
 
 **Steps**
-1. Staff or Admin retrieves an order using a reference number or customer search.
+1. Staff or Admin retrieves an order using a tracking number (`tracking_number`) or customer search.
 2. System displays order details, computed grand total, and current payment status.
 3. Staff or Admin enters the payment amount and selects payment method (Cash, GCash, Bank Transfer).
 4. System validates:
@@ -171,12 +177,12 @@ RELEASED
 **Trigger:** Customer wants to check order status.
 
 **Related Requirements**
-- **User Stories:** [US-04](../02-requirements/user-stories.md#us-04-track-laundry-order-by-reference-number)
-- **Business Rules:** [BR-NOTIF-02](../02-requirements/business-rules.md#br-notif-02-tracking-by-reference-number), [BR-OL-01](../02-requirements/business-rules.md#br-ol-01-order-must-have-a-unique-reference-number)
+- **User Stories:** [US-04](../02-requirements/user-stories.md#us-04-track-laundry-order-by-tracking-number)
+- **Business Rules:** [BR-NOTIF-02](../02-requirements/business-rules.md#br-notif-02-tracking-by-tracking-number), [BR-OL-01](../02-requirements/business-rules.md#br-ol-01-order-must-have-a-unique-tracking-number)
 
 **Steps**
-1. Customer enters reference number.
-2. System validates reference exists.
+1. Customer enters tracking number (`tracking_number`).
+2. System validates tracking number exists.
 3. System displays: current status, order date, basic order summary.
 
 **Rules/Constraints**
@@ -237,7 +243,7 @@ RELEASED
 - Display error message
 - Do not update payment status
 
-**Reference:** [BR-PAY-03](../02-requirements/business-rules.md#br-pay-03-payment-amount-validation)
+**Reference:** [BR-PAY-03](../02-requirements/business-rules.md#br-pay-03-supported-payment-methods)
 
 ---
 
@@ -249,7 +255,7 @@ RELEASED
 | Paper-based tracking     | Digital status tracking     |
 | Limited historical data  | Persistent database storage |
 | Manual sales tallying    | Automated reporting         |
-| Tag-based tracking       | Reference number tracking   |
+| Tag-based tracking       | Tracking number tracking    |
 
 ---
 

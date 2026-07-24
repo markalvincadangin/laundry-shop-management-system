@@ -105,8 +105,8 @@ describe("OrdersPage", () => {
     vi.mocked(ordersService.list).mockResolvedValue({
       content: [
         {
-          id: 1,
-          referenceNumber: "ORD-TEST-001",
+          id: '1',
+          trackingNumber: "ORD-TEST-001",
           customerName: "John Doe",
           weightKg: 5,
           totalLoads: 1,

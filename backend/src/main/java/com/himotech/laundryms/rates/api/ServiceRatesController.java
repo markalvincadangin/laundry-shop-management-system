@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.rates.dto.CreateServiceRateRequest;
 import com.himotech.laundryms.rates.dto.UpdateServiceRateRequest;
 import com.himotech.laundryms.rates.dto.ServiceRateResponse;
@@ -47,7 +49,7 @@ public class ServiceRatesController {
     @PatchMapping("/{rateId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceRateResponse> update(
-            @PathVariable Integer rateId,
+            @PathVariable UUID rateId,
             @Valid @RequestBody UpdateServiceRateRequest request) {
         ServiceRate rate = serviceRateService.update(rateId, request);
         return ResponseEntity.ok(serviceRateMapper.toResponse(rate));

@@ -26,6 +26,8 @@ docker/.env.docker
 # Java/Maven (backend)
 **/target/
 **/out/
+backend/src/main/resources/static/*
+!backend/src/main/resources/static/.gitkeep
 **/.classpath
 **/.project
 **/.settings/
@@ -45,6 +47,11 @@ docker/.env.docker
 **/jacoco*.xml
 **/surefire-reports/
 **/test-output/
+**/playwright-report/
+**/test-results/
+
+# frontend-maven-plugin
+**/node/
 
 # Docker volumes (local)
 **/postgres_data/
@@ -60,6 +67,12 @@ docker-compose.override.yml
 
 # Backups
 backups/
+
+# Scratch files & One-off Migration Scripts
+*.py
+scratch/
+*.tmp
+*.bak
 
 # Graphify
 graphify-out/

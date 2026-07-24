@@ -54,7 +54,7 @@ public class OrderStatusService {
 
     @Auditable(action = "ORDER_STATUS_UPDATE", description = "Update order lifecycle status")
     @Transactional
-    public Order updateStatus(Long orderId, OrderStatus newStatus, UUID changedByUserId, String notes, Set<Long> machineIds) {
+    public Order updateStatus(UUID orderId, OrderStatus newStatus, UUID changedByUserId, String notes, Set<UUID> machineIds) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         User changedBy = userRepository.findById(changedByUserId)
@@ -139,7 +139,7 @@ public class OrderStatusService {
         orderRepository.save(order);
 
         log.info("Order status updated: Reference={}, {} → {}, ChangedBy={}", 
-                order.getReferenceNumber(), previousStatus, newStatus, changedBy.getUsername());
+                order.getTrackingNumber(), previousStatus, newStatus, changedBy.getUsername());
 
         // BR-ALERT-01: Create client alert when status → READY_FOR_PICKUP
         if (newStatus == OrderStatus.READY_FOR_PICKUP) {

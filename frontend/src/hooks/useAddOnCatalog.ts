@@ -27,7 +27,7 @@ export function useCreateAddOnCatalog() {
 export function useUpdateAddOnCatalog() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateAddOnCatalogRequest }) => addOnCatalogService.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateAddOnCatalogRequest }) => addOnCatalogService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADD_ON_CATALOG_KEYS.all });
     },

@@ -6,9 +6,9 @@ import type { OrderResponse } from "@/lib/api/orders";
 describe("OrderCard", () => {
   it("presents exactly one contextual Next Step button per FR-DASH-3", () => {
     const mockOrder: OrderResponse = {
-      id: 1,
-      referenceNumber: "ORD-001",
-      customerId: 1,
+      id: "1",
+      trackingNumber: "ORD-001",
+      customerId: "1",
       customerName: "John Doe",
       currentStatus: "WASHING",
       weightKg: 5,

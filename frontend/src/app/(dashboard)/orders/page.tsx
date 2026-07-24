@@ -103,14 +103,14 @@ export default function OrdersPage() {
         ],
         table: {
           columns: [
-            { header: "Reference", width: "20%", isMono: true },
+            { header: "Tracking #", width: "20%", isMono: true },
             { header: "Customer", width: "25%", isBold: true },
             { header: "Status", width: "20%" },
             { header: "Loads", width: "15%", align: "right" },
             { header: "Total", width: "20%", align: "right", isBold: true }
           ],
           rows: orders.map(o => [
-            o.referenceNumber,
+            o.trackingNumber,
             o.customerName || "N/A",
             o.currentStatus,
             o.totalLoads.toString(),
@@ -139,12 +139,12 @@ export default function OrdersPage() {
     {
       header: UI_LABELS.shared.common.ORDER_NUMBER,
       sortable: true,
-      sortKey: "referenceNumber",
+      sortKey: "trackingNumber",
       render: (order) => (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-slate-900 group-hover:text-brand-blue transition-colors font-mono tracking-wider">
-              {order.referenceNumber}
+              {order.trackingNumber}
             </span>
             {order.serviceName?.includes("Rush") && (
               <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px]" />

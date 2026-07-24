@@ -1,5 +1,7 @@
 package com.himotech.laundryms.machines.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.machines.entity.Machine;
 import com.himotech.laundryms.machines.entity.MachineStatus;
 import com.himotech.laundryms.machines.repository.MachineRepository;
@@ -21,7 +23,7 @@ public class MachineService {
     }
 
     @Transactional(readOnly = true)
-    public Machine getMachineById(final Long id) {
+    public Machine getMachineById(final UUID id) {
         return machineRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Machine not found: " + id));
     }
@@ -40,14 +42,14 @@ public class MachineService {
     }
 
     @Transactional
-    public Machine updateStatus(final Long id, MachineStatus status) {
+    public Machine updateStatus(final UUID id, MachineStatus status) {
         Machine machine = getMachineById(id);
         machine.setStatus(status);
         return machineRepository.save(machine);
     }
 
     @Transactional
-    public void deleteMachine(final Long id) {
+    public void deleteMachine(final UUID id) {
         Machine machine = getMachineById(id);
         machine.setIsActive(false);
         machineRepository.save(machine);

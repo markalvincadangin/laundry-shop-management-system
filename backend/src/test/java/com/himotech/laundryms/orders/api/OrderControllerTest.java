@@ -1,7 +1,6 @@
 package com.himotech.laundryms.orders.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.himotech.laundryms.orders.dto.AddOnInput;
 import com.himotech.laundryms.orders.dto.CreateOrderRequest;
 import com.himotech.laundryms.orders.dto.OrderListParams;
 import com.himotech.laundryms.orders.dto.UpdateOrderStatusRequest;
@@ -79,12 +78,12 @@ class OrderControllerTest {
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
 
     private Order sampleOrder() {
-        Customer c = Customer.builder().id(1L).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
+        Customer c = Customer.builder().id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000")).firstName("Juan").lastName("Dela Cruz").contactNumber("0917").build();
         User u = User.builder().id(USER_ID).username("staff").build();
-        ServiceRate r = ServiceRate.builder().id(1).basePricePerLoad(BigDecimal.valueOf(120)).kgLimitPerLoad(BigDecimal.valueOf(8)).pricePerExtraMinute(BigDecimal.ONE).isActive(true).build();
+        ServiceRate r = ServiceRate.builder().id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000")).basePricePerLoad(BigDecimal.valueOf(120)).kgLimitPerLoad(BigDecimal.valueOf(8)).pricePerExtraMinute(BigDecimal.ONE).isActive(true).build();
         return Order.builder()
-                .id(1L)
-                .referenceNumber("LDR-20260213-1234")
+                .id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+                .trackingNumber("LDR-20260213-1234")
                 .customer(c)
                 .createdBy(u)
                 .serviceRate(r)
@@ -113,16 +112,16 @@ class OrderControllerTest {
         @DisplayName("Should return 201 and OrderResponse when valid request")
         void createShouldreturn201Whenvalidrequest() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(new BigDecimal("10.00"));
             request.setExtraMinutes(0);
 
             Order order = sampleOrder();
             OrderResponse orderResp = OrderResponse.builder()
-                    .id(1L)
-                    .referenceNumber("LDR-20260213-1234")
-                    .customerId(1L)
+                    .id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+                    .trackingNumber("LDR-20260213-1234")
+                    .customerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
                     .weightKg(10.0)
                     .totalLoads(2)
                     .grandTotal(240.0)
@@ -138,9 +137,9 @@ class OrderControllerTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isCreated())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"))
-                    .andExpect(jsonPath("$.customerId").value(1))
+                    .andExpect(jsonPath("$.id").exists())
+                    .andExpect(jsonPath("$.trackingNumber").value("LDR-20260213-1234"))
+                    .andExpect(jsonPath("$.customerId").exists())
                     .andExpect(jsonPath("$.weightKg").value(10.0))
                     .andExpect(jsonPath("$.totalLoads").value(2))
                     .andExpect(jsonPath("$.grandTotal").value(240.0))
@@ -154,7 +153,7 @@ class OrderControllerTest {
         @DisplayName("Should return 400 when weightKg is null")
         void createShouldreturn400Whenweightnull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
             request.setCreatedByUserId(USER_ID);
 
             mockMvc.perform(post("/api/v1/orders")
@@ -169,7 +168,7 @@ class OrderControllerTest {
         @DisplayName("Should return 400 when weightKg is zero")
         void createShouldreturn400Whenweightzero() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(BigDecimal.ZERO);
 
@@ -184,7 +183,7 @@ class OrderControllerTest {
         @DisplayName("Should return 401 when createdByUserId is null and no principal")
         void createShouldreturn401Whencreatedbyuseridnull() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(1L);
+            request.setCustomerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
             request.setWeightKg(new BigDecimal("10.00"));
 
             mockMvc.perform(post("/api/v1/orders")
@@ -198,7 +197,7 @@ class OrderControllerTest {
         @DisplayName("Should return 404 when customer not found")
         void createShouldreturn404Whencustomernotfound() throws Exception {
             CreateOrderRequest request = new CreateOrderRequest();
-            request.setCustomerId(999L);
+            request.setCustomerId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
             request.setCreatedByUserId(USER_ID);
             request.setWeightKg(new BigDecimal("10.00"));
 
@@ -221,7 +220,7 @@ class OrderControllerTest {
         @DisplayName("Should return 200 and paginated orders")
         void listShouldreturn200Withorders() throws Exception {
             Order order = sampleOrder();
-            OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
+            OrderResponse orderResp = OrderResponse.builder().id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000")).trackingNumber("LDR-20260213-1234").build();
             Page<Order> page = new PageImpl<>(List.of(order), PageRequest.of(0, 20), 1);
             when(orderService.search(any(OrderListParams.class), any(Pageable.class))).thenReturn(page);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
@@ -229,8 +228,8 @@ class OrderControllerTest {
             mockMvc.perform(get("/api/v1/orders"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
-                    .andExpect(jsonPath("$.content[0].id").value(1))
-                    .andExpect(jsonPath("$.content[0].referenceNumber").value("LDR-20260213-1234"))
+                    .andExpect(jsonPath("$.content[0].id").exists())
+                    .andExpect(jsonPath("$.content[0].trackingNumber").value("LDR-20260213-1234"))
                     .andExpect(jsonPath("$.page").value(0))
                     .andExpect(jsonPath("$.size").value(20))
                     .andExpect(jsonPath("$.totalElements").value(1))
@@ -247,30 +246,30 @@ class OrderControllerTest {
         @Test
         @DisplayName("Should return 200 and OrderResponse when found")
         void getByIdShouldreturn200Whenfound() throws Exception {
-            OrderResponse orderResp = OrderResponse.builder().id(1L).referenceNumber("LDR-20260213-1234").build();
-            when(orderService.getOrderDetails(1L)).thenReturn(orderResp);
+            OrderResponse orderResp = OrderResponse.builder().id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000")).trackingNumber("LDR-20260213-1234").build();
+            when(orderService.getOrderDetails(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))).thenReturn(orderResp);
 
-            mockMvc.perform(get("/api/v1/orders/1"))
+            mockMvc.perform(get("/api/v1/orders/123e4567-e89b-12d3-a456-426614174000"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.id").value(1))
-                    .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"));
+                    .andExpect(jsonPath("$.id").exists())
+                    .andExpect(jsonPath("$.trackingNumber").value("LDR-20260213-1234"));
 
-            verify(orderService).getOrderDetails(1L);
+            verify(orderService).getOrderDetails(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         }
 
         @Test
         @DisplayName("Should return 404 when not found")
         void getByIdShouldreturn404Whennotfound() throws Exception {
-            when(orderService.getOrderDetails(999L)).thenThrow(new NotFoundException("Order not found: 999"));
+            when(orderService.getOrderDetails(UUID.fromString("999e4567-e89b-12d3-a456-426614174999"))).thenThrow(new NotFoundException("Order not found: 999"));
 
-            mockMvc.perform(get("/api/v1/orders/999"))
+            mockMvc.perform(get("/api/v1/orders/999e4567-e89b-12d3-a456-426614174999"))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.code").value("NOT_FOUND"));
         }
     }
 
     @Nested
-    @DisplayName("GET /api/v1/orders/reference/{referenceNumber}")
+    @DisplayName("GET /api/v1/orders/reference/{trackingNumber}")
     class TrackByReference {
 
         @Test
@@ -278,28 +277,28 @@ class OrderControllerTest {
         void trackByReferenceShouldreturn200Whenfound() throws Exception {
             Order order = sampleOrder();
             OrderTrackingResponse trackResp = OrderTrackingResponse.builder()
-                    .referenceNumber("LDR-20260213-1234")
+                    .trackingNumber("LDR-20260213-1234")
                     .currentStatus("RECEIVED")
                     .customerName("Juan Dela Cruz")
                     .paymentStatus("UNPAID")
                     .build();
-            when(orderService.findByReferenceNumber("LDR-20260213-1234")).thenReturn(order);
+            when(orderService.findByTrackingNumber("LDR-20260213-1234")).thenReturn(order);
             when(orderMapper.toTrackingResponse(order)).thenReturn(trackResp);
 
             mockMvc.perform(get("/api/v1/orders/reference/LDR-20260213-1234"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.referenceNumber").value("LDR-20260213-1234"))
+                    .andExpect(jsonPath("$.trackingNumber").value("LDR-20260213-1234"))
                     .andExpect(jsonPath("$.currentStatus").value("RECEIVED"))
                     .andExpect(jsonPath("$.customerName").exists())
                     .andExpect(jsonPath("$.paymentStatus").value("UNPAID"));
 
-            verify(orderService).findByReferenceNumber("LDR-20260213-1234");
+            verify(orderService).findByTrackingNumber("LDR-20260213-1234");
         }
 
         @Test
         @DisplayName("Should return 404 when reference not found")
         void trackByReferenceShouldreturn404Whennotfound() throws Exception {
-            when(orderService.findByReferenceNumber("INVALID")).thenThrow(new NotFoundException("Order not found for reference: INVALID"));
+            when(orderService.findByTrackingNumber("INVALID")).thenThrow(new NotFoundException("Order not found for reference: INVALID"));
 
             mockMvc.perform(get("/api/v1/orders/reference/INVALID"))
                     .andExpect(status().isNotFound())
@@ -320,18 +319,18 @@ class OrderControllerTest {
 
             Order order = sampleOrder();
             order.setCurrentStatus(OrderStatus.WASHING);
-            OrderResponse orderResp = OrderResponse.builder().id(1L).currentStatus("WASHING").build();
-            when(orderStatusService.updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any(), any())).thenReturn(order);
+            OrderResponse orderResp = OrderResponse.builder().id(java.util.UUID.fromString("123e4567-e89b-12d3-a456-426614174000")).currentStatus("WASHING").build();
+            when(orderStatusService.updateStatus(eq(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")), eq(OrderStatus.WASHING), eq(USER_ID), any(), any())).thenReturn(order);
             when(orderMapper.toResponse(order)).thenReturn(orderResp);
 
-            mockMvc.perform(patch("/api/v1/orders/1/status")
+            mockMvc.perform(patch("/api/v1/orders/123e4567-e89b-12d3-a456-426614174000/status")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.currentStatus").value("WASHING"));
 
-            verify(orderStatusService).updateStatus(eq(1L), eq(OrderStatus.WASHING), eq(USER_ID), any(), any());
+            verify(orderStatusService).updateStatus(eq(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")), eq(OrderStatus.WASHING), eq(USER_ID), any(), any());
         }
 
         @Test
@@ -341,7 +340,7 @@ class OrderControllerTest {
             request.setNewStatus("  ");
             request.setChangedByUserId(USER_ID);
 
-            mockMvc.perform(patch("/api/v1/orders/1/status")
+            mockMvc.perform(patch("/api/v1/orders/123e4567-e89b-12d3-a456-426614174000/status")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -354,7 +353,7 @@ class OrderControllerTest {
             UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
             request.setNewStatus("WASHING");
 
-            mockMvc.perform(patch("/api/v1/orders/1/status")
+            mockMvc.perform(patch("/api/v1/orders/123e4567-e89b-12d3-a456-426614174000/status")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -368,10 +367,10 @@ class OrderControllerTest {
             request.setNewStatus("WASHING");
             request.setChangedByUserId(USER_ID);
 
-            when(orderStatusService.updateStatus(eq(999L), any(), any(), any(), any()))
+            when(orderStatusService.updateStatus(eq(UUID.fromString("999e4567-e89b-12d3-a456-426614174999")), any(), any(), any(), any()))
                     .thenThrow(new NotFoundException("Order not found: 999"));
 
-            mockMvc.perform(patch("/api/v1/orders/999/status")
+            mockMvc.perform(patch("/api/v1/orders/999e4567-e89b-12d3-a456-426614174999/status")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))

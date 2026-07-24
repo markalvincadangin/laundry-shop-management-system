@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -17,12 +19,12 @@ import com.himotech.laundryms.orders.OrderStatus;
  * Provides database access for order-related operations.
  */
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
+public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecificationExecutor<Order> {
 
-    Optional<Order> findByReferenceNumber(String referenceNumber);
+    Optional<Order> findByTrackingNumber(String trackingNumber);
 
-    boolean existsByReferenceNumber(String referenceNumber);
+    boolean existsByTrackingNumber(String trackingNumber);
 
     @Query("SELECT COUNT(o) FROM Order o JOIN o.assignedMachines m WHERE m.id IN :machineIds AND o.currentStatus IN :statuses AND o.id != :orderId")
-    long countConflictingMachines(@Param("machineIds") Set<Long> machineIds, @Param("statuses") List<OrderStatus> statuses, @Param("orderId") Long orderId);
+    long countConflictingMachines(@Param("machineIds") Set<UUID> machineIds, @Param("statuses") List<OrderStatus> statuses, @Param("orderId") UUID orderId);
 }

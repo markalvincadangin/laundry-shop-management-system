@@ -16,8 +16,8 @@ interface MachineAssignmentModalProps {
   onClose: () => void;
   order: OrderResponse | null;
   nextStatus: string;
-  unavailableMachineIds: number[];
-  onConfirm: (machineIds: number[]) => void;
+  unavailableMachineIds?: string[];
+  onConfirm: (machineIds: string[]) => void;
   isUpdating?: boolean;
 }
 
@@ -31,7 +31,7 @@ export function MachineAssignmentModal({
   isUpdating 
 }: MachineAssignmentModalProps) {
   const { machines, loading } = useMachines();
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function MachineAssignmentModal({
     return machines;
   }, [machines]);
 
-  const handleToggle = (id: number) => {
+  const handleToggle = (id: string) => {
     setError(null);
     setSelectedIds(prev => {
       if (prev.includes(id)) {
@@ -82,7 +82,7 @@ export function MachineAssignmentModal({
         
         <div className="space-y-4">
           <p className="text-body-sm text-slate-500">
-            {order ? `${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_PREFIX}${order.referenceNumber}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX}${nextStatus}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX_2}` : ''}
+            {order ? `${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_PREFIX}${order.trackingNumber}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX}${nextStatus}${UI_LABELS.modules.machines.ASSIGN_MODAL_DESC_SUFFIX_2}` : ''}
           </p>
 
           {order && order.totalLoads > 1 && selectedIds.length > 0 && (
@@ -111,7 +111,7 @@ export function MachineAssignmentModal({
               {availableMachines.map((machine) => {
                 const isSelected = selectedIds.includes(machine.id);
                 // Unavailable if not operational OR if it's currently assigned to another active order.
-                const isUnavailable = machine.status !== "OPERATIONAL" || unavailableMachineIds.includes(machine.id);
+                const isUnavailable = machine.status !== "OPERATIONAL" || (unavailableMachineIds || []).includes(machine.id);
                 
                 return (
                   <button

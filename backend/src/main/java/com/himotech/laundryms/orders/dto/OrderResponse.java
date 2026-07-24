@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.dto;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.dto.AuditLogResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,14 +16,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderResponse {
-    private Long id;
-    private String referenceNumber;
-    private Long customerId;
+    private UUID id;
+    private String trackingNumber;
+    private UUID customerId;
     private String customerName;
     private String contactNumber;
     private String createdByUserId;
     private String createdByUsername;
-    private Integer serviceRateId;
+    private UUID serviceRateId;
     private Double weightKg;
     private Integer totalLoads;
     private Double basePricePerLoad;
@@ -40,5 +42,5 @@ public class OrderResponse {
     private Boolean isRush;
     private List<AddOnResponse> addOns;
     private List<AuditLogResponse> auditLogs;
-    private List<Long> machineIds;
+    private List<UUID> machineIds;
 }

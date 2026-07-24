@@ -7,7 +7,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
 import { ordersService } from "@/lib/api/orders";
-import OrderDetailsPage from "@/app/(dashboard)/orders/[id]/page";
+import OrderDetailsPage from "@/app/(dashboard)/orders/[id]/client";
 
 // Mock services
 vi.mock("@/lib/api/orders", () => ({
@@ -69,8 +69,8 @@ describe("OrderDetailsPage", () => {
   });
 
   const mockOrder = {
-    id: 1,
-    referenceNumber: "ORD-TEST-123",
+    id: '1',
+    trackingNumber: "ORD-TEST-123",
     customerName: "Mark Alvin",
     contactNumber: "09123456789",
     weightKg: 5.5,
@@ -138,7 +138,7 @@ describe("OrderDetailsPage", () => {
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(ordersService.updateStatus).toHaveBeenCalledWith(1, expect.objectContaining({ newStatus: "WASHING" }));
+      expect(ordersService.updateStatus).toHaveBeenCalledWith('1', expect.objectContaining({ newStatus: "WASHING" }));
     });
 
     await waitFor(() => {

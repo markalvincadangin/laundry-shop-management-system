@@ -15,5 +15,5 @@ public class UpdateOrderStatusRequest {
 
     private UUID changedByUserId;
 
-    private Set<Long> machineIds;
+    private Set<UUID> machineIds;
 }

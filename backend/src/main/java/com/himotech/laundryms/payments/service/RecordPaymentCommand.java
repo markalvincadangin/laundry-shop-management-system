@@ -9,7 +9,7 @@ import java.util.UUID;
  * Command for recording a payment transaction.
  */
 public record RecordPaymentCommand(
-        Long orderId,
+        UUID orderId,
         BigDecimal amountPaid,
         PaymentMethod paymentMethod,
         UUID receivedByUserId,

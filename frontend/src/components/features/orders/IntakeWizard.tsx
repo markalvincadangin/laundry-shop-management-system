@@ -58,7 +58,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   const [currentStep, setCurrentStep] = useState<IntakeStep>("CUSTOMER");
   const [collectPaymentNow, setCollectPaymentNow] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
-  const [referenceNumber, setReferenceNumber] = useState("");
+  const [paymentRef, setPaymentRef] = useState("");
   const [isClaimStubOpen, setIsClaimStubOpen] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<OrderResponse | null>(null);
   const [canSubmit, setCanSubmit] = useState(false);
@@ -147,7 +147,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   useEffect(() => {
     const cid = searchParams.get("customerId");
     if (cid && !selected && !isRegistering) {
-      selectById(Number(cid));
+      selectById(String(cid));
     }
   }, [searchParams, selectById, selected, isRegistering]);
 
@@ -233,13 +233,13 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
       if (collectPaymentNow) {
         if (!paymentMethod) return false;
         const needsRef = paymentMethod !== "CASH";
-        const hasRef = !!referenceNumber.trim();
+        const hasRef = !!paymentRef.trim();
         return canSubmit && (!needsRef || hasRef);
       }
       return canSubmit;
     }
     return false;
-  }, [currentStep, customerId, isRegistering, serviceType, weightKg, canSubmit, collectPaymentNow, paymentMethod, referenceNumber]);
+  }, [currentStep, customerId, isRegistering, serviceType, weightKg, canSubmit, collectPaymentNow, paymentMethod, paymentRef]);
 
   const onSubmit = async (data: OrderIntakeInput) => {
     if (currentStep !== "CONFIRM") return;
@@ -258,7 +258,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
           orderId: order.id,
           amountPaid: pricing.preview.grandTotal,
           paymentMethod: paymentMethod!,
-          paymentReference: referenceNumber || undefined,
+          paymentReference: paymentRef || undefined,
           receivedByUserId: createdByUserId ?? undefined
         });
 
@@ -269,7 +269,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
       }
 
       toast.success(UI_LABELS.feedback.success.ORDER_SAVED, {
-        description: `${UI_LABELS.shared.common.ORDER_NUMBER} ${order.referenceNumber}`,
+        description: `${UI_LABELS.shared.common.ORDER_NUMBER} ${order.trackingNumber}`,
       });
 
       setIsClaimStubOpen(true);
@@ -788,7 +788,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                                 const current = getValues("machineIds") || [];
                                 setValue(
                                   "machineIds",
-                                  current.includes(m.id) ? current.filter((id: number) => id !== m.id) : [...current, m.id],
+                                  current.includes(m.id) ? current.filter((id: string) => id !== m.id) : [...current, m.id],
                                   { shouldDirty: true }
                                 );
                               }}
@@ -920,15 +920,15 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                                       >
                                         <div className="space-y-3">
                                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 ml-4">
-                                            Reference Number
+                                            Payment Reference #
                                           </label>
                                           <div className="relative group">
                                             <CreditCard className="h-4 w-4 text-white/20 group-focus-within:text-brand-cyan absolute left-6 top-1/2 -translate-y-1/2 transition-colors" />
                                             <input
                                               type="text"
-                                              placeholder="Enter Reference Number"
-                                              value={referenceNumber}
-                                              onChange={(e) => setReferenceNumber(e.target.value)}
+                                              placeholder="Enter Reference # (GCash / Maya / Bank)"
+                                              value={paymentRef}
+                                              onChange={(e) => setPaymentRef(e.target.value)}
                                               className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-14 pr-6 text-sm font-bold placeholder:text-white/20 focus:bg-white/10 focus:border-brand-cyan transition-all outline-none"
                                             />
                                           </div>

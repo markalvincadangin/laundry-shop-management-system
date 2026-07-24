@@ -33,7 +33,7 @@ export function useMachines() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: (variables: { id: number; data: UpdateMachineStatusRequest }) =>
+    mutationFn: (variables: { id: string; data: UpdateMachineStatusRequest }) =>
       machinesService.updateStatus(variables.id, variables.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["machines"] });
@@ -46,7 +46,7 @@ export function useMachines() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => machinesService.delete(id),
+    mutationFn: (id: string) => machinesService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["machines"] });
       toast.success("Machine deleted successfully");
@@ -61,11 +61,11 @@ export function useMachines() {
     return createMutation.mutateAsync(data);
   };
 
-  const updateStatus = async (id: number, status: MachineStatus) => {
+  const updateStatus = async (id: string, status: MachineStatus) => {
     return updateStatusMutation.mutateAsync({ id, data: { status } });
   };
 
-  const removeMachine = async (id: number) => {
+  const removeMachine = async (id: string) => {
     return deleteMutation.mutateAsync(id);
   };
 

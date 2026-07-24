@@ -10,7 +10,7 @@ import org.mapstruct.Mapping;
 public interface ClientAlertMapper {
 
     @Mapping(target = "orderId", source = "order.id")
-    @Mapping(target = "referenceNumber", source = "order.referenceNumber")
+    @Mapping(target = "trackingNumber", source = "order.trackingNumber")
     @Mapping(target = "customerId", source = "order.customer.id")
     @Mapping(target = "customerName", expression = "java(n.getOrder() != null && n.getOrder().getCustomer() != null ? n.getOrder().getCustomer().getFirstName() + \" \" + n.getOrder().getCustomer().getLastName() : null)")
     @Mapping(target = "contactNumber", source = "order.customer.contactNumber")

@@ -7,7 +7,7 @@ export const feedback = {
     ORDER_SAVED: "Order has been added to the list.",
     ORDER_UPDATED: "Order status updated",
     PAYMENT: "Payment recorded successfully",
-    COPIED: "Reference number copied",
+    COPIED: "Tracking number copied",
     AUTH_SUCCESS: "Signed in successfully",
     LOGOUT_SUCCESS: "Signed out successfully",
   },

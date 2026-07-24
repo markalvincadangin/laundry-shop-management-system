@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.clientalert.ClientAlertStatus;
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
@@ -97,7 +99,7 @@ class ClientAlertRepositoryIT extends AbstractIntegrationTest {
 
                 // Persist Order
                 testOrder = Order.builder()
-                                .referenceNumber("LDR-20260425-9999")
+                                .trackingNumber("LDR-20260425-9999")
                                 .customer(testCustomer)
                                 .createdBy(testUser)
                                 .serviceRate(testServiceRate)
@@ -195,7 +197,7 @@ class ClientAlertRepositoryIT extends AbstractIntegrationTest {
         void saveShouldthrowviolationWhenorderdoesnotexist() {
                 // Given - ClientAlert with non-existent order
                 Order detachedOrder = Order.builder()
-                                .id(99999L) // Non-existent order ID
+                                .id(java.util.UUID.randomUUID()) // Non-existent order ID
                                 .build();
 
                 ClientAlert clientAlert = ClientAlert.builder()
@@ -286,7 +288,7 @@ class ClientAlertRepositoryIT extends AbstractIntegrationTest {
                                 .build();
                 ClientAlert saved = clientAlertRepository.save(clientAlert);
                 entityManager.flush();
-                Long ClientAlertId = saved.getId();
+                UUID ClientAlertId = saved.getId();
 
                 // When - Delete the order
                 Order orderToDelete = entityManager.find(Order.class, testOrder.getId());

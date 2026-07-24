@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.config.CacheConfig;
 import com.himotech.laundryms.customers.entity.Customer;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class CustomerService {
     private final CustomerRepository customerRepository;
 
+
     @Auditable(action = "CUSTOMER_CREATE", description = "Register new customer")
     @Transactional
     public Customer create(String firstName, String lastName, String contactNumber) {
@@ -33,12 +36,14 @@ public class CustomerService {
                 .contactNumber(contactNumber)
                 .build();
 
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+
+        return customer;
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = CacheConfig.CACHE_CUSTOMERS, key = "#id")
-    public Optional<Customer> findById(Long id) {
+    public Optional<Customer> findById(UUID id) {
         return customerRepository.findById(id);
     }
 
@@ -74,7 +79,7 @@ public class CustomerService {
     @Auditable(action = "CUSTOMER_UPDATE", description = "Update customer details")
     @Transactional
     @CacheEvict(value = CacheConfig.CACHE_CUSTOMERS, key = "#id")
-    public Customer update(Long id, String firstName, String lastName, String contactNumber) {
+    public Customer update(UUID id, String firstName, String lastName, String contactNumber) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new com.himotech.laundryms.shared.exception.NotFoundException("Customer not found: " + id));
 
@@ -85,7 +90,9 @@ public class CustomerService {
         if (contactNumber != null)
             customer.setContactNumber(contactNumber);
 
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+
+        return customer;
     }
 
     /**
@@ -94,10 +101,12 @@ public class CustomerService {
     @Auditable(action = "CUSTOMER_TOGGLE_ACTIVE", description = "Toggle customer active status")
     @Transactional
     @CacheEvict(value = CacheConfig.CACHE_CUSTOMERS, key = "#id")
-    public Customer toggleActive(Long id) {
+    public Customer toggleActive(UUID id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new com.himotech.laundryms.shared.exception.NotFoundException("Customer not found: " + id));
         customer.setIsActive(!customer.getIsActive());
-        return customerRepository.save(customer);
+        customer = customerRepository.save(customer);
+
+        return customer;
     }
 }

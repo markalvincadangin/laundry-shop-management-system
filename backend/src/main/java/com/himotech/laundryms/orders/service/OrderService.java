@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.orders.dto.CreateOrderRequest;
 import com.himotech.laundryms.orders.dto.OrderListParams;
@@ -29,6 +31,7 @@ import com.himotech.laundryms.payments.repository.PaymentRepository;
 import com.himotech.laundryms.orders.dto.OrderResponse;
 import com.himotech.laundryms.orders.mapper.OrderMapper;
 import com.himotech.laundryms.auditlog.service.AuditLogService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -60,15 +63,16 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final AddOnCatalogRepository addOnCatalogRepository;
 
+
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
 
-    private String generateUniqueReferenceNumber() {
+    private String generateUniqueTrackingNumber() {
         String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE); // yyyyMMdd
         Random random = new Random();
         for (int attempt = 0; attempt < MAX_REFERENCE_ATTEMPTS; attempt++) {
             int suffix = 1000 + random.nextInt(9000); // 1000-9999
             String ref = "LDR-" + datePart + "-" + suffix;
-            if (!orderRepository.existsByReferenceNumber(ref)) {
+            if (!orderRepository.existsByTrackingNumber(ref)) {
                 return ref;
             }
         }
@@ -85,7 +89,7 @@ public class OrderService {
     @Transactional
     public Order createFromRequest(CreateOrderRequest request) {
         // Resolve customer ID
-        Long customerId = resolveCustomerId(request);
+        UUID customerId = resolveCustomerId(request);
         
         // Normalize add-ons
         List<CreateOrderCommand.AddOnItem> addOns = normalizeAddOns(request);
@@ -113,7 +117,7 @@ public class OrderService {
      * @return the customer ID
      * @throws IllegalArgumentException if neither customerId nor customer is provided
      */
-    private Long resolveCustomerId(CreateOrderRequest request) {
+    private UUID resolveCustomerId(CreateOrderRequest request) {
         if (request.getCustomerId() != null) {
             return request.getCustomerId();
         }
@@ -220,7 +224,7 @@ public class OrderService {
 
 
         Order order = Order.builder()
-                .referenceNumber(generateUniqueReferenceNumber())
+                .trackingNumber(generateUniqueTrackingNumber())
                 .customer(customer)
                 .createdBy(createdBy)
                 .serviceRate(rate)
@@ -255,9 +259,10 @@ public class OrderService {
         }
 
         order = orderRepository.save(order);
+        
 
         log.info("Order created successfully: Reference={}, Customer={} {}, Total=₱{}", 
-                order.getReferenceNumber(), 
+                order.getTrackingNumber(), 
                 customer.getFirstName(), 
                 customer.getLastName(), 
                 order.getGrandTotal());
@@ -360,7 +365,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrderDetails(Long id) {
+    public OrderResponse getOrderDetails(UUID id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
         
@@ -370,7 +375,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order findById(Long id) {
+    public Order findById(UUID id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
     }
@@ -386,7 +391,7 @@ public class OrderService {
      */
     @Auditable(action = "ORDER_UPDATE", description = "Update order details")
     @Transactional
-    public Order update(Long orderId, UpdateOrderRequest request) {
+    public Order update(UUID orderId, UpdateOrderRequest request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
@@ -448,13 +453,16 @@ public class OrderService {
         BigDecimal grandTotal = order.getBaseAmount().add(extraMinutesAmount).add(addonsTotalAmount);
         order.setGrandTotal(grandTotal);
 
-        return orderRepository.save(order);
+        order = orderRepository.save(order);
+        
+        
+        return order;
     }
 
     @Transactional(readOnly = true)
-    public Order findByReferenceNumber(String referenceNumber) {
-        return orderRepository.findByReferenceNumber(referenceNumber)
-                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + referenceNumber));
+    public Order findByTrackingNumber(String trackingNumber) {
+        return orderRepository.findByTrackingNumber(trackingNumber)
+                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + trackingNumber));
     }
 
     @Transactional(readOnly = true)
@@ -487,10 +495,11 @@ public class OrderService {
 
     @Auditable(action = "ORDER_DELETE", description = "Delete laundry order")
     @Transactional
-    public void deleteOrder(Long orderId) {
+    public void deleteOrder(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         orderRepository.delete(order);
+        
     }
 
 }

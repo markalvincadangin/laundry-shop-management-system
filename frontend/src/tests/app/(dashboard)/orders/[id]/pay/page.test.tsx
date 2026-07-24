@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
 import { ordersService } from "@/lib/api/orders";
 import { paymentsService } from "@/lib/api/payments";
-import PayOrderPage from "@/app/(dashboard)/orders/[id]/pay/page";
+import PayOrderPage from "@/app/(dashboard)/orders/[id]/pay/client";
 
 // Mock services
 vi.mock("@/lib/api/orders", () => ({
@@ -69,8 +69,8 @@ describe("PayOrderPage", () => {
   });
 
   const mockOrder = {
-    id: 1,
-    referenceNumber: "ORD-TEST-123",
+    id: '1',
+    trackingNumber: "ORD-TEST-123",
     grandTotal: 150,
     paymentStatus: "UNPAID",
   };
@@ -88,7 +88,7 @@ describe("PayOrderPage", () => {
 
   it("handles payment submission", async () => {
     vi.mocked(ordersService.getById).mockResolvedValue(mockOrder as any);
-    vi.mocked(paymentsService.create).mockResolvedValue({ id: 99 } as any);
+    vi.mocked(paymentsService.create).mockResolvedValue({ id: '99' } as any);
 
     renderWithProvider(<PayOrderPage />);
 
@@ -102,7 +102,7 @@ describe("PayOrderPage", () => {
 
     await waitFor(() => {
       expect(paymentsService.create).toHaveBeenCalledWith(expect.objectContaining({
-        orderId: 1,
+        orderId: '1',
         amountPaid: 150,
         paymentMethod: "CASH",
       }));

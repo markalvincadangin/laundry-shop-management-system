@@ -35,9 +35,9 @@ export function PaymentLedgerTable({
 }: ExtendedPaymentLedgerTableProps) {
   const columns: DataTableColumn<PaymentResponse>[] = [
     {
-      header: UI_LABELS.shared.common.REFERENCE,
+      header: UI_LABELS.shared.common.TRACKING_NUMBER,
       sortable: true,
-      sortKey: "order.referenceNumber",
+      sortKey: "order.trackingNumber",
       render: (p) => (
         <div className="flex items-center gap-3 group/ref">
           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/ref:bg-brand-blue/5 transition-all">
@@ -48,7 +48,7 @@ export function PaymentLedgerTable({
             onClick={(e) => e.stopPropagation()} 
             className="text-body-sm font-black text-slate-900 font-mono tracking-tighter hover:text-brand-blue transition-colors"
           >
-            {p.orderReferenceNumber ?? `#${p.orderId}`}
+            {p.orderTrackingNumber ?? `#${p.orderId}`}
           </Link>
         </div>
       ),

@@ -92,7 +92,7 @@ export function ClientAlertDetailsModal({ isOpen, onClose, notification }: Clien
               </span>
             </div>
             <p className="text-body-sm font-black text-slate-800 font-mono tracking-tight">
-              {notification.referenceNumber || "SYSTEM_EVENT"}
+              {notification.trackingNumber || "SYSTEM_EVENT"}
             </p>
           </div>
           <div className="p-grid-5 rounded-[20px] bg-slate-50/50 border border-slate-100 flex flex-col gap-1">

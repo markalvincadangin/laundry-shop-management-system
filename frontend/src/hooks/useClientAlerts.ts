@@ -23,7 +23,7 @@ export function useClientAlerts(params: ClientAlertParams = { page: 0, size: 15 
   });
 
   const markAsRead = useMutation({
-    mutationFn: (id: number) => clientAlertsService.markAsRead(id),
+    mutationFn: (id: string) => clientAlertsService.markAsRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["client-alerts"] });
     },

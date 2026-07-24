@@ -1,5 +1,6 @@
 server:
   port: ${SPRING_PORT:8080}
+  address: 0.0.0.0
 
 spring:
   application:
@@ -54,6 +55,9 @@ logging:
         SQL: warn
 
 app:
+  sync:
+    cloud-api-url: ${CLOUD_API_URL:https://api.faithlaundry.com/sync}
+    sync-secret: ${SYNC_SECRET:default-secret-change-in-prod}
   security:
     cookie-name: access_token
     cookie-secure: false          # Overridden to true in application-prod.yml

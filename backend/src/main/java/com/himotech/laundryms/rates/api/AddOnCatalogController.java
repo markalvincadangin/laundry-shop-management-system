@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.rates.dto.AddOnCatalogResponse;
 import com.himotech.laundryms.rates.dto.CreateAddOnCatalogRequest;
 import com.himotech.laundryms.rates.dto.UpdateAddOnCatalogRequest;
@@ -37,7 +39,7 @@ public class AddOnCatalogController {
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public AddOnCatalogResponse update(
-            @PathVariable Integer id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateAddOnCatalogRequest request) {
         return service.update(id, request);
     }

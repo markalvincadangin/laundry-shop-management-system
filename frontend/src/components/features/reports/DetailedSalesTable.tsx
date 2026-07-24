@@ -56,7 +56,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     exportToCSV(
       payments.map(p => ({
         date: p.paymentDate,
-        reference: p.orderReferenceNumber,
+        trackingNumber: p.orderTrackingNumber,
         customer: p.customerName,
         method: p.paymentMethod,
         amount: p.amountPaid,
@@ -65,7 +65,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       `Sales_Report_${date || 'Range'}`,
       {
         date: "Date",
-        reference: "Reference",
+        trackingNumber: "Tracking Number",
         customer: "Customer",
         method: "Method",
         amount: "Amount",
@@ -76,16 +76,16 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
 
   const columns: DataTableColumn<PaymentResponse>[] = [
     {
-      header: UI_LABELS.shared.common.REFERENCE,
+      header: UI_LABELS.shared.common.TRACKING_NUMBER,
       sortable: true,
-      sortKey: "order.referenceNumber",
+      sortKey: "order.trackingNumber",
       render: (p) => (
         <div className="flex items-center gap-3 group/ref">
           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/ref:bg-brand-blue/5 transition-all">
             <Hash className="h-3.5 w-3.5 text-slate-400 group-hover/ref:text-brand-blue" />
           </div>
           <span className="text-body-sm font-black text-slate-900 font-mono tracking-tighter">
-            {p.orderReferenceNumber}
+            {p.orderTrackingNumber}
           </span>
         </div>
       ),

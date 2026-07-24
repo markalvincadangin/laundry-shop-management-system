@@ -19,7 +19,7 @@ $$ LANGUAGE plpgsql;
 
 -- Unified audit_logs table for forensic auditing (Standardized)
 CREATE TABLE IF NOT EXISTS audit_logs (
-    id          BIGSERIAL PRIMARY KEY,
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     VARCHAR(255),
     action_type VARCHAR(50) NOT NULL,
     table_name  VARCHAR(100) NOT NULL,
@@ -116,7 +116,7 @@ $$ LANGUAGE plpgsql;
 
 -- Configuration: Service Rates
 CREATE TABLE IF NOT EXISTS service_rates (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_name VARCHAR(100) NOT NULL,
     base_price_per_load DECIMAL(10,2) NOT NULL,
     kg_limit_per_load DECIMAL(5,2) NOT NULL,
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Customers
 CREATE TABLE IF NOT EXISTS customers (
-    id             BIGSERIAL PRIMARY KEY,
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     first_name     VARCHAR(100) NOT NULL,
     last_name      VARCHAR(100) NOT NULL,
     contact_number VARCHAR(20) NOT NULL,
@@ -155,11 +155,11 @@ CREATE TABLE IF NOT EXISTS customers (
 
 -- Orders
 CREATE TABLE IF NOT EXISTS orders (
-    id                 BIGSERIAL PRIMARY KEY,
-    reference_number   VARCHAR(30) NOT NULL UNIQUE,
-    customer_id        BIGINT NOT NULL REFERENCES customers(id),
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tracking_number   VARCHAR(30) NOT NULL UNIQUE,
+    customer_id        UUID NOT NULL REFERENCES customers(id),
     created_by_user_id UUID NOT NULL REFERENCES users(id),
-    service_rate_id    INT NOT NULL REFERENCES service_rates(id),
+    service_rate_id    UUID NOT NULL REFERENCES service_rates(id),
     weight_kg          DECIMAL(10,2) NOT NULL,
     total_loads        INT NOT NULL,
     base_price_per_load    DECIMAL(10,2) NOT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS orders (
     notes              VARCHAR(500),
     created_at         TIMESTAMP NOT NULL DEFAULT now(),
     updated_at         TIMESTAMP NOT NULL DEFAULT now(),
-    CONSTRAINT ck_order_reference_format CHECK (reference_number ~ '^LDR-[0-9]{8}-[0-9]{4}$'),
+    CONSTRAINT ck_order_tracking_format CHECK (tracking_number ~ '^LDR-[0-9]{8}-[0-9]{4}$'),
     CONSTRAINT ck_order_weight_positive CHECK (weight_kg > 0),
     CONSTRAINT ck_order_loads_positive CHECK (total_loads > 0),
     CONSTRAINT ck_order_total_non_negative CHECK (grand_total >= 0)
@@ -188,7 +188,7 @@ CREATE INDEX idx_orders_payment_status ON orders(payment_status);
 
 -- Add-On Catalog
 CREATE TABLE IF NOT EXISTS add_on_catalog (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     default_price DECIMAL(10,2) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -199,9 +199,9 @@ CREATE TABLE IF NOT EXISTS add_on_catalog (
 
 -- Order Add-ons
 CREATE TABLE IF NOT EXISTS order_add_ons (
-    id       BIGSERIAL PRIMARY KEY,
-    order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    add_on_catalog_id INT REFERENCES add_on_catalog(id) ON DELETE SET NULL,
+    id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    add_on_catalog_id UUID REFERENCES add_on_catalog(id) ON DELETE SET NULL,
     name     VARCHAR(100) NOT NULL,
     price    DECIMAL(10,2) NOT NULL,
     quantity INT NOT NULL DEFAULT 1,
@@ -211,8 +211,8 @@ CREATE TABLE IF NOT EXISTS order_add_ons (
 
 -- Payments
 CREATE TABLE IF NOT EXISTS payments (
-    id                  BIGSERIAL PRIMARY KEY,
-    order_id            BIGINT NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id            UUID NOT NULL UNIQUE REFERENCES orders(id) ON DELETE CASCADE,
     amount_paid         DECIMAL(10,2) NOT NULL,
     payment_method      VARCHAR(30) NOT NULL DEFAULT 'CASH',
     received_by_user_id UUID NOT NULL REFERENCES users(id),
@@ -226,8 +226,8 @@ CREATE INDEX idx_payments_date ON payments(payment_date);
 
 -- Client Alerts (Audit Log of customer communications)
 CREATE TABLE IF NOT EXISTS client_alerts (
-    id          BIGSERIAL PRIMARY KEY,
-    order_id    BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id    UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
     channel     VARCHAR(30) NOT NULL DEFAULT 'SMS',
     message     TEXT NOT NULL,
     created_at  TIMESTAMP NOT NULL DEFAULT now(),
@@ -238,7 +238,7 @@ CREATE TABLE IF NOT EXISTS client_alerts (
 
 -- Machines
 CREATE TABLE IF NOT EXISTS machines (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     status VARCHAR(50) NOT NULL, -- OPERATIONAL, MAINTENANCE, BROKEN
     is_active BOOLEAN NOT NULL DEFAULT true, -- For soft deletes
@@ -247,8 +247,8 @@ CREATE TABLE IF NOT EXISTS machines (
 );
 
 CREATE TABLE IF NOT EXISTS order_machines (
-    order_id BIGINT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    machine_id BIGINT NOT NULL REFERENCES machines(id) ON DELETE CASCADE,
+    order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+    machine_id UUID NOT NULL REFERENCES machines(id) ON DELETE CASCADE,
     PRIMARY KEY (order_id, machine_id)
 );
 
@@ -314,3 +314,17 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Initialize the single SystemSettings row
 INSERT INTO system_settings (id, is_system_paused, updated_at) VALUES (1, FALSE, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING;
+
+-- Seed Initial Admin Account (Single initial admin account; Admin creates staff accounts)
+-- Default Credentials: username = admin, password = admin123
+INSERT INTO users (id, username, password_hash, role, first_name, last_name, is_active)
+VALUES (
+    gen_random_uuid(),
+    'admin',
+    '$2a$12$9MJM2hnl7ni3hwOSu.mNq.Kd.t4qrf3Q1QBFpTmF3OuERm2mxSAxW',
+    'ADMIN',
+    'System',
+    'Administrator',
+    TRUE
+)
+ON CONFLICT (username) DO NOTHING;

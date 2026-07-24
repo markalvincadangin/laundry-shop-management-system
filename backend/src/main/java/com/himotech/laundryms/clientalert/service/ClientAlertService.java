@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.clientalert.api.ClientAlertResponse;
 import com.himotech.laundryms.clientalert.api.ClientAlertMapper;
@@ -61,7 +63,7 @@ public class ClientAlertService {
         Customer customer = order.getCustomer();
         String message = String.format(appProperties.getSms().getTemplate(), 
                 customer.getFirstName(), 
-                order.getReferenceNumber(), 
+                order.getTrackingNumber(), 
                 order.getGrandTotal());
 
         ClientAlert alert = ClientAlert.builder()
@@ -72,7 +74,7 @@ public class ClientAlertService {
         ClientAlert saved = clientAlertRepository.save(alert);
 
         log.info("Client Alert created: id={}, orderRef={}, customerId={}", 
-                saved.getId(), order.getReferenceNumber(), customer.getId());
+                saved.getId(), order.getTrackingNumber(), customer.getId());
 
         try {
             smsAdapter.send(customer.getContactNumber(), message);
@@ -93,7 +95,7 @@ public class ClientAlertService {
      */
     @Auditable(action = "CLIENT_ALERT_READ", description = "Mark client alert as read")
     @Transactional
-    public void markAsRead(Long id) {
+    public void markAsRead(UUID id) {
         clientAlertRepository.findById(id).ifPresent(n -> {
             n.setRead(true);
             clientAlertRepository.save(n);

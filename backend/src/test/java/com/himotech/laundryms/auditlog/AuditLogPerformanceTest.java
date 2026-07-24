@@ -4,14 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.UUID;
 
 import com.himotech.laundryms.support.PostgresTestContainerConfig;
 import org.springframework.context.annotation.Import;
@@ -34,10 +27,10 @@ public class AuditLogPerformanceTest {
                 "ON CONFLICT DO NOTHING;");
         
         jdbcTemplate.execute("INSERT INTO customers (id, first_name, last_name, contact_number, is_active) " +
-                "VALUES (1001, 'Perf', 'Customer', '09123456789', true) ON CONFLICT DO NOTHING;");
+                "VALUES ('a1234567-89ab-cdef-0123-456789abcdef', 'Perf', 'Customer', '09123456789', true) ON CONFLICT DO NOTHING;");
         
         jdbcTemplate.execute("INSERT INTO service_rates (id, service_name, base_price_per_load, kg_limit_per_load, price_per_extra_minute) " +
-                "VALUES (1001, 'PerfWash', 100, 8, 1) ON CONFLICT DO NOTHING;");
+                "VALUES ('c1234567-89ab-cdef-0123-456789abcdef', 'PerfWash', 100, 8, 1) ON CONFLICT DO NOTHING;");
 
         // Disable Audit Log Trigger for baseline
         jdbcTemplate.execute("ALTER TABLE orders DISABLE TRIGGER trg_audit_log_orders");
@@ -103,11 +96,11 @@ public class AuditLogPerformanceTest {
     private void insertOrder(int i) {
         String ref = "LDR-20230101-" + String.format("%04d", i);
         jdbcTemplate.update(
-            "INSERT INTO orders (reference_number, customer_id, created_by_user_id, service_rate_id, " +
+            "INSERT INTO orders (tracking_number, customer_id, created_by_user_id, service_rate_id, " +
             "weight_kg, total_loads, base_price_per_load, kg_limit_per_load, price_per_extra_minute, " +
             "extra_minutes, base_amount, extra_minutes_amount, addons_total_amount, grand_total, " +
             "current_status, payment_status) " +
-            "VALUES (?, 1001, 'b1234567-89ab-cdef-0123-456789abcdef', 1001, 5, 1, 100, 8, 1, 0, 100, 0, 0, 100, 'RECEIVED', 'UNPAID')",
+            "VALUES (?, 'a1234567-89ab-cdef-0123-456789abcdef', 'b1234567-89ab-cdef-0123-456789abcdef', 'c1234567-89ab-cdef-0123-456789abcdef', 5, 1, 100, 8, 1, 0, 100, 0, 0, 100, 'RECEIVED', 'UNPAID')",
             ref
         );
     }

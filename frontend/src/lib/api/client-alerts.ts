@@ -26,7 +26,7 @@ export const clientAlertsService = {
   },
 
   /** Marks a specific alert as read */
-  async markAsRead(id: number): Promise<void> {
+  async markAsRead(id: string): Promise<void> {
     await apiClient.patch(`/v1/client-alerts/${id}/read`);
   },
 

@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** BR-CATALOG (BR-PR-*, BR-OL-*, BR-PAY-*, BR-REC-*, BR-NOTIF-*)  
-> **Version:** 1.1  
-> **Date:** 2026-02-20  
+> **Version:** 1.2  
+> **Date:** 2026-07-24  
 > **Source:** Client Interview & Case Study  
 > **Purpose:** Define enforceable rules that drive backend logic, validation, and computations  
 > **Status:** Baseline (MVP)
@@ -16,6 +16,13 @@
 - **Document Type:** Requirements — Business Rules
 - **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](user-stories.md), [ERD](../04-data-design/erd.dbml), [Architecture](../05-tech-design/architecture.md), [OpenAPI Spec](../05-tech-design/openapi.yaml)
 - **Confidentiality:** Internal / Academic Use
+
+### Revision History
+| Version | Date       | Author   | Changes |
+|---------|------------|----------|---------|
+| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
+| 1.1     | 2026-02-20 | HIMÓTECH  | Baseline MVP release |
+| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and UUID data model |
 
 ---
 
@@ -96,15 +103,15 @@
 
 ## 2. Order Lifecycle Rules
 
-### BR-OL-01 – Order Must Have a Unique Reference Number
+### BR-OL-01 – Order Must Have a Unique Tracking Number
 
-**Rule:** Every order MUST have a unique **reference number** used for tracking.  
+**Rule:** Every order MUST have a unique **tracking number** (`tracking_number`) used for tracking.  
 **Condition:** Order creation or tracking lookup.  
-**System Behavior:** Generate unique reference; enforce uniqueness.  
-**Constraint:** Reject creation if reference exists (or regenerate).  
+**System Behavior:** Generate unique tracking number; enforce uniqueness.  
+**Constraint:** Reject creation if tracking number exists (or regenerate).  
 **Applies To:** Order creation, tracking portal  
 **Enforcement:** Backend service + database unique constraint  
-**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order), [US-04](user-stories.md#us-04-track-laundry-order-by-reference-number)
+**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order), [US-04](user-stories.md#us-04-track-laundry-order-by-tracking-number)
 
 ---
 
@@ -305,15 +312,15 @@
 
 ---
 
-### BR-NOTIF-02 – Tracking by Reference Number
+### BR-NOTIF-02 – Tracking by Tracking Number
 
-**Rule:** Customers MUST be able to track laundry status using the order reference number.  
+**Rule:** Customers MUST be able to track laundry status using the order tracking number (`tracking_number`).  
 **Condition:** Customer requests tracking.  
-**System Behavior:** Lookup by unique reference; return allowed fields only.  
+**System Behavior:** Lookup by unique tracking number; return allowed fields only.  
 **Constraint:** No sensitive or internal data exposed.  
 **Applies To:** Tracking page/API  
-**Enforcement:** Backend endpoint + lookup by unique reference  
-**Supports User Stories:** [US-04](user-stories.md#us-04-track-laundry-order-by-reference-number)
+**Enforcement:** Backend endpoint + lookup by unique tracking number  
+**Supports User Stories:** [US-04](user-stories.md#us-04-track-laundry-order-by-tracking-number)
 
 ---
 

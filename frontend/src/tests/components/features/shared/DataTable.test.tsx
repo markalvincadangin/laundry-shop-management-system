@@ -13,11 +13,11 @@ vi.mock("framer-motion", () => ({
 describe("DataTable", () => {
   it("makes data rows fully clickable per FR-REG-1", () => {
     const data = [
-      { id: 1, name: "Order 1" },
-      { id: 2, name: "Order 2" },
+      { id: "1", name: "Order 1" },
+      { id: "2", name: "Order 2" },
     ];
     
-    const columns: DataTableColumn<{ id: number; name: string }>[] = [
+    const columns: DataTableColumn<{ id: string; name: string }>[] = [
       { header: "Name", accessorKey: "name" },
     ];
 

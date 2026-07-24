@@ -285,7 +285,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    customerId: number;
+                    customerId: string;
                 };
                 cookie?: never;
             };
@@ -325,7 +325,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    customerId: number;
+                    customerId: string;
                 };
                 cookie?: never;
             };
@@ -584,14 +584,14 @@ export interface paths {
                     from?: string;
                     /** @description End date (inclusive) */
                     to?: string;
-                    /** @description Free-text search (reference number, customer name, etc.) */
+                    /** @description Free-text search (tracking number, customer name, etc.) */
                     q?: string;
                     page?: number;
                     size?: number;
                     sortBy?: string;
                     sortDir?: "asc" | "desc";
                     /** @description Filter by specific customer ID */
-                    customerId?: number;
+                    customerId?: string;
                     /** @description Filter by service type (Rate ID) */
                     serviceRateId?: number;
                 };
@@ -616,7 +616,7 @@ export interface paths {
         /**
          * Create laundry order
          * @description Creates order with automatic pricing (loads, extra minutes, add-ons).
-         *     Generates unique reference number. Sets initial status RECEIVED.
+         *     Generates unique tracking number. Sets initial status RECEIVED.
          *     createdByUserId is sourced from JWT when authenticated; falls back to body value.
          *     Returns 401 if neither JWT nor body provides the user identity.
          *     Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
@@ -764,7 +764,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/orders/reference/{referenceNumber}": {
+    "/api/v1/orders/tracking/{trackingNumber}": {
         parameters: {
             query?: never;
             header?: never;
@@ -772,7 +772,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Track order by reference number
+         * Track order by tracking number
          * @description Public endpoint for customer tracking. Returns limited data (no internal IDs).
          *     Includes weightKg and totalLoads in addition to status/payment info.
          *     Supports: US-04. Enforces: BR-NOTIF-02, BR-OL-01.
@@ -782,7 +782,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    referenceNumber: string;
+                    trackingNumber: string;
                 };
                 cookie?: never;
             };
@@ -797,7 +797,57 @@ export interface paths {
                         "application/json": components["schemas"]["OrderTrackingResponse"];
                     };
                 };
-                /** @description Reference not found */
+                /** @description Tracking number not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/reference/{trackingNumber}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Track order by tracking number (Alias route)
+         * @description Legacy/Alias endpoint for tracking order by tracking number.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    trackingNumber: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Order tracking view */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderTrackingResponse"];
+                    };
+                };
+                /** @description Tracking number not found */
                 404: {
                     headers: {
                         [name: string]: unknown;
@@ -832,7 +882,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -874,7 +924,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -940,7 +990,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -1003,8 +1053,8 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    orderId?: number;
-                    /** @description Search by reference number, customer name, or transaction ID */
+                    orderId?: string;
+                    /** @description Search by tracking number, customer name, or transaction ID */
                     q?: string;
                     /** @description Start date (inclusive) */
                     from?: string;
@@ -1103,7 +1153,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    paymentId: number;
+                    paymentId: string;
                 };
                 cookie?: never;
             };
@@ -1156,7 +1206,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    orderId: number;
+                    orderId: string;
                 };
                 cookie?: never;
             };
@@ -1200,7 +1250,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Search by message, reference number, or customer name */
+                    /** @description Search by message, tracking number, or customer name */
                     q?: string;
                     status?: "PENDING" | "SENT" | "FAILED";
                     from?: string;
@@ -1254,7 +1304,7 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    id: number;
+                    id: string;
                 };
                 cookie?: never;
             };
@@ -1868,8 +1918,8 @@ export interface components {
             contactNumber: string;
         };
         CustomerResponse: {
-            /** Format: int64 */
-            id: number;
+            /** Format: uuid */
+            id: string;
             firstName: string;
             lastName: string;
             contactNumber: string;
@@ -1890,7 +1940,8 @@ export interface components {
             last: boolean;
         };
         ServiceRateResponse: {
-            id: number;
+            /** Format: uuid */
+            id: string;
             serviceName: string;
             /** Format: double */
             basePricePerLoad: number;
@@ -1922,8 +1973,8 @@ export interface components {
             isActive: boolean;
         };
         CreateOrderRequest: {
-            /** Format: int64 */
-            customerId?: number;
+            /** Format: uuid */
+            customerId?: string;
             /**
              * Format: uuid
              * @description Optional — overridden by JWT principal when authenticated.
@@ -1985,17 +2036,18 @@ export interface components {
             changedByUserId?: string;
         };
         OrderResponse: {
-            /** Format: int64 */
-            id: number;
-            referenceNumber: string;
-            /** Format: int64 */
-            customerId: number;
+            /** Format: uuid */
+            id: string;
+            trackingNumber: string;
+            /** Format: uuid */
+            customerId: string;
             customerName?: string;
             /** @description UUID string */
             createdByUserId?: string;
             /** @description Username of the staff who created the order */
             createdByUsername?: string;
-            serviceRateId?: number;
+            /** Format: uuid */
+            serviceRateId?: string;
             /** Format: double */
             weightKg: number;
             totalLoads: number;
@@ -2042,7 +2094,7 @@ export interface components {
             last: boolean;
         };
         OrderTrackingResponse: {
-            referenceNumber: string;
+            trackingNumber: string;
             currentStatus: string;
             customerName: string;
             contactNumber?: string;
@@ -2054,10 +2106,11 @@ export interface components {
             /** Format: double */
             weightKg?: number;
             totalLoads?: number;
+            isRush?: boolean;
         };
         CreatePaymentRequest: {
-            /** Format: int64 */
-            orderId: number;
+            /** Format: uuid */
+            orderId: string;
             /** Format: double */
             amountPaid: number;
             /** @description Defaults to CASH if not provided. */
@@ -2071,11 +2124,11 @@ export interface components {
             paymentReference?: string;
         };
         PaymentResponse: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            orderId: number;
-            orderReferenceNumber?: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderTrackingNumber?: string;
             customerName?: string;
             /** Format: double */
             amountPaid: number;
@@ -2091,13 +2144,13 @@ export interface components {
             paymentReference?: string;
         };
         ClientAlertResponse: {
-            /** Format: int64 */
-            id: number;
-            /** Format: int64 */
-            orderId: number;
-            referenceNumber?: string;
-            /** Format: int64 */
-            customerId: number;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            trackingNumber?: string;
+            /** Format: uuid */
+            customerId: string;
             customerName?: string;
             contactNumber?: string;
             message: string;
@@ -2146,8 +2199,8 @@ export interface components {
         };
         /** @description Audit record of a system action. Capture point-in-time state for forensic inspection. */
         AuditLogResponse: {
-            /** Format: int64 */
-            id: number;
+            /** Format: uuid */
+            id: string;
             /** @description Username who performed the action */
             actor: string;
             /**

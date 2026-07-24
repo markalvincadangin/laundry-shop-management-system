@@ -1,14 +1,10 @@
 <!--
 Sync Impact Report:
-- Version change: 1.4.1 -> 1.5.0
+- Version change: 1.5.0 -> 1.6.0
 - List of modified principles:
-  - Credential & Security Rules: Replaced `V2__seed_users.sql` and `SEED_*` vars with `R__demo_data.sql` and `dev` profile.
-  - Coding Standards & Code Quality: Added rules for Type-Safe Configuration (`@ConfigurationProperties`) and explicit Filter Chain Ordering (`@Order`).
-  - V. Containerized Development: Mandated Makefile as primary orchestrator and defined `docker-compose.override.yml` boundary.
+  - Added new principle IX. Offline-First & Tunnel Deployment Architecture
 - Modified sections:
-  - V. Containerized Development & Hot Reloading Discipline
-  - Coding Standards & Code Quality
-  - Credential & Security Rules
+  - Core Principles
 - Templates requiring updates:
   - plan-template.md: ✅ in sync
   - spec-template.md: ✅ in sync
@@ -109,6 +105,9 @@ This project maintains a graphify knowledge graph at `graphify-out/`.
 ### VIII. Frontend React/Next.js Best Practices
 All React/Next.js code MUST follow the Vercel React Best Practices rules (including App Router conventions, waterfall elimination, Suspense, and memoization discipline) as detailed in the Coding Standards section.
 
+### IX. Offline-First & Tunnel Deployment Architecture
+The system MUST operate on a zero-cost, offline-first deployment topology. The Spring Boot backend and PostgreSQL database MUST run locally on the shop's Windows machine. Customer online tracking MUST be facilitated via a secure reverse tunnel (e.g., Cloudflare Tunnels) connecting the public internet (Vercel Frontend) directly to the local machine. Background cloud database synchronization (e.g., Transactional Outbox Pattern) is strictly prohibited to avoid cloud hosting costs.
+
 ## Coding Standards & Code Quality
 
 - **Type-Safe Configuration**: Strictly prefer `@ConfigurationProperties` over `@Value` for injecting properties. Always bind configuration via dedicated properties classes (e.g., `AppProperties`, `SecurityProperties`).
@@ -186,4 +185,4 @@ All React/Next.js code MUST follow the Vercel React Best Practices rules (includ
   - **MINOR**: New principles or sections added.
   - **PATCH**: Clarifications, wording fixes, non-semantic refinements.
 
-**Version**: 1.5.0 | **Ratified**: 2026-07-05 | **Last Amended**: 2026-07-14
+**Version**: 1.6.0 | **Ratified**: 2026-07-05 | **Last Amended**: 2026-07-21

@@ -3,5 +3,9 @@
     "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
     "https://checkstyle.org/dtds/suppressions_1_2.dtd">
 <suppressions>
-    <suppress checks="DesignForExtension" files=".*(Service|Controller|RestController|Repository|Entity|Configuration|Component|Aspect)\.java"/>
+    <!-- Suppress Javadoc requirement for all test classes -->
+    <suppress checks="Javadoc.*|MissingJavadoc.*" files="src[/\\]test[/\\].*"/>
+
+    <!-- Allow test classes to exceed standard 500-line file length limit for comprehensive test suites -->
+    <suppress checks="FileLength" files="src[/\\]test[/\\].*"/>
 </suppressions>

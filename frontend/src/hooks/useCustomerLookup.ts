@@ -50,7 +50,7 @@ export function useCustomerLookup(initialQuery: string = "") {
     setResults([]);
   };
 
-  const selectById = useCallback(async (id: number) => {
+  const selectById = useCallback(async (id: string) => {
     setLoading(true);
     try {
       const customer = await customersService.getById(id);

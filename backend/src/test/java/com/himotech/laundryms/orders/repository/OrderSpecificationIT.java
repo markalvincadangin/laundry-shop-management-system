@@ -124,9 +124,9 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
                 .orElseThrow();
     }
 
-    private Order createOrder(String refNumber, final OrderStatus status, final PaymentStatus paymentStatus) {
+    private Order createOrder(final String trackingNumber, final OrderStatus status, final PaymentStatus paymentStatus) {
         Order order = Order.builder()
-                .referenceNumber(refNumber)
+                .trackingNumber(trackingNumber)
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -160,7 +160,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return all 5 test orders
         assertThat(results).hasSize(5);
-        assertThat(results).extracting(Order::getReferenceNumber)
+        assertThat(results).extracting(Order::getTrackingNumber)
                 .containsExactlyInAnyOrder("LDR-20260425-0001", "LDR-20260425-0002", "LDR-20260425-0003", "LDR-20260425-0004", "LDR-20260425-0005");
     }
 
@@ -178,7 +178,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only the WASHING order
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0002");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0002");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.WASHING);
     }
 
@@ -196,7 +196,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only PAID orders
         assertThat(results).hasSize(2);
-        assertThat(results).extracting(Order::getReferenceNumber)
+        assertThat(results).extracting(Order::getTrackingNumber)
                 .containsExactlyInAnyOrder("LDR-20260425-0003", "LDR-20260425-0004");
         assertThat(results).allMatch(order -> order.getPaymentStatus() == PaymentStatus.PAID);
     }
@@ -223,7 +223,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only the order matching both criteria
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0001");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0001");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);
         assertThat(results.get(0).getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
     }
@@ -327,7 +327,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only the order matching all criteria
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0003");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0003");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.READY_FOR_PICKUP);
         assertThat(results.get(0).getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
@@ -370,7 +370,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only cancelled order
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0005");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0005");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.CANCELLED);
     }
 
@@ -418,7 +418,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should filter only by payment status, ignore null order status
         assertThat(results).hasSize(3);
-        assertThat(results).extracting(Order::getReferenceNumber)
+        assertThat(results).extracting(Order::getTrackingNumber)
                 .containsExactlyInAnyOrder("LDR-20260425-0001", "LDR-20260425-0002", "LDR-20260425-0005");
         assertThat(results).allMatch(order -> order.getPaymentStatus() == PaymentStatus.UNPAID);
     }

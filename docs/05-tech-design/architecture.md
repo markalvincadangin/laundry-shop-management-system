@@ -4,27 +4,28 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** ARCH-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-13  
-> **Purpose:** Define implementation-ready architecture aligned to scope and requirements  
-> **Status:** Baseline (MVP)
+> **Version:** 3.1 (Standalone & Tunnel Standardization)  
+> **Date:** 2026-07-24  
+> **Purpose:** Define implementation-ready architecture aligned to the Standalone, Offline-First shift with Tunnel topology  
+> **Status:** Baseline
 
 ---
 
 ## Document Control
 - **Document Type:** Technical Design — Architecture
-- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Non-Functional Requirements](../02-requirements/non-functional-requirements.md), [To-Be Process Flow](../03-process/to-be-flow.md), [ERD](../04-data-design/erd.dbml), [Data Design Notes](../04-data-design/data-notes.md), [OpenAPI Spec](openapi.yaml), [Deployment Guide](../06-implementation/deployment-guide.md)
+- **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Non-Functional Requirements](../02-requirements/non-functional-requirements.md), [To-Be Process Flow](../03-process/to-be-flow.md), [ERD](../04-data-design/erd.dbml), [OpenAPI Spec](openapi.yaml), [Deployment Guide](../06-implementation/deployment-guide.md)
 - **Confidentiality:** Internal / Academic Use
 
 ---
 
 ## 1. Goals
 
-- Replace paper-based tracking (tags, logbooks) with a centralized system
-- Enable order tracking via unique reference number
-- Automate pricing computation (load-based, extra minutes, add-ons) and store transaction history
-- Provide income reports (daily, monthly, yearly) from recorded payments
-- Support customer notifications when an order is ready for pickup (MVP optional)
+- Replace paper-based tracking (tags, logbooks) with a centralized system.
+- Enable order tracking via unique tracking number (`tracking_number`) and QR codes linked to generated UUIDs.
+- Automate pricing computation (load-based, extra minutes, add-ons) and store transaction history.
+- Provide income reports (daily, monthly, yearly) from recorded payments.
+- **Provide a highly resilient, zero-downtime offline-first local operation at the shop counter.**
+- **Enable zero-cost public tracking by exposing the local server via a secure Cloudflare Tunnel.**
 
 ---
 
@@ -34,11 +35,12 @@
 
 - Admin and Staff authentication (username/password)
 - Customer management (create, search by name/contact)
-- Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique reference number
-- Order status updates with audit trail (order_status_logs)
+- Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique tracking number (`tracking_number`)
+- Business Rules: Standard pricing at ₱140 per load (up to 8 kg). Weight overages trigger automatic additional load charges. Time penalties require manual input to add ₱1 per extra minute.
+- Order status updates with audit trail (`activity_logs`)
 - Payment recording (one payment per order; amount must equal order grand total)
 - Sales reporting (daily, monthly, yearly) from payments
-- Public order tracking by reference number
+- QR-Code powered public order tracking by tracking number
 
 ### 2.2 Out of Scope (MVP+)
 
@@ -55,48 +57,43 @@
 | Layer      | Technology                            |
 |------------|---------------------------------------|
 | Backend    | Java 21, Spring Boot 3.5+, Maven      |
-| Frontend   | Next.js 15+, TypeScript, Tailwind CSS |
-| Database   | PostgreSQL 16                         |
+| Frontend   | Next.js 15+ (Statically Exported), TypeScript, Tailwind CSS |
+| Database   | PostgreSQL 16 (Local Background Service) |
+| Tunnel     | Cloudflare Tunnel (`cloudflared`)     |
 | Migrations | Flyway                                |
-| Local Dev  | Docker Compose                        |
-| Testing    | Testcontainers                        |
-| Config     | `.env` (local only; never committed)  |
+| Packaging  | `jpackage` native installer, PowerShell |
+| Hardware   | Windows OS (Desktop/Tablet)           |
 
 ---
 
-## 4. High-Level Architecture (C4-lite)
+## 4. System Architecture (Standalone, Tunnel Strategy)
 
 ### 4.1 System Context
 
 **Actors**
 - **Admin:** Views reports, manages rates, oversees operations
 - **Staff:** Encodes orders, updates status, records payments
-- **Customer:** Tracks order status via reference number (public endpoint)
+- **Customer:** Scans QR code on receipt to track order status via the public cloud-hosted web portal
 
-**External Services (Optional)**
-- SMS provider for ready-for-pickup notifications (post-MVP)
+**Hardware Constraint**
+- The system enforces a strict hardware constraint: It is deployed on a single physical Windows device (laptop or tablet) located at the shop counter. It achieves absolute local autonomy, functioning flawlessly during local network outages.
 
 ### 4.2 Containers
 
-1. **Web App (Frontend)** — Next.js 14+, TypeScript, Tailwind
-   - Order intake, status updates, payment recording
-   - Reports dashboard (Admin only)
-   - Public tracking page (reference number lookup)
+1. **Web App (Frontend)** — Next.js 15+, TypeScript, Tailwind
+   - Internal Staff UI: Statically exported and served directly from the Java backend's static resources directory.
+   - Public Tracking UI: Deployed to Vercel (or similar) to provide a public URL for customers.
 
 2. **API Server (Backend)** — Java Spring Boot 3.5+
-   - Business rules enforcement (Service layer only)
-   - Reference number generation and uniqueness
-   - Auth and role-based access (ADMIN vs STAFF)
-   - Reporting queries from payments
-   - Notification triggers (MVP optional)
+   - Business rules enforcement (Service layer only).
+   - Tracking number generation and uniqueness.
+   - Auth and role-based access.
 
-3. **Database** — PostgreSQL 16
-   - Persistent storage per [ERD](../04-data-design/erd.dbml)
-   - Enforces unique constraints, foreign keys
+3. **Local Database** — PostgreSQL 16
+   - Persistent offline storage running as a silent OS background service.
 
-4. **Notification Service** — Optional / post-MVP
-   - Queue or send SMS
-   - Track sent/failed status
+4. **Cloudflare Tunnel (`cloudflared`)** 
+   - A daemon running on the Windows laptop that creates an encrypted reverse tunnel to Cloudflare's network. This exposes the local API to the Vercel frontend without requiring port forwarding or cloud databases.
 
 ---
 
@@ -123,72 +120,42 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 - **activity** — Read-only access to `activity_logs`; surfaces forensic audit trail to the dashboard (US-03, US-05)
 - **payments** — Create payment (1:1), validate amount equals grand total, update payment status (US-06)
 - **reports** — Daily, monthly, yearly sales from payments (US-08, US-09)
-- **notifications** (optional) — Record and send on READY_FOR_PICKUP (US-10)
+
+*(Note: The sync engine module has been deleted in favor of the Tunnel topology).*
 
 ---
 
-## 7. Core Data Flows (MVP)
+## 7. Data Flow (Tunnel Topology)
 
-### 7.1 Order Intake
+To achieve zero cloud hosting costs while retaining public tracking functionality, the system eliminates background synchronization and cloud databases.
 
-1. Staff selects or creates a customer
-2. Staff inputs weight (kg), optional extra minutes, optional add-ons
-3. Backend loads active service rate and snapshots pricing
-4. Backend computes: `total_loads = ceil(weight_kg / kg_limit)`, `base_amount`, `extra_minutes_amount`, `addons_total_amount`, `grand_total`
-5. Backend generates unique `reference_number`
-6. Backend stores order with `current_status = RECEIVED`, `payment_status = UNPAID`
-
-### 7.2 Status Updates and Audit Trail
-
-1. Staff requests a status update via the API
-2. Backend validates the allowed status and transition (BR-OL-03, BR-OL-04, BR-OL-05)
-3. Backend updates `orders.current_status`
-4. **Hybrid Auditing Synergy**:
-   - **Database Layer**: The `trg_audit_orders` trigger fires automatically, invoking `fn_audit_activity()`, which writes a full JSONB snapshot (old and new row) to `activity_logs`.
-   - **Application Layer**: The `@Auditable` aspect intercepts the call and publishes an asynchronous `AuditEvent` to capture high-level intent, outcome (SUCCESS/FAILURE), and forensic context (IP Address, User Agent).
-5. Both layers write to the same `activity_logs` table, providing a complete forensic record.
-
-### 7.3 Payment Recording
-
-1. Staff records payment upon pickup (payment method: Cash, GCash, or Bank Transfer — BR-PAY-05)
-2. Backend validates: no existing payment for order (BR-PAY-02), amount equals `orders.grand_total` (BR-PAY-03)
-3. Backend inserts payment (including payment_method) and sets `orders.payment_status = PAID` (BR-PAY-04)
-4. MVP: Partial payments are not supported; PARTIAL is reserved for post-MVP
-
-### 7.4 Reporting
-
-1. Admin requests report (daily, monthly, yearly)
-2. Backend aggregates totals from payments within the date range
-
-### 7.5 Customer Tracking (Public)
-
-1. Customer enters `reference_number`
-2. Backend returns a limited subset: status, created date, reference number, basic summary (no internal IDs, staff info)
+1. **Local Primacy:** All operations strictly mutate the local PostgreSQL database on the shop's Windows machine.
+2. **Tunneling:** The `cloudflared` daemon runs in the background on the Windows machine, opening an outbound connection to Cloudflare.
+3. **Tracking Requests:** When a customer visits the Vercel tracking site and searches for an order, Vercel makes an API call to the Cloudflare domain (e.g., `api.faithlaundry.com`).
+4. **Resolution:** Cloudflare routes the request down the secure tunnel directly into the shop's local Spring Boot server. The server reads the database and returns the result.
+5. **Tradeoff:** If the shop laptop is powered off or loses internet, the tunnel closes, and customer tracking is temporarily unavailable.
 
 ---
 
-## 8. Environment and Deployment
+## 8. Deployment Strategy
 
-### 8.1 Local Development
+### 8.1 Zero-Friction Client Execution
+The system must run entirely locally without requiring the end user (the shop owner) to launch developer tools, terminals, or Docker.
 
-- **Frontend:** `localhost:3001`
-- **Backend:** `localhost:8080` (mapped to host via `BACKEND_PORT`)
-- **Database:** PostgreSQL 16 via Docker Compose
-- **Configuration:** Unified `.env` at project root — gitignored; use `.env.example` as template
-- **Secrets:** Never committed; JWT secret, DB credentials in root `.env`
-- **Orchestration:** `docker compose up -d`
-
-### 8.2 CI
-
-- Testcontainers for integration tests (PostgreSQL 16)
-- No secrets in the repository
+- **Frontend Bundling:** The Next.js UI is statically exported during the build process and bundled directly into the Java application.
+- **Executable Packaging:** The application is packaged into a single, professional `.exe` Windows Installer wizard built via Inno Setup and managed as a background service via WinSW (Windows Service Wrapper).
+- **Database Provisioning:** The local PostgreSQL instance is installed and configured automatically via a provided PowerShell setup script. It runs as a silent, automated Windows background service, invisible to the operator.
+- **Tunnel Provisioning:** The Cloudflare Tunnel token is installed on the machine, securely linking it to the remote domain.
 
 ---
 
-## 9. Security (MVP)
+## 9. Security & Hardening
 
-- Role-based access: Admin (reports, rates); Staff (orders, status, payments, customers)
-- Public tracking endpoint returns only: reference number, current status, created date, basic customer/payment summary — no internal IDs or staff information
+To protect the system within a potentially unmanaged shop environment, a Zero-Trust Local Network posture is maintained:
+
+- **Local Bindings (Strict Localhost):** Both the Java backend and the PostgreSQL database are strictly bound to `127.0.0.1` (localhost). This prevents unauthorized access or API calls from other devices connected to the shop's local Wi-Fi.
+- **Tunnel Security:** Cloudflare Tunnels do not require inbound firewall ports to be open. They rely on outbound persistent connections.
+- **Public API Protection:** The public tracking endpoint exposed via the tunnel MUST ONLY return non-PII data (like order status) or require authentication (PIN code / Phone Number validation) to prevent data scraping.
 
 ---
 
@@ -201,7 +168,8 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ## 11. Architecture Decisions (ADR-lite)
 
-- Markdown documentation under `/docs` as a source of truth
-- OpenAPI contract as an API source of truth
-- DBML ERD as a data design source of truth
-- Pricing snapshot stored in `orders` for historical accuracy when rates change
+- **Universal Unique Identifiers (UUIDs):** The database utilizes UUIDs or BigSerials securely mapped.
+- **Protect the Stack (Hardware Enforcement):** Opted to mandate a Windows OS deployment rather than rewriting the reliable Java/PostgreSQL stack into a mobile-friendly or browser-based offline application (e.g., PWA/IndexedDB).
+- **The Tunnel Topology Pivot:** We decisively moved away from the Transactional Outbox cloud-sync pattern in favor of Cloudflare Tunnels to permanently eliminate cloud database costs.
+- **Markdown Documentation:** maintained under `/docs` as a source of truth.
+- **OpenAPI Contract:** maintained as an API source of truth.

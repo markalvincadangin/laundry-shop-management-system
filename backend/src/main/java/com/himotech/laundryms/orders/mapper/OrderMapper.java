@@ -12,6 +12,7 @@ import org.mapstruct.Named;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import com.himotech.laundryms.machines.entity.Machine;
 
@@ -79,16 +80,14 @@ public interface OrderMapper {
     }
 
     @Named("mapMachinesToIds")
-    default List<Long> mapMachinesToIds(Set<Machine> machines) {
-        if (machines == null || machines.isEmpty()) {
+    default List<UUID> mapMachinesToIds(Set<Machine> machines) {
+        if (machines == null) {
             return Collections.emptyList();
         }
-        return machines.stream()
-                .map(Machine::getId)
-                .collect(Collectors.toList());
+        return machines.stream().map(Machine::getId).collect(Collectors.toList());
     }
 
-    @Mapping(target = "referenceNumber", source = "referenceNumber")
+    @Mapping(target = "trackingNumber", source = "trackingNumber")
     @Mapping(target = "currentStatus", source = "currentStatus")
     @Mapping(target = "customerName", source = "order", qualifiedByName = "customerName")
     @Mapping(target = "contactNumber", source = "customer.contactNumber")

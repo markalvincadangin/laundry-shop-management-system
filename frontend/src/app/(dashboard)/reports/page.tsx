@@ -194,14 +194,14 @@ export default function ReportsPage() {
         charts: chartImage ? [chartImage] : [],
         table: {
           columns: [
-            { header: "Reference", width: "25%", isMono: true },
+            { header: "Tracking #", width: "25%", isMono: true },
             { header: "Customer", width: "25%", isBold: true },
             { header: "Method", width: "20%" },
             { header: "Amount", width: "15%", align: "right", isBold: true },
             { header: "Status", width: "15%", align: "right" }
           ],
           rows: transactionResponse.content.slice(0, 20).map(t => [
-            t.orderReferenceNumber,
+            t.orderTrackingNumber,
             t.customerName || "Walk-in",
             t.paymentMethod,
             `PHP ${t.amountPaid.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,

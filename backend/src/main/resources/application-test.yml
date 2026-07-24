@@ -1,0 +1,29 @@
+# Test profile: used for E2E testing with Playwright
+# Activate with: SPRING_PROFILES_ACTIVE=test
+
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:5434/laundry_e2e_db?stringtype=unspecified
+    username: ${DB_USER:e2e_user}
+    password: ${DB_PASSWORD:e2e_password}
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration,classpath:db/seed/test
+    # Inject baseline seed data specific to testing
+    placeholders:
+      seed_environment: test
+
+app:
+  security:
+    # Relax security for tests where necessary (though we want to test auth flows)
+    cookie-secure: false
+    allowed-origin: http://localhost:3001
+    jwt-secret: e2e_test_secret_key_which_is_long_enough_for_hs256
+  sync:
+    cloud-api-url: http://localhost:9999/mock-sync
+    sync-secret: e2e_sync_mock_secret

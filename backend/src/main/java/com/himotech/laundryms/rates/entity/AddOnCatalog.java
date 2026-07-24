@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.entity;
 
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,9 +20,9 @@ import java.time.Instant;
 public class AddOnCatalog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    private Integer id;
+    private UUID id;
 
     @Column(name = "name", length = 100, nullable = false, unique = true)
     private String name;

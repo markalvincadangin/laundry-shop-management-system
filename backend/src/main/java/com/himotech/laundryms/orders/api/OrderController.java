@@ -115,16 +115,15 @@ public class OrderController {
     }
 
     /**
-     * Tracks an order by its reference number.
+     * Tracks an order by its tracking number or reference number (US-04 Public Tracking).
      *
-     * @param referenceNumber the unique order reference
+     * @param trackingNumber the unique order tracking number
      * @return the tracking response
      */
-    @GetMapping("/reference/{referenceNumber}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @GetMapping({"/tracking/{trackingNumber}", "/reference/{trackingNumber}"})
     public ResponseEntity<OrderTrackingResponse> trackByReference(
-            @PathVariable final String referenceNumber) {
-        final Order order = orderService.findByReferenceNumber(referenceNumber);
+            @PathVariable final String trackingNumber) {
+        final Order order = orderService.findByTrackingNumber(trackingNumber);
         return ResponseEntity.ok(orderMapper.toTrackingResponse(order));
     }
 
@@ -183,7 +182,7 @@ public class OrderController {
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> getById(
-            @PathVariable final Long orderId) {
+            @PathVariable final UUID orderId) {
         return ResponseEntity.ok(orderService.getOrderDetails(orderId));
     }
 
@@ -197,7 +196,7 @@ public class OrderController {
     @PatchMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> update(
-            @PathVariable final Long orderId,
+            @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderRequest request) {
         final Order order = orderService.update(orderId, request);
         return ResponseEntity.ok(orderMapper.toResponse(order));
@@ -214,7 +213,7 @@ public class OrderController {
     @PatchMapping("/{orderId}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable final Long orderId,
+            @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderStatusRequest request,
             @AuthenticationPrincipal final JwtPrincipal principal) {
 
@@ -244,8 +243,8 @@ public class OrderController {
      */
     @DeleteMapping("/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable final Long orderId) {
+    public ResponseEntity<Void> delete(@PathVariable final UUID orderId) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.noContent().build();
     }
-}
+}

@@ -51,7 +51,7 @@ public class ClientAlertSpecification {
                 String pattern = "%" + q.toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("message")), pattern),
-                        cb.like(cb.lower(root.get("order").get("referenceNumber")), pattern),
+                        cb.like(cb.lower(root.get("order").get("trackingNumber")), pattern),
                         cb.like(cb.lower(root.get("order").get("customer").get("firstName")), pattern),
                         cb.like(cb.lower(root.get("order").get("customer").get("lastName")), pattern),
                         // Full Name Concatenation

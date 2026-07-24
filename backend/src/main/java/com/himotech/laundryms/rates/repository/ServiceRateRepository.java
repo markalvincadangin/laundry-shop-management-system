@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.rates.entity.ServiceRate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,7 +14,7 @@ import java.util.Optional;
  * Provides database access for service rate pricing rules.
  */
 @Repository
-public interface ServiceRateRepository extends JpaRepository<ServiceRate, Integer> {
+public interface ServiceRateRepository extends JpaRepository<ServiceRate, UUID> {
 
     /**
      * Finds the currently active service rate, defaulting to the latest one.

@@ -1,5 +1,7 @@
 package com.himotech.laundryms.rates.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.shared.exception.GlobalExceptionHandler;
 import com.himotech.laundryms.shared.exception.NotFoundException;
 import com.himotech.laundryms.rates.dto.ServiceRateResponse;
@@ -50,7 +52,7 @@ class ServiceRatesControllerTest {
 
     private ServiceRate sampleRate() {
         return ServiceRate.builder()
-                .id(1)
+                .id(UUID.randomUUID())
                 .serviceName("Standard Wash")
                 .basePricePerLoad(new BigDecimal("120.00"))
                 .kgLimitPerLoad(new BigDecimal("8.00"))
@@ -68,7 +70,7 @@ class ServiceRatesControllerTest {
         void listShouldreturn200Whenactiveonlytrue() throws Exception {
             ServiceRate rate = sampleRate();
             ServiceRateResponse resp = ServiceRateResponse.builder()
-                    .id(1)
+                    .id(UUID.randomUUID())
                     .serviceName("Standard Wash")
                     .basePricePerLoad(120.0)
                     .kgLimitPerLoad(8.0)
@@ -82,7 +84,7 @@ class ServiceRatesControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$[0].id").value(1))
+                    .andExpect(jsonPath("$[0].id").exists())
                     .andExpect(jsonPath("$[0].serviceName").value("Standard Wash"))
                     .andExpect(jsonPath("$[0].basePricePerLoad").value(120.0))
                     .andExpect(jsonPath("$[0].kgLimitPerLoad").value(8.0))
@@ -111,14 +113,14 @@ class ServiceRatesControllerTest {
         @DisplayName("Should return 200 and ServiceRateResponse when active exists")
         void getActiveShouldreturn200Whenactiveexists() throws Exception {
             ServiceRate rate = sampleRate();
-            ServiceRateResponse resp = ServiceRateResponse.builder().id(1).basePricePerLoad(120.0).kgLimitPerLoad(8.0).build();
+            ServiceRateResponse resp = ServiceRateResponse.builder().id(UUID.randomUUID()).basePricePerLoad(120.0).kgLimitPerLoad(8.0).build();
             when(serviceRateService.getActiveRate()).thenReturn(rate);
             when(serviceRateMapper.toResponse(rate)).thenReturn(resp);
 
             mockMvc.perform(get("/api/v1/service-rates/active"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.id").exists())
                     .andExpect(jsonPath("$.basePricePerLoad").value(120.0))
                     .andExpect(jsonPath("$.kgLimitPerLoad").value(8.0));
 

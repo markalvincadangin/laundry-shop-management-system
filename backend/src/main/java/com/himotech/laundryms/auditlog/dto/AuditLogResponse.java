@@ -1,5 +1,7 @@
 package com.himotech.laundryms.auditlog.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuditLogResponse {
-    private Long id;
+    private UUID id;
     private String actor;
     private String operation;
     private String entityType;
