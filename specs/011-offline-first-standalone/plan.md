@@ -5,13 +5,13 @@
 
 ## Summary
 
-Transition the cloud web application to an Offline-First standalone architecture running on Windows. This includes migrating to UUID primary keys, and deploying via `jpackage` and PowerShell scripts.
+Transition the cloud web application to an Offline-First standalone architecture running on Windows. This includes migrating to UUID primary keys, and deploying via Inno Setup (`.exe` installer wizard) and WinSW (Windows Service Wrapper).
 **Pivot (2026-07-21):** We have abandoned the Transactional Outbox pattern in favor of a secure Cloudflare Tunnel. We must now delete the `sync` package and remove `OutboxService` dependencies.
 
 ## Technical Context
 
 **Language/Version**: Java 21, TypeScript
-**Primary Dependencies**: Spring Boot, Next.js, PostgreSQL, jpackage
+**Primary Dependencies**: Spring Boot, Next.js, PostgreSQL, Inno Setup, WinSW
 **Storage**: PostgreSQL (Local Service)
 **Testing**: JUnit, Testcontainers, WireMock, Vitest
 **Target Platform**: Windows OS (Laptop/Surface tablet)

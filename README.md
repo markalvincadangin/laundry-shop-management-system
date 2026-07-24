@@ -157,7 +157,7 @@ docker compose --profile full up -d
 
 ### 💻 Option 3: Offline-First Standalone Setup (Windows Desktop)
 
-This setup provides a fully bundled `.msi` Windows installer with an embedded Java Runtime (JRE), static Next.js frontend, and a silent PostgreSQL installer. This is intended for production deployment on Windows 10/11 machines without any developer tools installed.
+This setup provides a single double-clickable `.exe` Windows installer wizard (built via Inno Setup) with the statically exported Next.js frontend, Spring Boot backend, custom app icon, and automated WinSW background service configuration. This is intended for production deployment on Windows 10/11 machines without any developer tools installed.
 
 1. **Build the Standalone Installer**:
    Open PowerShell as Administrator:
@@ -167,7 +167,7 @@ This setup provides a fully bundled `.msi` Windows installer with an embedded Ja
    .\build_standalone.ps1
    ```
 2. **Install**:
-   Locate the generated `.msi` file in `backend\target\installer\` and double-click to install. It will silently configure PostgreSQL as a Windows Service and install the FaithLaundryMS application.
+   Locate the generated `LaundryShopMS-Setup-1.0.0.exe` file in `backend\target\` and double-click to install via the setup wizard. It will register the `LaundryShopMS` Windows background service, create Desktop & Start Menu shortcuts with the app icon, register in Add/Remove Programs, and open `http://localhost:8080` in your browser.
 
 ### Verify Everything is Running
 

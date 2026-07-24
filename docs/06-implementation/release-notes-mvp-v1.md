@@ -48,7 +48,7 @@
 - Structured JSON logging in production
 - Request/response logging in dev profile
 - CI: test coverage, Checkstyle, ESLint
-- Standalone `.msi` Windows installer & Docker Compose dev stack
+- Standalone `.exe` Windows installer & Docker Compose dev stack
 - Deployment guide and release notes
 
 ---
@@ -65,7 +65,7 @@
 
 - **Backend:** Java 21, Spring Boot 3.5+, PostgreSQL 16, Flyway, JWT
 - **Frontend:** Next.js 15+, React 19, TypeScript, Tailwind CSS
-- **Infrastructure:** Standalone Windows Application (`.msi`) + Cloudflare Tunnel (`cloudflared`)
+- **Infrastructure:** Standalone Windows Application (`.exe`) + Cloudflare Tunnel (`cloudflared`)
 
 ---
 

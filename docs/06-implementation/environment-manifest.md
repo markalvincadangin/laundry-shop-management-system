@@ -11,7 +11,7 @@ The system uses a **unified `.env` file** at the project root for all runtime mo
 | Runtime Mode | Config File | Description |
 | :--- | :--- | **Local Development (Docker)** | `.env` (root) | For the containerized dev stack via `docker compose` / `make up-dev`. |
 | **Local Development (Native)** | `.env` (root) | For running services directly on the host machine (`npm run dev` + Spring Boot). |
-| **Production (Standalone Counter)** | Machine Env / `.env` | Installed via `setup_windows.ps1` or `.msi` native Windows installer. |
+| **Production (Standalone Counter)** | Machine Env / `.env` | Installed via `setup_windows.ps1` and `.exe` native Windows installer wizard. |
 
 ---
 

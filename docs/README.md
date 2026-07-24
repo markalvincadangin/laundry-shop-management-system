@@ -22,7 +22,7 @@
 
 ## Getting Started
 
-To run the application locally or deploy it to a Windows machine, we have fully automated scripts that handle the PostgreSQL database setup, environment variable configuration, and `.msi` installer generation.
+To run the application locally or deploy it to a Windows machine, we have fully automated scripts that handle the PostgreSQL database setup, environment variable configuration, and `.exe` installer wizard generation.
 
 For full deployment instructions (including how to set up the Cloudflare Tunnel for online tracking), please see the [Deployment Guide](06-implementation/deployment-guide.md).
 
@@ -82,7 +82,7 @@ For development:
 
 | Document                                                               | Description                                                                      |
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [deployment-guide.md](06-implementation/deployment-guide.md)           | Deployment instructions (Windows Standalone .msi and Cloudflare Tunnel).         |
+| [deployment-guide.md](06-implementation/deployment-guide.md)           | Deployment instructions (Windows Standalone .exe installer wizard & WinSW).      |
 | [user-manual.md](06-implementation/user-manual.md)                     | End-user guide for Admin and Staff.                                              |
 | [handover-checklist.md](06-implementation/handover-checklist.md)       | Handover session agenda and sign-off.                                            |
 | [release-notes-mvp-v1.md](06-implementation/release-notes-mvp-v1.md)   | MVP v1.0 release notes and known limitations.                                    |

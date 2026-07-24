@@ -176,7 +176,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 - Database: PostgreSQL 16 (Local Windows Service)
 - Migration Tool: Flyway
 - Frontend: Next.js 15+, TypeScript
-- Infrastructure: Standalone Windows Native Application (`.msi`) + Cloudflare Tunnel
+- Infrastructure: Standalone Windows Native Application (`.exe` wizard) + Cloudflare Tunnel
 - Testing: Testcontainers
 - CI/CD: GitHub Actions
 
@@ -205,7 +205,7 @@ The project shall be considered successful if:
 
 For the system to be considered **complete and production-ready**, the following must be in place (see [Deployment Guide](../06-implementation/deployment-guide.md) and [Handover Checklist](../06-implementation/handover-checklist.md)):
 
-- **Deployment:** Production stack deployable natively on Windows via the provided `.msi` installer.
+- **Deployment:** Production stack deployable natively on Windows via the provided `.exe` installer wizard.
 - **Tunnel:** Cloudflare Tunnel (`cloudflared`) configured to securely expose the local backend to the public tracking frontend.
 - **Backup:** Database backup script available and scheduled (e.g., nightly) using the provided `backup-database.sh`/`.ps1`.
 - **Security:** Strong JWT secret and DB password in production generated securely during Windows setup.

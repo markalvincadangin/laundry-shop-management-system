@@ -76,5 +76,5 @@ if ($CloudflareToken -ne "") {
 }
 
 Write-Host "`n==================================================" -ForegroundColor Green
-Write-Host " HOST SETUP COMPLETE! Ready for MSI Application " -ForegroundColor Green
+Write-Host " HOST SETUP COMPLETE! Ready for Application Installer " -ForegroundColor Green
 Write-Host "==================================================" -ForegroundColor Green

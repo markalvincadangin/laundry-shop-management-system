@@ -7,7 +7,7 @@
 
 ## Pre-Handover
 
-- [ ] Standalone production stack running: PostgreSQL 16 service + `.msi` application / Spring Boot server
+- [ ] Standalone production stack running: PostgreSQL 16 service + `.exe` installer / Spring Boot server
 - [ ] Application accessible via local counter browser (`http://localhost:8080`)
 - [ ] Cloudflare Tunnel daemon (`cloudflared`) active for public customer tracking (`https://track.faithlaundry.com`)
 - [ ] Admin and Staff accounts created (via seed or migration)

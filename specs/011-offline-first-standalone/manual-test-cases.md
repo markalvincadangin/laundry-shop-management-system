@@ -21,8 +21,8 @@
 | Test ID | Description | Steps | Expected Result | Pass/Fail |
 | :--- | :--- | :--- | :--- | :--- |
 | **PKG-01** | Database Service Setup | 1. Run `.\scripts\setup_windows.ps1`. | Windows Services shows `PostgreSQL-16` running automatically. | [ ] |
-| **PKG-02** | Build Standalone MSI | 1. Run `.\scripts\build_standalone.ps1`. | `FaithLaundryMS-1.0.msi` is generated in `target\`. | [ ] |
-| **PKG-03** | Install Application | 1. Execute the `.msi` and follow the wizard. | App installs successfully and appears in Windows Start Menu. | [ ] |
+| **PKG-02** | Build Standalone Installer | 1. Run `.\scripts\build_standalone.ps1`. | `LaundryShopMS-Setup-1.0.0.exe` is generated in `backend\target\`. | [ ] |
+| **PKG-03** | Install Application | 1. Execute `LaundryShopMS-Setup-1.0.0.exe` and follow the wizard. | App installs successfully, creates Desktop & Start Menu shortcuts, registers `LaundryShopMS` service, and opens browser. | [ ] |
 | **PKG-04** | Post-Reboot Recovery | 1. Reboot the Windows host machine completely.<br>2. Launch the app. | `PostgreSQL-16` service auto-starts. App UI loads at `localhost:8080` without manual DB intervention. | [ ] |
 
 ### 1.3 Offline Server Initialization

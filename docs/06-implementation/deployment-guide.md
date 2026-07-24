@@ -1,34 +1,34 @@
 # Deployment Guide
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** DEP-001  
-> **Version:** 2.1 (Standalone & Tunnel Standardization)  
+> **Version:** 3.0 (Production Inno Setup & WinSW Service Standardization)  
 > **Date:** 2026-07-24  
-> **Purpose:** Detailed instructions for generating the Windows installer and setting up the shop hardware.  
+> **Purpose:** Detailed instructions for generating the Windows executable installer and setting up the shop hardware.  
 
 ---
 
 ## 1. Overview
 
-The Faith Laundry Shop Management System is designed to operate on a strict **Offline-First, Zero-Cloud-Cost Architecture**.
+The Laundry Shop Management System is designed to operate on a strict **Offline-First, Zero-Cloud-Cost Architecture**.
 
-The entire backend and staff-facing frontend are bundled into a single standalone `.msi` Windows installer. The database is a local PostgreSQL instance running as a silent Windows Service. 
+The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static export) are packaged into a **single standalone `.exe` Windows Installer wizard** generated via **Inno Setup** and managed via **WinSW (Windows Service Wrapper)**. The database is a local PostgreSQL instance running as a silent Windows Service.
 
 To enable public customer tracking online, the local server is exposed to a Vercel-hosted frontend via a secure **Cloudflare Tunnel**.
 
 ---
 
-## 2. Generating the Native Installer (.msi)
+## 2. Generating the Native Installer (.exe)
 
-To package the Java/Spring Boot application and statically exported Next.js frontend into a native Windows installer, use the provided PowerShell script.
+To package the Java/Spring Boot application, statically exported Next.js frontend, custom app icon, and WinSW background service configuration into a single double-clickable `.exe` installer wizard, use the provided PowerShell script.
 
 ### Prerequisites (Developer Machine)
-1. **Windows OS** (required to generate `.msi` via `jpackage` and WiX Toolset)
+1. **Windows OS** (or WSL/Linux with PowerShell)
 2. **Java JDK 21**
 3. **Node.js 20+**
-4. **WiX Toolset v3.14+** (Required by `jpackage` to build MSI files)
+4. **Inno Setup 6+** (Script automatically downloads and installs Inno Setup if not present)
 
 ### Build Process
 Open PowerShell and run the build script from the project root:
@@ -39,10 +39,11 @@ Open PowerShell and run the build script from the project root:
 
 **What the script does:**
 1. Runs `npm run build` in the `frontend/` directory to generate the static HTML export in `out/`.
-2. Copies the `out/` folder into the Spring Boot `backend/src/main/resources/static/` directory so the Java server can serve it.
+2. Copies the `out/` folder into the Spring Boot `backend/src/main/resources/static/` directory so the Java server can serve it natively.
 3. Builds the Spring Boot backend using Maven `mvn clean package`.
-4. Executes the `jpackage` command to bundle the Java Runtime Environment (JRE) and the `laundryms-backend.jar` into a native `.msi` installer.
-5. Outputs the final installer: `backend/target/Laundry Shop Management System-1.0.0.msi`.
+4. Stages the application JAR (`laundryms.jar`), WinSW service wrapper (`laundryms-service.exe`), service config (`laundryms-service.xml`), app icon (`app.ico`), and license file.
+5. Compiles the package using Inno Setup (`ISCC.exe scripts/installer.iss`).
+6. Outputs the final installer wizard: `backend/target/LaundryShopMS-Setup-1.0.0.exe`.
 
 ---
 
@@ -63,10 +64,16 @@ The target machine (shop laptop) needs PostgreSQL installed and configured as a 
    - Sets Machine-level environment variables (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`).
 
 ### 3.2 Application Installation
-1. Transfer the generated `Laundry Shop Management System-1.0.0.msi` to the shop laptop.
-2. Double-click the `.msi` file and follow the standard Windows setup wizard.
-3. Once installed, launch the application from the Start Menu or Desktop Shortcut.
-4. The system will automatically run Flyway migrations on startup and launch the embedded Tomcat server on `http://localhost:8080`.
+1. Transfer the generated `LaundryShopMS-Setup-1.0.0.exe` to the shop laptop.
+2. Double-click `LaundryShopMS-Setup-1.0.0.exe` to open the setup wizard:
+   - **Welcome Screen** → Displays system name and version.
+   - **License Agreement** → Accept terms.
+   - **Destination Folder** → Default: `C:\LaundryShopMS`.
+   - **Installation** → Extracts files, registers and starts the `LaundryShopMS` Windows background service, creates a Desktop shortcut with the custom app icon, and registers in Windows **Add/Remove Programs**.
+   - **Finish** → Opens `http://localhost:8080` in the browser automatically.
+3. Default Admin Credentials:
+   - **Username**: `admin`
+   - **Password**: `admin123`
 
 ---
 
@@ -114,5 +121,8 @@ A Windows Task Scheduler task is created to dump the database nightly:
 pg_dump -U postgres -d postgres -F c -b -v -f "C:\Backups\laundry_db_%date:~-4,4%%date:~-10,2%%date:~-7,2%.backup"
 ```
 
-### Availability Tradeoff
-- **CRITICAL:** The public tracking portal and remote admin URL rely on the shop laptop being powered on and connected to the internet. If the laptop is turned off or offline, remote portals will display a "Shop Offline" page. Local counter operations (creating orders, payments) are 100% unaffected.
+### Uninstallation
+To cleanly uninstall the application:
+1. Go to **Windows Settings > Apps > Installed Apps**.
+2. Search for **Laundry Shop Management System**.
+3. Click **Uninstall** — the uninstaller will automatically stop the background service, unregister it, remove the application files, Desktop shortcut, and Start Menu folder.

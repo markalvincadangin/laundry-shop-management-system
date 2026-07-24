@@ -143,7 +143,7 @@ To achieve zero cloud hosting costs while retaining public tracking functionalit
 The system must run entirely locally without requiring the end user (the shop owner) to launch developer tools, terminals, or Docker.
 
 - **Frontend Bundling:** The Next.js UI is statically exported during the build process and bundled directly into the Java application.
-- **Executable Packaging:** The Java application and JRE are bundled into a native desktop executable (e.g., an `.msi` Windows Installer) using the `jpackage` tool.
+- **Executable Packaging:** The application is packaged into a single, professional `.exe` Windows Installer wizard built via Inno Setup and managed as a background service via WinSW (Windows Service Wrapper).
 - **Database Provisioning:** The local PostgreSQL instance is installed and configured automatically via a provided PowerShell setup script. It runs as a silent, automated Windows background service, invisible to the operator.
 - **Tunnel Provisioning:** The Cloudflare Tunnel token is installed on the machine, securely linking it to the remote domain.
 

@@ -3,7 +3,7 @@
 This guide outlines how to validate the transition of the application into an offline-first standalone architecture.
 
 ## Prerequisites
-- Windows OS (required for full MSI validation)
+- Windows OS (required for full installer validation)
 - Docker & Docker Compose (for backend testing)
 - Node.js (for frontend testing)
 
@@ -45,4 +45,4 @@ Generate the Windows Installer.
 cd scripts
 .\build_standalone.ps1
 ```
-**Expected Outcome**: A `.msi` file is generated in the `target/` directory. Installing it will deploy the application silently with PostgreSQL as a service.
+**Expected Outcome**: A `LaundryShopMS-Setup-1.0.0.exe` setup wizard file is generated in the `backend/target/` directory. Double-clicking it will install the application, register the `LaundryShopMS` Windows background service, create shortcuts, and open `http://localhost:8080`.
