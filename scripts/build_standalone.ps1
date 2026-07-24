@@ -28,14 +28,26 @@ Write-Host "`n[3/4] Packaging Spring Boot Executable JAR via Maven..." -Foregrou
 Set-Location $backendDir
 mvn clean package -DskipTests
 
-# 4. Package Native Windows Installer via jpackage
-Write-Host "`n[4/4] Generating Native Windows Installer (.msi)..." -ForegroundColor Yellow
+# 4. Create Self-Contained Java Runtime Image via jlink
+Write-Host "`n[4/5] Building Self-Contained JRE Runtime via jlink..." -ForegroundColor Yellow
+$runtimeDir = Join-Path $backendDir "target\custom-runtime"
+if (Test-Path $runtimeDir) { Remove-Item $runtimeDir -Recurse -Force }
+
+jlink --add-modules java.base,java.sql,java.desktop,java.naming,java.management,java.security.jgss,java.instrument,jdk.unsupported,jdk.crypto.ec `
+      --output $runtimeDir `
+      --strip-debug `
+      --no-header-files `
+      --no-man-pages
+
+# 5. Package Native Windows Installer via jpackage
+Write-Host "`n[5/5] Generating Native Windows Installer (.msi)..." -ForegroundColor Yellow
 $appName = "Laundry Shop Management System"
 $jarName = "laundryms-backend-0.0.1-SNAPSHOT.jar"
 
 jpackage --name "$appName" `
   --input target `
   --main-jar $jarName `
+  --runtime-image $runtimeDir `
   --app-version $AppVersion `
   --type msi `
   --win-dir-chooser `
