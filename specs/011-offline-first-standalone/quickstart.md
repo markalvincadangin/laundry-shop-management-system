@@ -45,4 +45,4 @@ Generate the Windows Installer.
 cd scripts
 .\build-installer.ps1
 ```
-**Expected Outcome**: A `LaundryShopMS-Setup-1.0.0.exe` setup wizard file is generated in the `backend/target/` directory. Double-clicking it will install the application, register the `LaundryShopMS` Windows background service, create shortcuts, and open `http://localhost:8080`.
+**Expected Outcome**: A `LaundryShopMS-Setup-1.0.0.exe` setup wizard file is generated in the `backend/target/` directory. Double-clicking it will install the application, register the `LaundryShopMS` Windows background service, create shortcuts, and open `http://localhost:8765` in Edge App Mode.

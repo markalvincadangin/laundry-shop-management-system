@@ -5,7 +5,7 @@
 #define AppName "Laundry Shop Management System"
 #define AppVersion "1.0.0"
 #define AppPublisher "Himotech"
-#define AppURL "http://localhost:8080"
+#define AppURL "http://localhost:8765"
 #define ServiceName "LaundryShopMS"
 
 [Setup]
@@ -53,8 +53,8 @@ Name: "{app}\logs"
 
 [Icons]
 ; Desktop and Start Menu shortcuts (Edge App Mode - Native Frameless Window)
-Name: "{commondesktop}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8080"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
-Name: "{group}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8080"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
+Name: "{commondesktop}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8765"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
+Name: "{group}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8765"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
@@ -63,7 +63,7 @@ Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Regi
 Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starting {#AppName}..."; Flags: runhidden waituntilterminated
 
 ; Open application in Edge App Mode after install
-Filename: "msedge.exe"; Parameters: "--app=http://localhost:8080"; Flags: postinstall skipifsilent; Description: "Open {#AppName}"
+Filename: "msedge.exe"; Parameters: "--app=http://localhost:8765"; Flags: postinstall skipifsilent; Description: "Open {#AppName}"
 
 [UninstallRun]
 ; Stop and unregister the Windows Service before uninstallation
@@ -185,13 +185,13 @@ begin
     'spring.datasource.username=postgres' + #13#10 +
     'spring.datasource.password=' + GeneratedDbPassword + #13#10 +
     'security.jwt.secret-key=' + GeneratedJwtSecret + #13#10 +
-    'server.port=${SERVER_PORT:8080}' + #13#10 +
+    'server.port=${SERVER_PORT:8765}' + #13#10 +
     'server.address=0.0.0.0' + #13#10;
     
   SaveStringToFile(ConfigFile, ConfigContent, False);
 end;
 
-// Poll http://localhost:8080 until server responds with HTTP 200/302/401, or until timeout (up to 15s)
+// Poll http://localhost:8765 until server responds with HTTP 200/302/401, or until timeout (up to 15s)
 procedure WaitForServerReady;
 var
   WinHttp: Variant;
@@ -207,7 +207,7 @@ begin
     for i := 1 to 15 do
     begin
       try
-        WinHttp.Open('GET', 'http://localhost:8080/api/v1/health', False);
+        WinHttp.Open('GET', 'http://localhost:8765/api/v1/health', False);
         WinHttp.Send('');
         if (WinHttp.Status = 200) or (WinHttp.Status = 302) or (WinHttp.Status = 401) then
         begin
