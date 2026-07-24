@@ -71,28 +71,39 @@ $isccPaths = @(
 $iscc = $isccPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $iscc) {
-    Write-Host "`n[!] Inno Setup 6 not found. Installing silently..." -ForegroundColor Yellow
-    $innoInstallerUrl = "https://files.jrsoftware.org/is/6/innosetup-6.3.3.exe"
-    $innoInstallerPath = Join-Path $env:TEMP "innosetup-6.3.3.exe"
-    
-    # Remove corrupted or incomplete download if present
-    if (Test-Path $innoInstallerPath) {
-        $fileInfo = Get-Item $innoInstallerPath
-        if ($fileInfo.Length -lt 2000000) {
-            Remove-Item $innoInstallerPath -Force -ErrorAction SilentlyContinue
+    Write-Host "`n[!] Inno Setup 6 not found. Installing automatically..." -ForegroundColor Yellow
+
+    # Try winget first if available on Windows 10/11
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if ($winget) {
+        Write-Host "[Inno Setup] Installing via winget..." -ForegroundColor Yellow
+        Start-Process -FilePath "winget" -ArgumentList "install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements" -Wait -NoNewWindow
+        $iscc = $isccPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+    }
+
+    # Fallback to direct GitHub release download
+    if (-not $iscc) {
+        $innoInstallerUrl = "https://github.com/jrsoftware/issrc/releases/download/is-6_4_1/innosetup-6.4.1.exe"
+        $innoInstallerPath = Join-Path $env:TEMP "innosetup-6.4.1.exe"
+        
+        if (Test-Path $innoInstallerPath) {
+            $fileInfo = Get-Item $innoInstallerPath
+            if ($fileInfo.Length -lt 2000000) {
+                Remove-Item $innoInstallerPath -Force -ErrorAction SilentlyContinue
+            }
         }
+
+        if (-not (Test-Path $innoInstallerPath)) {
+            Write-Host "[Inno Setup] Downloading Inno Setup 6.4.1 from GitHub..." -ForegroundColor Yellow
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri $innoInstallerUrl -OutFile $innoInstallerPath -UserAgent "Mozilla/5.0" -UseBasicParsing
+        }
+
+        Write-Host "[Inno Setup] Installing Inno Setup..." -ForegroundColor Yellow
+        Start-Process -FilePath $innoInstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait
+        $iscc = $isccPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
     }
 
-    if (-not (Test-Path $innoInstallerPath)) {
-        Write-Host "[Inno Setup] Downloading Inno Setup 6.3.3 installer..." -ForegroundColor Yellow
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-        Invoke-WebRequest -Uri $innoInstallerUrl -OutFile $innoInstallerPath -UserAgent "Mozilla/5.0" -UseBasicParsing
-    }
-
-    Write-Host "[Inno Setup] Installing Inno Setup 6.3.3..." -ForegroundColor Yellow
-    $installProc = Start-Process -FilePath $innoInstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait -PassThru
-    
-    $iscc = $isccPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
     if (-not $iscc) {
         Write-Error "Inno Setup installation failed. Please install Inno Setup 6 manually from https://jrsoftware.org/isdl.php"
         exit 1
