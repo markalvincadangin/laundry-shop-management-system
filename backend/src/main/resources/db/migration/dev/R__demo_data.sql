@@ -4,8 +4,8 @@
 -- 1. SEED USERS
 INSERT INTO users (id, username, password_hash, role, first_name, last_name, is_active)
 VALUES 
-    ('00000000-0000-0000-0000-000000000001'::uuid, 'admin', '$2a$12$c3FYyt1SyfXgy845wUsuT.KogyMlHpAcrcsThTyfZQuvPKkLMmvlW', 'ADMIN', 'System', 'Administrator', TRUE),
-    ('00000000-0000-0000-0000-000000000002'::uuid, 'staff', '$2a$12$c3FYyt1SyfXgy845wUsuT.KogyMlHpAcrcsThTyfZQuvPKkLMmvlW', 'STAFF', 'Front', 'Desk', TRUE)
+    (gen_random_uuid(), 'admin', '$2a$12$9MJM2hnl7ni3hwOSu.mNq.Kd.t4qrf3Q1QBFpTmF3OuERm2mxSAxW', 'ADMIN', 'System', 'Administrator', TRUE),
+    (gen_random_uuid(), 'staff', '$2a$12$9MJM2hnl7ni3hwOSu.mNq.Kd.t4qrf3Q1QBFpTmF3OuERm2mxSAxW', 'STAFF', 'Front', 'Desk', TRUE)
 ON CONFLICT (username) DO NOTHING;
 
 -- 2. SEED CUSTOMERS
