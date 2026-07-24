@@ -89,14 +89,31 @@ begin
   end;
 end;
 
-// Ensure unique random credentials are created for each installation
+// Ensure credentials exist (reads existing registry values on reinstall/upgrade, or generates new random ones on fresh install)
 procedure PrepareCredentials;
+var
+  ExistingPass, ExistingSecret: String;
 begin
   if GeneratedDbPassword = '' then
   begin
     Randomize;
-    GeneratedDbPassword := GenerateRandomString(24, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
-    GeneratedJwtSecret := GenerateRandomString(64, '0123456789abcdef');
+    if RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'DB_PASSWORD', ExistingPass) and (ExistingPass <> '') then
+    begin
+      GeneratedDbPassword := ExistingPass;
+    end
+    else
+    begin
+      GeneratedDbPassword := GenerateRandomString(24, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+    end;
+
+    if RegQueryStringValue(HKLM, 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment', 'JWT_SECRET', ExistingSecret) and (ExistingSecret <> '') then
+    begin
+      GeneratedJwtSecret := ExistingSecret;
+    end
+    else
+    begin
+      GeneratedJwtSecret := GenerateRandomString(64, '0123456789abcdef');
+    end;
   end;
 end;
 
