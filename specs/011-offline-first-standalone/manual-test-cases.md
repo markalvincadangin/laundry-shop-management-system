@@ -20,7 +20,7 @@
 *Note: Execute on a Windows host using PowerShell.*
 | Test ID | Description | Steps | Expected Result | Pass/Fail |
 | :--- | :--- | :--- | :--- | :--- |
-| **PKG-01** | Build Standalone Installer | 1. Run `.\scripts\build_standalone.ps1`. | `LaundryShopMS-Setup-1.0.0.exe` is generated in `backend\target\`. | [ ] |
+| **PKG-01** | Build Standalone Installer | 1. Run `.\scripts\build-installer.ps1`. | `LaundryShopMS-Setup-1.0.0.exe` is generated in `backend\target\`. | [ ] |
 | **PKG-02** | Install Application & Environment | 1. Execute `LaundryShopMS-Setup-1.0.0.exe` and follow the wizard. | PostgreSQL 16 silently installs, env vars set, `LaundryShopMS` service registers/starts, shortcuts created, browser opens. | [ ] |
 | **PKG-03** | Post-Reboot Recovery | 1. Reboot the Windows host machine completely.<br>2. Launch the app. | `PostgreSQL-16` and `LaundryShopMS` services auto-start. App UI loads at `localhost:8080` without manual intervention. | [ ] |
 

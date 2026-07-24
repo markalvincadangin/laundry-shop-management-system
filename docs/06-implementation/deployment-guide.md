@@ -34,7 +34,7 @@ To package the Java/Spring Boot application, statically exported Next.js fronten
 Open PowerShell and run the build script from the project root:
 
 ```powershell
-.\scripts\build_standalone.ps1
+.\scripts\build-installer.ps1
 ```
 
 **What the script does:**

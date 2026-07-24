@@ -43,6 +43,6 @@ Generate the Windows Installer.
 ```powershell
 # Open PowerShell as Administrator
 cd scripts
-.\build_standalone.ps1
+.\build-installer.ps1
 ```
 **Expected Outcome**: A `LaundryShopMS-Setup-1.0.0.exe` setup wizard file is generated in the `backend/target/` directory. Double-clicking it will install the application, register the `LaundryShopMS` Windows background service, create shortcuts, and open `http://localhost:8080`.

@@ -163,7 +163,7 @@ This setup provides a single double-clickable `.exe` Windows installer wizard (b
    Open PowerShell:
    ```powershell
    cd scripts
-   .\build_standalone.ps1
+   .\build-installer.ps1
    ```
 2. **Install**:
    Double-click the generated `LaundryShopMS-Setup-1.0.0.exe` installer wizard in `backend\target\`. The installer automatically provisions PostgreSQL silently, sets environment variables, installs the `LaundryShopMS` background Windows service, creates Desktop & Start Menu shortcuts, registers in Add/Remove Programs, and opens `http://localhost:8080` in your browser.

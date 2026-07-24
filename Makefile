@@ -1,4 +1,4 @@
-.PHONY: up down build logs clean config test-backend test-frontend test backup restore reset fresh setup-env up-dev up-prod
+.PHONY: up down build logs clean config test-backend test-frontend test backup restore reset fresh setup-env up-dev up-prod build-installer
 
 setup-env:
 	cp -n .env.example .env || true
@@ -51,3 +51,7 @@ fresh:
 share:
 	@echo "Starting ngrok sharing..."
 	bash ./scripts/share.sh
+
+build-installer:
+	@echo "Building deployment installer package..."
+	bash ./scripts/build-installer.sh

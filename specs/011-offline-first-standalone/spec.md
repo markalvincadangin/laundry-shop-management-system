@@ -54,7 +54,7 @@ The system will be packaged into a unified, installable artifact for the Windows
 - **Static Asset Generation**: The Next.js frontend (`frontend/next.config.mjs`) will be configured with `output: 'export'`. Next.js dynamic routes (`/customers/[id]`, `/orders/[id]`) will utilize Server Component wrappers in their `page.tsx` that export `generateStaticParams()` returning `[]`, which dynamically load the client components.
 - **Maven Integration**: The `frontend-maven-plugin` will be integrated into the Spring Boot backend's `pom.xml` to execute `npm run build` during the build lifecycle. The `maven-resources-plugin` will subsequently copy the `frontend/out/` directory into `backend/target/classes/public/`.
 - **SPA Routing**: A `SpaRedirectFilter` in Spring Boot will ensure that all non-API requests fallback to serving `index.html`. API endpoints under `/api/**` remain protected by `SecurityConfig`.
-- **Executable Packaging**: A custom PowerShell script (`scripts/build_standalone.ps1`) will automate the Maven build process and utilize Inno Setup to create a native Windows Installer wizard (`.exe`). The installer will register and configure the `LaundryShopMS` Windows background service via WinSW (Windows Service Wrapper).
+- **Executable Packaging**: A custom PowerShell script (`scripts/build-installer.ps1`) will automate the Maven build process and utilize Inno Setup to create a native Windows Installer wizard (`.exe`). The installer will register and configure the `LaundryShopMS` Windows background service via WinSW (Windows Service Wrapper).
 
 ## 6. Infrastructure Security & Hardening
 
