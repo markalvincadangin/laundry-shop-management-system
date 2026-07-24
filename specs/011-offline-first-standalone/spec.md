@@ -16,7 +16,7 @@ The objective of this phase is to enhance the existing Java, Next.js, and Postgr
 
 - **Hardware Enforce ("Protect the Stack")**: The system mandates an x64 Windows Desktop OS (specifically Windows 10/11 on a laptop or Surface tablet) to operate. ARM64 is not officially supported. The bundled JRE will be capped at `-Xmx512m` and PostgreSQL `shared_buffers` at `128MB`, ensuring total memory overhead remains under 1GB to easily run on lower-end x64 tablets.
 - **Database Migration Strategy ("Wipe and Replace")**: The system will destructively modify `V1__init.sql` to utilize UUIDs natively across all primary keys. Existing prototype data, including previous audit logs, will be intentionally discarded to start with a clean state. Seed data will be loaded via `V1.1__core_data.sql` during initial setup.
-- **Database Distribution**: PostgreSQL will be managed via a PowerShell setup script (`setup_windows.ps1`). If installation fails, standard setup rollback actions will uninstall the partial PostgreSQL files and remove the application directory. On runtime launch, if PostgreSQL is missing, the app will show a "Database Initialization Failed" prompt.
+- **Database Distribution**: PostgreSQL 16 is bundled directly inside the single-file setup wizard (`LaundryShopMS-Setup-1.0.0.exe`) and installed silently during setup if missing. System environment variables are configured automatically. On runtime launch, if PostgreSQL is missing, the app will show a "Database Initialization Failed" prompt.
 - **Sync Conflict Resolution ("Local Wins")**: The shop counter device acts as the absolute source of truth. The Cloud API will perform idempotent UPSERT operations, overwriting any cloud-side changes with local data regardless of timestamps, ensuring data integrity matches the physical reality of the shop.
 
 ## 2. System Design & Tunnel Topology
@@ -75,4 +75,4 @@ Verification will involve both automated test suites and manual validation of th
 ### Manual Verification
 - **Local Autonomy Test**: Disconnect the machine from the internet, create an order, verify local persistence, reconnect to the internet, and observe the Tunnel successfully resuming connections.
 - **Standalone Serving Test**: Run the compiled Spring Boot application and navigate to `http://127.0.0.1:8080/` to verify that Next.js static assets and client-side routing function correctly.
-- **Installer Test**: Execute `setup_windows.ps1` and the generated `.exe` installer wizard in a clean Windows environment to verify silent PostgreSQL installation and application launch.
+- **Installer Test**: Execute the generated `LaundryShopMS-Setup-1.0.0.exe` installer wizard in a clean Windows environment to verify silent PostgreSQL installation, environment variable provisioning, and application service launch.

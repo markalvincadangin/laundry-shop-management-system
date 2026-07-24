@@ -1,6 +1,6 @@
 ; Inno Setup Script for Laundry Shop Management System
-; Produces a professional single-file .exe installer with wizard UI
-; Requires: Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
+; Produces a 100% self-contained single-file .exe installer with wizard UI
+; Bundles: Spring Boot JAR, WinSW Service Wrapper, PostgreSQL 16 silent installer, App Icon
 
 #define AppName "Laundry Shop Management System"
 #define AppVersion "1.0.0"
@@ -28,6 +28,7 @@ PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 LicenseFile=resources\LICENSE.txt
+ChangesEnvironment=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -40,15 +41,18 @@ Source: "..\backend\target\deploy-staging\laundryms.jar"; DestDir: "{app}"; Flag
 Source: "..\backend\target\deploy-staging\laundryms-service.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "resources\laundryms-service.xml"; DestDir: "{app}"; Flags: ignoreversion
 
-; Launcher and Icon
+; Launcher, License, and Icon
 Source: "resources\start.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
+
+; PostgreSQL Silent Installer (staged during build)
+Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall ignoreversion; Check: NeedsPostgreSQL
 
 [Dirs]
 Name: "{app}\logs"
 
 [Icons]
-; Desktop shortcut - opens browser to the app
+; Desktop shortcut
 Name: "{commondesktop}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"; Comment: "Open {#AppName}"
 
 ; Start Menu shortcuts
@@ -57,9 +61,13 @@ Name: "{group}\Start Server (Console)"; Filename: "{app}\start.bat"; IconFilenam
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
-; Register and start the Windows Service after installation
-Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Registering Windows Service..."; Flags: runhidden waituntilterminated
+; Install PostgreSQL silently if needed
+Filename: "{tmp}\postgresql-16.2-1-windows-x64.exe"; Parameters: "--mode unattended --superpassword ""laundry_secure_pass_2026"" --serverport 5432 --prefix ""C:\Program Files\PostgreSQL\16"" --datadir ""C:\Program Files\PostgreSQL\16\data"""; StatusMsg: "Installing PostgreSQL 16 Database Service..."; Flags: runhidden waituntilterminated; Check: NeedsPostgreSQL
+
+; Register and start the LaundryShopMS Windows Service
+Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Registering {#AppName} Service..."; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starting {#AppName}..."; Flags: runhidden waituntilterminated
+
 ; Open browser after install
 Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "Open {#AppName} in browser"
 
@@ -68,24 +76,18 @@ Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "
 Filename: "{app}\laundryms-service.exe"; Parameters: "stop"; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated
 
+[Registry]
+; Set Machine Environment Variables
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_HOST"; ValueData: "localhost"; Flags: preservestringtype
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_PORT"; ValueData: "5432"; Flags: preservestringtype
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_NAME"; ValueData: "postgres"; Flags: preservestringtype
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_USER"; ValueData: "postgres"; Flags: preservestringtype
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "DB_PASSWORD"; ValueData: "laundry_secure_pass_2026"; Flags: preservestringtype
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: string; ValueName: "JWT_SECRET"; ValueData: "4a9f8e210a564c7b9e328f1d5e6a7b8c4a9f8e210a564c7b9e328f1d5e6a7b8c"; Flags: preservestringtype
+
 [Code]
-// Check if Java is installed before proceeding
-function InitializeSetup(): Boolean;
-var
-  JavaPath: String;
+// Helper to check if PostgreSQL 16 is already installed
+function NeedsPostgreSQL(): Boolean;
 begin
-  Result := True;
-  if not RegQueryStringValue(HKLM, 'SOFTWARE\JavaSoft\JDK', 'CurrentVersion', JavaPath) then
-  begin
-    if not FileExists(ExpandConstant('{pf}\Java\jdk-21\bin\java.exe')) then
-    begin
-      if MsgBox('Java 21 was not detected on this system.' + #13#10 +
-                'The application requires Java 21 or later to run.' + #13#10#13#10 +
-                'Do you want to continue installation anyway?',
-                mbConfirmation, MB_YESNO) = IDNO then
-      begin
-        Result := False;
-      end;
-    end;
-  end;
+  Result := not FileExists('C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe');
 end;

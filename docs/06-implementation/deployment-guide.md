@@ -49,28 +49,20 @@ Open PowerShell and run the build script from the project root:
 
 ## 3. Installing on the Shop Counter Laptop
 
-### 3.1 Initial Environment Setup
-The target machine (shop laptop) needs PostgreSQL installed and configured as a background service.
-
-1. Transfer `scripts/setup_windows.ps1` to the shop laptop.
-2. Run PowerShell as Administrator.
-3. Execute the script:
-   ```powershell
-   .\setup_windows.ps1
-   ```
-4. This script automatically:
-   - Downloads and installs PostgreSQL 16 silently.
-   - Creates the `postgres` user with a secure, generated password.
-   - Sets Machine-level environment variables (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`).
-
-### 3.2 Application Installation
-1. Transfer the generated `LaundryShopMS-Setup-1.0.0.exe` to the shop laptop.
+### 3.1 All-in-One Application & Environment Installation
+1. Transfer `LaundryShopMS-Setup-1.0.0.exe` to the shop laptop.
 2. Double-click `LaundryShopMS-Setup-1.0.0.exe` to open the setup wizard:
    - **Welcome Screen** → Displays system name and version.
    - **License Agreement** → Accept terms.
    - **Destination Folder** → Default: `C:\LaundryShopMS`.
-   - **Installation** → Extracts files, registers and starts the `LaundryShopMS` Windows background service, creates a Desktop shortcut with the custom app icon, and registers in Windows **Add/Remove Programs**.
-   - **Finish** → Opens `http://localhost:8080` in the browser automatically.
+   - **Automated Setup** → The wizard automatically:
+     - Installs PostgreSQL 16 silently as a Windows Service if not already installed.
+     - Configures Machine-level environment variables (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`).
+     - Extracts application files and WinSW service wrapper.
+     - Registers and starts the `LaundryShopMS` Windows background service.
+     - Creates Desktop & Start Menu shortcuts with the custom app icon.
+     - Registers in Windows **Add/Remove Programs**.
+   - **Finish** → Opens `http://localhost:8080` in the default browser automatically.
 3. Default Admin Credentials:
    - **Username**: `admin`
    - **Password**: `admin123`
@@ -100,12 +92,12 @@ To ensure the remote Admin/Staff app (`app.faithlaundry.com`) cannot be accessed
 3. Set Policy Rule: **Include > Emails > `owner@faithlaundry.com`, `staff@faithlaundry.com`**.
 4. Whenever someone opens `app.faithlaundry.com` remotely, Cloudflare requires a **One-Time Passcode (OTP)** sent to their email before showing the login screen.
 
-### 4.3 Automated Installation on Shop Laptop
-Pass the token to the automated host setup script:
+### 4.3 Automated Cloudflare Tunnel Installation on Shop Laptop
+Run PowerShell as Administrator and execute:
 ```powershell
-.\scripts\setup_windows.ps1 -CloudflareToken "<YOUR_TUNNEL_TOKEN>"
+cloudflared service install <YOUR_TUNNEL_TOKEN>
 ```
-The script will automatically install `cloudflared` as a silent Windows background service that starts on boot.
+This automatically installs `cloudflared` as a silent Windows background service that starts on boot.
 
 ---
 

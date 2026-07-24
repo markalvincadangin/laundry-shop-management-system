@@ -1,5 +1,5 @@
-# Build Laundry Shop Management System Installer
-# Produces: backend/target/LaundryShopMS-Setup-1.0.0.exe (double-click installer with wizard)
+# Build Laundry Shop Management System Standalone Setup Wizard (.exe)
+# Produces: backend/target/LaundryShopMS-Setup-1.0.0.exe
 Param(
     [string]$AppVersion = "1.0.0"
 )
@@ -48,6 +48,16 @@ if (-not (Test-Path $winswCache)) {
 }
 Copy-Item -Path $winswCache -Destination "$deployDir\laundryms-service.exe" -Force
 
+# Download PostgreSQL installer if not cached
+$pgVersion = "16.2-1"
+$pgCache = Join-Path $env:TEMP "postgresql-$pgVersion-windows-x64.exe"
+if (-not (Test-Path $pgCache)) {
+    Write-Host "[PostgreSQL] Downloading PostgreSQL $pgVersion installer for silent bundling..." -ForegroundColor Yellow
+    $pgUrl = "https://get.enterprisedb.com/postgresql/postgresql-$pgVersion-windows-x64.exe"
+    Invoke-WebRequest -Uri $pgUrl -OutFile $pgCache -UseBasicParsing
+}
+Copy-Item -Path $pgCache -Destination "$deployDir\postgresql-$pgVersion-windows-x64.exe" -Force
+
 # ── 5. Compile Installer via Inno Setup ──
 Write-Host "`n[5/5] Compiling Windows Installer (.exe) via Inno Setup..." -ForegroundColor Yellow
 
@@ -80,7 +90,7 @@ $issFile = Join-Path $PSScriptRoot "installer.iss"
 $exePath = Join-Path $backendDir "target\LaundryShopMS-Setup-$AppVersion.exe"
 
 Write-Host "`n==================================================" -ForegroundColor Green
-Write-Host " SUCCESS! Windows Installer generated:            " -ForegroundColor Green
+Write-Host " SUCCESS! Standalone Setup Wizard generated:      " -ForegroundColor Green
 Write-Host " $exePath" -ForegroundColor Green
 Write-Host "                                                   " -ForegroundColor Green
 Write-Host " Double-click the .exe to install with wizard UI. " -ForegroundColor Cyan
