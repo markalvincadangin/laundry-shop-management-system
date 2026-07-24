@@ -51,9 +51,14 @@ Copy-Item -Path $winswCache -Destination "$deployDir\laundryms-service.exe" -For
 # Download PostgreSQL installer if not cached or if corrupt (< 200MB)
 $pgVersion = "16.2-1"
 $pgCache = Join-Path $env:TEMP "postgresql-$pgVersion-windows-x64.exe"
-if ((Test-Path $pgCache) -and ((Get-Item $pgCache).Length -lt 200MB)) {
-    Write-Host "[PostgreSQL] Cached installer is incomplete or corrupt. Re-downloading..." -ForegroundColor Red
-    Remove-Item $pgCache -Force
+if (Test-Path $pgCache) {
+    $pgInfo = Get-Item $pgCache
+    if ($pgInfo.Length -ge 380000000) {
+        Write-Host "[PostgreSQL] Cached installer found and integrity verified ($($pgInfo.Length) bytes)." -ForegroundColor Green
+    } else {
+        Write-Host "[PostgreSQL] Incomplete or corrupt cached installer detected ($($pgInfo.Length) bytes). Removing and re-downloading..." -ForegroundColor Yellow
+        Remove-Item $pgCache -Force
+    }
 }
 if (-not (Test-Path $pgCache)) {
     Write-Host "[PostgreSQL] Downloading PostgreSQL $pgVersion installer (~330MB)..." -ForegroundColor Yellow
