@@ -584,7 +584,7 @@ export interface paths {
                     from?: string;
                     /** @description End date (inclusive) */
                     to?: string;
-                    /** @description Free-text search (reference number, customer name, etc.) */
+                    /** @description Free-text search (tracking number, customer name, etc.) */
                     q?: string;
                     page?: number;
                     size?: number;
@@ -616,7 +616,7 @@ export interface paths {
         /**
          * Create laundry order
          * @description Creates order with automatic pricing (loads, extra minutes, add-ons).
-         *     Generates unique reference number. Sets initial status RECEIVED.
+         *     Generates unique tracking number. Sets initial status RECEIVED.
          *     createdByUserId is sourced from JWT when authenticated; falls back to body value.
          *     Returns 401 if neither JWT nor body provides the user identity.
          *     Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
@@ -824,7 +824,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Track order by reference number (Alias for tracking)
+         * Track order by tracking number (Alias route)
          * @description Legacy/Alias endpoint for tracking order by tracking number.
          */
         get: {
@@ -1054,7 +1054,7 @@ export interface paths {
             parameters: {
                 query?: {
                     orderId?: string;
-                    /** @description Search by reference number, customer name, or transaction ID */
+                    /** @description Search by tracking number, customer name, or transaction ID */
                     q?: string;
                     /** @description Start date (inclusive) */
                     from?: string;
@@ -1250,7 +1250,7 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Search by message, reference number, or customer name */
+                    /** @description Search by message, tracking number, or customer name */
                     q?: string;
                     status?: "PENDING" | "SENT" | "FAILED";
                     from?: string;

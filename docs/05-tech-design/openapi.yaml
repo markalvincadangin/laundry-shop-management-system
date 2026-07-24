@@ -331,7 +331,7 @@ paths:
       summary: Create laundry order
       description: |
         Creates order with automatic pricing (loads, extra minutes, add-ons).
-        Generates unique reference number. Sets initial status RECEIVED.
+        Generates unique tracking number. Sets initial status RECEIVED.
         createdByUserId is sourced from JWT when authenticated; falls back to body value.
         Returns 401 if neither JWT nor body provides the user identity.
         Supports: US-01, US-02. Enforces: BR-PR-01, BR-PR-02, BR-PR-03, BR-PR-04, BR-OL-01, BR-OL-02.
@@ -386,7 +386,7 @@ paths:
         - in: query
           name: q
           schema: { type: string }
-          description: Free-text search (reference number, customer name, etc.)
+          description: Free-text search (tracking number, customer name, etc.)
         - in: query
           name: page
           schema: { type: integer, default: 0 }
@@ -492,7 +492,7 @@ paths:
 
   /api/v1/orders/reference/{trackingNumber}:
     get:
-      summary: Track order by reference number (Alias for tracking)
+      summary: Track order by tracking number (Alias route)
       description: Legacy/Alias endpoint for tracking order by tracking number.
       tags: [Orders]
       parameters:
@@ -635,7 +635,7 @@ paths:
         - in: query
           name: q
           schema: { type: string }
-          description: Search by reference number, customer name, or transaction ID
+          description: Search by tracking number, customer name, or transaction ID
         - in: query
           name: from
           schema: { type: string, format: date }
@@ -753,7 +753,7 @@ paths:
         - in: query
           name: q
           schema: { type: string }
-          description: Search by message, reference number, or customer name
+          description: Search by message, tracking number, or customer name
         - in: query
           name: status
           schema: { type: string, enum: [PENDING, SENT, FAILED] }

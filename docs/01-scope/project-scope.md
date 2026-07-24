@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** SCOPE-001  
-> **Version:** 1.1  
-> **Date:** 2026-02-20  
+> **Version:** 1.2  
+> **Date:** 2026-07-24  
 > **Purpose:** Define MVP boundaries, deliverables, and constraints  
 > **Status:** Baseline (MVP Reference)
 
@@ -21,6 +21,7 @@
 |---------|------------|----------|---------|
 | 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
 | 1.1     | 2026-02-20 | HIMÓTECH  | Release precondition (Ready + Paid); payment method recording in scope; NFR reference; glossary; operational readiness |
+| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology, UUID data model, and aligned with Standalone Cloudflare Tunnel Architecture |
 
 ---
 
@@ -46,7 +47,7 @@ Design and implement a Laundry Shop Management System that replaces manual paper
 - Tracks order lifecycle stages
 - Records and validates payments
 - Generates income reports
-- Enables order tracking via reference number
+- Enables order tracking via unique tracking number
 - Supports role-based access control (Admin / Staff)
 
 ---
@@ -67,7 +68,7 @@ The system shall:
   - Extra minute charge (₱1 per minute beyond 45 minutes per load)
   - Add-ons total
   - Grand total
-- Generate a unique reference number
+- Generate a unique tracking number (`tracking_number`)
 - Set initial order status to **Received**
 - Store order creation timestamp
 
@@ -104,7 +105,7 @@ Reports shall be computed exclusively from recorded payment data. Only orders wi
 
 The system shall allow customers to:
 
-- Enter a valid order reference number
+- Enter a valid order tracking number (`tracking_number`)
 - View: current order status, order date, basic order summary
 
 No sensitive or internal system data shall be exposed.
@@ -231,7 +232,7 @@ No undocumented feature additions shall be merged into the main development bran
 | Term | Definition |
 |------|------------|
 | **Load** | Unit of laundry pricing: one load covers up to 8 kg; price per load is ₱140 (configurable). |
-| **Reference number** | Unique identifier for an order (e.g., LDR-YYYYMMDD-XXXX), used for customer tracking. |
+| **Tracking number** | Unique identifier for an order (e.g., LDR-YYYYMMDD-XXXX), used for customer tracking (`tracking_number`). |
 | **Release** | Final order status when laundry has been handed to the customer; requires status Ready for Pickup and payment recorded. |
 | **Snapshot pricing** | Copy of service rates stored on the order at creation time so historical totals remain correct when rates change. |
 | **MVP** | Minimum Viable Product — the initial deliverable scope defined in this document. |

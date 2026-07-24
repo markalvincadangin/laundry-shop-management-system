@@ -114,6 +114,7 @@ Table orders {
   // Status
   current_status varchar [not null, default: 'RECEIVED', note: 'BR-OL-03']
   payment_status varchar [not null, default: 'UNPAID', note: 'BR-PAY-04']
+  is_rush boolean [not null, default: false]
   notes varchar(500) [null, note: 'Special instructions']
 
   created_at timestamp [default: `now()`]
@@ -128,9 +129,21 @@ Table orders {
   }
 }
 
+Table add_on_catalog {
+  id uuid [pk, default: `gen_random_uuid()`]
+  name varchar [unique, not null]
+  default_price decimal(10,2) [not null]
+  is_active boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  Note: 'Add-on items catalog managed by Admin.'
+}
+
 Table order_add_ons {
   id uuid [pk, default: `gen_random_uuid()`]
   order_id uuid [ref: > orders.id, not null]
+  add_on_catalog_id uuid [ref: > add_on_catalog.id, null]
   name varchar [not null]
   price decimal(10,2) [not null]
   quantity int [not null, default: 1]
@@ -148,11 +161,22 @@ Table payments {
   received_by_user_id uuid [ref: > users.id, not null]
   payment_date timestamp [default: `now()`]
   remarks text
+  payment_reference varchar(100)
 
   Note: 'BR-PAY-02: Exactly one payment per order. Audited by trg_audit_payments trigger.'
   Indexes {
     payment_date [name: 'idx_payments_date']
   }
+}
+
+// --- SYSTEM SETTINGS --- //
+
+Table system_settings {
+  id bigint [pk, note: 'Single-row settings table (id = 1 constraint)']
+  is_system_paused boolean [not null, default: false]
+  updated_at timestamp
+
+  Note: 'Global operational system settings (e.g. pause system).'
 }
 
 // --- NOTIFICATIONS --- //

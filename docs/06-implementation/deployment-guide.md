@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** DEP-001  
-> **Version:** 2.0 (Standalone & Tunnel)  
-> **Date:** 2026-07-21  
+> **Version:** 2.1 (Standalone & Tunnel Standardization)  
+> **Date:** 2026-07-24  
 > **Purpose:** Detailed instructions for generating the Windows installer and setting up the shop hardware.  
 
 ---
@@ -70,36 +70,49 @@ The target machine (shop laptop) needs PostgreSQL installed and configured as a 
 
 ---
 
-## 4. Setting up the Cloudflare Tunnel
+## 4. Setting up Cloudflare Tunnels & Zero Trust Remote Access
 
-To expose the local API to the public Vercel tracking site without port-forwarding, configure a Cloudflare Tunnel on the shop laptop.
+To expose the system to the public internet securely (for customer tracking and optional remote Admin/Staff management), configure two hostname routes in Cloudflare Zero Trust.
 
 ### 4.1 Cloudflare Dashboard Configuration
-1. Log in to the Cloudflare Zero Trust Dashboard.
+1. Log in to the free [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/).
 2. Navigate to **Networks > Tunnels** and create a new tunnel named `faithlaundry-local`.
-3. Add a Public Hostname (e.g., `api.faithlaundry.com`).
-4. Set the Service Type to `HTTP` and URL to `localhost:8080`.
-5. Under Additional Application Settings > TLS, disable TLS Verify if needed (since it's localhost).
+3. Configure Public Hostname Routes:
+   - **Route 1 (Public Customer Tracking)**:  
+     - Public Hostname: `track.faithlaundry.com`  
+     - Destination: `HTTP` `localhost:8080`
+   - **Route 2 (Protected Staff/Admin Dashboard)**:  
+     - Public Hostname: `app.faithlaundry.com`  
+     - Destination: `HTTP` `localhost:8080`
+4. Copy the generated Tunnel Token.
 
-### 4.2 Installing `cloudflared` on the Shop Laptop
-1. Download the `cloudflared.exe` Windows daemon from the Cloudflare Zero Trust dashboard.
-2. Open Command Prompt as Administrator on the shop laptop.
-3. Run the installation command provided by Cloudflare:
-   ```cmd
-   cloudflared.exe service install <YOUR_TUNNEL_TOKEN>
-   ```
-4. The tunnel will now run silently as a Windows Service, automatically reconnecting whenever the laptop powers on and connects to the internet.
+### 4.2 Cloudflare Zero Trust Access Rule (Remote App Protection)
+To ensure the remote Admin/Staff app (`app.faithlaundry.com`) cannot be accessed by unauthorized internet traffic:
+1. In Cloudflare Zero Trust, go to **Access > Applications**.
+2. Add an Application for `app.faithlaundry.com`.
+3. Set Policy Rule: **Include > Emails > `owner@faithlaundry.com`, `staff@faithlaundry.com`**.
+4. Whenever someone opens `app.faithlaundry.com` remotely, Cloudflare requires a **One-Time Passcode (OTP)** sent to their email before showing the login screen.
+
+### 4.3 Automated Installation on Shop Laptop
+Pass the token to the automated host setup script:
+```powershell
+.\scripts\setup_windows.ps1 -CloudflareToken "<YOUR_TUNNEL_TOKEN>"
+```
+The script will automatically install `cloudflared` as a silent Windows background service that starts on boot.
 
 ---
 
 ## 5. Security & Maintenance
 
 ### Firewall
-- Ensure the Windows Firewall allows outbound connections on Port 443 (required for Cloudflare Tunnel).
-- No inbound ports need to be opened.
+- Windows Firewall requires outbound HTTPS access on Port 443 (used by `cloudflared`).
+- **No inbound router ports need to be opened.**
 
-### Backup
-- A nightly scheduled task should be created in Windows Task Scheduler to run `pg_dump` and backup the database to an external drive or secure cloud storage.
+### Automated Nightly Database Backup
+A Windows Task Scheduler task is created to dump the database nightly:
+```cmd
+pg_dump -U postgres -d postgres -F c -b -v -f "C:\Backups\laundry_db_%date:~-4,4%%date:~-10,2%%date:~-7,2%.backup"
+```
 
 ### Availability Tradeoff
-- **CRITICAL:** The customer tracking portal hosted on Vercel relies entirely on the Cloudflare Tunnel reaching the shop laptop. If the laptop is powered off, goes to sleep, or loses internet connection, the tracking portal will display an error to customers. Local operations (creating orders, payments) are unaffected.
+- **CRITICAL:** The public tracking portal and remote admin URL rely on the shop laptop being powered on and connected to the internet. If the laptop is turned off or offline, remote portals will display a "Shop Offline" page. Local counter operations (creating orders, payments) are 100% unaffected.

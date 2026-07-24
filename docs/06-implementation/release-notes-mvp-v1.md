@@ -11,7 +11,7 @@
 
 ### Order Management (US-01, US-02, US-03)
 - Create laundry orders with automatic pricing (loads, extra minutes, add-ons)
-- Unique reference number generation (LDR-YYYYMMDD-XXXX)
+- Unique tracking number generation (LDR-YYYYMMDD-XXXX)
 - List orders with **pagination** and **filtering** (status, payment status, date range)
 - View order details and status history
 - Update order status: **Received** → **Washing** → **Drying** → **Folding** → **Ready for Pickup** → **Released** (release requires Ready for Pickup and payment recorded)
@@ -27,7 +27,7 @@
 - Payment amount must equal order grand total
 
 ### Public Tracking (US-04)
-- Customers can track order status by reference number (no login required)
+- Customers can track order status by tracking number (no login required)
 
 ### Reports (US-08, US-09)
 - Daily sales report
@@ -42,13 +42,13 @@
 - Notification list for staff
 - SMS adapter stubbed (logs instead of sending)
 
-### Developer Experience (Phase 11)
+### Developer Experience
 - Pagination for order and payment lists
 - Filtering by date range and status
 - Structured JSON logging in production
 - Request/response logging in dev profile
 - CI: test coverage, Checkstyle, ESLint
-- Docker Compose for full stack deployment
+- Standalone `.msi` Windows installer & Docker Compose dev stack
 - Deployment guide and release notes
 
 ---
@@ -58,16 +58,14 @@
 - **SMS notifications:** Stubbed; logs message instead of sending
 - **Test coverage:** JaCoCo threshold set to 45% baseline; target 80% as tests are added
 - **Single service rate:** One active rate at a time
-- **No receipt printing:** Print-friendly layout planned for Phase 12
-- **No dashboard charts:** Sales visualization planned for Phase 12
 
 ---
 
 ## Technical Stack
 
-- **Backend:** Java 21, Spring Boot 3.5, PostgreSQL 16, Flyway, JWT
-- **Frontend:** Next.js 14, React 18, TypeScript, Tailwind CSS
-- **Infrastructure:** Docker, Docker Compose
+- **Backend:** Java 21, Spring Boot 3.5+, PostgreSQL 16, Flyway, JWT
+- **Frontend:** Next.js 15+, React 19, TypeScript, Tailwind CSS
+- **Infrastructure:** Standalone Windows Application (`.msi`) + Cloudflare Tunnel (`cloudflared`)
 
 ---
 

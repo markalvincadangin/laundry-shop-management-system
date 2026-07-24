@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** ARCH-001  
-> **Version:** 3.0 (Tunnel Strategy Amendment)  
-> **Date:** 2026-07-21  
+> **Version:** 3.1 (Standalone & Tunnel Standardization)  
+> **Date:** 2026-07-24  
 > **Purpose:** Define implementation-ready architecture aligned to the Standalone, Offline-First shift with Tunnel topology  
 > **Status:** Baseline
 
@@ -21,7 +21,7 @@
 ## 1. Goals
 
 - Replace paper-based tracking (tags, logbooks) with a centralized system.
-- Enable order tracking via unique reference number and QR codes linked to generated UUIDs.
+- Enable order tracking via unique tracking number (`tracking_number`) and QR codes linked to generated UUIDs.
 - Automate pricing computation (load-based, extra minutes, add-ons) and store transaction history.
 - Provide income reports (daily, monthly, yearly) from recorded payments.
 - **Provide a highly resilient, zero-downtime offline-first local operation at the shop counter.**
@@ -35,12 +35,12 @@
 
 - Admin and Staff authentication (username/password)
 - Customer management (create, search by name/contact)
-- Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique reference number
+- Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique tracking number (`tracking_number`)
 - Business Rules: Standard pricing at ₱140 per load (up to 8 kg). Weight overages trigger automatic additional load charges. Time penalties require manual input to add ₱1 per extra minute.
 - Order status updates with audit trail (`activity_logs`)
 - Payment recording (one payment per order; amount must equal order grand total)
 - Sales reporting (daily, monthly, yearly) from payments
-- QR-Code powered public order tracking by reference number
+- QR-Code powered public order tracking by tracking number
 
 ### 2.2 Out of Scope (MVP+)
 
@@ -86,7 +86,7 @@
 
 2. **API Server (Backend)** — Java Spring Boot 3.5+
    - Business rules enforcement (Service layer only).
-   - Reference number generation and uniqueness.
+   - Tracking number generation and uniqueness.
    - Auth and role-based access.
 
 3. **Local Database** — PostgreSQL 16

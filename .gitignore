@@ -26,6 +26,8 @@ docker/.env.docker
 # Java/Maven (backend)
 **/target/
 **/out/
+backend/src/main/resources/static/*
+!backend/src/main/resources/static/.gitkeep
 **/.classpath
 **/.project
 **/.settings/

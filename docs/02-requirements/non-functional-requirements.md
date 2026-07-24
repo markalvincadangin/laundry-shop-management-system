@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** NFR-001  
-> **Version:** 1.0  
-> **Date:** 2026-02-20  
+> **Version:** 1.1  
+> **Date:** 2026-07-24  
 > **Purpose:** Define non-functional requirements for security, performance, availability, and maintainability  
 > **Status:** Baseline (MVP)
 
@@ -16,6 +16,12 @@
 - **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](user-stories.md), [Business Rules](business-rules.md), [Architecture](../05-tech-design/architecture.md), [Deployment Guide](../06-implementation/deployment-guide.md)
 - **Confidentiality:** Internal / Academic Use
 
+### Revision History
+| Version | Date       | Author   | Changes |
+|---------|------------|----------|---------|
+| 1.0     | 2026-02-20 | HIMÓTECH  | Initial baseline |
+| 1.1     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and Standalone Cloudflare Tunnel NFRs |
+
 ---
 
 ## 1. Security
@@ -25,7 +31,7 @@
 | NFR-S1 | The system SHALL authenticate users (Admin, Staff) via username and password. | Must |
 | NFR-S2 | The system SHALL use JWT (or equivalent) for session management; credentials SHALL NOT be stored in client-side code. | Must |
 | NFR-S3 | The system SHALL enforce role-based access: Admin (reports, rates, all operations); Staff (orders, status, payments, customers; no reports). | Must |
-| NFR-S4 | The public tracking endpoint SHALL return only: reference number, current status, order date, basic summary. Internal IDs, staff information, and payment details SHALL NOT be exposed. | Must |
+| NFR-S4 | The public tracking endpoint SHALL return only: tracking number (`tracking_number`), current status, order date, basic summary. Internal IDs, staff information, and payment details SHALL NOT be exposed. | Must |
 | NFR-S5 | Passwords SHALL be stored as one-way hashes; JWT secret and database credentials SHALL be configurable via environment variables and SHALL NOT be committed to version control. | Must |
 | NFR-S6 | In production, the system SHALL use a strong JWT secret (≥32 characters) and a non-default database password. | Must |
 
