@@ -87,8 +87,7 @@ begin
     'Cloudflare Tunnel Setup (Optional)',
     'Public Customer Order Tracking Integration',
     'If you use Cloudflare Zero Trust to expose public order tracking (e.g., track.faithlaundry.com), enter your Tunnel Token below.' + #13#10 +
-    'If this PC is only used as a local counter POS, leave this field blank and click Next.',
-    False);
+    'If this PC is only used as a local counter POS, leave this field blank and click Next.');
   CloudflarePage.Add('Cloudflare Tunnel Token:', False);
 end;
 
