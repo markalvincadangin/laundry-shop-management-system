@@ -35,7 +35,7 @@ public class PaymentController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<PaymentResponse>> list(
-            @RequestParam(required = false) Long orderId,
+            @RequestParam(required = false) UUID orderId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) String q,
@@ -89,14 +89,14 @@ public class PaymentController {
 
     @GetMapping("/{paymentId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<PaymentResponse> getById(@PathVariable Long paymentId) {
+    public ResponseEntity<PaymentResponse> getById(@PathVariable UUID paymentId) {
         Payment payment = paymentService.findById(paymentId);
         return ResponseEntity.ok(paymentMapper.toResponse(payment));
     }
 
     @PostMapping("/order/{orderId}/void")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> voidPayment(@PathVariable Long orderId) {
+    public ResponseEntity<Void> voidPayment(@PathVariable UUID orderId) {
         paymentService.voidPayment(orderId);
         return ResponseEntity.noContent().build();
     }

@@ -13,6 +13,6 @@ export const serviceRatesService = {
   getActive: () => apiClient.get<ServiceRateResponse>("/v1/service-rates/active"),
   create: (body: CreateServiceRateRequest) =>
     apiClient.post<ServiceRateResponse>("/v1/service-rates", body),
-  update: (rateId: number, body: UpdateServiceRateRequest) =>
+  update: (rateId: string, body: UpdateServiceRateRequest) =>
     apiClient.patch<ServiceRateResponse>(`/v1/service-rates/${rateId}`, body),
 };

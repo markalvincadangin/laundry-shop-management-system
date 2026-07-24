@@ -5,6 +5,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { AuthGuard } from "@/components/layout";
+import { UI_LABELS } from "@/constants/ui";
 
 vi.mock("next/navigation", () => ({
   usePathname: vi.fn(() => "/"),
@@ -19,7 +20,7 @@ describe("AuthGuard", () => {
   it("renders children", () => {
     render(
       <AuthGuard>
-        <div>Protected content</div>
+        <div>{UI_LABELS.dynamic.PROTECTED_CONTENT}</div>
       </AuthGuard>
     );
     expect(screen.getByText("Protected content")).toBeInTheDocument();

@@ -7,11 +7,12 @@
 
 ## Pre-Handover
 
-- [ ] Production stack running: `docker compose -f docker-compose.prod.yml up -d`
-- [ ] Application accessible via local network IP or domain
+- [ ] Standalone production stack running: PostgreSQL 16 service + `.exe` installer / Spring Boot server
+- [ ] Application accessible via local counter browser (`http://localhost:8080`)
+- [ ] Cloudflare Tunnel daemon (`cloudflared`) active for public customer tracking (`https://track.faithlaundry.com`)
 - [ ] Admin and Staff accounts created (via seed or migration)
 - [ ] User manual printed or available: [user-manual.md](user-manual.md)
-- [ ] Backup script tested: `./scripts/backup-database.sh`
+- [ ] Backup script tested: `./scripts/backup-database.sh` or `backup-database.ps1`
 
 ---
 
@@ -26,7 +27,7 @@
 ### 2. Create Order (15 min)
 
 - Walk through New Order flow: customer, weight, extra minutes, add-ons
-- Show reference number generation
+- Show tracking number generation (`tracking_number`)
 - Explain pricing: ₱140/8 kg, ₱1/extra minute
 
 ### 3. Status Updates (10 min)
@@ -49,7 +50,7 @@
 ### 6. Customer Tracking (5 min)
 
 - Show public Track Order page
-- Enter reference number, view status
+- Enter tracking number, view status
 
 ### 7. Backup and Support (5 min)
 

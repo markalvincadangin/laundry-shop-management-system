@@ -49,7 +49,7 @@ class ServiceRateRepositoryIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("findFirstByIsActiveTrueOrderByIdDesc - Should return latest active rate (including seed data)")
-    void findFirstByIsActiveTrueOrderByIdDesc_ShouldReturnLatestActiveRate() {
+    void findFirstByIsActiveTrueOrderByIdDescShouldreturnlatestactiverate() {
         // Given - Database already has seed rate (ID=1, 'Standard Wash', active=true)
         // Insert Rate A (Active=true)
         ServiceRate rateA = ServiceRate.builder()

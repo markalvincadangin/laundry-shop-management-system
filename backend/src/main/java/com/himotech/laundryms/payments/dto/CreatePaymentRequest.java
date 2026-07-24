@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 public class CreatePaymentRequest {
     @NotNull(message = "orderId is required")
-    private Long orderId;
+    private UUID orderId;
 
     @NotNull(message = "amountPaid is required")
     @DecimalMin(value = "0", inclusive = false, message = "amountPaid must be greater than 0")

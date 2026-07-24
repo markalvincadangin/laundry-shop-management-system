@@ -8,6 +8,7 @@ spring:
 
   # --- Flyway: production settings ---
   flyway:
+    enabled: true
     clean-disabled: true
     baseline-on-migrate: true
     group: true
@@ -31,3 +32,4 @@ app:
   security:
     cookie-secure: true
     cookie-same-site: Lax
+    bcrypt-strength: 12

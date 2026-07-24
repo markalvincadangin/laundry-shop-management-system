@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import { useState } from "react";
@@ -123,10 +124,8 @@ export default function AuditLogPage() {
       sortKey: "userId",
       render: (a) => {
         const formatUser = (userStr?: string) => {
-          if (!userStr || userStr === "anonymous") return UI_LABELS.shared.common.SYSTEM;
-          if (userStr.includes("username=")) {
-            const match = userStr.match(/username=([^,\]]+)/);
-            return match ? match[1] : userStr;
+          if (!userStr || userStr === "System" || userStr === "Unknown" || userStr === "anonymous") {
+            return UI_LABELS.shared.common.SYSTEM;
           }
           return userStr;
         };

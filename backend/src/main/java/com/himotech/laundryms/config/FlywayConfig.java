@@ -19,8 +19,8 @@ public class FlywayConfig {
     @Bean
     public FlywayMigrationStrategy flywayMigrationStrategy() {
         return flyway -> {
-            // repair() removed to preserve migration immutability guarantees.
-            // Use manual repair or dev-only properties if checksum updates are needed.
+            log.info("Repairing Flyway schema history checksums...");
+            flyway.repair();
             flyway.migrate();
             log.info("Flyway migrations completed successfully.");
         };

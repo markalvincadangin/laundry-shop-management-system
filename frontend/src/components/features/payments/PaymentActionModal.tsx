@@ -12,9 +12,9 @@ import { motion, AnimatePresence } from "framer-motion";
 interface PaymentActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  orderId: number;
+  orderId: string;
   grandTotal: number;
-  referenceNumber: string;
+  trackingNumber: string;
   onSuccess?: () => void;
 }
 
@@ -28,7 +28,7 @@ export function PaymentActionModal({
   onClose,
   orderId,
   grandTotal,
-  referenceNumber,
+  trackingNumber,
   onSuccess,
 }: PaymentActionModalProps) {
   const { user } = useAuth();
@@ -74,7 +74,7 @@ export function PaymentActionModal({
           className="bg-brand-blue/5 border border-brand-blue/10 rounded-2xl p-5 text-center space-y-1"
         >
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue/60">
-            {UI_LABELS.shared.common.AMOUNT_DUE || "Amount Due"} <span className="font-mono text-brand-blue">{referenceNumber}</span>
+            {UI_LABELS.shared.common.AMOUNT_DUE || "Amount Due"} <span className="font-mono text-brand-blue">{trackingNumber}</span>
           </p>
           <div className="text-4xl font-display font-black text-slate-900 tracking-tighter">
             {UI_LABELS.units.PRICE_SYMBOL || "₱"}{grandTotal.toFixed(2)}
@@ -106,7 +106,7 @@ export function PaymentActionModal({
                     {isSelected && (
                       <motion.div
                         layoutId="active-check"
-                        className="absolute top-2 right-2 bg-white/20 rounded-full p-0.5"
+                        className="absolute top-2 right-2 bg-white/20 rounded-full p-1"
                       >
                         <Check className="h-3 w-3 text-white" />
                       </motion.div>
@@ -131,7 +131,7 @@ export function PaymentActionModal({
               >
                 <div className="pt-2">
                   <Input
-                    label={UI_LABELS.shared.common.REFERENCE}
+                    label={UI_LABELS.shared.common.TRACKING_NUMBER}
                     placeholder="e.g. 1029384756"
                     value={refNum}
                     onChange={(e) => setRefNum(e.target.value)}

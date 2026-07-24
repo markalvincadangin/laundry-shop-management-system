@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.entity.OrderAddOn;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,7 +14,7 @@ import java.util.List;
  * queries when needed (e.g. findByOrderId).
  */
 @Repository
-public interface OrderAddOnRepository extends JpaRepository<OrderAddOn, Long> {
+public interface OrderAddOnRepository extends JpaRepository<OrderAddOn, UUID> {
 
-    List<OrderAddOn> findByOrderId(Long orderId);
+    List<OrderAddOn> findByOrderId(UUID orderId);
 }

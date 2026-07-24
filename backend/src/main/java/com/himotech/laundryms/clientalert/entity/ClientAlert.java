@@ -1,5 +1,7 @@
 package com.himotech.laundryms.clientalert.entity;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.clientalert.ClientAlertStatus;
 import com.himotech.laundryms.orders.entity.Order;
 import jakarta.persistence.*;
@@ -18,8 +20,8 @@ import java.time.Instant;
 public class ClientAlert {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)

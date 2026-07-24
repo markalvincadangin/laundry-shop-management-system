@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { Sidebar, MobileNav, AuthGuard, Topbar } from "@/components/layout";
+import { Sidebar, MobileNav, AuthGuard, Topbar, InactivityOverlay } from "@/components/layout";
 import { LoadingState } from "@/features/shared";
 import { MeshBackground } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
@@ -9,6 +9,7 @@ import { useAuth } from "@/stores/auth-store";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayout } from "@/stores/layout-store";
 import { useEffect } from "react";
+import { SystemPauseBanner } from "@/components/features/settings/SystemPauseBanner";
 
 /**
  * DashboardLayout — v3.5 (Security Hardened)
@@ -59,6 +60,9 @@ export default function DashboardLayout({
       {/* Mesh Background for Glassmorphism */}
       <MeshBackground />
 
+      {/* Inactivity privacy overlay — T010 */}
+      <InactivityOverlay />
+
       {/* Desktop Sidebar — fixed left */}
       <Sidebar />
 
@@ -71,6 +75,8 @@ export default function DashboardLayout({
       }`}>
         {/* Persistent Topbar — 64px, hidden on mobile (MobileNav handles mobile header) */}
         <Topbar title={title} />
+
+        <SystemPauseBanner />
 
         <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-5 lg:px-6 animate-in fade-in lg:slide-in-from-right duration-500">
           <Suspense fallback={<LoadingState />}>

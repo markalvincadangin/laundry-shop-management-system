@@ -2,7 +2,7 @@ export const orders = {
   TITLE: "Orders",
   CREATE_TITLE: "New Order",
   SUBTITLE: "Manage current laundry orders.",
-  SEARCH_ORDERS: "Search by reference # or customer...",
+  SEARCH_ORDERS: "Search by tracking # or customer...",
   HISTORY: "Order History",
   DETAILS: "Order Details",
   WEIGHT: "Weight",
@@ -37,4 +37,6 @@ export const orders = {
   AWAITING_DATA: "Awaiting data...",
   SYNCING: "Syncing...",
   TOTAL: "Total",
+  ASSIGNED_MACHINES: "Assigned Machines",
+  UNASSIGNED: "Unassigned",
 } as const;

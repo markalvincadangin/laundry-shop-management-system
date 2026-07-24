@@ -138,7 +138,7 @@ function LoginForm() {
           >
             {UI_LABELS.auth.TRACK_LINK}
             <div className="h-6 w-6 rounded-full bg-brand-blue/5 flex items-center justify-center group-hover:bg-brand-blue/10 transition-all group-hover:translate-x-0.5">
-              <span className="text-brand-blue">→</span>
+              <span className="text-brand-blue">{UI_LABELS.dynamic.STR_0616fb}</span>
             </div>
           </Link>
         </div>

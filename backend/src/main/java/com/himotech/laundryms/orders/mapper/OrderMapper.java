@@ -11,7 +11,10 @@ import org.mapstruct.Named;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import com.himotech.laundryms.machines.entity.Machine;
 
 @Mapper(componentModel = "spring", builder = @org.mapstruct.Builder(disableBuilder = true))
 public interface OrderMapper {
@@ -33,6 +36,8 @@ public interface OrderMapper {
     @Mapping(target = "currentStatus", source = "order.currentStatus")
     @Mapping(target = "paymentStatus", source = "order.paymentStatus")
     @Mapping(target = "addOns", source = "order.addOns", qualifiedByName = "mapAddOns")
+    @Mapping(target = "machineIds", source = "order.assignedMachines", qualifiedByName = "mapMachinesToIds")
+    @Mapping(target = "isRush", source = "order.isRush")
     @Mapping(target = "auditLogs", ignore = true)
     OrderResponse toResponse(Order order);
 
@@ -74,7 +79,15 @@ public interface OrderMapper {
                 .collect(Collectors.toList());
     }
 
-    @Mapping(target = "referenceNumber", source = "referenceNumber")
+    @Named("mapMachinesToIds")
+    default List<UUID> mapMachinesToIds(Set<Machine> machines) {
+        if (machines == null) {
+            return Collections.emptyList();
+        }
+        return machines.stream().map(Machine::getId).collect(Collectors.toList());
+    }
+
+    @Mapping(target = "trackingNumber", source = "trackingNumber")
     @Mapping(target = "currentStatus", source = "currentStatus")
     @Mapping(target = "customerName", source = "order", qualifiedByName = "customerName")
     @Mapping(target = "contactNumber", source = "customer.contactNumber")
@@ -82,5 +95,6 @@ public interface OrderMapper {
     @Mapping(target = "paymentStatus", source = "order.paymentStatus")
     @Mapping(target = "weightKg", source = "order.weightKg")
     @Mapping(target = "totalLoads", source = "totalLoads")
+    @Mapping(target = "isRush", source = "order.isRush")
     OrderTrackingResponse toTrackingResponse(Order order);
 }

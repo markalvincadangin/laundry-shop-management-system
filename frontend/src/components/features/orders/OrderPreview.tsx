@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React from "react";
@@ -7,9 +8,11 @@ import {
   Scale,
   PlusCircle,
   FileText,
-  Loader2,
+  Calendar,
+  Clock,
   Zap
 } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { formatCurrency } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { SERVICE_TYPES, ServiceType } from "@/constants/service-types";
@@ -47,7 +50,7 @@ export function OrderPreview({
         className="relative group"
       >
         {/* Visual Depth / Ambient Blue Glow (§2.1) */}
-        <div className="absolute -inset-6 bg-brand-blue/5 rounded-[3rem] blur-3xl -z-10 group-hover:bg-brand-blue/10 transition-all duration-700" />
+        {/* Removed ambient blob to comply with spec */}
 
         {/* Physical Paper Stack Effect */}
         <div className="absolute inset-0 bg-slate-900/10 translate-x-3 translate-y-3 rounded-3xl -z-10 blur-sm" />
@@ -145,7 +148,7 @@ export function OrderPreview({
                       </div>
                       <div className="pl-6">
                         <p className="text-xs font-medium text-slate-500 leading-relaxed bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 break-words whitespace-pre-wrap">
-                          &quot;{notes}&quot;
+                          {UI_LABELS.dynamic.STR_eb6439}{notes}{UI_LABELS.dynamic.STR_eb6439}
                         </p>
                       </div>
                     </div>
@@ -164,7 +167,7 @@ export function OrderPreview({
                             <span className="text-slate-500 font-medium group-hover:text-slate-900 transition-colors flex items-center gap-2">
                               <PlusCircle className="h-3 w-3 text-brand-blue/40" />
                               {a.name}
-                              <span className="text-[9px] font-mono font-black uppercase text-brand-blue bg-brand-blue/5 px-1.5 py-0.5 rounded">
+                              <span className="te{UI_LABELS.dynamic.X_9dd4}t-[9p{UI_LABELS.dynamic.X_9dd4}] font-mono font-black uppercase te{UI_LABELS.dynamic.X_9dd4}t-brand-blue bg-brand-blue/5 p{UI_LABELS.dynamic.X_9dd4}-1.5 py-0.5 rounded">
                                 x{a.quantity}
                               </span>
                             </span>
@@ -195,7 +198,7 @@ export function OrderPreview({
                       exit={{ opacity: 0, scale: 0.9 }}
                       className="flex items-center gap-2 text-[9px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/10 px-3 py-1 rounded-full border border-brand-blue/20"
                     >
-                      <Loader2 className="h-3 w-3 animate-spin" />
+                      <Spinner size="sm" />
                       {UI_LABELS.modules.orders.SYNCING}
                     </motion.div>
                   )}

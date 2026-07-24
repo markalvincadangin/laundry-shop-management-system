@@ -37,7 +37,7 @@ export function useCustomers(params: CustomerListParams = {}) {
 /**
  * useCustomer: Retrieves full profile for a specific customer.
  */
-export function useCustomer(customerId?: number) {
+export function useCustomer(customerId?: string) {
   const {
     data: customer,
     isLoading: loading,

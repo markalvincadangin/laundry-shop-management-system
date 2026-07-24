@@ -84,17 +84,18 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T010 [P] [US1] Integration test for backend API in `backend/src/test/java/com/himotech/laundryms/[feature]/[Name]IntegrationTest.java` (JUnit + Testcontainers)
+- [ ] T011 [P] [US1] Component test for frontend UI in `frontend/src/tests/components/features/[feature]/[Name].test.tsx` (Vitest)
 
 ### Implementation for User Story 1
 
-- [ ] T012 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T013 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T014 [US1] Implement [Service] in src/services/[service].py (depends on T012, T013)
-- [ ] T015 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T016 [US1] Add validation and error handling
-- [ ] T017 [US1] Add logging for user story 1 operations
+- [ ] T012 [P] [US1] Create Flyway migration in `backend/src/main/resources/db/migration/V[X]__schema_update.sql`
+- [ ] T013 [P] [US1] Create Entity model in `backend/src/main/java/com/himotech/laundryms/[feature]/entity/[Entity].java`
+- [ ] T014 [US1] Implement Backend Service in `backend/src/main/java/com/himotech/laundryms/[feature]/service/[Service].java`
+- [ ] T015 [US1] Implement REST Controller and DTOs in `backend/src/main/java/com/himotech/laundryms/[feature]/controller/`
+- [ ] T016 [US1] Define Zod schema and API client in `frontend/src/lib/validation/` and `frontend/src/lib/api/`
+- [ ] T017 [US1] Create React feature component in `frontend/src/components/features/[feature]/[Component].tsx`
+- [ ] T018 [US1] Assemble Next.js page in `frontend/src/app/(dashboard)/[route]/page.tsx`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -108,15 +109,15 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T019 [P] [US2] Backend integration test in `backend/src/test/java/...`
+- [ ] T020 [P] [US2] Frontend component test in `frontend/src/tests/...`
 
 ### Implementation for User Story 2
 
-- [ ] T020 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T021 [US2] Implement [Service] in src/services/[service].py
-- [ ] T022 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T023 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T021 [P] [US2] Extend Backend Service logic
+- [ ] T022 [US2] Extend Backend Controller endpoints
+- [ ] T023 [US2] Extend Frontend API client
+- [ ] T024 [US2] Implement new UI state or component integration
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 

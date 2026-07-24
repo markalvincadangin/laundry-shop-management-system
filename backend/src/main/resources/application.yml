@@ -1,5 +1,6 @@
 server:
   port: ${SPRING_PORT:8080}
+  address: 0.0.0.0
 
 spring:
   application:
@@ -35,16 +36,6 @@ spring:
     group: true
     # Prevent running migrations out of order (Standard for production)
     out-of-order: false
-    placeholder-replacement: true
-    placeholders:
-      # Controls whether seed users are created in migrations
-      # Set to 'dev' to enable seed users, defaults to 'production' (no seed users)
-      seed_environment: ${SPRING_PROFILES_ACTIVE:production}
-      # Optional development seed placeholders. Keep empty unless intentionally seeding users.
-      seed_admin_username: ${SEED_ADMIN_USERNAME:}
-      seed_admin_password_hash: ${SEED_ADMIN_PASSWORD_HASH:}
-      seed_staff_username: ${SEED_STAFF_USERNAME:}
-      seed_staff_password_hash: ${SEED_STAFF_PASSWORD_HASH:}
 
   jpa:
     hibernate:
@@ -64,6 +55,9 @@ logging:
         SQL: warn
 
 app:
+  sync:
+    cloud-api-url: ${CLOUD_API_URL:https://api.faithlaundry.com/sync}
+    sync-secret: ${SYNC_SECRET:default-secret-change-in-prod}
   security:
     cookie-name: access_token
     cookie-secure: false          # Overridden to true in application-prod.yml

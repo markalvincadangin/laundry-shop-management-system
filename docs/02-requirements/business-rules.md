@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop  
 > **Prepared By:** HIMÓTECH  
 > **Document ID:** BR-CATALOG (BR-PR-*, BR-OL-*, BR-PAY-*, BR-REC-*, BR-NOTIF-*)  
-> **Version:** 1.1  
-> **Date:** 2026-02-20  
+> **Version:** 1.2  
+> **Date:** 2026-07-24  
 > **Source:** Client Interview & Case Study  
 > **Purpose:** Define enforceable rules that drive backend logic, validation, and computations  
 > **Status:** Baseline (MVP)
@@ -16,6 +16,13 @@
 - **Document Type:** Requirements — Business Rules
 - **Related Documents:** [Project Scope](../01-scope/project-scope.md), [User Stories](user-stories.md), [ERD](../04-data-design/erd.dbml), [Architecture](../05-tech-design/architecture.md), [OpenAPI Spec](../05-tech-design/openapi.yaml)
 - **Confidentiality:** Internal / Academic Use
+
+### Revision History
+| Version | Date       | Author   | Changes |
+|---------|------------|----------|---------|
+| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
+| 1.1     | 2026-02-20 | HIMÓTECH  | Baseline MVP release |
+| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and UUID data model |
 
 ---
 
@@ -82,17 +89,29 @@
 
 ---
 
+### BR-PR-06 – Rush Order Pricing
+
+**Rule:** The system MAY support a special rate for "Rush" orders to accommodate expedited processing.  
+**Condition:** Order created with a rush service type.  
+**System Behavior:** Apply the designated "Rush Wash" active service rate for price calculations instead of standard rates.  
+**Constraint:** Must map to a valid `ServiceRate` definition (e.g., "Rush Wash") controlled by Admin.  
+**Applies To:** Order creation  
+**Enforcement:** Backend service  
+**Supports User Stories:** Derived from Client Interview Q7 ("multiple rush orders"), [US-13](user-stories.md#us-13-process-rush-orders), [US-14](user-stories.md#us-14-manage-service-rates--pricing)
+
+---
+
 ## 2. Order Lifecycle Rules
 
-### BR-OL-01 – Order Must Have a Unique Reference Number
+### BR-OL-01 – Order Must Have a Unique Tracking Number
 
-**Rule:** Every order MUST have a unique **reference number** used for tracking.  
+**Rule:** Every order MUST have a unique **tracking number** (`tracking_number`) used for tracking.  
 **Condition:** Order creation or tracking lookup.  
-**System Behavior:** Generate unique reference; enforce uniqueness.  
-**Constraint:** Reject creation if reference exists (or regenerate).  
+**System Behavior:** Generate unique tracking number; enforce uniqueness.  
+**Constraint:** Reject creation if tracking number exists (or regenerate).  
 **Applies To:** Order creation, tracking portal  
 **Enforcement:** Backend service + database unique constraint  
-**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order), [US-04](user-stories.md#us-04-track-laundry-order-by-reference-number)
+**Supports User Stories:** [US-01](user-stories.md#us-01-record-laundry-order), [US-04](user-stories.md#us-04-track-laundry-order-by-tracking-number)
 
 ---
 
@@ -207,10 +226,10 @@
 
 ### BR-PAY-04 – Payment Status
 
-**Rule:** Payment status MUST be recorded as **Paid** or **Unpaid** (or derived from presence of payment).  
+**Rule:** Payment status MUST be recorded as one of: **Unpaid**, **Paid**, **Partial**, **Voided**, or **Refunded**.  
 **Condition:** Order/payment view or reporting.  
 **System Behavior:** Update or derive status from payment record.  
-**Constraint:** MVP uses Paid and Unpaid only.  
+**Constraint:** MVP primarily uses Paid, Unpaid, and Voided. Partial and Refunded are supported by data model for future phases.  
 **Applies To:** Order/payment view and reporting  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-06](user-stories.md#us-06-record-payment-for-laundry-order), [US-08](user-stories.md#us-08-view-daily-sales-report), [US-09](user-stories.md#us-09-view-monthly-and-yearly-income-reports)
@@ -293,15 +312,15 @@
 
 ---
 
-### BR-NOTIF-02 – Tracking by Reference Number
+### BR-NOTIF-02 – Tracking by Tracking Number
 
-**Rule:** Customers MUST be able to track laundry status using the order reference number.  
+**Rule:** Customers MUST be able to track laundry status using the order tracking number (`tracking_number`).  
 **Condition:** Customer requests tracking.  
-**System Behavior:** Lookup by unique reference; return allowed fields only.  
+**System Behavior:** Lookup by unique tracking number; return allowed fields only.  
 **Constraint:** No sensitive or internal data exposed.  
 **Applies To:** Tracking page/API  
-**Enforcement:** Backend endpoint + lookup by unique reference  
-**Supports User Stories:** [US-04](user-stories.md#us-04-track-laundry-order-by-reference-number)
+**Enforcement:** Backend endpoint + lookup by unique tracking number  
+**Supports User Stories:** [US-04](user-stories.md#us-04-track-laundry-order-by-tracking-number)
 
 ---
 
@@ -316,3 +335,53 @@
 **Recommended next:**
 - BR-OL-04 (status transitions)
 - BR-NOTIF-01 (ready notifications)
+
+---
+
+## 7. Machine & Inventory Rules
+
+### BR-MAC-01 – Multi-Load Capacity Guarantee
+
+**Rule:** One (1) machine accommodates exactly one (1) load.
+**Condition:** Machine assignment.
+**System Behavior:** Ensure physical mapping limits.
+**Constraint:** Absolute mapping.
+**Applies To:** Machine assignment
+**Enforcement:** Backend service
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)
+
+---
+
+### BR-MAC-02 – Assignment Flexibility
+
+**Rule:** Staff can choose to execute multi-load orders in parallel (assigning multiple machines) or sequentially (assigning a single machine and running it multiple times).
+**Condition:** Machine assignment.
+**System Behavior:** Allows 1 to N machines up to totalLoads.
+**Constraint:** Staff discretion based on shop busyness.
+**Applies To:** Machine assignment
+**Enforcement:** Backend service
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)
+
+---
+
+### BR-MAC-03 – Hoarding Prevention
+
+**Rule:** An order MUST NEVER be assigned more machines than its required `totalLoads`.
+**Condition:** Machine assignment via Create, Update, or Status Change.
+**System Behavior:** Throw HTTP 400 error if `assigned_machines > totalLoads`.
+**Constraint:** Max machines per order equals `totalLoads`.
+**Applies To:** Machine assignment
+**Enforcement:** Backend service (OrderService, OrderStatusService)
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)
+
+---
+
+### BR-MAC-04 – Max Machine Limit
+
+**Rule:** The system supports a maximum of 50 active machines in the physical inventory.
+**Condition:** Machine Creation.
+**System Behavior:** Throw HTTP 400 error if limit is exceeded.
+**Constraint:** Hard limit of 50 machines.
+**Applies To:** Machine Creation
+**Enforcement:** Backend service (MachineService)
+**Supports User Stories:** [US-12](user-stories.md#us-12-track-machine-inventory)

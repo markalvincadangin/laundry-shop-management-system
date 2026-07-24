@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.entity;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
 import com.himotech.laundryms.customers.entity.Customer;
@@ -14,6 +16,9 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import com.himotech.laundryms.machines.entity.Machine;
 
 @Entity
 @Table(name = "orders")
@@ -27,12 +32,12 @@ import java.util.List;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @EqualsAndHashCode.Include
-    private Long id;
+    private UUID id;
 
-    @Column(name = "reference_number", nullable = false, unique = true, length = 30)
-    private String referenceNumber;
+    @Column(name = "tracking_number", nullable = false, unique = true, length = 30)
+    private String trackingNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -88,9 +93,22 @@ public class Order {
     @Column(name = "notes", length = 500)
     private String notes;
 
+    @Column(name = "is_rush", nullable = false)
+    @Builder.Default
+    private Boolean isRush = false;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderAddOn> addOns = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "order_machines",
+            joinColumns = @JoinColumn(name = "order_id"),
+            inverseJoinColumns = @JoinColumn(name = "machine_id")
+    )
+    @Builder.Default
+    private Set<Machine> assignedMachines = new HashSet<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

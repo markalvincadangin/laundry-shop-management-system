@@ -8,6 +8,7 @@ import { forms } from "./forms";
 import { modals } from "./modals";
 import { pagination } from "./pagination";
 import { services } from "./services";
+import { dynamic } from "./dynamic";
 
 // Modules
 import { dashboard } from "./modules/dashboard";
@@ -19,6 +20,8 @@ import { auditLog } from "./modules/audit-log";
 import { users } from "./modules/users";
 import { rates } from "./modules/rates";
 import { clientAlerts } from "./modules/client-alerts";
+import { machines } from "./modules/machines";
+import { settings } from "./modules/settings";
 
 export const UI_LABELS = {
   meta,
@@ -32,6 +35,7 @@ export const UI_LABELS = {
   modals,
   pagination,
   services,
+  dynamic,
   modules: {
     dashboard,
     orders,
@@ -42,6 +46,8 @@ export const UI_LABELS = {
     users,
     rates,
     clientAlerts,
+    machines,
+    settings,
   },
 } as const;
 

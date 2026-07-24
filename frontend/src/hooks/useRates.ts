@@ -41,7 +41,7 @@ export function useRates() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (variables: { id: number; data: UpdateServiceRateRequest }) =>
+    mutationFn: (variables: { id: string; data: UpdateServiceRateRequest }) =>
       serviceRatesService.update(variables.id, variables.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["service-rates"] });
@@ -56,7 +56,7 @@ export function useRates() {
     return createMutation.mutateAsync(data);
   };
 
-  const updateRate = async (id: number, data: UpdateServiceRateRequest) => {
+  const updateRate = async (id: string, data: UpdateServiceRateRequest) => {
     return updateMutation.mutateAsync({ id, data });
   };
 

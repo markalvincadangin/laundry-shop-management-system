@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Data
 public class CreateOrderRequest {
-    private Long customerId;
+    private UUID customerId;
     private CreateCustomerRequest customer;
 
     private UUID createdByUserId;
@@ -30,4 +30,5 @@ public class CreateOrderRequest {
 
     private String serviceType;
     private String notes;
+    private Boolean isRush = false;
 }

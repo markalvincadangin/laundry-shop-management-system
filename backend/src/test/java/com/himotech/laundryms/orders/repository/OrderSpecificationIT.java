@@ -124,9 +124,9 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
                 .orElseThrow();
     }
 
-    private Order createOrder(String refNumber, OrderStatus status, PaymentStatus paymentStatus) {
+    private Order createOrder(final String trackingNumber, final OrderStatus status, final PaymentStatus paymentStatus) {
         Order order = Order.builder()
-                .referenceNumber(refNumber)
+                .trackingNumber(trackingNumber)
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -151,7 +151,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should return all orders when all filters are null")
-    void filterBy_ShouldReturnAllOrders_WhenAllFiltersAreNull() {
+    void filterByShouldreturnallordersWhenallfiltersarenull() {
         // Given - All filter parameters are null
         Specification<Order> spec = OrderSpecification.filterBy(null, null, null, null, null, null, null);
 
@@ -160,7 +160,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return all 5 test orders
         assertThat(results).hasSize(5);
-        assertThat(results).extracting(Order::getReferenceNumber)
+        assertThat(results).extracting(Order::getTrackingNumber)
                 .containsExactlyInAnyOrder("LDR-20260425-0001", "LDR-20260425-0002", "LDR-20260425-0003", "LDR-20260425-0004", "LDR-20260425-0005");
     }
 
@@ -169,7 +169,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by OrderStatus enum when only status is provided")
-    void filterBy_ShouldFilterByStatus_WhenOnlyStatusProvided() {
+    void filterByShouldfilterbystatusWhenonlystatusprovided() {
         // Given - Filter by WASHING status only
         Specification<Order> spec = OrderSpecification.filterBy(OrderStatus.WASHING, null, null, null, null, null, null);
 
@@ -178,7 +178,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only the WASHING order
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0002");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0002");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.WASHING);
     }
 
@@ -187,7 +187,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by PaymentStatus enum when only payment status is provided")
-    void filterBy_ShouldFilterByPaymentStatus_WhenOnlyPaymentStatusProvided() {
+    void filterByShouldfilterbypaymentstatusWhenonlypaymentstatusprovided() {
         // Given - Filter by PAID payment status only
         Specification<Order> spec = OrderSpecification.filterBy(null, PaymentStatus.PAID, null, null, null, null, null);
 
@@ -196,7 +196,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only PAID orders
         assertThat(results).hasSize(2);
-        assertThat(results).extracting(Order::getReferenceNumber)
+        assertThat(results).extracting(Order::getTrackingNumber)
                 .containsExactlyInAnyOrder("LDR-20260425-0003", "LDR-20260425-0004");
         assertThat(results).allMatch(order -> order.getPaymentStatus() == PaymentStatus.PAID);
     }
@@ -206,7 +206,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by both status enums when both are provided")
-    void filterBy_ShouldFilterByBothEnums_WhenBothStatusesProvided() {
+    void filterByShouldfilterbybothenumsWhenbothstatusesprovided() {
         // Given - Filter by RECEIVED status AND UNPAID payment status
         Specification<Order> spec = OrderSpecification.filterBy(
                 OrderStatus.RECEIVED,
@@ -223,7 +223,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only the order matching both criteria
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0001");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0001");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.RECEIVED);
         assertThat(results.get(0).getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
     }
@@ -234,7 +234,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by fromTs when date range start is provided")
-    void filterBy_ShouldFilterByFromTimestamp_WhenFromTsProvided() {
+    void filterByShouldfilterbyfromtimestampWhenfromtsprovided() {
         // Given - Set fromTs to just before earliest order
         Instant fromTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
         Specification<Order> spec = OrderSpecification.filterBy(null, null, fromTs, null, null, null, null);
@@ -252,7 +252,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by toTs when date range end is provided")
-    void filterBy_ShouldFilterByToTimestamp_WhenToTsProvided() {
+    void filterByShouldfilterbytotimestampWhentotsprovided() {
         // Given - Set toTs to just after latest order
         Instant toTs = latestCreatedAt.plus(1, ChronoUnit.SECONDS);
         Specification<Order> spec = OrderSpecification.filterBy(null, null, null, toTs, null, null, null);
@@ -270,7 +270,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by date range when both fromTs and toTs are provided")
-    void filterBy_ShouldFilterByDateRange_WhenBothTimestampsProvided() {
+    void filterByShouldfilterbydaterangeWhenbothtimestampsprovided() {
         // Given - Date range covering all test orders
         Instant fromTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
         Instant toTs = latestCreatedAt.plus(1, ChronoUnit.SECONDS);
@@ -289,7 +289,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should exclude orders outside date range")
-    void filterBy_ShouldExcludeOrders_WhenOutsideDateRange() {
+    void filterByShouldexcludeordersWhenoutsidedaterange() {
         // Given - Date range before test orders were created
         Instant fromTs = earliestCreatedAt.minus(2, ChronoUnit.HOURS);
         Instant toTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
@@ -308,7 +308,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should apply all filters when all parameters are provided")
-    void filterBy_ShouldApplyAllFilters_WhenAllParametersProvided() {
+    void filterByShouldapplyallfiltersWhenallparametersprovided() {
         // Given - All filter parameters specified
         Instant fromTs = earliestCreatedAt.minus(1, ChronoUnit.SECONDS);
         Instant toTs = latestCreatedAt.plus(1, ChronoUnit.SECONDS);
@@ -327,7 +327,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only the order matching all criteria
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0003");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0003");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.READY_FOR_PICKUP);
         assertThat(results.get(0).getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
@@ -337,7 +337,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should return empty list when no orders match all criteria")
-    void filterBy_ShouldReturnEmptyList_WhenNoOrdersMatchAllCriteria() {
+    void filterByShouldreturnemptylistWhennoordersmatchallcriteria() {
         // Given - Contradictory filters (RECEIVED + PAID - no such order exists)
         Specification<Order> spec = OrderSpecification.filterBy(
                 OrderStatus.RECEIVED,
@@ -361,7 +361,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should filter by CANCELLED status correctly")
-    void filterBy_ShouldFilterByCancelledStatus_WhenStatusIsCancelled() {
+    void filterByShouldFilterByCancelledStatusWhenStatusIsCancelled() {
         // Given - Filter by CANCELLED status
         Specification<Order> spec = OrderSpecification.filterBy(OrderStatus.CANCELLED, null, null, null, null, null, null);
 
@@ -370,7 +370,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should return only cancelled order
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getReferenceNumber()).isEqualTo("LDR-20260425-0005");
+        assertThat(results.get(0).getTrackingNumber()).isEqualTo("LDR-20260425-0005");
         assertThat(results.get(0).getCurrentStatus()).isEqualTo(OrderStatus.CANCELLED);
     }
 
@@ -379,7 +379,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should handle multiple enum queries in sequence without PostgreSQL errors")
-    void filterBy_ShouldHandleMultipleEnumQueries_WithoutPostgreSQLErrors() {
+    void filterByShouldHandleMultipleEnumQueriesWithoutPostgreSQLErrors() {
         // This test validates that the Specification approach prevents PostgreSQL 42P18 errors
         // by executing multiple queries with different enum values in sequence
 
@@ -409,7 +409,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
      */
     @Test
     @DisplayName("filterBy - Should handle mix of null and non-null enum parameters")
-    void filterBy_ShouldHandleMixedNullAndNonNullEnums_Correctly() {
+    void filterByShouldHandleMixedNullAndNonNullEnumsCorrectly() {
         // Given - Null OrderStatus, non-null PaymentStatus
         Specification<Order> spec = OrderSpecification.filterBy(null, PaymentStatus.UNPAID, null, null, null, null, null);
 
@@ -418,7 +418,7 @@ class OrderSpecificationIT extends AbstractIntegrationTest {
 
         // Then - Should filter only by payment status, ignore null order status
         assertThat(results).hasSize(3);
-        assertThat(results).extracting(Order::getReferenceNumber)
+        assertThat(results).extracting(Order::getTrackingNumber)
                 .containsExactlyInAnyOrder("LDR-20260425-0001", "LDR-20260425-0002", "LDR-20260425-0005");
         assertThat(results).allMatch(order -> order.getPaymentStatus() == PaymentStatus.UNPAID);
     }

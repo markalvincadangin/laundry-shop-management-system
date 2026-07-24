@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +14,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerResponse {
-    private Long id;
+    private UUID id;
     private String firstName;
     private String lastName;
     private String contactNumber;

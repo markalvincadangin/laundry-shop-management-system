@@ -61,6 +61,7 @@ export interface KPICardProps {
   icon?: React.ElementType;
   variant?: "default" | "accent" | "success" | "warning";
   pulse?: boolean;
+  delta?: number;
   /** When provided, makes the card clickable (e.g. scroll-to-column). Min-h 44px touch target enforced via wrapper. */
   onClick?: () => void;
   className?: string;

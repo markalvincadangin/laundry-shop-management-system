@@ -6,7 +6,7 @@ export type PaymentPageResponse = components["schemas"]["PaymentPageResponse"];
 export type CreatePaymentRequest = components["schemas"]["CreatePaymentRequest"];
 
 export type PaymentListParams = {
-  orderId?: number;
+  orderId?: string;
   from?: string;
   to?: string;
   q?: string;
@@ -37,7 +37,7 @@ export const paymentsService = {
     return response;
   },
 
-  async getById(paymentId: number): Promise<PaymentResponse> {
+  async getById(paymentId: string): Promise<PaymentResponse> {
     const response = await apiClient.get<PaymentResponse>(`/v1/payments/${paymentId}`);
     return response;
   },
@@ -45,7 +45,7 @@ export const paymentsService = {
   /**
    * Voids an existing payment and reverts order status.
    */
-  async voidPayment(orderId: number): Promise<void> {
+  async voidPayment(orderId: string): Promise<void> {
     await apiClient.post(`/v1/payments/order/${orderId}/void`);
   },
 };

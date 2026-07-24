@@ -44,17 +44,17 @@ export default function Home() {
 
   const [paymentModalState, setPaymentModalState] = useState<{
     isOpen: boolean;
-    orderId: number;
+    orderId: string;
     grandTotal: number;
-    referenceNumber: string;
+    trackingNumber: string;
   }>({
     isOpen: false,
-    orderId: 0,
+    orderId: "",
     grandTotal: 0,
-    referenceNumber: "",
+    trackingNumber: "",
   });
 
-  const handleAdvance = (orderId: number, nextStatus: string) => {
+  const handleAdvance = (orderId: string, nextStatus: string, machineIds?: string[]) => {
     if (nextStatus === "RELEASED") {
       const order = orders.find((o) => o.id === orderId);
       if (order && order.paymentStatus === "UNPAID") {
@@ -62,12 +62,12 @@ export default function Home() {
           isOpen: true,
           orderId,
           grandTotal: order.grandTotal,
-          referenceNumber: order.referenceNumber,
+          trackingNumber: order.trackingNumber,
         });
         return;
       }
     }
-    advanceOrder(orderId, nextStatus as any);
+    advanceOrder(orderId, nextStatus as any, machineIds);
   };
 
   return (
@@ -177,7 +177,7 @@ export default function Home() {
         onClose={() => setPaymentModalState((prev) => ({ ...prev, isOpen: false }))}
         orderId={paymentModalState.orderId}
         grandTotal={paymentModalState.grandTotal}
-        referenceNumber={paymentModalState.referenceNumber}
+        trackingNumber={paymentModalState.trackingNumber}
         onSuccess={() => {
           advanceOrder(paymentModalState.orderId, "RELEASED" as any);
         }}

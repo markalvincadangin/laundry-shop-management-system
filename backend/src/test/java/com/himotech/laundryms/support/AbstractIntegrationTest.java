@@ -101,7 +101,7 @@ public abstract class AbstractIntegrationTest {
      * @param registry Spring's dynamic property registry
      */
     @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
+    static void configureProperties(final DynamicPropertyRegistry registry) {
         // CRITICAL: Append &stringtype=unspecified for PostgreSQL enum compatibility
         // Use & because Testcontainers URL already has ?loggerLevel=OFF
         String jdbcUrl = POSTGRES_CONTAINER.getJdbcUrl();

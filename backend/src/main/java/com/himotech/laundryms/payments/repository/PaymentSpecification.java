@@ -1,5 +1,7 @@
 package com.himotech.laundryms.payments.repository;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.payments.entity.Payment;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -20,7 +22,7 @@ public class PaymentSpecification {
      * Supports keyword search (reference, customer), order linking, and date ranges.
      */
     public static Specification<Payment> filterBy(
-            Long orderId,
+            UUID orderId,
             Instant from,
             Instant to,
             String q) {
@@ -50,7 +52,7 @@ public class PaymentSpecification {
             if (q != null && !q.isBlank()) {
                 String pattern = "%" + q.toLowerCase() + "%";
                 predicates.add(cb.or(
-                        cb.like(cb.lower(root.get("order").get("referenceNumber")), pattern),
+                        cb.like(cb.lower(root.get("order").get("trackingNumber")), pattern),
                         cb.like(cb.lower(root.get("order").get("customer").get("firstName")), pattern),
                         cb.like(cb.lower(root.get("order").get("customer").get("lastName")), pattern),
                         cb.like(cb.lower(root.get("paymentReference")), pattern),

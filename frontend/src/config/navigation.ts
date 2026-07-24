@@ -7,7 +7,8 @@ import {
   CreditCard,
   BarChart3,
   History,
-  UserCog
+  UserCog,
+  WashingMachine
 } from "lucide-react";
 import { UI_LABELS } from "@/constants/ui";
 
@@ -16,6 +17,7 @@ export interface NavItem {
   label: string;
   icon: any;
   role?: string;
+  isComingSoon?: boolean;
 }
 
 export interface NavGroup {
@@ -41,7 +43,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
       { href: "/overview", label: UI_LABELS.layout.nav.DASHBOARD, icon: LayoutDashboard },
       { href: "/orders", label: UI_LABELS.layout.nav.ORDERS, icon: ClipboardList },
       { href: "/customers", label: UI_LABELS.layout.nav.CUSTOMERS, icon: Users },
-      { href: "/messaging", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare },
+      { href: "/messaging", label: UI_LABELS.layout.nav.CLIENT_ALERTS, icon: MessageSquare, isComingSoon: true },
     ],
   },
   {
@@ -50,6 +52,7 @@ export const NAVIGATION_GROUPS: NavGroup[] = [
     role: "ADMIN",
     items: [
       { href: "/reports", label: UI_LABELS.layout.nav.REPORTS, icon: BarChart3 },
+      { href: "/machines", label: UI_LABELS.layout.nav.MACHINES, icon: WashingMachine },
       { href: "/payments", label: UI_LABELS.layout.nav.PAYMENTS, icon: CreditCard },
       { href: "/users", label: UI_LABELS.layout.nav.USERS, icon: UserCog },
       { href: "/rates", label: UI_LABELS.layout.nav.RATES, icon: Tag },

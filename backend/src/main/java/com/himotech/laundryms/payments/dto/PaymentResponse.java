@@ -1,5 +1,7 @@
 package com.himotech.laundryms.payments.dto;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +14,9 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentResponse {
-    private Long id;
-    private Long orderId;
-    private String orderReferenceNumber;
+    private UUID id;
+    private UUID orderId;
+    private String orderTrackingNumber;
     private String customerName;
     private Double amountPaid;
     private String paymentMethod;

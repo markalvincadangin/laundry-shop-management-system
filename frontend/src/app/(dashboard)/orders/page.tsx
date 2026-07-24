@@ -14,10 +14,10 @@ import {
   ClipboardList,
   Search,
   RefreshCcw,
-  Loader2,
   FileDown,
   Eye
 } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { pdf } from "@react-pdf/renderer";
 import { ReportDocument } from "@/components/features/shared/ReportDocument";
 import { UI_LABELS } from "@/constants/ui";
@@ -103,14 +103,14 @@ export default function OrdersPage() {
         ],
         table: {
           columns: [
-            { header: "Reference", width: "20%", isMono: true },
+            { header: "Tracking #", width: "20%", isMono: true },
             { header: "Customer", width: "25%", isBold: true },
             { header: "Status", width: "20%" },
             { header: "Loads", width: "15%", align: "right" },
             { header: "Total", width: "20%", align: "right", isBold: true }
           ],
           rows: orders.map(o => [
-            o.referenceNumber,
+            o.trackingNumber,
             o.customerName || "N/A",
             o.currentStatus,
             o.totalLoads.toString(),
@@ -139,12 +139,12 @@ export default function OrdersPage() {
     {
       header: UI_LABELS.shared.common.ORDER_NUMBER,
       sortable: true,
-      sortKey: "referenceNumber",
+      sortKey: "trackingNumber",
       render: (order) => (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-slate-900 group-hover:text-brand-blue transition-colors font-mono tracking-wider">
-              {order.referenceNumber}
+              {order.trackingNumber}
             </span>
             {order.serviceName?.includes("Rush") && (
               <StatusBadge label="RUSH" variant="rush" className="px-1.5 py-0.5 text-[8px]" />
@@ -246,12 +246,9 @@ export default function OrdersPage() {
                 className="h-14 px-grid-8 gap-grid-3 text-caption font-black uppercase tracking-widest border-slate-200 bg-white hover:bg-slate-50 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-lg hover:shadow-brand-blue/5 transition-all duration-300 group/export disabled:opacity-50 rounded-2xl"
                 onClick={handleExportPDF}
                 disabled={isExporting || loading}
+                isLoading={isExporting}
+                leftIcon={<FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />}
               >
-                {isExporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <FileDown className="h-4 w-4 transition-transform group-hover/export:-translate-y-0.5" />
-                )}
                 {isExporting ? "Generating PDF..." : UI_LABELS.shared.buttons.EXPORT_PDF}
               </Button>
             </div>

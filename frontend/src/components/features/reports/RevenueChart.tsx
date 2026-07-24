@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React from "react";
@@ -80,7 +81,7 @@ export function RevenueChart({
                 {UI_LABELS.modules.dashboard.WEEKLY_SALES}
               </CardTitle>
               {data.length > 1 && (
-                <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex items-center gap-2 mt-1">
                    {(() => {
                       const last = data[data.length - 1].income;
                       const prev = data[data.length - 2].income;
@@ -90,7 +91,7 @@ export function RevenueChart({
                         <>
                           <div className={`h-1.5 w-1.5 rounded-full ${isUp ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                           <span className={`text-[9px] font-extrabold uppercase tracking-widest ${isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-                            {isUp ? '+' : ''}{diff.toFixed(1)}% vs Yesterday
+                            {isUp ? '+' : ''}{diff.toFixed(1)}{UI_LABELS.dynamic.VS_YESTERDAY}
                           </span>
                         </>
                       );
@@ -101,7 +102,7 @@ export function RevenueChart({
           </div>
           <div className="flex items-center gap-2 no-print">
             <div className="h-2 w-2 rounded-full bg-brand-blue animate-pulse" />
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em]">Active Analysis</span>
+            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.15em]">{UI_LABELS.dynamic.ACTIVE_ANALYSIS}</span>
           </div>
         </CardHeader>
         <CardContent style={{ height }} className="pt-8 px-4 pb-4">
@@ -160,7 +161,7 @@ export function RevenueChart({
                               <CurrencyDisplay amount={Number(point.income)} size="lg" className="text-slate-900 tracking-tight font-black" />
                             </div>
                             {point.orders !== undefined && (
-                               <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
+                               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100">
                                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                  <p className="text-[9px] uppercase font-extrabold tracking-[0.1em] text-slate-500">
                                     {point.orders} {UI_LABELS.modules.reports.PAID_ORDERS}

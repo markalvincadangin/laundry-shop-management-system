@@ -5,6 +5,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { EmptyState } from "@/features/shared";
+import { UI_LABELS } from "@/constants/ui";
 
 describe("EmptyState", () => {
   it("renders title", () => {
@@ -27,7 +28,7 @@ describe("EmptyState", () => {
     render(
       <EmptyState
         title="Empty"
-        icon={<span data-testid="custom-icon">📦</span>}
+        icon={<span data-testid="custom-icon">{UI_LABELS.dynamic.STR_a017e2}</span>}
       />
     );
     expect(screen.getByTestId("custom-icon")).toBeInTheDocument();
@@ -43,7 +44,7 @@ describe("EmptyState", () => {
     const { container } = render(
       <EmptyState
         title="Empty"
-        icon={<span data-testid="decorative-icon">📦</span>}
+        icon={<span data-testid="decorative-icon">{UI_LABELS.dynamic.STR_a017e2}</span>}
       />
     );
     const iconWrapper = container.querySelector('[aria-hidden="true"]');
@@ -54,7 +55,7 @@ describe("EmptyState", () => {
     const { container } = render(
       <EmptyState
         title="Empty"
-        icon={<span data-testid="semantic-icon">⚠️</span>}
+        icon={<span data-testid="semantic-icon">{UI_LABELS.dynamic.STR_ecb201}</span>}
         iconAriaLabel="Warning icon"
       />
     );

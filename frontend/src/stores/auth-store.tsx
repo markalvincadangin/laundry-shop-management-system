@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api-client";
 import { authService, type CurrentUserResponse } from "@/lib/api/auth";
+import { UI_LABELS } from "@/constants/ui";
 
 type AuthState = {
   user: CurrentUserResponse | null;
@@ -76,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         await authService.login({ username, password });
         await refresh();
-        toast.success("Signed in successfully");
+        toast.success(UI_LABELS.feedback.success.AUTH_SUCCESS);
       } catch (err) {
         const message =
           err instanceof ApiError
@@ -95,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await authService.logout();
-      toast.success("Signed out successfully");
+      toast.success(UI_LABELS.feedback.success.LOGOUT_SUCCESS);
     } catch {
       // ignore
     }

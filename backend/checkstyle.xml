@@ -4,20 +4,32 @@
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
     <property name="severity" value="warning"/>
+
+    <!-- File Filters -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyle.suppressions.file}" default="checkstyle-suppressions.xml"/>
+    </module>
+
+    <!-- File Level Checks -->
+    <module name="FileLength">
+        <property name="max" value="500"/>
+    </module>
+    <module name="LineLength">
+        <property name="max" value="300"/>
+    </module>
+
     <module name="TreeWalker">
+        <!-- Imports -->
         <module name="IllegalImport"/>
         <module name="RedundantImport"/>
         <module name="UnusedImports"/>
-        <module name="NeedBraces"/>
-        <module name="EmptyStatement"/>
-        <module name="EqualsHashCode"/>
-        <module name="SimplifyBooleanExpression"/>
-        <module name="SimplifyBooleanReturn"/>
+
+        <!-- Naming Conventions (Standard Java / Spring) -->
         <module name="ConstantName">
             <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
         </module>
-        <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
+        <module name="LocalFinalVariableName"/>
         <module name="MemberName"/>
         <module name="MethodName"/>
         <module name="PackageName">
@@ -26,42 +38,58 @@
         <module name="ParameterName"/>
         <module name="StaticVariableName"/>
         <module name="TypeName"/>
+
+        <!-- Whitespace & Formatting -->
         <module name="WhitespaceAfter"/>
         <module name="WhitespaceAround"/>
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="ArrayTypeStyle"/>
-        <module name="MissingSwitchDefault"/>
-        <module name="FallThrough"/>
-        <module name="UpperEll"/>
         <module name="ModifierOrder"/>
+        <module name="AvoidNestedBlocks"/>
+        <module name="NeedBraces"/>
+
+        <!-- Coding Standards & Error Prevention -->
         <module name="EmptyStatement"/>
         <module name="EqualsHashCode"/>
-        <module name="IllegalInstantiation"/>
-        <module name="InnerAssignment"/>
+        <module name="CovariantEquals"/>
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
         <module name="StringLiteralEquality"/>
+        <module name="InnerAssignment"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="DefaultComesLast"/>
+        <module name="FallThrough"/>
+        <module name="UpperEll"/>
+        <module name="IllegalInstantiation"/>
+        <module name="IllegalThrows"/>
+        <module name="ExplicitInitialization"/>
+        <module name="ModifiedControlVariable"/>
+
+        <!-- Nesting Limits -->
         <module name="NestedForDepth">
             <property name="max" value="3"/>
         </module>
         <module name="NestedIfDepth">
             <property name="max" value="3"/>
         </module>
-        <module name="DefaultComesLast"/>
-        <module name="MissingSwitchDefault"/>
-        <module name="IllegalThrows"/>
-        <module name="AvoidNestedBlocks"/>
-        <module name="ExplicitInitialization"/>
-        <module name="CovariantEquals"/>
-        <module name="ModifiedControlVariable"/>
-        <module name="SimplifyBooleanExpression"/>
-        <module name="SimplifyBooleanReturn"/>
-    </module>
-    <module name="FileLength">
-        <property name="max" value="500"/>
-    </module>
-    <module name="LineLength">
-        <property name="max" value="300"/>
+
+        <!-- Javadoc (Public API Surface) -->
+        <module name="JavadocMethod">
+            <property name="accessModifiers" value="public"/>
+            <property name="allowMissingParamTags" value="true"/>
+            <property name="allowMissingReturnTag" value="true"/>
+        </module>
+        <module name="MissingJavadocMethod">
+            <property name="scope" value="public"/>
+            <property name="minLineCount" value="2"/>
+            <property name="allowedAnnotations" value="Override, Test, BeforeEach, AfterEach, BeforeAll, AfterAll"/>
+        </module>
+        <module name="JavadocType">
+            <property name="scope" value="public"/>
+        </module>
+        <module name="MissingJavadocType">
+            <property name="scope" value="public"/>
+        </module>
     </module>
 </module>

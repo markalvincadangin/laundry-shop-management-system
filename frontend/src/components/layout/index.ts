@@ -5,3 +5,4 @@ export * from "./PageHeader";
 export * from "./PrintHeader";
 export * from "./Topbar";
 export * from "./PublicTopNav";
+export * from "./InactivityOverlay";

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { UI_LABELS } from "@/constants/ui";
 import { 
   Document, 
   Page, 
@@ -249,12 +250,12 @@ export function ReportDocument({ data }: ReportDocumentProps) {
             <View style={styles.brandWrapper}>
               {/* eslint-disable-next-line jsx-a11y/alt-text */}
               <Image src={getFontPath("/branding/logo.svg")} style={styles.logo} />
-              <Text style={styles.shopName}>Faith Laundry Shop</Text>
+              <Text style={styles.shopName}>{UI_LABELS.dynamic.FAITH_LAUNDRY_SHOP_2a14}</Text>
             </View>
             <Text style={styles.reportTitle}>{data.title}</Text>
           </View>
           <View style={styles.headerRight}>
-            <Text style={styles.timestamp}>Generated: {new Date().toLocaleString()}</Text>
+            <Text style={styles.timestamp}>{UI_LABELS.dynamic.GENERATED} {new Date().toLocaleString()}</Text>
             <Text style={styles.periodLabel}>{data.period}</Text>
           </View>
         </View>
@@ -273,7 +274,7 @@ export function ReportDocument({ data }: ReportDocumentProps) {
         {/* Dynamic Charts */}
         {data.charts && data.charts.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Performance Visualizations</Text>
+            <Text style={styles.sectionTitle}>{UI_LABELS.dynamic.PERFORMANCE_VISUALIZATIONS}</Text>
             {data.charts.map((img, idx) => (
               <View key={idx} style={styles.chartContainer}>
                 {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -284,7 +285,7 @@ export function ReportDocument({ data }: ReportDocumentProps) {
         )}
 
         {/* Dynamic Table */}
-        <Text style={styles.sectionTitle}>Detailed Records</Text>
+        <Text style={styles.sectionTitle}>{UI_LABELS.dynamic.DETAILED_RECORDS}</Text>
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             {data.table.columns.map((col, idx) => (
@@ -324,7 +325,7 @@ export function ReportDocument({ data }: ReportDocumentProps) {
           <Text style={styles.footerText}>
             {data.footerNote || "Faith Laundry Shop Management System — Official Audit Document"}
           </Text>
-          <Text style={styles.footerText}>Page 1 of 1</Text>
+          <Text style={styles.footerText}>{UI_LABELS.dynamic.PAGE_1_OF_1}</Text>
         </View>
       </Page>
     </Document>

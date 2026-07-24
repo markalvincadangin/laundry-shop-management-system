@@ -11,6 +11,10 @@ export type OrderResponse = components["schemas"]["OrderResponse"] & {
   serviceType?: string;
   serviceName?: string;
   notes?: string;
+  machineIds?: string[];
+  addOns?: components["schemas"]["AddOnResponse"][];
+  assignedMachines?: string[];
+  isRush?: boolean;
 };
 
 export type OrderPageResponse = components["schemas"]["OrderPageResponse"] & {
@@ -25,18 +29,39 @@ export type OrderListParams = {
   page?: number;
   size?: number;
   q?: string;
-  customerId?: number;
+  customerId?: string;
   serviceRateId?: number;
   sortBy?: string;
   sortDir?: "asc" | "desc";
 };
 
-export type OrderPreviewRequest = components["schemas"]["OrderPreviewRequest"];
+export type OrderPreviewRequest = components["schemas"]["OrderPreviewRequest"] & { isRush?: boolean };
 export type OrderPreviewResponse = components["schemas"]["OrderPreviewResponse"];
 export type OrderStatsResponse = components["schemas"]["OrderStatsResponse"];
-export type CreateOrderRequest = components["schemas"]["CreateOrderRequest"];
-export type UpdateOrderStatusRequest = components["schemas"]["UpdateOrderStatusRequest"];
-export type UpdateOrderRequest = components["schemas"]["UpdateOrderRequest"];
+export type UpdateOrderStatusRequest = components["schemas"]["UpdateOrderStatusRequest"] & { machineIds?: string[] };
+
+export interface UpdateOrderRequest {
+  extraMinutes?: number;
+  addOns?: Array<{ name: string; price: number; quantity: number }>;
+  machineIds?: string[];
+}
+
+export interface CreateOrderRequest {
+  customerId?: string;
+  customer?: {
+    firstName: string;
+    lastName: string;
+    contactNumber?: string;
+  };
+  createdByUserId: string;
+  weightKg: number;
+  extraMinutes?: number;
+  initialAddOns?: Array<{ name: string; price: number; quantity: number }>;
+  serviceType?: string;
+  notes?: string;
+  machineIds?: string[];
+  isRush?: boolean;
+}
 
 /**
  * Orders Service: Authoritative layer for all order-related API interactions.
@@ -58,7 +83,7 @@ export const ordersService = {
   },
 
   /** Retrieves full details of a specific order by its numeric ID */
-  async getById(orderId: number): Promise<OrderResponse> {
+  async getById(orderId: string): Promise<OrderResponse> {
     const response = await apiClient.get<OrderResponse>(`/v1/orders/${orderId}`);
     return response;
   },
@@ -75,22 +100,22 @@ export const ordersService = {
     return response;
   },
 
-  /** Public tracking lookup by reference number (US-04) */
-  async trackByReference(referenceNumber: string): Promise<components["schemas"]["OrderTrackingResponse"]> {
+  /** Public tracking lookup by tracking number (US-04) */
+  async trackByTrackingNumber(trackingNumber: string): Promise<components["schemas"]["OrderTrackingResponse"]> {
     const response = await apiClient.get<components["schemas"]["OrderTrackingResponse"]>(
-      `/v1/orders/reference/${encodeURIComponent(referenceNumber)}`
+      `/v1/orders/tracking/${encodeURIComponent(trackingNumber)}`
     );
     return response;
   },
 
   /** Advances an order to the next process stage (US-03, US-05) */
-  async updateStatus(orderId: number, body: UpdateOrderStatusRequest): Promise<OrderResponse> {
+  async updateStatus(orderId: string, body: UpdateOrderStatusRequest): Promise<OrderResponse> {
     const response = await apiClient.patch<OrderResponse>(`/v1/orders/${orderId}/status`, body);
     return response;
   },
 
   /** Updates non-status order details */
-  async update(orderId: number, body: UpdateOrderRequest): Promise<OrderResponse> {
+  async update(orderId: string, body: UpdateOrderRequest): Promise<OrderResponse> {
     const response = await apiClient.patch<OrderResponse>(`/v1/orders/${orderId}`, body);
     return response;
   },

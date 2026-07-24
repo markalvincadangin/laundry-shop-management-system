@@ -3,38 +3,14 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const isDockerDev = process.env.DOCKER_DEV === "true";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Standalone only in prod — dev volume mounts conflict with it
-  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
-  outputFileTracingRoot: path.join(__dirname, '../'),
-
-  // Proxies /api/* to Spring Boot internally via Docker network
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/:path*`,
-      },
-    ];
-  },
-
-  experimental: {
-    serverActions: {
-      allowedOrigins: ["*.ngrok-free.app", "*.ngrok-free.dev", "*.trycloudflare.com", "localhost:3001"]
-    }
-  },
-
-  // Turbopack file-watcher polling — only needed inside Docker bind mounts
-  ...(isDockerDev && {
-    watchOptions: {
-      pollIntervalMs: 1000,
-    },
-  }),
-
+  // Output as a static export for bundling with Spring Boot
+  output: 'export',
+  
+  // Disable image optimization API since we're using a static export
   images: {
+    unoptimized: true,
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },

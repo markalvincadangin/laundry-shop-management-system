@@ -8,6 +8,11 @@ import type { ErrorResponse } from "@/types/api";
 const getBaseUrl = (): string => {
   // In the browser, we use a relative path so the request is proxied by Next.js
   if (typeof window !== "undefined") {
+    // Since output: 'export' disables Next.js rewrites, we cannot proxy /api in development.
+    // We must hit the backend directly (e.g., http://localhost:8080/api).
+    if (process.env.NODE_ENV === "development") {
+      return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+    }
     return "/api";
   }
 
@@ -118,6 +123,18 @@ export const apiClient = {
       method: "PATCH",
       headers,
       body: body ? JSON.stringify(body) : undefined,
+    }));
+    return handleResponse<T>(response);
+  },
+
+  async delete<T>(path: string): Promise<T> {
+    const base = getBaseUrl();
+    const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+    const headers: Record<string, string> = { Accept: "application/json" };
+
+    const response = await fetch(url, fetchOptions({
+      method: "DELETE",
+      headers,
     }));
     return handleResponse<T>(response);
   },

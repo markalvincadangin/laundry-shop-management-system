@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.dto;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.orders.OrderStatus;
 import com.himotech.laundryms.payments.PaymentStatus;
 import java.time.LocalDate;
@@ -57,7 +59,7 @@ public final class OrderListParams {
     /**
      * Filter by customer ID.
      */
-    private Long customerId;
+    private UUID customerId;
 
     /**
      * Sort direction.
@@ -67,5 +69,5 @@ public final class OrderListParams {
     /**
      * Filter by service rate ID.
      */
-    private Integer serviceRateId;
+    private UUID serviceRateId;
 }

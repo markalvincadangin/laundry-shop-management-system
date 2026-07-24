@@ -44,7 +44,7 @@ export const forms = {
     FINAL_AMOUNT: "Amount to Pay",
     RECEIVED: "Amount Received",
     STILL_DUE: "Still Due",
-    REFERENCE_NUMBER: "Reference Number",
+    TRACKING_NUMBER: "Tracking Number",
     PAYMENT_METHOD: "Payment Method",
     PAY_VIA: "Pay via",
     PAY_CASH: "Pay with Cash",

@@ -3,6 +3,7 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
 import { SelectProps } from "@/types/components";
+import { UI_LABELS } from "@/constants/ui";
 
 /**
  * Standardized Select Atom — v5.0 Premium
@@ -38,7 +39,7 @@ export function Select({
           className={`mb-1.5 block text-[10px] font-black uppercase tracking-[0.2em] ml-1.5 transition-colors group-focus-within:text-brand-blue ${variant === "glass" ? "text-slate-400" : "text-slate-500"}`}
         >
           {label}
-          {props.required && <span className="text-error-700 ml-1" aria-hidden="true">*</span>}
+          {props.required && <span className="text-error-700 ml-1" aria-hidden="true">{UI_LABELS.dynamic.STR_3389da}</span>}
         </label>
       )}
       <div className="relative group">

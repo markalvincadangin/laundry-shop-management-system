@@ -13,7 +13,7 @@ import TrackPage from "@/app/(public)/track/page";
 // Mock services
 vi.mock("@/lib/api/orders", () => ({
   ordersService: {
-    trackByReference: vi.fn(),
+    trackByTrackingNumber: vi.fn(),
   },
 }));
 
@@ -57,13 +57,13 @@ describe.skip("TrackPage (Unstable in Test Env)", () => {
 
   it("shows order status when reference is found via URL", async () => {
     const mockData = {
-      referenceNumber: "ORD-123",
+      trackingNumber: "ORD-123",
       currentStatus: "WASHING",
       customerName: "John Doe",
       createdAt: new Date().toISOString(),
       paymentStatus: "UNPAID",
     };
-    vi.mocked(ordersService.trackByReference).mockResolvedValue(mockData as any);
+    vi.mocked(ordersService.trackByTrackingNumber).mockResolvedValue(mockData as any);
 
     mockSearchParams = new URLSearchParams("ref=ORD-123");
     const queryClient = createQueryClient();
@@ -78,8 +78,8 @@ describe.skip("TrackPage (Unstable in Test Env)", () => {
     }, { timeout: 10000 });
   }, 15000);
 
-  it("shows error message when reference is not found via URL", async () => {
-    vi.mocked(ordersService.trackByReference).mockRejectedValue(new ApiError(404, "NOT_FOUND", "Not Found"));
+  it("shows error message when tracking number is not found via URL", async () => {
+    vi.mocked(ordersService.trackByTrackingNumber).mockRejectedValue(new ApiError(404, "NOT_FOUND", "Not Found"));
 
     mockSearchParams = new URLSearchParams("ref=ORD-INVALID");
     const queryClient = createQueryClient();

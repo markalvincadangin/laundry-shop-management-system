@@ -101,7 +101,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         // Persist Order
         testOrder = Order.builder()
-                .referenceNumber("REF-PAY-001")
+                .trackingNumber("REF-PAY-001")
                 .customer(testCustomer)
                 .createdBy(testUser)
                 .serviceRate(testServiceRate)
@@ -127,7 +127,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("save_ShouldPersistPayment_WhenOrderIsNotPaid")
-    void save_ShouldPersistPayment_WhenOrderIsNotPaid() {
+    void saveShouldpersistpaymentWhenorderisnotpaid() {
         // Given
         Payment payment = Payment.builder()
                 .order(testOrder)
@@ -159,7 +159,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("save_ShouldThrowViolation_WhenOrderAlreadyHasPayment (BR-PAY-02)")
-    void save_ShouldThrowViolation_WhenOrderAlreadyHasPayment() {
+    void saveShouldthrowviolationWhenorderalreadyhaspayment() {
         // Given - First payment for Order #1
         Payment payment1 = Payment.builder()
                 .order(testOrder)
@@ -191,7 +191,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("existsByOrderId_ShouldReturnTrue_WhenPaymentExists")
-    void existsByOrderId_ShouldReturnTrue_WhenPaymentExists() {
+    void existsByOrderIdShouldreturntrueWhenpaymentexists() {
         // Given - Payment exists for the order
         Payment payment = Payment.builder()
                 .order(testOrder)
@@ -213,7 +213,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
     @Test
     @DisplayName("existsByOrderId_ShouldReturnFalse_WhenNoPaymentExists")
-    void existsByOrderId_ShouldReturnFalse_WhenNoPaymentExists() {
+    void existsByOrderIdShouldreturnfalseWhennopaymentexists() {
         // Given - No payment for the order (setUp created unpaid order)
 
         // When
@@ -238,7 +238,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
                 entityManager.find(ServiceRate.class, testOrder.getServiceRate().getId()).getId());
 
         Order anotherOrder = Order.builder()
-                .referenceNumber("REF-PAY-002")
+                .trackingNumber("REF-PAY-002")
                 .customer(anotherCustomer)
                 .createdBy(testUser)
                 .serviceRate(rate)
@@ -281,8 +281,8 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
     void shouldEnforceForeignKeyConstraintForOrder() {
         // Given - Payment with non-existent order
         Order detachedOrder = Order.builder()
-                .id(99999L) // Non-existent order ID
-                .referenceNumber("FAKE-ORDER")
+                .id(java.util.UUID.randomUUID()) // Non-existent order ID
+                .trackingNumber("FAKE-ORDER")
                 .build();
 
         Payment payment = Payment.builder()
@@ -332,7 +332,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             ServiceRate rate = entityManager.find(ServiceRate.class, testOrder.getServiceRate().getId());
 
             order1 = Order.builder()
-                    .referenceNumber("REF-FILTER-001")
+                    .trackingNumber("REF-FILTER-001")
                     .customer(customer1)
                     .createdBy(testUser)
                     .serviceRate(rate)
@@ -352,7 +352,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             order1 = entityManager.persist(order1);
 
             order2 = Order.builder()
-                    .referenceNumber("REF-FILTER-002")
+                    .trackingNumber("REF-FILTER-002")
                     .customer(customer2)
                     .createdBy(testUser)
                     .serviceRate(rate)
@@ -372,7 +372,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             order2 = entityManager.persist(order2);
 
             order3 = Order.builder()
-                    .referenceNumber("REF-FILTER-003")
+                    .trackingNumber("REF-FILTER-003")
                     .customer(customer1)
                     .createdBy(testUser)
                     .serviceRate(rate)
@@ -428,7 +428,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should return all payments when all filters are NULL")
-        void findAllFiltered_ShouldReturnAllPayments_WhenAllFiltersNull() {
+        void findAllFilteredShouldreturnallpaymentsWhenallfiltersnull() {
             // Given
             Pageable pageable = PageRequest.of(0, 10);
 
@@ -448,7 +448,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should filter by date range (from and to)")
-        void findAllFiltered_ShouldFilterByDateRange() {
+        void findAllFilteredShouldfilterbydaterange() {
             // Given - Filter for payments from Feb 14 to Feb 16 (should get payment2 only)
             Instant from = baseTime.minus(1, ChronoUnit.DAYS); // Feb 14
             Instant to = baseTime.plus(1, ChronoUnit.DAYS);    // Feb 16
@@ -465,7 +465,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should filter by from date only (NULL to date)")
-        void findAllFiltered_ShouldFilterByFromDateOnly() {
+        void findAllFilteredShouldfilterbyfromdateonly() {
             // Given - Filter for payments from Feb 15 onwards (should get payment2 and payment3)
             Instant from = baseTime; // Feb 15
             Pageable pageable = PageRequest.of(0, 10);
@@ -481,7 +481,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should filter by to date only (NULL from date)")
-        void findAllFiltered_ShouldFilterByToDateOnly() {
+        void findAllFilteredShouldfilterbytodateonly() {
             // Given - Filter for payments before Feb 16 (should get payment1 and payment2)
             Instant to = baseTime.plus(1, ChronoUnit.DAYS); // Feb 16
             Pageable pageable = PageRequest.of(0, 10);
@@ -497,7 +497,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should filter by orderId")
-        void findAllFiltered_ShouldFilterByOrderId() {
+        void findAllFilteredShouldfilterbyorderid() {
             // Given
             Pageable pageable = PageRequest.of(0, 10);
 
@@ -512,7 +512,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should filter by orderId and date range")
-        void findAllFiltered_ShouldFilterByOrderIdAndDateRange() {
+        void findAllFilteredShouldfilterbyorderidanddaterange() {
             // Given - Filter for order2 with date range covering payment2
             Instant from = baseTime.minus(1, ChronoUnit.DAYS); // Feb 14
             Instant to = baseTime.plus(1, ChronoUnit.DAYS);    // Feb 16
@@ -528,7 +528,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should return empty page when no payments match filters")
-        void findAllFiltered_ShouldReturnEmptyPage_WhenNoMatches() {
+        void findAllFilteredShouldreturnemptypageWhennomatches() {
             // Given - Date range with no payments
             Instant from = baseTime.plus(10, ChronoUnit.DAYS); // Feb 25
             Instant to = baseTime.plus(20, ChronoUnit.DAYS);   // Mar 7
@@ -544,7 +544,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should paginate correctly with page size")
-        void findAllFiltered_ShouldPaginateCorrectly() {
+        void findAllFilteredShouldpaginatecorrectly() {
             // Given - Page size of 2
             Pageable firstPage = PageRequest.of(0, 2);
             Pageable secondPage = PageRequest.of(1, 2);
@@ -567,7 +567,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Should eagerly fetch associations to avoid N+1 queries")
-        void findAllFiltered_ShouldEagerlyFetchAssociations() {
+        void findAllFilteredShouldeagerlyfetchassociations() {
             // Given
             Pageable pageable = PageRequest.of(0, 10);
 
@@ -578,7 +578,7 @@ class PaymentRepositoryIT extends AbstractIntegrationTest {
             // Then - Accessing associations should not trigger LazyInitializationException
             result.getContent().forEach(payment -> {
                 assertThat(payment.getOrder()).isNotNull();
-                assertThat(payment.getOrder().getReferenceNumber()).isNotNull();
+                assertThat(payment.getOrder().getTrackingNumber()).isNotNull();
                 assertThat(payment.getOrder().getCustomer()).isNotNull();
                 assertThat(payment.getOrder().getCustomer().getFirstName()).isNotNull();
                 assertThat(payment.getReceivedBy()).isNotNull();

@@ -34,10 +34,10 @@ export function PaymentDetailsModal({ isOpen, onClose, payment }: PaymentDetails
             <Receipt className="h-6 w-6" />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-0.5">{UI_LABELS.modules.payments.VERIFIED_TRANSACTION}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{UI_LABELS.modules.payments.VERIFIED_TRANSACTION}</p>
             <div className="flex items-center justify-between gap-grid-2">
               <h4 className="text-h3 font-black text-slate-900 leading-tight">
-                {payment.orderReferenceNumber || `#${payment.orderId}`}
+                {payment.orderTrackingNumber || `#${payment.orderId}`}
               </h4>
               <CurrencyDisplay amount={payment.amountPaid} size="md" className="text-brand-blue" numberClassName="font-black" />
             </div>
@@ -91,7 +91,7 @@ export function PaymentDetailsModal({ isOpen, onClose, payment }: PaymentDetails
             <div className="p-grid-4 rounded-xl border border-slate-100 bg-slate-50/50">
               <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{UI_LABELS.modules.payments.REMARKS}</div>
               <p className="text-body-sm font-medium text-slate-600 italic">
-                &quot;{payment.remarks}&quot;
+                {UI_LABELS.dynamic.STR_eb6439}{payment.remarks}{UI_LABELS.dynamic.STR_eb6439}
               </p>
             </div>
           )}

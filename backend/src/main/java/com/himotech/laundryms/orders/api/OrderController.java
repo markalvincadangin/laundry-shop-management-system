@@ -70,6 +70,7 @@ public class OrderController {
      * @return the created order response
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> create(
             @Valid @RequestBody final CreateOrderRequest request,
             @AuthenticationPrincipal final JwtPrincipal principal) {
@@ -91,6 +92,7 @@ public class OrderController {
      * @return the computed pricing preview
      */
     @PostMapping("/preview")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderPreviewResponse> preview(
             @Valid @RequestBody final OrderPreviewRequest request) {
         final OrderPreviewResponse response = orderService.preview(request);
@@ -104,6 +106,7 @@ public class OrderController {
      * @return the daily statistics
      */
     @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderStatsResponse> getStats(
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) 
             final LocalDate date) {
@@ -112,15 +115,15 @@ public class OrderController {
     }
 
     /**
-     * Tracks an order by its reference number.
+     * Tracks an order by its tracking number or reference number (US-04 Public Tracking).
      *
-     * @param referenceNumber the unique order reference
+     * @param trackingNumber the unique order tracking number
      * @return the tracking response
      */
-    @GetMapping("/reference/{referenceNumber}")
+    @GetMapping({"/tracking/{trackingNumber}", "/reference/{trackingNumber}"})
     public ResponseEntity<OrderTrackingResponse> trackByReference(
-            @PathVariable final String referenceNumber) {
-        final Order order = orderService.findByReferenceNumber(referenceNumber);
+            @PathVariable final String trackingNumber) {
+        final Order order = orderService.findByTrackingNumber(trackingNumber);
         return ResponseEntity.ok(orderMapper.toTrackingResponse(order));
     }
 
@@ -131,12 +134,22 @@ public class OrderController {
      * @return paginated list of orders
      */
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<PageResponse<OrderResponse>> list(
             final OrderListParams params) {
 
-        final Sort sort = params.getSortDir().equalsIgnoreCase("asc")
-                ? Sort.by(params.getSortBy()).ascending().and(Sort.by("id").descending())
-                : Sort.by(params.getSortBy()).descending().and(Sort.by("id").descending());
+        Sort sort;
+        if ("createdAt".equals(params.getSortBy())) {
+            sort = Sort.by(Sort.Direction.DESC, "isRush")
+                    .and(params.getSortDir().equalsIgnoreCase("asc") 
+                            ? Sort.by(Sort.Direction.ASC, "createdAt") 
+                            : Sort.by(Sort.Direction.DESC, "createdAt"))
+                    .and(Sort.by("id").descending());
+        } else {
+            sort = params.getSortDir().equalsIgnoreCase("asc")
+                    ? Sort.by(params.getSortBy()).ascending().and(Sort.by("id").descending())
+                    : Sort.by(params.getSortBy()).descending().and(Sort.by("id").descending());
+        }
 
         final Pageable pageable = PageRequest.of(
                 params.getPage(), Math.min(Math.max(params.getSize(), 1), 100), sort);
@@ -167,8 +180,9 @@ public class OrderController {
      * @return the order details
      */
     @GetMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> getById(
-            @PathVariable final Long orderId) {
+            @PathVariable final UUID orderId) {
         return ResponseEntity.ok(orderService.getOrderDetails(orderId));
     }
 
@@ -180,8 +194,9 @@ public class OrderController {
      * @return the updated order
      */
     @PatchMapping("/{orderId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> update(
-            @PathVariable final Long orderId,
+            @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderRequest request) {
         final Order order = orderService.update(orderId, request);
         return ResponseEntity.ok(orderMapper.toResponse(order));
@@ -196,8 +211,9 @@ public class OrderController {
      * @return the updated order
      */
     @PatchMapping("/{orderId}/status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<OrderResponse> updateStatus(
-            @PathVariable final Long orderId,
+            @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderStatusRequest request,
             @AuthenticationPrincipal final JwtPrincipal principal) {
 
@@ -213,7 +229,8 @@ public class OrderController {
                 orderId,
                 OrderStatus.valueOf(request.getNewStatus()),
                 changedBy,
-                request.getNotes()
+                request.getNotes(),
+                request.getMachineIds()
         );
         return ResponseEntity.ok(orderMapper.toResponse(order));
     }
@@ -226,8 +243,8 @@ public class OrderController {
      */
     @DeleteMapping("/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable final Long orderId) {
+    public ResponseEntity<Void> delete(@PathVariable final UUID orderId) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.noContent().build();
     }
-}
+}

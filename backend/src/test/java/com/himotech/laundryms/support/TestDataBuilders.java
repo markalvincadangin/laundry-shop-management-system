@@ -32,13 +32,13 @@ public final class TestDataBuilders {
 
     public static Customer.CustomerBuilder customer() {
         return Customer.builder()
-                .id(1L)
+                .id(java.util.UUID.randomUUID())
                 .firstName("Juan")
                 .lastName("Dela Cruz")
                 .contactNumber("09171234567");
     }
 
-    public static Customer customer(long id, String firstName, String lastName, String contactNumber) {
+    public static Customer customer(UUID id, final String firstName, final String lastName, final String contactNumber) {
         return customer()
                 .id(id)
                 .firstName(firstName)
@@ -68,7 +68,7 @@ public final class TestDataBuilders {
 
     public static ServiceRate.ServiceRateBuilder serviceRate() {
         return ServiceRate.builder()
-                .id(1)
+                .id(java.util.UUID.randomUUID())
                 .serviceName("Standard Wash")
                 .basePricePerLoad(new BigDecimal("140.00"))  // BR-PR-01: ₱140 per load
                 .kgLimitPerLoad(new BigDecimal("8.00"))       // 8kg per load
@@ -76,7 +76,7 @@ public final class TestDataBuilders {
                 .isActive(true);
     }
 
-    public static ServiceRate serviceRate(BigDecimal basePrice, BigDecimal kgLimit, BigDecimal pricePerExtra) {
+    public static ServiceRate serviceRate(final BigDecimal basePrice, final BigDecimal kgLimit, final BigDecimal pricePerExtra) {
         return serviceRate()
                 .basePricePerLoad(basePrice)
                 .kgLimitPerLoad(kgLimit)
@@ -91,8 +91,8 @@ public final class TestDataBuilders {
         User u = user().build();
         ServiceRate r = serviceRate().build();
         return Order.builder()
-                .id(1L)
-                .referenceNumber("LDR-20260213-1234")
+                .id(java.util.UUID.randomUUID())
+                .trackingNumber("LDR-20260213-1234")
                 .customer(c)
                 .createdBy(u)
                 .serviceRate(r)
@@ -110,10 +110,10 @@ public final class TestDataBuilders {
                 .paymentStatus(PaymentStatus.UNPAID);
     }
 
-    public static Order order(Long id, String ref, OrderStatus status, BigDecimal grandTotal) {
+    public static Order order(final UUID id, final String ref, final OrderStatus status, final BigDecimal grandTotal) {
         return order()
                 .id(id)
-                .referenceNumber(ref)
+                .trackingNumber(ref)
                 .currentStatus(status)
                 .grandTotal(grandTotal)
                 .build();
@@ -121,29 +121,33 @@ public final class TestDataBuilders {
 
     // --- CreateOrderCommand ---
 
-    public static CreateOrderCommand createOrderCommand(Long customerId, UUID userId, BigDecimal weightKg, int extraMinutes, List<CreateOrderCommand.AddOnItem> addOns) {
-        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, addOns, null, null);
+    public static CreateOrderCommand createOrderCommand(final UUID customerId, UUID userId, final BigDecimal weightKg, int extraMinutes, final List<CreateOrderCommand.AddOnItem> addOns, String serviceType, String notes, boolean isRush) {
+        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, addOns, serviceType, notes, isRush);
     }
 
-    public static CreateOrderCommand createOrderCommand(Long customerId, UUID userId, BigDecimal weightKg, int extraMinutes) {
+    public static CreateOrderCommand createOrderCommand(final UUID customerId, UUID userId, final BigDecimal weightKg, int extraMinutes, final List<CreateOrderCommand.AddOnItem> addOns) {
+        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, addOns, null, null, false);
+    }
+
+    public static CreateOrderCommand createOrderCommand(final UUID customerId, UUID userId, final BigDecimal weightKg, int extraMinutes) {
         return createOrderCommand(customerId, userId, weightKg, extraMinutes, null);
     }
 
-    public static CreateOrderCommand createOrderCommandWithAddOns(Long customerId, UUID userId, BigDecimal weightKg, int extraMinutes, CreateOrderCommand.AddOnItem... items) {
-        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, List.of(items), null, null);
+    public static CreateOrderCommand createOrderCommandWithAddOns(final UUID customerId, UUID userId, final BigDecimal weightKg, int extraMinutes, CreateOrderCommand.AddOnItem... items) {
+        return new CreateOrderCommand(customerId, userId, weightKg, extraMinutes, List.of(items), null, null, false);
     }
 
     // --- RecordPaymentCommand ---
 
-    public static RecordPaymentCommand recordPaymentCommand(Long orderId, BigDecimal amountPaid, PaymentMethod method, UUID receivedByUserId, String remarks, String paymentReference) {
+    public static RecordPaymentCommand recordPaymentCommand(final UUID orderId, final BigDecimal amountPaid, final PaymentMethod method, UUID receivedByUserId, final String remarks, final String paymentReference) {
         return new RecordPaymentCommand(orderId, amountPaid, method, receivedByUserId, remarks, paymentReference);
     }
 
-    public static RecordPaymentCommand recordPaymentCommand(Long orderId, BigDecimal amountPaid, PaymentMethod method, UUID receivedByUserId, String remarks) {
+    public static RecordPaymentCommand recordPaymentCommand(final UUID orderId, final BigDecimal amountPaid, final PaymentMethod method, UUID receivedByUserId, final String remarks) {
         return recordPaymentCommand(orderId, amountPaid, method, receivedByUserId, remarks, null);
     }
 
-    public static RecordPaymentCommand recordPaymentCommand(Long orderId, BigDecimal amountPaid, UUID receivedByUserId) {
+    public static RecordPaymentCommand recordPaymentCommand(final UUID orderId, final BigDecimal amountPaid, UUID receivedByUserId) {
         return recordPaymentCommand(orderId, amountPaid, PaymentMethod.CASH, receivedByUserId, null);
     }
 
@@ -153,7 +157,7 @@ public final class TestDataBuilders {
         Order o = order().build();
         User u = user().build();
         return Payment.builder()
-                .id(1L)
+                .id(java.util.UUID.randomUUID())
                 .order(o)
                 .amountPaid(new BigDecimal("280.00"))  // matches default order() grandTotal (BR-PR-01)
                 .paymentMethod(PaymentMethod.CASH)

@@ -9,6 +9,7 @@ interface RegistryOptions {
   defaultSortDir?: "asc" | "desc";
   defaultPageSize?: number;
   searchParamKey?: string;
+  minSearchLength?: number;
 }
 
 /**
@@ -34,6 +35,7 @@ export function useRegistry(options: RegistryOptions) {
   // 2. Search State (Internal vs Global)
   const [searchTerm, setSearchTerm] = useState(q);
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
+  const minSearchLength = options.minSearchLength ?? 0;
 
   /**
    * updateParams: Updates the URL search parameters and triggers a transition.
@@ -87,9 +89,11 @@ export function useRegistry(options: RegistryOptions) {
   // 3. Sync local search term with debounced URL update
   useEffect(() => {
     if (debouncedSearchTerm !== q) {
-      updateParams({ [searchKey]: debouncedSearchTerm || undefined, page: 0 });
+      if (debouncedSearchTerm.length >= minSearchLength || debouncedSearchTerm.length === 0) {
+        updateParams({ [searchKey]: debouncedSearchTerm || undefined, page: 0 });
+      }
     }
-  }, [debouncedSearchTerm, q, searchKey, updateParams]);
+  }, [debouncedSearchTerm, q, searchKey, updateParams, minSearchLength]);
 
   // 4. Sync URL changes back to local input (e.g., browser back button)
   useEffect(() => {

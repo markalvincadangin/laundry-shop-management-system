@@ -4,10 +4,10 @@
 > **Client:** Faith Laundry Shop
 > **Prepared By:** HIMÓTECH
 > **Document ID:** FRONT-001
-> **Version:** 3.3.1
-> **Date:** 2026-05-05
+> **Version:** 3.4.0
+> **Date:** 2026-07-22
 > **Purpose:** Define visual identity, human-centric design (HCI) standards, and user-friendly interaction patterns.
-> **Status:** Hardened — Codebase-aligned, WCAG-verified, architecture-accurate, modular-lexicon-integrated, collapsible-sidebar-enabled, full-HCI-theory-integrated
+> **Status:** Hardened — Codebase-aligned, WCAG-verified, architecture-accurate, modular-lexicon-integrated, collapsible-sidebar-enabled, full-HCI-theory-integrated, Constitution v1.6.0 & Offline-First Standalone aligned
 
 ---
 
@@ -15,9 +15,9 @@
 
 | Field | Value |
 | :--- | :--- |
-| Previous Version | 3.2 — 2026-04-27 |
-| Change Summary | v3.3.1 Precision hardening (audit-driven): Corrected Plus Jakarta Sans typographic classification (G-001); added 220px sidebar proportional-decision note (G-002); added Elliot & Maier context-dependency caveat (G-003). No design decisions changed — classification precision only. |
-| Related Documents | [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Architecture](architecture.md), [OpenAPI Spec](openapi.yaml), **[Frontend Structure Spec — FRONT-002](frontend-structure.md)**, [Case Study (CS-001)](case-study.md), [Client Interview (INT-001)](client-interview.md) |
+| Previous Version | 3.3.1 — 2026-05-05 |
+| Change Summary | v3.4.0 Standardization & Offline-First alignment: Updated terminology from reference number to `tracking_number` (`trackingNumber`), aligned UUID data type specs, incorporated Constitution v1.6.0 Offline-First Tunnel Topology for public tracking, and removed legacy links to deleted `frontend-structure.md`. |
+| Related Documents | [User Stories](../02-requirements/user-stories.md), [Business Rules](../02-requirements/business-rules.md), [Architecture](architecture.md), [OpenAPI Spec](openapi.yaml), [Case Study (CS-001)](case-study.md), [Client Interview (INT-001)](client-interview.md) |
 | Confidentiality | Internal / Academic Use |
 
 ---
@@ -164,7 +164,7 @@ Ben Shneiderman's Eight Golden Rules (*Designing the User Interface*, 1985) are 
 | **5. Offer Simple Error Handling** | Bean validation errors show inline below the offending field in plain language (not error codes). Backend rejection messages (e.g., \"Order must be PAID before release\") are surfaced in user-readable toast form. |
 | **6. Permit Easy Reversal of Actions** | The `UndoToast` provides a 5-second reversal window for all non-destructive status advances. Cancellation requires a separate `ConfirmDialog` with explicit intent confirmation, preventing accidental irreversible actions. |
 | **7. Support Internal Locus of Control** | Users initiate all state changes; the system never auto-advances an order. No surprise redirections. All navigation is explicit. The collapsible sidebar gives users control over their workspace. |
-| **8. Reduce Short-Term Memory Load** | The `LiveTicket™` in the Intake Wizard persists all entered data so staff don't need to remember what they typed in Step 1 while on Step 3. Order reference numbers use `JetBrains Mono` for unambiguous visual scanning. |
+| **8. Reduce Short-Term Memory Load** | The `LiveTicket™` in the Intake Wizard persists all entered data so staff don't need to remember what they typed in Step 1 while on Step 3. Order tracking numbers use `JetBrains Mono` for unambiguous visual scanning. |
 
 ### 1.14 Gestalt Principles — Complete Treatment *(NEW in v3.3)*
 
@@ -521,7 +521,8 @@ The Order Intake process is the most critical staff workflow. To ensure high adm
 
 ### 3.4 Public Tracking Portal *(US-04)*
 
-- **Zero-Login Access:** Accessible at `(public)/track` — no authentication required. The reference number is entered as a search input on the page itself (not a URL dynamic segment). Directly addresses the client's stated priority: "Customers should receive updates and track laundry status" (INT-001 Q25).
+- **Zero-Login Access:** Accessible at `(public)/track` — no authentication required. The tracking number is entered as a search input on the page itself (not a URL dynamic segment). Directly addresses the client's stated priority: "Customers should receive updates and track laundry status" (INT-001 Q25).
+- **Offline-First Tunnel Topology:** Requests to `(public)/track` route down a secure Cloudflare Reverse Tunnel directly to the shop's local standalone PostgreSQL instance. This provides zero cloud database costs while guaranteeing instant local shop autonomy and public tracking accessibility when connected.
 - **Anonymized Data:** Renders Process Stage and order summary only. Hides internal notes, staff names, and financial amounts.
 
 ---
@@ -539,7 +540,7 @@ The Order Intake process is the most critical staff workflow. To ensure high adm
 
 - **Immutable Logs:** Every status change is recorded with a timestamp and the initiating Staff ID. Directly addresses the "lack of automated reporting" problem in CS-001 §4.1.
 - **Transaction Ledger:** Settled transactions cannot be modified.
-- **Reference Format:** All orders use the format `LDR-YYYYMMDD-XXXX`. Defined once in `lib/constants/order-status.ts` as `REFERENCE_FORMAT`. Sequential IDs (e.g., `TXN-001`) and raw timestamp IDs are not valid formats — `LDR-YYYYMMDD-XXXX` provides date context at a glance, reducing the cognitive load of identifying an order's age without opening it.
+- **Tracking Format:** All orders use the format `LDR-YYYYMMDD-XXXX`. Defined in `lib/constants/order-status.ts` as `TRACKING_NUMBER_FORMAT`. Sequential IDs (e.g., `TXN-001`) and raw timestamp IDs are not valid formats — `LDR-YYYYMMDD-XXXX` provides date context at a glance, reducing the cognitive load of identifying an order's age without opening it. Internal entity IDs implement `UUID` (`java.util.UUID`).
 
 ---
 
@@ -872,7 +873,7 @@ const validate = () => { ... };
 | :--- | :--- | :--- |
 | `(dashboard)/` | `(dashboard)/overview` | Dashboard home is at `/overview`, not the route group root |
 | `(dashboard)/orders/[id]/settle` | `(dashboard)/orders/[id]/pay` | Actual folder name in codebase is `pay/`, not `settle/` |
-| `(public)/track/[reference]` | `(public)/track` | No dynamic segment — reference number is entered as a form input on the page, not a URL param |
+| `(public)/track/[trackingNumber]` | `(public)/track` | No dynamic segment — tracking number is entered as a form input on the page, not a URL param |
 | `(public)/track/page.tsx` is missing | ✅ `(public)/track/page.tsx` exists | Implemented; previous spec incorrectly listed as missing |
 
 ### 9.3 Order Detail Design Guidance
@@ -1118,6 +1119,6 @@ Version 3.3 adds comprehensive HCI and design theory grounding not present in v3
 - **WCAG POUR Framework (§1.15):** Organizes accessibility requirements under the four POUR principles (Perceivable, Operable, Understandable, Robust) with specific WCAG criterion references.
 - **KI-001 Resolved:** The `brand-cyan-dark` Tailwind config gap is resolved and marked in §13.
 
-All engineering implementation — including file structures, API integration patterns, and directory maps — must refer to **[FRONT-002: Frontend Structure Specification](frontend-structure.md)** for technical enforcement.
+All engineering implementation — including file structures, API integration patterns, and directory maps — must refer to **[Architecture Specification](architecture.md)** and the project **[Constitution](../../.specify/memory/constitution.md)** for technical enforcement.
 
-For any discrepancies between design intention and technical feasibility, **FRONT-001 v3.3** serves as the baseline for UX quality; **FRONT-002** serves as the baseline for architectural integrity.
+For any discrepancies between design intention and technical feasibility, **FRONT-001 v3.4.0** serves as the baseline for UX quality; **architecture.md** serves as the baseline for architectural integrity.

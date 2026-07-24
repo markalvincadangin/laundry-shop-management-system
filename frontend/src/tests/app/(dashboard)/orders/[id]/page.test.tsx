@@ -7,7 +7,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UI_LABELS } from "@/constants/ui";
 import { ordersService } from "@/lib/api/orders";
-import OrderDetailsPage from "@/app/(dashboard)/orders/[id]/page";
+import OrderDetailsPage from "@/app/(dashboard)/orders/[id]/client";
 
 // Mock services
 vi.mock("@/lib/api/orders", () => ({
@@ -15,6 +15,13 @@ vi.mock("@/lib/api/orders", () => ({
     getById: vi.fn(),
     updateStatus: vi.fn(),
   },
+}));
+
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  }
 }));
 
 // Mock Auth
@@ -62,8 +69,8 @@ describe("OrderDetailsPage", () => {
   });
 
   const mockOrder = {
-    id: 1,
-    referenceNumber: "ORD-TEST-123",
+    id: '1',
+    trackingNumber: "ORD-TEST-123",
     customerName: "Mark Alvin",
     contactNumber: "09123456789",
     weightKg: 5.5,
@@ -107,8 +114,40 @@ describe("OrderDetailsPage", () => {
       fireEvent.click(actionBtn);
     });
 
-    // Confirm dialog? Component uses window.confirm or custom?
-    // Let's assume it shows a confirmation modal if it follows the pattern.
-    // I'll check the component code later if it fails.
+    const confirmBtn = await screen.findByRole("button", { name: UI_LABELS.shared.buttons.CONFIRM });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(ordersService.updateStatus).toHaveBeenCalled();
+    });
+  });
+
+  it("adds undo notification window for status reversion per FR-DET-2", async () => {
+    const { toast } = await import("sonner");
+    vi.mocked(ordersService.getById).mockResolvedValue(mockOrder);
+    vi.mocked(ordersService.updateStatus).mockResolvedValue({ ...mockOrder, currentStatus: "WASHING" });
+
+    renderWithProvider(<OrderDetailsPage />);
+
+    // Click to transition
+    const actionBtn = await screen.findByText(UI_LABELS.modules.orders.ONE_TAP_WASH);
+    fireEvent.click(actionBtn);
+
+    // Confirm dialog
+    const confirmBtn = await screen.findByRole("button", { name: UI_LABELS.shared.buttons.CONFIRM });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(ordersService.updateStatus).toHaveBeenCalledWith('1', expect.objectContaining({ newStatus: "WASHING" }));
+    });
+
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+        action: expect.objectContaining({
+          label: "Undo",
+          onClick: expect.any(Function),
+        })
+      }));
+    });
   });
 });

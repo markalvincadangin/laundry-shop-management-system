@@ -31,7 +31,7 @@ export const customersService = {
   },
 
   /** Retrieves full details of a specific customer by ID */
-  async getById(customerId: number): Promise<CustomerResponse> {
+  async getById(customerId: string): Promise<CustomerResponse> {
     const response = await apiClient.get<CustomerResponse>(`/v1/customers/${customerId}`);
     return response;
   },
@@ -43,13 +43,13 @@ export const customersService = {
   },
 
   /** Updates an existing customer record */
-  async update(customerId: number, body: Partial<CreateCustomerRequest>): Promise<CustomerResponse> {
+  async update(customerId: string, body: Partial<CreateCustomerRequest>): Promise<CustomerResponse> {
     const response = await apiClient.patch<CustomerResponse>(`/v1/customers/${customerId}`, body);
     return response;
   },
 
   /** Toggles the active status of a customer account */
-  async toggleActive(customerId: number): Promise<CustomerResponse> {
+  async toggleActive(customerId: string): Promise<CustomerResponse> {
     const response = await apiClient.patch<CustomerResponse>(`/v1/customers/${customerId}/toggle-active`);
     return response;
   },

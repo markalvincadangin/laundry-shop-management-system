@@ -85,7 +85,7 @@ describe("CustomersPage", () => {
     vi.mocked(customersService.list).mockResolvedValue({
       content: [
         {
-          id: 1,
+          id: "1",
           firstName: "Mark",
           lastName: "Alvin",
           contactNumber: "09123456789",
@@ -108,7 +108,7 @@ describe("CustomersPage", () => {
     });
   });
 
-  it("searches when typing in search box", async () => {
+  it("implements predictive filtering after 2 characters per FR-CUST-2", async () => {
      vi.mocked(customersService.list).mockResolvedValue({
       content: [],
       page: 0,
@@ -122,11 +122,19 @@ describe("CustomersPage", () => {
     renderWithProvider(<CustomersPage />);
 
     const searchInput = screen.getByPlaceholderText(new RegExp(UI_LABELS.modules.customers.SEARCH_CUSTOMERS, "i"));
-    fireEvent.change(searchInput, { target: { value: "Mark" } });
+    
+    // Type 1 char - should not trigger
+    fireEvent.change(searchInput, { target: { value: "M" } });
+    
+    // Wait for debounce time
+    await new Promise(r => setTimeout(r, 600));
+    expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining("q=M"), expect.anything());
 
-    // Wait for debounce
+    // Type 2 chars - should trigger
+    fireEvent.change(searchInput, { target: { value: "Ma" } });
+    
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("q=Mark"), expect.anything());
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("q=Ma"), expect.anything());
     }, { timeout: 2000 });
   });
 

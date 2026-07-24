@@ -34,35 +34,28 @@ if (!(Get-Command ngrok -ErrorAction SilentlyContinue)) {
     exit 1
 }
 
-# 3. Check if ngrok.yml exists
-if (!(Test-Path "ngrok.yml")) {
-    Write-Host "ngrok.yml not found in root directory." -ForegroundColor Red
-    Pop-Location
-    exit 1
-}
-
-# 4. Extract domain from ngrok.yml to keep it dynamic
-$NgrokConfig = Get-Content "ngrok.yml" -Raw
-if ($NgrokConfig -match 'domain:\s*([^\s\r\n]+)') {
-    $Domain = $matches[1]
-} else {
-    Write-Host "Domain not found in ngrok.yml. Please ensure a domain is configured." -ForegroundColor Red
-    Pop-Location
-    exit 1
-}
-
-# 5. Kill existing ngrok processes to ensure a fresh start
+# 3. Kill existing ngrok processes to ensure a fresh start
 Write-Host "Cleaning up existing ngrok sessions..." -ForegroundColor Gray
 Stop-Process -Name ngrok -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 1
 
-Write-Host "Starting ngrok tunnel for port $FrontendPort..." -ForegroundColor Yellow
-Write-Host "Domain: $Domain" -ForegroundColor Gray
 Write-Host "Note: Ensure ALLOWED_ORIGIN_PATTERNS in .env includes *.ngrok-free.app" -ForegroundColor DarkGray
-Write-Host "Press Ctrl+C to stop sharing."
+Write-Host "Press Ctrl+C to stop sharing." -ForegroundColor Yellow
 
-# Run ngrok using the config for auth but overriding the port and domain from env/config
-# This ignores the hardcoded 'addr' in ngrok.yml tunnels section if present
-ngrok http $FrontendPort --config ngrok.yml --domain $Domain
+# 4. Run ngrok dynamically
+if (Test-Path "ngrok.yml") {
+    $NgrokConfig = Get-Content "ngrok.yml" -Raw
+    if ($NgrokConfig -match 'domain:\s*([^\s\r\n]+)') {
+        $Domain = $matches[1]
+        Write-Host "Starting ngrok tunnel for port $FrontendPort with custom domain ($Domain)..." -ForegroundColor Yellow
+        ngrok http $FrontendPort --config ngrok.yml --domain $Domain
+    } else {
+        Write-Host "Starting ngrok tunnel for port $FrontendPort using local config..." -ForegroundColor Yellow
+        ngrok http $FrontendPort --config ngrok.yml
+    }
+} else {
+    Write-Host "Starting ngrok tunnel for port $FrontendPort using global config (random domain)..." -ForegroundColor Yellow
+    ngrok http $FrontendPort
+}
 
 Pop-Location

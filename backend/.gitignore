@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Generated Frontend Static Assets ###
+src/main/resources/static/*
+!src/main/resources/static/.gitkeep

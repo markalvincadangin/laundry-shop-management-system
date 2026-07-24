@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-literals */
 "use client";
 
 import React from "react";
@@ -55,7 +56,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
     exportToCSV(
       payments.map(p => ({
         date: p.paymentDate,
-        reference: p.orderReferenceNumber,
+        trackingNumber: p.orderTrackingNumber,
         customer: p.customerName,
         method: p.paymentMethod,
         amount: p.amountPaid,
@@ -64,7 +65,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
       `Sales_Report_${date || 'Range'}`,
       {
         date: "Date",
-        reference: "Reference",
+        trackingNumber: "Tracking Number",
         customer: "Customer",
         method: "Method",
         amount: "Amount",
@@ -75,16 +76,16 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
 
   const columns: DataTableColumn<PaymentResponse>[] = [
     {
-      header: UI_LABELS.shared.common.REFERENCE,
+      header: UI_LABELS.shared.common.TRACKING_NUMBER,
       sortable: true,
-      sortKey: "order.referenceNumber",
+      sortKey: "order.trackingNumber",
       render: (p) => (
         <div className="flex items-center gap-3 group/ref">
           <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 group-hover/ref:bg-brand-blue/5 transition-all">
             <Hash className="h-3.5 w-3.5 text-slate-400 group-hover/ref:text-brand-blue" />
           </div>
           <span className="text-body-sm font-black text-slate-900 font-mono tracking-tighter">
-            {p.orderReferenceNumber}
+            {p.orderTrackingNumber}
           </span>
         </div>
       ),
@@ -124,7 +125,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             <div className="flex flex-col">
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">{p.paymentMethod}</span>
               {p.paymentReference && (
-                <span className="text-[9px] font-mono text-slate-400 tracking-tighter">ID: {p.paymentReference}</span>
+                <span className="text-[9px] font-mono text-slate-400 tracking-tighter">{UI_LABELS.dynamic.ID} {p.paymentReference}</span>
               )}
             </div>
           </div>
@@ -179,7 +180,7 @@ export function DetailedSalesTable({ date, from, to, label }: DetailedSalesTable
             <FileText className="h-6 w-6 text-brand-blue" />
           </div>
           <div>
-            <h3 className="text-slate-900 font-black text-xl tracking-tight leading-none mb-1.5">{UI_LABELS.modules.reports.SALES_HISTORY}</h3>
+            <h3 className="text-slate-900 font-black text-xl tracking-tight leading-none mb-2">{UI_LABELS.modules.reports.SALES_HISTORY}</h3>
             <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em]">
               {label || `DETAILED BREAKDOWN — ${date}`}
             </p>

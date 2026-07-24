@@ -26,7 +26,6 @@
 :root {
   /* Design Tokens (FRONT-001) */
   --brand-blue: #15489d;
-  --brand-blue-light: #e8eef6;
   --brand-cyan: #30a8d4;
   --brand-cyan-dark: #1a7fa8;
   
@@ -193,12 +192,9 @@
 
   /* Glassmorphism Standard (FRONT-001 §2.4.2) */
   .glass {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 
-      0 4px 24px -1px rgba(0, 0, 0, 0.04),
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
   }
 
   .glass-light {
@@ -207,6 +203,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  /* Custom scrollbar — applies to both vertical and horizontal axes (FRONT-001 §2.5) */
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
@@ -216,6 +213,7 @@
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
@@ -226,26 +224,6 @@
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
-  }
-
-  /* Premium Design Utilities */
-  .text-glow {
-    text-shadow: 0 0 15px rgba(21, 72, 157, 0.4);
-  }
-
-  .text-glow-cyan {
-    text-shadow: 0 0 15px rgba(48, 168, 212, 0.4);
-  }
-
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .shadow-premium {
-    box-shadow: 
-      0 10px 15px -3px rgba(0, 0, 0, 0.05),
-      0 4px 6px -2px rgba(0, 0, 0, 0.02),
-      0 0 40px -10px rgba(21, 72, 157, 0.08);
   }
 }
 
@@ -258,10 +236,3 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
-
-@keyframes float {
-	0% { transform: translateY(0px); }
-	50% { transform: translateY(-10px); }
-	100% { transform: translateY(0px); }
-}
-

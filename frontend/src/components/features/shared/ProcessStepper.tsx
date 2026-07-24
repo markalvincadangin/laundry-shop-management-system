@@ -38,7 +38,7 @@ export function ProcessStepper({
   return (
     <div className="relative flex items-center justify-between w-full h-12">
       {/* Background Line */}
-      <div className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 bg-slate-100" />
+      <div data-testid="stepper-bg-line" className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 bg-slate-100" />
       
       {/* Progress Line */}
       <motion.div 
@@ -46,6 +46,7 @@ export function ProcessStepper({
         initial={{ width: 0 }}
         animate={{ width: `${(currentIndex / (STEPS.length - 1)) * 100}%` }}
         transition={{ duration: 0.8, ease: "circOut" }}
+        data-testid="stepper-progress-line"
       />
 
       {STEPS.map((step, index) => {

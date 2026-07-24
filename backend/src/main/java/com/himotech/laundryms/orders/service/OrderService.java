@@ -1,5 +1,7 @@
 package com.himotech.laundryms.orders.service;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.auditlog.aspect.Auditable;
 import com.himotech.laundryms.orders.dto.CreateOrderRequest;
 import com.himotech.laundryms.orders.dto.OrderListParams;
@@ -20,6 +22,8 @@ import com.himotech.laundryms.orders.entity.Order;
 import com.himotech.laundryms.orders.repository.OrderRepository;
 import com.himotech.laundryms.orders.repository.OrderSpecification;
 import com.himotech.laundryms.rates.entity.ServiceRate;
+import com.himotech.laundryms.rates.entity.AddOnCatalog;
+import com.himotech.laundryms.rates.repository.AddOnCatalogRepository;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
@@ -27,6 +31,7 @@ import com.himotech.laundryms.payments.repository.PaymentRepository;
 import com.himotech.laundryms.orders.dto.OrderResponse;
 import com.himotech.laundryms.orders.mapper.OrderMapper;
 import com.himotech.laundryms.auditlog.service.AuditLogService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
@@ -56,16 +61,18 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final AuditLogService auditLogService;
     private final OrderMapper orderMapper;
+    private final AddOnCatalogRepository addOnCatalogRepository;
+
 
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
 
-    private String generateUniqueReferenceNumber() {
+    private String generateUniqueTrackingNumber() {
         String datePart = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE); // yyyyMMdd
         Random random = new Random();
         for (int attempt = 0; attempt < MAX_REFERENCE_ATTEMPTS; attempt++) {
             int suffix = 1000 + random.nextInt(9000); // 1000-9999
             String ref = "LDR-" + datePart + "-" + suffix;
-            if (!orderRepository.existsByReferenceNumber(ref)) {
+            if (!orderRepository.existsByTrackingNumber(ref)) {
                 return ref;
             }
         }
@@ -82,7 +89,7 @@ public class OrderService {
     @Transactional
     public Order createFromRequest(CreateOrderRequest request) {
         // Resolve customer ID
-        Long customerId = resolveCustomerId(request);
+        UUID customerId = resolveCustomerId(request);
         
         // Normalize add-ons
         List<CreateOrderCommand.AddOnItem> addOns = normalizeAddOns(request);
@@ -95,7 +102,8 @@ public class OrderService {
                 request.getExtraMinutes() != null ? request.getExtraMinutes() : 0,
                 addOns,
                 request.getServiceType(),
-                request.getNotes()
+                request.getNotes(),
+                request.getIsRush() != null ? request.getIsRush() : false
         );
         
         return create(command);
@@ -109,7 +117,7 @@ public class OrderService {
      * @return the customer ID
      * @throws IllegalArgumentException if neither customerId nor customer is provided
      */
-    private Long resolveCustomerId(CreateOrderRequest request) {
+    private UUID resolveCustomerId(CreateOrderRequest request) {
         if (request.getCustomerId() != null) {
             return request.getCustomerId();
         }
@@ -134,17 +142,33 @@ public class OrderService {
      * @return normalized list of add-on items
      */
     private List<CreateOrderCommand.AddOnItem> normalizeAddOns(CreateOrderRequest request) {
-        if (request.getInitialAddOns() == null) {
-            return List.of();
+        List<CreateOrderCommand.AddOnItem> normalized = new java.util.ArrayList<>();
+        if (request.getInitialAddOns() != null) {
+            normalized.addAll(request.getInitialAddOns().stream()
+                    .map(a -> new CreateOrderCommand.AddOnItem(
+                            a.getName(),
+                            a.getPrice(),
+                            a.getQuantity() > 0 ? a.getQuantity() : 1
+                    ))
+                    .collect(Collectors.toList()));
+        }
+
+        if (Boolean.TRUE.equals(request.getIsRush())) {
+            boolean hasRush = normalized.stream().anyMatch(a -> a.name().equalsIgnoreCase("Rush Fee"));
+            if (!hasRush) {
+                addOnCatalogRepository.findByNameIgnoreCase("Rush Fee").ifPresent(catalogItem -> {
+                    if (catalogItem.getIsActive()) {
+                        normalized.add(new CreateOrderCommand.AddOnItem(
+                                catalogItem.getName(),
+                                catalogItem.getDefaultPrice(),
+                                1
+                        ));
+                    }
+                });
+            }
         }
         
-        return request.getInitialAddOns().stream()
-                .map(a -> new CreateOrderCommand.AddOnItem(
-                        a.getName(),
-                        a.getPrice(),
-                        a.getQuantity() > 0 ? a.getQuantity() : 1
-                ))
-                .collect(Collectors.toList());
+        return normalized;
     }
 
     @Auditable(action = "ORDER_CREATE", description = "Create new laundry order")
@@ -177,7 +201,21 @@ public class OrderService {
                 .multiply(BigDecimal.valueOf(command.extraMinutes()))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        List<CreateOrderCommand.AddOnItem> addOnList = command.addOns() != null ? command.addOns() : List.of();
+        List<CreateOrderCommand.AddOnItem> addOnList = new java.util.ArrayList<>(command.addOns() != null ? command.addOns() : List.of());
+        if (command.isRush()) {
+            boolean hasRush = addOnList.stream().anyMatch(a -> a.name().equalsIgnoreCase("Rush Fee"));
+            if (!hasRush) {
+                addOnCatalogRepository.findByNameIgnoreCase("Rush Fee").ifPresent(catalogItem -> {
+                    if (catalogItem.getIsActive()) {
+                        addOnList.add(new CreateOrderCommand.AddOnItem(
+                                catalogItem.getName(),
+                                catalogItem.getDefaultPrice(),
+                                1
+                        ));
+                    }
+                });
+            }
+        }
         BigDecimal addonsTotalAmount = addOnList.stream()
                 .map(addOnItem -> addOnItem.price().multiply(BigDecimal.valueOf(addOnItem.quantity())).setScale(2, RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -186,7 +224,7 @@ public class OrderService {
 
 
         Order order = Order.builder()
-                .referenceNumber(generateUniqueReferenceNumber())
+                .trackingNumber(generateUniqueTrackingNumber())
                 .customer(customer)
                 .createdBy(createdBy)
                 .serviceRate(rate)
@@ -202,22 +240,29 @@ public class OrderService {
                 .grandTotal(grandTotal)
                 .currentStatus(OrderStatus.RECEIVED)   // BR-OL-02
                 .paymentStatus(PaymentStatus.UNPAID)
+                .isRush(command.isRush())
                 .notes(command.notes())
                 .build();
 
         for (CreateOrderCommand.AddOnItem item : addOnList) {
-            order.getAddOns().add(OrderAddOn.builder()
+            OrderAddOn addOn = OrderAddOn.builder()
                     .order(order)
                     .name(item.name())
                     .price(item.price())
                     .quantity(item.quantity())
-                    .build());
+                    .build();
+            
+            addOnCatalogRepository.findByNameIgnoreCase(item.name())
+                    .ifPresent(addOn::setAddOnCatalog);
+                    
+            order.getAddOns().add(addOn);
         }
 
         order = orderRepository.save(order);
+        
 
         log.info("Order created successfully: Reference={}, Customer={} {}, Total=₱{}", 
-                order.getReferenceNumber(), 
+                order.getTrackingNumber(), 
                 customer.getFirstName(), 
                 customer.getLastName(), 
                 order.getGrandTotal());
@@ -257,14 +302,30 @@ public class OrderService {
                 .multiply(BigDecimal.valueOf(extraMins))
                 .setScale(2, RoundingMode.HALF_UP);
 
-        List<CreateOrderCommand.AddOnItem> addOnList = request.getInitialAddOns() != null
-                ? request.getInitialAddOns().stream()
-                        .map(a -> new CreateOrderCommand.AddOnItem(
-                                a.getName(),
-                                a.getPrice(),
-                                a.getQuantity() > 0 ? a.getQuantity() : 1))
-                        .collect(Collectors.toList())
-                : List.of();
+        List<CreateOrderCommand.AddOnItem> addOnList = new java.util.ArrayList<>();
+        if (request.getInitialAddOns() != null) {
+            addOnList.addAll(request.getInitialAddOns().stream()
+                    .map(a -> new CreateOrderCommand.AddOnItem(
+                            a.getName(),
+                            a.getPrice(),
+                            a.getQuantity() > 0 ? a.getQuantity() : 1))
+                    .collect(Collectors.toList()));
+        }
+
+        if (Boolean.TRUE.equals(request.getIsRush())) {
+            boolean hasRush = addOnList.stream().anyMatch(a -> a.name().equalsIgnoreCase("Rush Fee"));
+            if (!hasRush) {
+                addOnCatalogRepository.findByNameIgnoreCase("Rush Fee").ifPresent(catalogItem -> {
+                    if (catalogItem.getIsActive()) {
+                        addOnList.add(new CreateOrderCommand.AddOnItem(
+                                catalogItem.getName(),
+                                catalogItem.getDefaultPrice(),
+                                1
+                        ));
+                    }
+                });
+            }
+        }
 
         BigDecimal addonsTotalAmount = addOnList.stream()
                 .map(addOnItem -> addOnItem.price().multiply(BigDecimal.valueOf(addOnItem.quantity())).setScale(2, RoundingMode.HALF_UP))
@@ -304,7 +365,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrderDetails(Long id) {
+    public OrderResponse getOrderDetails(UUID id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
         
@@ -314,7 +375,7 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Order findById(Long id) {
+    public Order findById(UUID id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + id));
     }
@@ -330,7 +391,7 @@ public class OrderService {
      */
     @Auditable(action = "ORDER_UPDATE", description = "Update order details")
     @Transactional
-    public Order update(Long orderId, UpdateOrderRequest request) {
+    public Order update(UUID orderId, UpdateOrderRequest request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
 
@@ -392,13 +453,16 @@ public class OrderService {
         BigDecimal grandTotal = order.getBaseAmount().add(extraMinutesAmount).add(addonsTotalAmount);
         order.setGrandTotal(grandTotal);
 
-        return orderRepository.save(order);
+        order = orderRepository.save(order);
+        
+        
+        return order;
     }
 
     @Transactional(readOnly = true)
-    public Order findByReferenceNumber(String referenceNumber) {
-        return orderRepository.findByReferenceNumber(referenceNumber)
-                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + referenceNumber));
+    public Order findByTrackingNumber(String trackingNumber) {
+        return orderRepository.findByTrackingNumber(trackingNumber)
+                .orElseThrow(() -> new NotFoundException("Order not found for reference: " + trackingNumber));
     }
 
     @Transactional(readOnly = true)
@@ -422,7 +486,6 @@ public class OrderService {
         if (serviceType == null) return serviceRateService.getActiveRate();
         
         String dbName = switch (serviceType) {
-            case "WASH_DRY_FOLD_RUSH" -> "Rush Wash";
             case "BLANKETS" -> "Blankets";
             default -> "Standard Wash";
         };
@@ -432,10 +495,11 @@ public class OrderService {
 
     @Auditable(action = "ORDER_DELETE", description = "Delete laundry order")
     @Transactional
-    public void deleteOrder(Long orderId) {
+    public void deleteOrder(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + orderId));
         orderRepository.delete(order);
+        
     }
 
 }

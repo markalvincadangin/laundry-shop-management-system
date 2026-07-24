@@ -22,4 +22,5 @@ public class OrderPreviewRequest {
     private List<AddOnInput> initialAddOns;
 
     private String serviceType;
+    private Boolean isRush = false;
 }

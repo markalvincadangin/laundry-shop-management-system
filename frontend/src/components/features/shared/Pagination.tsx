@@ -61,7 +61,7 @@ export function Pagination({
         <div className="flex items-center gap-grid-3 group">
           <div className="h-2.5 w-2.5 rounded-full bg-brand-blue shadow-[0_0_10px_rgba(21,72,157,0.4)] group-hover:scale-125 transition-transform duration-500" />
           <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 whitespace-nowrap">
-            {UI_LABELS.pagination.SHOWING} <span className="text-slate-900 font-bold">{startEntry} — {endEntry}</span> {UI_LABELS.pagination.OF} <span className="text-slate-900 font-bold">{totalElements || "?"}</span>
+            {UI_LABELS.pagination.SHOWING} <span className="text-slate-900 font-bold">{startEntry} {UI_LABELS.dynamic.STR_26aeab} {endEntry}</span> {UI_LABELS.pagination.OF} <span className="text-slate-900 font-bold">{totalElements || "?"}</span>
           </span>
         </div>
 
@@ -87,7 +87,7 @@ export function Pagination({
 
       <div className="flex items-center gap-grid-1.5">
         {/* Navigation Buttons */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100/50 rounded-2xl border border-slate-200/60">
+        <div className="flex items-center gap-2 p-1 bg-slate-100/50 rounded-2xl border border-slate-200/60">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -110,7 +110,7 @@ export function Pagination({
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <div className="hidden md:flex items-center gap-1 mx-1.5">
+          <div className="hidden md:flex items-center gap-2 mx-2">
             {pages.map((page, idx) => {
               if (typeof page === "string") {
                 return (
@@ -128,7 +128,7 @@ export function Pagination({
                   size="sm"
                   onClick={() => onPageChange(page)}
                   disabled={isLoading}
-                  className={`h-10 min-w-[40px] px-2 font-black text-[11px] transition-all duration-500 rounded-xl ${
+                  className={`h-10 min-w-10 px-2 font-black text-[11px] transition-all duration-500 rounded-xl ${
                     isCurrent 
                       ? "shadow-lg shadow-brand-blue/20 bg-brand-blue text-white" 
                       : "hover:bg-white hover:shadow-sm text-slate-500"

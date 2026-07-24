@@ -1,5 +1,7 @@
 package com.himotech.laundryms.customers.api;
 
+import java.util.UUID;
+
 import com.himotech.laundryms.customers.dto.CreateCustomerRequest;
 import com.himotech.laundryms.customers.dto.CustomerResponse;
 import com.himotech.laundryms.shared.dto.PageResponse;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +30,7 @@ public class CustomerController {
     private final CustomerMapper customerMapper;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CreateCustomerRequest request) {
         Customer customer = customerService.create(
                 request.getFirstName(),
@@ -37,6 +41,7 @@ public class CustomerController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<PageResponse<CustomerResponse>> search(
             @RequestParam(required = false) String q,
             @RequestParam(required = false) Boolean isActive,
@@ -70,21 +75,24 @@ public class CustomerController {
     }
 
     @GetMapping("/{customerId}")
-    public ResponseEntity<CustomerResponse> getById(@PathVariable Long customerId) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<CustomerResponse> getById(@PathVariable UUID customerId) {
         Customer customer = customerService.findById(customerId)
                 .orElseThrow(() -> new NotFoundException("Customer not found: " + customerId));
         return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
 
     @PatchMapping("/{customerId}/toggle-active")
-    public ResponseEntity<CustomerResponse> toggleActive(@PathVariable Long customerId) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CustomerResponse> toggleActive(@PathVariable UUID customerId) {
         Customer customer = customerService.toggleActive(customerId);
         return ResponseEntity.ok(customerMapper.toResponse(customer));
     }
 
     @PatchMapping("/{customerId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CustomerResponse> update(
-            @PathVariable Long customerId,
+            @PathVariable UUID customerId,
             @Valid @RequestBody CreateCustomerRequest request) {
         Customer customer = customerService.update(
                 customerId,
