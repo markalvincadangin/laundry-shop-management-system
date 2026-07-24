@@ -132,12 +132,24 @@ begin
   if NeedsPostgreSQL then
   begin
     PrepareCredentials;
+    
+    // Clean up partial or non-empty directory from previous interrupted installation attempts
+    if DirExists('C:\Program Files\PostgreSQL\16') then
+    begin
+      DelTree('C:\Program Files\PostgreSQL\16', True, True, True);
+    end;
+
     PgInstaller := ExpandConstant('{tmp}\postgresql-16.2-1-windows-x64.exe');
-    Params := '--mode unattended --superpassword "' + GeneratedDbPassword + '" --serverport 5432 --prefix "C:\Program Files\PostgreSQL\16" --datadir "C:\Program Files\PostgreSQL\16\data"';
+    Params := '--mode unattended --superpassword "' + GeneratedDbPassword + '" --serverport 5432 --prefix "C:\Program Files\PostgreSQL\16"';
     WizardForm.StatusLabel.Caption := 'Installing PostgreSQL 16 Database Service (this may take a minute)...';
+    
     if not Exec(PgInstaller, Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
     begin
       MsgBox('Failed to execute PostgreSQL silent installer. Exit code: ' + IntToStr(ResultCode), mbError, MB_OK);
+    end
+    else if (ResultCode <> 0) and not FileExists('C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe') then
+    begin
+      MsgBox('PostgreSQL installation finished with exit code ' + IntToStr(ResultCode) + '. Please check Windows event logs.', mbError, MB_OK);
     end;
   end;
 end;
@@ -181,6 +193,37 @@ begin
   SaveStringToFile(ConfigFile, ConfigContent, False);
 end;
 
+// Poll http://localhost:8080 until server responds with HTTP 200/302/401, or until timeout (up to 30s)
+procedure WaitForServerReady;
+var
+  WinHttp: Variant;
+  i: Integer;
+  IsReady: Boolean;
+begin
+  WizardForm.StatusLabel.Caption := 'Waiting for Laundry Shop Management System server to initialize...';
+  IsReady := False;
+  try
+    WinHttp := CreateOleObject('WinHttp.WinHttpRequest.5.1');
+    for i := 1 to 30 do
+    begin
+      try
+        WinHttp.Open('GET', 'http://localhost:8080/api/v1/health', False);
+        WinHttp.Send('');
+        if (WinHttp.Status = 200) or (WinHttp.Status = 302) or (WinHttp.Status = 401) then
+        begin
+          IsReady := True;
+          Break;
+        end;
+      except
+        // Server still initializing
+      end;
+      Sleep(1000);
+    end;
+  except
+    // OLE object not supported or HTTP request failed
+  end;
+end;
+
 // Setup step hook
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
@@ -192,5 +235,6 @@ begin
   if CurStep = ssPostInstall then
   begin
     ConfigureEnvironmentAndProperties;
+    WaitForServerReady;
   end;
 end;

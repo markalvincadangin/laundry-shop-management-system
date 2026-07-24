@@ -10,7 +10,7 @@
   <onfailure action="restart" delay="20 sec"/>
   <onfailure action="none"/>
   <startmode>Automatic</startmode>
-  <delayedAutoStart>true</delayedAutoStart>
+  <delayedAutoStart>false</delayedAutoStart>
   <stopexecutable>java</stopexecutable>
   <stoparguments>-jar "%BASE%\laundryms.jar" --stop</stoparguments>
   <stoptimeout>30 sec</stoptimeout>
