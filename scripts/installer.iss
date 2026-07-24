@@ -28,6 +28,9 @@ PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 LicenseFile=resources\LICENSE.txt
+; Commercial Production Code Signing Directive:
+; To sign via Inno Setup IDE, configure SignTool in Inno Setup options or uncomment below:
+; SignTool=signtool /f "C:\path\to\cert.pfx" /p "password" /tr http://timestamp.digicert.com /td sha256 /fd sha256 $f
 ChangesEnvironment=yes
 
 [Languages]

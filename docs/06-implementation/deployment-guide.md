@@ -45,6 +45,19 @@ Open PowerShell and run the build script from the project root:
 5. Compiles the package using Inno Setup (`ISCC.exe scripts/installer.iss`).
 6. Outputs the final installer wizard: `backend/target/LaundryShopMS-Setup-1.0.0.exe`.
 
+### Commercial Production Code Signing (Preventing SmartScreen Prompts)
+For commercial distribution online, you can sign the generated `.exe` installer using an EV/OV Code Signing Certificate (`.pfx`) to eliminate Windows SmartScreen / Smart App Control prompts for customers:
+
+```powershell
+# Option A: Pass certificate path & password directly to build-installer.ps1
+.\scripts\build-installer.ps1 -CertPath "C:\certs\my-cert.pfx" -CertPassword "YourPassword"
+
+# Option B: Set environment variables
+$env:CODE_SIGN_CERT = "C:\certs\my-cert.pfx"
+$env:CODE_SIGN_PASSWORD = "YourPassword"
+.\scripts\build-installer.ps1
+```
+
 ---
 
 ## 3. Installing on the Shop Counter Laptop
