@@ -68,4 +68,6 @@ jpackage --name "$appName" `
 Write-Host "`n==================================================" -ForegroundColor Green
 Write-Host " SUCCESS! Professional MSI Installer generated: " -ForegroundColor Green
 Write-Host " $backendDir\$appName-$AppVersion.msi" -ForegroundColor Green
+Write-Host "`n To install/upgrade smoothly on Windows, run: " -ForegroundColor Cyan
+Write-Host " .\scripts\install_standalone.ps1" -ForegroundColor Yellow
 Write-Host "==================================================" -ForegroundColor Green
