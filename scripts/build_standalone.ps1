@@ -40,10 +40,11 @@ New-Item -ItemType Directory -Path "$deployDir\logs" -Force | Out-Null
 $jarName = "laundryms-backend-0.0.1-SNAPSHOT.jar"
 Copy-Item -Path "$backendDir\target\$jarName" -Destination "$deployDir\laundryms.jar" -Force
 
-# Copy WinSW service wrapper and config
+# Copy WinSW service wrapper, config, and app icon
 $resourcesDir = Join-Path $PSScriptRoot "resources"
 Copy-Item -Path "$resourcesDir\laundryms-service.xml" -Destination "$deployDir\laundryms-service.xml" -Force
 Copy-Item -Path "$resourcesDir\start.bat" -Destination "$deployDir\start.bat" -Force
+Copy-Item -Path "$resourcesDir\app.ico" -Destination "$deployDir\app.ico" -Force
 
 # Download WinSW if not cached
 $winswCache = Join-Path $env:TEMP "WinSW-x64.exe"
