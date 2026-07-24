@@ -58,7 +58,8 @@ Open PowerShell and run the build script from the project root:
    - **Automated Setup** → The wizard automatically:
      - Installs PostgreSQL 16 silently as a Windows Service if not already installed.
      - Configures Machine-level environment variables (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`).
-     - Extracts application files and WinSW service wrapper.
+     - Extracts application files, WinSW service wrapper, Cloudflare, and Ngrok binaries.
+     - Prompts for **Remote Access Provider** (Ngrok, Cloudflare, or Local Only) and configures the selected tunneling background service.
      - Registers and starts the `LaundryShopMS` Windows background service.
      - Creates Desktop & Start Menu shortcuts with the custom app icon.
      - Registers in Windows **Add/Remove Programs**.
@@ -69,35 +70,31 @@ Open PowerShell and run the build script from the project root:
 
 ---
 
-## 4. Setting up Cloudflare Tunnels & Zero Trust Remote Access
+## 4. Setting up Remote Tunnels (Ngrok or Cloudflare)
 
-To expose the system to the public internet securely (for customer tracking and optional remote Admin/Staff management), configure two hostname routes in Cloudflare Zero Trust.
+To expose the system to the public internet securely (for customer tracking and optional remote Admin/Staff management), the setup wizard allows you to pick a provider.
 
-### 4.1 Cloudflare Dashboard Configuration
+### Option A: Ngrok (Free Public URL)
+Ngrok provides a fast, permanent static domain for zero cost.
+1. Sign up at [ngrok.com](https://ngrok.com).
+2. Go to **Domains** and claim your Free Static Domain (e.g., `fluent-hippo.ngrok-free.app`).
+3. Go to **Your Authtoken** and copy the token.
+4. Run the LaundryShopMS setup wizard, select **Ngrok**, and paste the Token and Domain. The wizard will automatically install and configure the Ngrok background service for you.
+
+### Option B: Cloudflare Zero Trust (Custom Domain)
+If you own a custom domain (e.g., `faithlaundry.com`) and want maximum protection, use Cloudflare.
 1. Log in to the free [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/).
 2. Navigate to **Networks > Tunnels** and create a new tunnel named `faithlaundry-local`.
-3. Configure Public Hostname Routes:
-   - **Route 1 (Public Customer Tracking)**:  
-     - Public Hostname: `track.faithlaundry.com`  
-     - Destination: `HTTP` `localhost:8080`
-   - **Route 2 (Protected Staff/Admin Dashboard)**:  
-     - Public Hostname: `app.faithlaundry.com`  
-     - Destination: `HTTP` `localhost:8080`
+3. Configure Public Hostname Routes (e.g., `track.faithlaundry.com` pointing to `HTTP localhost:8765`).
 4. Copy the generated Tunnel Token.
+5. Run the LaundryShopMS setup wizard, select **Cloudflare**, and paste the Token. The wizard will automatically install the cloudflared background service.
 
-### 4.2 Cloudflare Zero Trust Access Rule (Remote App Protection)
-To ensure the remote Admin/Staff app (`app.faithlaundry.com`) cannot be accessed by unauthorized internet traffic:
+### Zero Trust Access Rule (Remote App Protection)
+If using Cloudflare, to ensure the remote Admin/Staff app cannot be accessed by unauthorized internet traffic:
 1. In Cloudflare Zero Trust, go to **Access > Applications**.
 2. Add an Application for `app.faithlaundry.com`.
 3. Set Policy Rule: **Include > Emails > `owner@faithlaundry.com`, `staff@faithlaundry.com`**.
 4. Whenever someone opens `app.faithlaundry.com` remotely, Cloudflare requires a **One-Time Passcode (OTP)** sent to their email before showing the login screen.
-
-### 4.3 Automated Cloudflare Tunnel Installation on Shop Laptop
-Run PowerShell as Administrator and execute:
-```powershell
-cloudflared service install <YOUR_TUNNEL_TOKEN>
-```
-This automatically installs `cloudflared` as a silent Windows background service that starts on boot.
 
 ---
 

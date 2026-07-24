@@ -37,7 +37,7 @@ The system uses a **unified `.env` file** at the project root for all runtime mo
 | `SPRING_PROFILES_ACTIVE` | `dev` | Activates profile-specific behavior (dev / prod). | Medium |
 | `JWT_SECRET` | _(none)_ | Secret key for HS256 signing. Must be ≥ 32 chars. | **CRITICAL** |
 | `ALLOWED_ORIGIN` | `http://localhost:3000` | CORS policy for frontend access. | High |
-| `ALLOWED_ORIGIN_PATTERNS` | `https://*.vercel.app,https://*.faithlaundry.com` | Comma-separated CORS patterns for Cloudflare Tunnel / Vercel public tracking. | High |
+| `ALLOWED_ORIGIN_PATTERNS` | `https://*.vercel.app,https://*.ngrok-free.dev,https://*.ngrok-free.app` | Comma-separated CORS patterns for Cloudflare / Ngrok / Vercel public tracking. | High |
 
 ### 3. Demo Seeding (Dev Only)
 *Optional variables to initialize the system with default accounts.*
