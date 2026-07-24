@@ -72,13 +72,29 @@ $iscc = $isccPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $iscc) {
     Write-Host "`n[!] Inno Setup 6 not found. Installing silently..." -ForegroundColor Yellow
-    $innoInstallerUrl = "https://jrsoftware.org/download.php/is.exe"
-    $innoInstallerPath = Join-Path $env:TEMP "innosetup-installer.exe"
-    Invoke-WebRequest -Uri $innoInstallerUrl -OutFile $innoInstallerPath -UseBasicParsing
-    Start-Process -FilePath $innoInstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait
-    $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-    if (-not (Test-Path $iscc)) {
-        Write-Error "Inno Setup installation failed. Please install manually from https://jrsoftware.org/isdl.php"
+    $innoInstallerUrl = "https://files.jrsoftware.org/is/6/innosetup-6.3.3.exe"
+    $innoInstallerPath = Join-Path $env:TEMP "innosetup-6.3.3.exe"
+    
+    # Remove corrupted or incomplete download if present
+    if (Test-Path $innoInstallerPath) {
+        $fileInfo = Get-Item $innoInstallerPath
+        if ($fileInfo.Length -lt 2000000) {
+            Remove-Item $innoInstallerPath -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    if (-not (Test-Path $innoInstallerPath)) {
+        Write-Host "[Inno Setup] Downloading Inno Setup 6.3.3 installer..." -ForegroundColor Yellow
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $innoInstallerUrl -OutFile $innoInstallerPath -UserAgent "Mozilla/5.0" -UseBasicParsing
+    }
+
+    Write-Host "[Inno Setup] Installing Inno Setup 6.3.3..." -ForegroundColor Yellow
+    $installProc = Start-Process -FilePath $innoInstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART" -Wait -PassThru
+    
+    $iscc = $isccPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $iscc) {
+        Write-Error "Inno Setup installation failed. Please install Inno Setup 6 manually from https://jrsoftware.org/isdl.php"
         exit 1
     }
     Write-Host "[Inno Setup] Installed successfully." -ForegroundColor Green
