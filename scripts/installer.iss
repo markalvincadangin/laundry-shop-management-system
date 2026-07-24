@@ -48,7 +48,7 @@ Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\backend\target\deploy-staging\cloudflared.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; PostgreSQL Silent Installer (staged during build)
-Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall ignoreversion; Check: NeedsPostgreSQL
+Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall ignoreversion
 
 [Dirs]
 Name: "{app}\config"
@@ -147,23 +147,32 @@ begin
   begin
     PrepareCredentials;
     
+    PgInstaller := ExpandConstant('{tmp}\postgresql-16.2-1-windows-x64.exe');
+    if not FileExists(PgInstaller) then
+    begin
+      MsgBox('PostgreSQL installer executable not found in setup directory: ' + PgInstaller, mbError, MB_OK);
+      Exit;
+    end;
+
     // Clean up partial or non-empty directory from previous interrupted installation attempts
     if DirExists('C:\Program Files\PostgreSQL\16') then
     begin
       DelTree('C:\Program Files\PostgreSQL\16', True, True, True);
     end;
 
-    PgInstaller := ExpandConstant('{tmp}\postgresql-16.2-1-windows-x64.exe');
     Params := '--mode unattended --superpassword "' + GeneratedDbPassword + '" --serverport 5432 --prefix "C:\Program Files\PostgreSQL\16"';
     WizardForm.StatusLabel.Caption := 'Installing PostgreSQL 16 Database Service (this may take a minute)...';
     
-    if not Exec(PgInstaller, Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+    if Exec(PgInstaller, Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
     begin
-      MsgBox('Failed to execute PostgreSQL silent installer. Exit code: ' + IntToStr(ResultCode), mbError, MB_OK);
+      if (ResultCode <> 0) and not FileExists('C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe') then
+      begin
+        MsgBox('PostgreSQL installation finished with exit code ' + IntToStr(ResultCode) + '. Please check Windows event logs.', mbError, MB_OK);
+      end;
     end
-    else if (ResultCode <> 0) and not FileExists('C:\Program Files\PostgreSQL\16\bin\pg_ctl.exe') then
+    else
     begin
-      MsgBox('PostgreSQL installation finished with exit code ' + IntToStr(ResultCode) + '. Please check Windows event logs.', mbError, MB_OK);
+      MsgBox('Failed to execute PostgreSQL silent installer process. Error code: ' + IntToStr(ResultCode), mbError, MB_OK);
     end;
   end;
 end;
