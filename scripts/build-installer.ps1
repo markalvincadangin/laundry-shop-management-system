@@ -58,6 +58,15 @@ if (-not (Test-Path $pgCache)) {
 }
 Copy-Item -Path $pgCache -Destination "$deployDir\postgresql-$pgVersion-windows-x64.exe" -Force
 
+# Download cloudflared if not cached
+$cfCache = Join-Path $env:TEMP "cloudflared.exe"
+if (-not (Test-Path $cfCache)) {
+    Write-Host "[Cloudflare] Downloading cloudflared binary for optional remote tunneling..." -ForegroundColor Yellow
+    $cfUrl = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
+    Invoke-WebRequest -Uri $cfUrl -OutFile $cfCache -UseBasicParsing
+}
+Copy-Item -Path $cfCache -Destination "$deployDir\cloudflared.exe" -Force
+
 # ── 5. Compile Installer via Inno Setup ──
 Write-Host "`n[5/5] Compiling Windows Installer (.exe) via Inno Setup..." -ForegroundColor Yellow
 

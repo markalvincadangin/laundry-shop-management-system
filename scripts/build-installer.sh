@@ -59,6 +59,14 @@ if [ ! -f "$PG_CACHE" ]; then
 fi
 cp "$PG_CACHE" "$DEPLOY_DIR/postgresql-$PG_VERSION-windows-x64.exe"
 
+# Download cloudflared installer if not cached
+CF_CACHE="/tmp/cloudflared.exe"
+if [ ! -f "$CF_CACHE" ]; then
+    echo "[Cloudflare] Downloading cloudflared binary for optional remote tunneling..."
+    curl -sSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -o "$CF_CACHE"
+fi
+cp "$CF_CACHE" "$DEPLOY_DIR/cloudflared.exe"
+
 echo ""
 echo "=================================================="
 echo " Deployment files staged successfully:           "

@@ -44,6 +44,9 @@ Source: "resources\laundryms-service.xml"; DestDir: "{app}"; Flags: ignoreversio
 ; License and App Icon
 Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 
+; Cloudflare Tunnel Daemon (staged during build for optional remote tracking)
+Source: "..\backend\target\deploy-staging\cloudflared.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 ; PostgreSQL Silent Installer (staged during build)
 Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall ignoreversion; Check: NeedsPostgreSQL
 
@@ -66,14 +69,28 @@ Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starti
 Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "Open {#AppName}"
 
 [UninstallRun]
-; Stop and unregister the Windows Service before uninstallation
+; Stop and unregister Windows Services before uninstallation
 Filename: "{app}\laundryms-service.exe"; Parameters: "stop"; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated
+Filename: "{app}\cloudflared.exe"; Parameters: "service uninstall"; Flags: runhidden waituntilterminated
 
 [Code]
 var
   GeneratedDbPassword: String;
   GeneratedJwtSecret: String;
+  CloudflarePage: TInputQueryWizardPage;
+
+procedure InitializeWizard;
+begin
+  // Create optional Cloudflare Tunnel Token input page for public customer tracking
+  CloudflarePage := CreateInputQueryPage(wpSelectTasks,
+    'Cloudflare Tunnel Setup (Optional)',
+    'Public Customer Order Tracking Integration',
+    'If you use Cloudflare Zero Trust to expose public order tracking (e.g., track.faithlaundry.com), enter your Tunnel Token below.' + #13#10 +
+    'If this PC is only used as a local counter POS, leave this field blank and click Next.',
+    False);
+  CloudflarePage.Add('Cloudflare Tunnel Token:', False);
+end;
 
 // Helper function to generate cryptographically random strings
 function GenerateRandomString(Len: Integer; Chars: String): String;
@@ -224,6 +241,22 @@ begin
   end;
 end;
 
+procedure InstallCloudflareServiceIfNeeded;
+var
+  Token: String;
+  ResultCode: Integer;
+begin
+  if CloudflarePage <> nil then
+  begin
+    Token := Trim(CloudflarePage.Values[0]);
+    if Token <> '' then
+    begin
+      WizardForm.StatusLabel.Caption := 'Installing Cloudflare Tunnel Service...';
+      Exec(ExpandConstant('{app}\cloudflared.exe'), 'service install ' + Token, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    end;
+  end;
+end;
+
 // Setup step hook
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
@@ -235,6 +268,7 @@ begin
   if CurStep = ssPostInstall then
   begin
     ConfigureEnvironmentAndProperties;
+    InstallCloudflareServiceIfNeeded;
     WaitForServerReady;
   end;
 end;
