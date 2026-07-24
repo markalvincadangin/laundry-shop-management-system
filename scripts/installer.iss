@@ -48,7 +48,7 @@ Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\backend\target\deploy-staging\cloudflared.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 ; PostgreSQL Silent Installer (staged during build)
-Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall ignoreversion
+Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; Flags: dontcopy
 
 [Dirs]
 Name: "{app}\config"
@@ -147,10 +147,14 @@ begin
   begin
     PrepareCredentials;
     
+    // Extract bundled PostgreSQL silent installer into {tmp} on-demand
+    WizardForm.StatusLabel.Caption := 'Extracting PostgreSQL 16 installer...';
+    ExtractTemporaryFile('postgresql-16.2-1-windows-x64.exe');
+
     PgInstaller := ExpandConstant('{tmp}\postgresql-16.2-1-windows-x64.exe');
     if not FileExists(PgInstaller) then
     begin
-      MsgBox('PostgreSQL installer executable not found in setup directory: ' + PgInstaller, mbError, MB_OK);
+      MsgBox('PostgreSQL installer executable not found after extraction: ' + PgInstaller, mbError, MB_OK);
       Exit;
     end;
 
