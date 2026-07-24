@@ -52,9 +52,9 @@ Name: "{app}\config"
 Name: "{app}\logs"
 
 [Icons]
-; Desktop and Start Menu shortcuts (Edge App Mode - Native Frameless Window)
-Name: "{commondesktop}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8765"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
-Name: "{group}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8765"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
+; Desktop and Start Menu shortcuts
+Name: "{commondesktop}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
+Name: "{group}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
@@ -62,8 +62,8 @@ Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Registering {#AppName} Service..."; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starting {#AppName}..."; Flags: runhidden waituntilterminated
 
-; Open application in Edge App Mode after install
-Filename: "msedge.exe"; Parameters: "--app=http://localhost:8765"; Flags: postinstall skipifsilent; Description: "Open {#AppName}"
+; Open application in default browser after install
+Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "Open {#AppName}"
 
 [UninstallRun]
 ; Stop and unregister the Windows Service before uninstallation
