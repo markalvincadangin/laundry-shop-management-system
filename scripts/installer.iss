@@ -52,11 +52,9 @@ Name: "{app}\config"
 Name: "{app}\logs"
 
 [Icons]
-; Desktop shortcut
-Name: "{commondesktop}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"; Comment: "Open {#AppName}"
-
-; Start Menu shortcuts
-Name: "{group}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"; Comment: "Open {#AppName}"
+; Desktop and Start Menu shortcuts (Edge App Mode - Native Frameless Window)
+Name: "{commondesktop}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8080"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
+Name: "{group}\{#AppName}"; Filename: "msedge.exe"; Parameters: "--app=http://localhost:8080"; IconFilename: "{app}\app.ico"; Comment: "Launch {#AppName}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
@@ -64,8 +62,8 @@ Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Registering {#AppName} Service..."; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starting {#AppName}..."; Flags: runhidden waituntilterminated
 
-; Open browser after install
-Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "Open {#AppName} in browser"
+; Open application in Edge App Mode after install
+Filename: "msedge.exe"; Parameters: "--app=http://localhost:8080"; Flags: postinstall skipifsilent; Description: "Open {#AppName}"
 
 [UninstallRun]
 ; Stop and unregister the Windows Service before uninstallation
@@ -187,7 +185,7 @@ begin
     'spring.datasource.username=postgres' + #13#10 +
     'spring.datasource.password=' + GeneratedDbPassword + #13#10 +
     'security.jwt.secret-key=' + GeneratedJwtSecret + #13#10 +
-    'server.port=8080' + #13#10 +
+    'server.port=${SERVER_PORT:8080}' + #13#10 +
     'server.address=0.0.0.0' + #13#10;
     
   SaveStringToFile(ConfigFile, ConfigContent, False);
