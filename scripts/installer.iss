@@ -193,7 +193,7 @@ begin
   SaveStringToFile(ConfigFile, ConfigContent, False);
 end;
 
-// Poll http://localhost:8080 until server responds with HTTP 200/302/401, or until timeout (up to 30s)
+// Poll http://localhost:8080 until server responds with HTTP 200/302/401, or until timeout (up to 15s)
 procedure WaitForServerReady;
 var
   WinHttp: Variant;
@@ -204,7 +204,9 @@ begin
   IsReady := False;
   try
     WinHttp := CreateOleObject('WinHttp.WinHttpRequest.5.1');
-    for i := 1 to 30 do
+    // Set 1000ms timeouts (Resolve, Connect, Send, Receive) to prevent 60-second default TCP hang
+    WinHttp.SetTimeouts(1000, 1000, 1000, 1000);
+    for i := 1 to 15 do
     begin
       try
         WinHttp.Open('GET', 'http://localhost:8080/api/v1/health', False);
@@ -217,7 +219,7 @@ begin
       except
         // Server still initializing
       end;
-      Sleep(1000);
+      Sleep(500);
     end;
   except
     // OLE object not supported or HTTP request failed
