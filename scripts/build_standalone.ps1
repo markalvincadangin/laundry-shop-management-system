@@ -49,6 +49,7 @@ jlink --add-modules java.base,java.sql,java.desktop,java.naming,java.management,
       --no-man-pages
 
 $appName = "Laundry Shop Management System"
+$winUpgradeUuid = "4d9f8e21-0a56-4c7b-9e32-8f1d5e6a7b8c"
 
 jpackage --name "$appName" `
   --input "$stagingDir" `
@@ -56,6 +57,7 @@ jpackage --name "$appName" `
   --main-class "org.springframework.boot.loader.launch.JarLauncher" `
   --runtime-image $runtimeDir `
   --app-version $AppVersion `
+  --win-upgrade-uuid $winUpgradeUuid `
   --type msi `
   --win-dir-chooser `
   --win-shortcut `
