@@ -314,3 +314,11 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Initialize the single SystemSettings row
 INSERT INTO system_settings (id, is_system_paused, updated_at) VALUES (1, FALSE, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING;
+
+-- Seed Default Admin & Staff Accounts (Initial setup credentials)
+-- Default Password: password123 (Must be updated by Admin upon first login)
+INSERT INTO users (id, username, password_hash, role, first_name, last_name, is_active)
+VALUES 
+    ('00000000-0000-0000-0000-000000000001'::uuid, 'admin', '$2a$12$c3FYyt1SyfXgy845wUsuT.KogyMlHpAcrcsThTyfZQuvPKkLMmvlW', 'ADMIN', 'System', 'Administrator', TRUE),
+    ('00000000-0000-0000-0000-000000000002'::uuid, 'staff', '$2a$12$c3FYyt1SyfXgy845wUsuT.KogyMlHpAcrcsThTyfZQuvPKkLMmvlW', 'STAFF', 'Front', 'Desk', TRUE)
+ON CONFLICT (username) DO NOTHING;
