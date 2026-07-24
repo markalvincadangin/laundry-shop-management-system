@@ -77,6 +77,17 @@ if (-not (Test-Path $cfCache)) {
 }
 Copy-Item -Path $cfCache -Destination "$deployDir\cloudflared.exe" -Force
 
+# Download ngrok if not cached
+$ngrokCacheZip = Join-Path $env:TEMP "ngrok-v3-stable-windows-amd64.zip"
+$ngrokCacheExe = Join-Path $env:TEMP "ngrok.exe"
+if (-not (Test-Path $ngrokCacheExe)) {
+    Write-Host "[Ngrok] Downloading Ngrok binary for optional remote tunneling..." -ForegroundColor Yellow
+    $ngrokUrl = "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip"
+    Invoke-WebRequest -Uri $ngrokUrl -OutFile $ngrokCacheZip -UseBasicParsing
+    Expand-Archive -Path $ngrokCacheZip -DestinationPath $env:TEMP -Force
+}
+Copy-Item -Path $ngrokCacheExe -Destination "$deployDir\ngrok.exe" -Force
+
 # ── 5. Compile Installer via Inno Setup ──
 Write-Host "`n[5/5] Compiling Windows Installer (.exe) via Inno Setup..." -ForegroundColor Yellow
 

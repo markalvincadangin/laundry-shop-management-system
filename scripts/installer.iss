@@ -47,6 +47,9 @@ Source: "resources\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 ; Cloudflare Tunnel Daemon (staged during build for optional remote tracking)
 Source: "..\backend\target\deploy-staging\cloudflared.exe"; DestDir: "{app}"; Flags: ignoreversion
 
+; Ngrok Tunnel Daemon (staged during build for optional remote tracking)
+Source: "..\backend\target\deploy-staging\ngrok.exe"; DestDir: "{app}"; Flags: ignoreversion
+
 ; PostgreSQL Silent Installer (staged during build)
 Source: "..\backend\target\deploy-staging\postgresql-16.2-1-windows-x64.exe"; Flags: dontcopy
 
@@ -73,22 +76,58 @@ Filename: "{#AppURL}"; Flags: shellexec postinstall skipifsilent; Description: "
 Filename: "{app}\laundryms-service.exe"; Parameters: "stop"; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated
 Filename: "{app}\cloudflared.exe"; Parameters: "service uninstall"; Flags: runhidden waituntilterminated
+Filename: "{app}\ngrok.exe"; Parameters: "service uninstall"; Flags: runhidden waituntilterminated
 
 [Code]
 var
   GeneratedDbPassword: String;
   GeneratedJwtSecret: String;
+  TunnelProviderPage: TInputOptionWizardPage;
   CloudflarePage: TInputQueryWizardPage;
+  NgrokPage: TInputQueryWizardPage;
 
 procedure InitializeWizard;
 begin
-  // Create optional Cloudflare Tunnel Token input page for public customer tracking
-  CloudflarePage := CreateInputQueryPage(wpSelectTasks,
-    'Cloudflare Tunnel Setup (Optional)',
+  // Create Tunnel Provider Selection Page
+  TunnelProviderPage := CreateInputOptionPage(wpSelectTasks,
+    'Remote Access Provider',
+    'Select your preferred secure tunneling service',
+    'Do you want to expose your Laundry System to the internet for remote tracking/management?' + #13#10 +
+    'Select a provider below, or choose Local Only if you do not want internet access.',
+    True, False);
+  
+  TunnelProviderPage.Add('None (Local Network Only)');
+  TunnelProviderPage.Add('Ngrok (Free Public URL - Requires Authtoken & Domain)');
+  TunnelProviderPage.Add('Cloudflare Zero Trust (Requires Custom Domain)');
+  TunnelProviderPage.Values[0] := True; // Default to None
+
+  // Create Cloudflare Tunnel Token input page
+  CloudflarePage := CreateInputQueryPage(TunnelProviderPage.ID,
+    'Cloudflare Tunnel Setup',
     'Public Customer Order Tracking Integration',
-    'If you use Cloudflare Zero Trust to expose public order tracking (e.g., track.faithlaundry.com), enter your Tunnel Token below.' + #13#10 +
-    'If this PC is only used as a local counter POS, leave this field blank and click Next.');
+    'Enter your Cloudflare Tunnel Token below.');
   CloudflarePage.Add('Cloudflare Tunnel Token:', False);
+
+  // Create Ngrok Tunnel input page
+  NgrokPage := CreateInputQueryPage(TunnelProviderPage.ID,
+    'Ngrok Tunnel Setup',
+    'Public Customer Order Tracking Integration',
+    'Enter your Ngrok Authtoken and Static Domain below.');
+  NgrokPage.Add('Ngrok Authtoken:', False);
+  NgrokPage.Add('Ngrok Domain (e.g. fluent-hippo.ngrok-free.app):', False);
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if PageID = CloudflarePage.ID then
+  begin
+    Result := not TunnelProviderPage.Values[2]; // Skip if Cloudflare is not selected
+  end
+  else if PageID = NgrokPage.ID then
+  begin
+    Result := not TunnelProviderPage.Values[1]; // Skip if Ngrok is not selected
+  end;
 end;
 
 // Helper function to generate cryptographically random strings
@@ -260,13 +299,51 @@ var
   Token: String;
   ResultCode: Integer;
 begin
-  if CloudflarePage <> nil then
+  if TunnelProviderPage.Values[2] then
   begin
     Token := Trim(CloudflarePage.Values[0]);
     if Token <> '' then
     begin
       WizardForm.StatusLabel.Caption := 'Installing Cloudflare Tunnel Service...';
       Exec(ExpandConstant('{app}\cloudflared.exe'), 'service install ' + Token, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    end;
+  end;
+end;
+
+procedure InstallNgrokServiceIfNeeded;
+var
+  Token, Domain, ConfigDir, ConfigFile, ConfigContent: String;
+  ResultCode: Integer;
+begin
+  if TunnelProviderPage.Values[1] then
+  begin
+    Token := Trim(NgrokPage.Values[0]);
+    Domain := Trim(NgrokPage.Values[1]);
+    
+    if (Token <> '') and (Domain <> '') then
+    begin
+      WizardForm.StatusLabel.Caption := 'Configuring Ngrok Tunnel...';
+      
+      ConfigDir := ExpandConstant('{commonappdata}\ngrok');
+      if not DirExists(ConfigDir) then
+        CreateDir(ConfigDir);
+        
+      ConfigFile := ConfigDir + '\ngrok.yml';
+      ConfigContent := 
+        'version: "3"' + #13#10 +
+        'agent:' + #13#10 +
+        '  authtoken: ' + Token + #13#10 +
+        'tunnels:' + #13#10 +
+        '  laundryms:' + #13#10 +
+        '    proto: http' + #13#10 +
+        '    addr: 8765' + #13#10 +
+        '    domain: ' + Domain + #13#10;
+        
+      SaveStringToFile(ConfigFile, ConfigContent, False);
+      
+      WizardForm.StatusLabel.Caption := 'Installing Ngrok Tunnel Service...';
+      Exec(ExpandConstant('{app}\ngrok.exe'), 'service install --config="' + ConfigFile + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{app}\ngrok.exe'), 'service start', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     end;
   end;
 end;
@@ -283,6 +360,7 @@ begin
   begin
     ConfigureEnvironmentAndProperties;
     InstallCloudflareServiceIfNeeded;
+    InstallNgrokServiceIfNeeded;
     WaitForServerReady;
   end;
 end;

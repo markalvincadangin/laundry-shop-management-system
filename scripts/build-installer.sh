@@ -76,6 +76,16 @@ if [ ! -f "$CF_CACHE" ]; then
 fi
 cp "$CF_CACHE" "$DEPLOY_DIR/cloudflared.exe"
 
+# Download ngrok installer if not cached
+NGROK_CACHE_ZIP="/tmp/ngrok-v3-stable-windows-amd64.zip"
+NGROK_CACHE_EXE="/tmp/ngrok.exe"
+if [ ! -f "$NGROK_CACHE_EXE" ]; then
+    echo "[Ngrok] Downloading Ngrok binary for optional remote tunneling..."
+    curl -sSL "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" -o "$NGROK_CACHE_ZIP"
+    unzip -o "$NGROK_CACHE_ZIP" -d /tmp/
+fi
+cp "$NGROK_CACHE_EXE" "$DEPLOY_DIR/ngrok.exe"
+
 echo ""
 echo "=================================================="
 echo " Deployment files staged successfully:           "
