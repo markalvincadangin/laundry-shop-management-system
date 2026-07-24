@@ -1,10 +1,7 @@
 # Build Laundry Shop Management System Standalone Setup Wizard (.exe)
 # Produces: backend/target/LaundryShopMS-Setup-1.0.0.exe
 Param(
-    [string]$AppVersion = "1.0.0",
-    [string]$CertPath = $env:CODE_SIGN_CERT,
-    [string]$CertPassword = $env:CODE_SIGN_PASSWORD,
-    [string]$TimestampUrl = "http://timestamp.digicert.com"
+    [string]$AppVersion = "1.0.0"
 )
 
 $ErrorActionPreference = "Stop"
@@ -118,35 +115,6 @@ $issFile = Join-Path $PSScriptRoot "installer.iss"
 & $iscc $issFile
 
 $exePath = Join-Path $backendDir "target\LaundryShopMS-Setup-$AppVersion.exe"
-
-# ── Code Signing (Optional Commercial Production Release) ──
-if ($CertPath -and (Test-Path $CertPath)) {
-    Write-Host "`n[Code Signing] Signing installer with Code Signing Certificate..." -ForegroundColor Yellow
-    $signtool = Get-Command signtool -ErrorAction SilentlyContinue
-    if (-not $signtool) {
-        $signtoolPaths = @(
-            "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe",
-            "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x64\signtool.exe",
-            "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe"
-        )
-        $signtoolExe = $signtoolPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
-    } else {
-        $signtoolExe = $signtool.Source
-    }
-
-    if ($signtoolExe) {
-        $signArgs = @("sign", "/f", "`"$CertPath`"", "/tr", "`"$TimestampUrl`"", "/td", "sha256", "/fd", "sha256")
-        if ($CertPassword) {
-            $signArgs += @("/p", "`"$CertPassword`"")
-        }
-        $signArgs += "`"$exePath`""
-        
-        Start-Process -FilePath $signtoolExe -ArgumentList ($signArgs -join " ") -Wait -NoNewWindow
-        Write-Host "[Code Signing] Binary successfully signed! SmartScreen prompts will be bypassed." -ForegroundColor Green
-    } else {
-        Write-Warning "[Code Signing] signtool.exe not found. Install Windows SDK to perform digital signing."
-    }
-}
 
 Write-Host "`n==================================================" -ForegroundColor Green
 Write-Host " SUCCESS! Standalone Setup Wizard generated:      " -ForegroundColor Green
