@@ -47,6 +47,7 @@ $jarName = "laundryms-backend-0.0.1-SNAPSHOT.jar"
 jpackage --name "$appName" `
   --input target `
   --main-jar $jarName `
+  --main-class "org.springframework.boot.loader.launch.JarLauncher" `
   --runtime-image $runtimeDir `
   --app-version $AppVersion `
   --type msi `
