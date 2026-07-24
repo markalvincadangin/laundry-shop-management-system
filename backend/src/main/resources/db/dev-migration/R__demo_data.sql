@@ -29,7 +29,7 @@ INSERT INTO orders (
 SELECT 
     'LDR-20260714-0001', 
     (SELECT id FROM customers WHERE first_name = 'Juan' AND last_name = 'Dela Cruz' LIMIT 1),
-    '00000000-0000-0000-0000-000000000002'::uuid,
+    (SELECT id FROM users WHERE username = 'admin' LIMIT 1),
     (SELECT id FROM service_rates WHERE service_name = 'Standard Wash' LIMIT 1),
     5.0, 1, 140.00, 8.00, 1.00,
     140.00, 0.00, 0.00, 140.00,
@@ -45,7 +45,7 @@ INSERT INTO orders (
 SELECT 
     'LDR-20260714-0002', 
     (SELECT id FROM customers WHERE first_name = 'Maria' AND last_name = 'Clara' LIMIT 1),
-    '00000000-0000-0000-0000-000000000001'::uuid,
+    (SELECT id FROM users WHERE username = 'staff' LIMIT 1),
     (SELECT id FROM service_rates WHERE service_name = 'Blankets' LIMIT 1),
     10.0, 2, 200.00, 8.00, 1.00,
     400.00, 0.00, 0.00, 400.00,
