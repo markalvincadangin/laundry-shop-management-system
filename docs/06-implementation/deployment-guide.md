@@ -54,7 +54,7 @@ Open PowerShell and run the build script from the project root:
 2. Double-click `LaundryShopMS-Setup-1.0.0.exe` to open the setup wizard:
    - **Welcome Screen** → Displays system name and version.
    - **License Agreement** → Accept terms.
-   - **Destination Folder** → Default: `C:\LaundryShopMS`.
+   - **Destination Folder** → Default: `C:\Program Files\Laundry Shop Management System`.
    - **Automated Setup** → The wizard automatically:
      - Installs PostgreSQL 16 silently as a Windows Service if not already installed.
      - Configures Machine-level environment variables (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`).
