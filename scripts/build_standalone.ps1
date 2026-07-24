@@ -37,12 +37,40 @@ New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
 $jarName = "laundryms-backend-0.0.1-SNAPSHOT.jar"
 Copy-Item -Path "$backendDir\target\$jarName" -Destination "$stagingDir\$jarName" -Force
 
-# 5. Build JRE Runtime via jlink outside staging
-Write-Host "`n[5/5] Building Self-Contained JRE Runtime via jlink & Packaging MSI..." -ForegroundColor Yellow
+# 5. Build Complete Self-Contained JRE Runtime via jlink
+Write-Host "`n[5/5] Building Complete Self-Contained JRE Runtime via jlink & Packaging MSI..." -ForegroundColor Yellow
 $runtimeDir = Join-Path $backendDir "target\custom-runtime"
 if (Test-Path $runtimeDir) { Remove-Item $runtimeDir -Recurse -Force }
 
-jlink --add-modules java.base,java.sql,java.desktop,java.naming,java.management,java.security.jgss,java.instrument,jdk.unsupported,jdk.crypto.ec `
+$jlinkModules = @(
+    "java.base",
+    "java.compiler",
+    "java.desktop",
+    "java.instrument",
+    "java.logging",
+    "java.management",
+    "java.naming",
+    "java.net.http",
+    "java.prefs",
+    "java.rmi",
+    "java.scripting",
+    "java.security.jgss",
+    "java.security.sasl",
+    "java.sql",
+    "java.sql.rowset",
+    "java.transaction.xa",
+    "java.xml",
+    "jdk.charsets",
+    "jdk.crypto.ec",
+    "jdk.httpserver",
+    "jdk.management",
+    "jdk.management.agent",
+    "jdk.naming.dns",
+    "jdk.unsupported",
+    "jdk.zipfs"
+) -join ","
+
+jlink --add-modules $jlinkModules `
       --output $runtimeDir `
       --strip-debug `
       --no-header-files `

@@ -19,8 +19,10 @@ if (Test-Path "$installDir\bin\pg_ctl.exe") {
     Write-Host "`n[PostgreSQL] Already installed at $installDir. Skipping." -ForegroundColor Yellow
 } else {
     Write-Host "`n[PostgreSQL] Generating secure random database password..." -ForegroundColor Yellow
-    Add-Type -AssemblyName System.Web
-    $password = [System.Web.Security.Membership]::GeneratePassword(24, 6)
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $bytes = New-Object byte[] 18
+    $rng.GetBytes($bytes)
+    $password = [Convert]::ToBase64String($bytes) -replace '[+/=]', 'a'
     
     Write-Host "[PostgreSQL] Downloading installer v$pgVersion..." -ForegroundColor Yellow
     Invoke-WebRequest -Uri "https://get.enterprisedb.com/postgresql/postgresql-$pgVersion-windows-x64.exe" -OutFile $installerPath
