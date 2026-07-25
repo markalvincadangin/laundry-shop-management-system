@@ -1,12 +1,12 @@
 # Project Scope
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client / Case Study:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** SCOPE-001  
-> **Version:** 1.2  
-> **Date:** 2026-07-24  
-> **Purpose:** Define MVP boundaries, deliverables, and constraints  
+> **Version:** 1.3  
+> **Date:** 2026-07-25  
+> **Purpose:** Define MVP boundaries, deliverables, and constraints for system deployment  
 > **Status:** Baseline (MVP Reference)
 
 ---
@@ -19,20 +19,21 @@
 ### Revision History
 | Version | Date       | Author   | Changes |
 |---------|------------|----------|---------|
-| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
-| 1.1     | 2026-02-20 | HIMÓTECH  | Release precondition (Ready + Paid); payment method recording in scope; NFR reference; glossary; operational readiness |
-| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology, UUID data model, and aligned with Standalone Cloudflare Tunnel Architecture |
+| 1.0     | 2026-02-13 | Mark Alvin Cadangin | Initial baseline |
+| 1.1     | 2026-02-20 | Mark Alvin Cadangin | Release precondition (Ready + Paid); payment method recording in scope; NFR reference; glossary; operational readiness |
+| 1.2     | 2026-07-24 | Mark Alvin Cadangin | Standardized `tracking_number` terminology, UUID data model, and aligned with Standalone Cloudflare Tunnel Architecture |
+| 1.3     | 2026-07-25 | Mark Alvin Cadangin | Generalized project scope to customizable laundry management platform with configurable business rules |
 
 ---
 
 ## 1. Introduction
 
-This document defines the boundaries, deliverables, and constraints of the Faith Laundry Shop Management System.
+This document defines the boundaries, deliverables, and constraints of the Laundry Shop Management System.
 
 **Purpose:**
-- Establish clear system boundaries
+- Establish clear system boundaries and multi-shop configurability
 - Prevent scope creep
-- Align development with stakeholder needs
+- Align development with general laundry shop business processes (using Faith Laundry Shop as baseline case study)
 - Serve as the reference for implementation and validation
 
 Scope is derived from the approved Case Study and Client Interview and aligns with academic baseline documents (PC-001, SSR-001, CS-001, SA-001, RRM-001).

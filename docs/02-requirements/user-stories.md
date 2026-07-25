@@ -1,12 +1,12 @@
 # User Stories
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client / Case Study:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** US-CATALOG (US-01 through US-14)  
-> **Version:** 1.2  
-> **Date:** 2026-07-24  
-> **Source:** Client Interview & Case Study  
+> **Version:** 1.3  
+> **Date:** 2026-07-25  
+> **Source:** Client Interview & Case Study Baseline  
 > **Purpose:** Define functional behavior for implementation  
 > **Status:** Baseline (MVP)
 
@@ -20,9 +20,10 @@
 ### Revision History
 | Version | Date       | Author   | Changes |
 |---------|------------|----------|---------|
-| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
-| 1.1     | 2026-02-20 | HIMÓTECH  | Baseline MVP release |
-| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and UUID data model |
+| 1.0     | 2026-02-13 | Mark Alvin Cadangin | Initial baseline |
+| 1.1     | 2026-02-20 | Mark Alvin Cadangin | Baseline MVP release |
+| 1.2     | 2026-07-24 | Mark Alvin Cadangin | Standardized `tracking_number` terminology and UUID data model |
+| 1.3     | 2026-07-25 | Mark Alvin Cadangin | Parameterized US-02 pricing acceptance criteria to dynamic service rates |
 
 ---
 
@@ -54,10 +55,10 @@
 **So that** pricing errors and manual calculations are avoided.
 
 **Acceptance Criteria**
-- One (1) load costs **₱140** and covers up to **8 kg**
-- Total loads: `ceil(weight_kg / 8)`; exact multiples of 8 kg use `weight_kg / 8`
-- Each load includes up to **45 minutes** of washing time in the base price
-- Extra minutes (beyond 45 per load) are charged at **₱1 per minute**
+- One (1) load is charged at `base_price_per_load` for up to `kg_limit_per_load` as defined by active service rate (Baseline example: ₱140 / 8 kg)
+- Total loads: `ceil(weight_kg / kg_limit_per_load)`
+- Each load includes standard washing duration in the base price (Baseline example: up to 45 minutes)
+- Extra minutes beyond included duration are charged at `price_per_extra_minute` (Baseline example: ₱1 per minute)
 - Staff records extra minutes before the system computes the price
 - Computed total is displayed before saving
 

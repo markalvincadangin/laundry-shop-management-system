@@ -2,7 +2,7 @@
 ## Faith Laundry Shop Management System
 
 > **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** CRED-001  
 > **Version:** 1.1  
 > **Date:** 2026-05-05  

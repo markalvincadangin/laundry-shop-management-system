@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Order(Ordered.LOWEST_PRECEDENCE)
-public class JwtCookieAuthFilter extends OncePerRequestFilter {
+public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final SecurityProperties props;
     private final JwtService jwtService;
 
-    public JwtCookieAuthFilter(SecurityProperties props, JwtService jwtService) {
+    public JwtAuthFilter(SecurityProperties props, JwtService jwtService) {
         this.props = props;
         this.jwtService = jwtService;
     }
@@ -42,17 +42,15 @@ public class JwtCookieAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String cookieName = props.getCookieName() != null ? props.getCookieName() : "access_token";
-        Optional<Cookie> tokenCookie = Optional.empty();
+        String authHeader = request.getHeader("Authorization");
+        Optional<String> token = Optional.empty();
 
-        if (request.getCookies() != null) {
-            tokenCookie = Arrays.stream(request.getCookies())
-                    .filter(c -> cookieName.equals(c.getName()))
-                    .findFirst();
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = Optional.of(authHeader.substring(7));
         }
 
-        tokenCookie.ifPresent(c -> {
-            Claims claims = jwtService.validateAndGetClaims(c.getValue());
+        token.ifPresent(t -> {
+            Claims claims = jwtService.validateAndGetClaims(t);
             if (claims != null) {
                 UUID userId = jwtService.getUserIdFromClaims(claims);
                 UserRole role = jwtService.getRoleFromClaims(claims);

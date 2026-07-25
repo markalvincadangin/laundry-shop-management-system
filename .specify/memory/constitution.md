@@ -12,7 +12,7 @@ Sync Impact Report:
 - Follow-up TODOs: None
 -->
 
-# Faith Laundry Shop Management System Constitution
+# Laundry Shop Management System Constitution
 
 ## Core Principles
 

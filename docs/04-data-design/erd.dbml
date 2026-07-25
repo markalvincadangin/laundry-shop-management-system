@@ -1,6 +1,6 @@
-Project Faith_Laundry_Shop_System {
+Project Laundry_Shop_Management_System {
   database_type: 'PostgreSQL'
-  Note: 'ERD for Faith Laundry Shop. Supports dynamic pricing, order lifecycle, payment recording, and reporting. Standardized on varchar for enums to ensure JPA/PostgreSQL casting stability. Forensic audit trail via database-level triggers writing to activity_logs.'
+  Note: 'ERD for Laundry Shop Management System (Faith Laundry Shop as baseline case study). Supports dynamic configurable pricing, order lifecycle, payment recording, and reporting. Standardized on varchar for enums to ensure JPA/PostgreSQL casting stability. Forensic audit trail via database-level triggers writing to activity_logs.'
 }
 
 // --- ENUMS (Documented for Reference; Implemented as varchar) --- //
@@ -43,14 +43,14 @@ Table audit_logs {
 Table service_rates {
   id uuid [pk, default: `gen_random_uuid()`]
   service_name varchar [default: 'Standard Wash', note: 'Standard Wash-Dry-Fold']
-  base_price_per_load decimal(10,2) [default: 140.00, note: 'BR-PR-01: ₱140 per load']
-  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: 8 kg limit per load']
-  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: ₱1 per extra minute']
+  base_price_per_load decimal(10,2) [default: 140.00, note: 'BR-PR-01: Configurable base price per load (default: ₱140.00)']
+  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: Configurable weight limit per load (default: 8.00 kg)']
+  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: Configurable extra minute price (default: ₱1.00)']
   is_active boolean [default: true]
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_service_rates_updated_at trigger']
 
-  Note: 'Stores pricing rules. Owner can update without code changes. Snapshot copied to orders at creation. Audited by trg_audit_service_rates trigger.'
+  Note: 'Stores dynamic pricing rules. Owner can update without code changes. Snapshot copied to orders at creation. Audited by trg_audit_service_rates trigger.'
 }
 
 // --- USERS & CUSTOMERS --- //

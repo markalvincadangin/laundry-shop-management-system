@@ -2,7 +2,7 @@
 ## Faith Laundry Shop Management System
 
 > **Client:** Faith Laundry Shop
-> **Prepared By:** HIMÓTECH
+> **Prepared By:** Mark Alvin Cadangin
 > **Document ID:** FRONT-001
 > **Version:** 3.4.0
 > **Date:** 2026-07-22

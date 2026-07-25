@@ -6,6 +6,7 @@ import com.himotech.laundryms.users.dto.UpdateUserRequest;
 import com.himotech.laundryms.users.dto.UserResponse;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
+import com.himotech.laundryms.auth.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
@@ -70,14 +72,23 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean revokeTokens = false;
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
-        if (request.getRole() != null) user.setRole(request.getRole());
+        if (request.getRole() != null && user.getRole() != request.getRole()) {
+            user.setRole(request.getRole());
+            revokeTokens = true;
+        }
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            revokeTokens = true;
         }
 
-        return mapToResponse(userRepository.save(user));
+        User updatedUser = userRepository.save(user);
+        if (revokeTokens) {
+            authService.revokeAllUserTokens(user.getId());
+        }
+        return mapToResponse(updatedUser);
     }
 
     @Auditable(action = "USER_TOGGLE_ACTIVE", description = "Toggle user active status")
@@ -96,6 +107,10 @@ public class UserService {
 
         user.setIsActive(!user.getIsActive());
         userRepository.save(user);
+        
+        if (!user.getIsActive()) {
+            authService.revokeAllUserTokens(user.getId());
+        }
     }
 
     private UserResponse mapToResponse(User user) {

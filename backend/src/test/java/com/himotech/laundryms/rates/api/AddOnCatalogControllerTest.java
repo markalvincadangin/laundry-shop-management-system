@@ -7,7 +7,7 @@ import com.himotech.laundryms.rates.dto.AddOnCatalogResponse;
 import com.himotech.laundryms.rates.dto.CreateAddOnCatalogRequest;
 import com.himotech.laundryms.rates.dto.UpdateAddOnCatalogRequest;
 import com.himotech.laundryms.rates.service.AddOnCatalogService;
-import com.himotech.laundryms.auth.JwtCookieAuthFilter;
+import com.himotech.laundryms.auth.JwtAuthFilter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ class AddOnCatalogControllerTest {
     private AddOnCatalogService service;
 
     @MockBean
-    private JwtCookieAuthFilter jwtAuthenticationFilter; // mock to load context
+    private JwtAuthFilter jwtAuthenticationFilter; // mock to load context
 
     @Test
     @DisplayName("GET /api/v1/add-ons should return list of add-ons")

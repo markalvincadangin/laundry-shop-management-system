@@ -132,6 +132,55 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Session
+         * @description Rotates the refresh token and returns a new access token.
+         *     Requires valid refresh_token cookie and X-CSRF-Token header.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header: {
+                    "X-CSRF-Token": string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Refresh success */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["LoginResponse"];
+                    };
+                };
+                /** @description Unauthorized / Invalid token */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/me": {
         parameters: {
             query?: never;
@@ -1890,10 +1939,12 @@ export interface components {
             password: string;
         };
         LoginResponse: {
-            /** @description JWT token */
+            /** @description JWT access token */
             token: string;
             /** @description User role string (ADMIN or STAFF) */
             role: string;
+            /** @description Token expiration time in seconds (e.g. 900 for 15m) */
+            expiresIn: number;
         };
         CurrentUserResponse: {
             /** @description UUID string */

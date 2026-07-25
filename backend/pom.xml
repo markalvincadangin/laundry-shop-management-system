@@ -245,7 +245,7 @@
 											<counter>INSTRUCTION</counter>
 											<value>COVEREDRATIO</value>
 											<!-- Target 0.80; set to current baseline. Increase as tests are added. -->
-											<minimum>0.24</minimum>
+											<minimum>0.55</minimum>
 										</limit>
 									</limits>
 									<excludes>
@@ -269,8 +269,8 @@
 				<configuration>
 					<configLocation>checkstyle.xml</configLocation>
 					<consoleOutput>true</consoleOutput>
-					<failsOnError>false</failsOnError>
-					<failOnViolation>false</failOnViolation>
+					<failsOnError>true</failsOnError>
+					<failOnViolation>true</failOnViolation>
 					<includeTestSourceDirectory>true</includeTestSourceDirectory>
 					<propertyExpansion>checkstyle.suppressions.file=${project.basedir}/checkstyle-suppressions.xml</propertyExpansion>
 					<sourceDirectories>

@@ -2,7 +2,7 @@
 ## Laundry Shop Management System
 
 > **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** DEP-001  
 > **Version:** 3.0 (Production Inno Setup & WinSW Service Standardization)  
 > **Date:** 2026-07-24  
