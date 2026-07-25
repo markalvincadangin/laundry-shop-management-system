@@ -6,3 +6,10 @@ export const LoginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof LoginSchema>;
+
+export const AuthResponseSchema = z.object({
+  accessToken: z.string(),
+  expiresIn: z.number(),
+});
+
+export type AuthResponse = z.infer<typeof AuthResponseSchema>;

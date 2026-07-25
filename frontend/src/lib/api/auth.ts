@@ -26,6 +26,14 @@ export const authService = {
     return response;
   },
 
+  /** Attempt to silently refresh the session via HttpOnly cookie */
+  async silentRefresh(): Promise<LoginResponse> {
+    // Cannot use apiClient.post here because apiClient intercepts 401s and would loop.
+    // Actually, apiClient post is fine if we bypass 401, but apiClient post already handles /refresh specially in executeWithRetry!
+    const response = await apiClient.post<LoginResponse>("/v1/auth/refresh", {});
+    return response;
+  },
+
   /** Terminates the user session */
   async logout(): Promise<void> {
     await apiClient.post<void>("/v1/auth/logout", {});

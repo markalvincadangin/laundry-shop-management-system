@@ -1,9 +1,9 @@
 # Documentation Index
 
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** INDEX-001  
 > **Version:** 2.0  
 > **Date:** 2026-07-21  
@@ -77,6 +77,7 @@ For development:
 | [architecture.md](05-tech-design/architecture.md) | System architecture (Offline-First Tunnel Topology).                          |
 | [frontend-design-spec.md](05-tech-design/frontend-design-spec.md) | Frontend Design Specification and HCI/UI Standards. |
 | [openapi.yaml](05-tech-design/openapi.yaml)       | OpenAPI Specification (API Contract). |
+| [test-traceability-matrix.md](05-tech-design/test-traceability-matrix.md) | Comprehensive test traceability matrix mapping all BR-xx rules and US-xx user stories to automated test suites. |
 
 ### 06-implementation/ — Deployment & Operations
 

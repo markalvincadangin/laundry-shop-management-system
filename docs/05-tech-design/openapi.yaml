@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Faith Laundry Shop Management System API
+  title: Laundry Shop Management System API
   version: 1.0.0
   description: >
-    REST API contract for the Faith Laundry Shop Management System.
+    REST API contract for the Laundry Shop Management System.
     Aligned to user stories (US-xx), business rules (BR-xx), and ERD.
 
 servers:
@@ -70,6 +70,28 @@ paths:
       responses:
         "200":
           description: Logout success
+
+  /api/v1/auth/refresh:
+    post:
+      summary: Refresh Session
+      description: |
+        Rotates the refresh token and returns a new access token.
+        Requires valid refresh_token cookie and X-CSRF-Token header.
+      tags: [Auth]
+      parameters:
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Refresh success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized / Invalid token
 
   /api/v1/auth/me:
     get:
@@ -1111,9 +1133,10 @@ components:
     LoginResponse:
       type: object
       properties:
-        token: { type: string, description: "JWT token" }
+        token: { type: string, description: "JWT access token" }
         role: { type: string, description: "User role string (ADMIN or STAFF)" }
-      required: [token, role]
+        expiresIn: { type: integer, description: "Token expiration time in seconds (e.g. 900 for 15m)" }
+      required: [token, role, expiresIn]
 
     CurrentUserResponse:
       type: object

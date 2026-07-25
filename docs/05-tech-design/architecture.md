@@ -1,8 +1,8 @@
 # System Architecture Overview
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** ARCH-001  
 > **Version:** 3.1 (Standalone & Tunnel Standardization)  
 > **Date:** 2026-07-24  
@@ -35,8 +35,8 @@
 
 - Admin and Staff authentication (username/password)
 - Customer management (create, search by name/contact)
-- Order intake: record weight (kg), compute loads (8 kg per load) and totals, generate a unique tracking number (`tracking_number`)
-- Business Rules: Standard pricing at ₱140 per load (up to 8 kg). Weight overages trigger automatic additional load charges. Time penalties require manual input to add ₱1 per extra minute.
+- Order intake: record weight (kg), compute loads dynamically (`ceil(weight_kg / kg_limit_per_load)`) and totals, generate a unique tracking number (`tracking_number`)
+- Business Rules: Configurable rate pricing per load (Baseline default: ₱140 per load up to 8 kg). Weight overages trigger automatic additional load charges based on `kg_limit_per_load`. Time penalties apply configured `price_per_extra_minute`.
 - Order status updates with audit trail (`activity_logs`)
 - Payment recording (one payment per order; amount must equal order grand total)
 - Sales reporting (daily, monthly, yearly) from payments

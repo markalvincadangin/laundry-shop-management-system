@@ -1,5 +1,5 @@
 -- ==========================================================
--- FAITH LAUNDRY SHOP MANAGEMENT SYSTEM: MASTER SCHEMA
+-- LAUNDRY SHOP MANAGEMENT SYSTEM: MASTER SCHEMA
 -- Consolidated Blueprint (Standardized for JPA Compatibility)
 -- Synced with Flyway V1__init.sql
 -- ==========================================================

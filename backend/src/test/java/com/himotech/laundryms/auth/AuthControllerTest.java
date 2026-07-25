@@ -43,9 +43,6 @@ class AuthControllerTest {
     AuthService authService;
 
     @MockitoBean
-    com.himotech.laundryms.auth.JwtService jwtService;
-
-    @MockitoBean
     UserRepository userRepository;
 
     @MockitoBean
@@ -60,7 +57,7 @@ class AuthControllerTest {
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
         registry.add("app.security.jwt-secret", () -> TEST_JWT_SECRET);
-        registry.add("app.security.cookie-name", () -> "access_token");
+        registry.add("app.security.cookie-name", () -> "refresh_token");
     }
 
     @Nested
@@ -75,8 +72,8 @@ class AuthControllerTest {
                     .username(TEST_USERNAME)
                     .role(com.himotech.laundryms.shared.UserRole.ADMIN)
                     .build();
-            when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(user);
-            when(jwtService.createToken(user)).thenReturn("jwt-token");
+            com.himotech.laundryms.auth.dto.LoginResult loginResult = new com.himotech.laundryms.auth.dto.LoginResult(user, "jwt-token", "refresh-plain");
+            when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(loginResult);
 
             LoginRequest request = new LoginRequest();
             request.setUsername(TEST_USERNAME);
@@ -89,8 +86,8 @@ class AuthControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.token").value("jwt-token"))
                     .andExpect(jsonPath("$.role").value("ADMIN"))
-                    .andExpect(cookie().exists("access_token"))
-                    .andExpect(cookie().value("access_token", "jwt-token"));
+                    .andExpect(cookie().exists("refresh_token"))
+                    .andExpect(cookie().value("refresh_token", "refresh-plain"));
         }
 
         @Test

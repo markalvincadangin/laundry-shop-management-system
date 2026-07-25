@@ -5,6 +5,31 @@
 
 import type { ErrorResponse } from "@/types/api";
 
+let currentAccessToken: string | null = null;
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+export const setAccessToken = (token: string | null) => {
+  currentAccessToken = token;
+};
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+  refreshSubscribers.push(cb);
+};
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+};
+
+const getCsrfToken = (): string | undefined => {
+  if (typeof document !== "undefined") {
+    const match = document.cookie.split("; ").find(row => row.startsWith("csrf_token="));
+    return match ? match.split("=")[1] : undefined;
+  }
+  return undefined;
+};
+
 const getBaseUrl = (): string => {
   // In the browser, we use a relative path so the request is proxied by Next.js
   if (typeof window !== "undefined") {
@@ -68,10 +93,77 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-const fetchOptions = (init?: RequestInit): RequestInit => ({
-  ...init,
-  credentials: "include",
-});
+const fetchOptions = (init?: RequestInit): RequestInit => {
+  const headers = new Headers(init?.headers);
+  if (currentAccessToken) {
+    headers.set("Authorization", `Bearer ${currentAccessToken}`);
+  }
+  
+  const csrfToken = getCsrfToken();
+  if (csrfToken && init?.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(init.method.toUpperCase())) {
+    headers.set("X-CSRF-Token", csrfToken);
+  }
+  
+  return {
+    ...init,
+    headers,
+    credentials: "include", // needed for refresh/logout cookies
+  };
+};
+
+async function executeWithRetry<T>(url: string, options: RequestInit): Promise<T> {
+  let response = await fetch(url, options);
+
+  if (response.status === 401 && !url.includes("/api/v1/auth/refresh") && !url.includes("/api/v1/auth/login")) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      try {
+        const refreshUrl = buildUrl("/api/v1/auth/refresh");
+        const csrfToken = getCsrfToken();
+        const refreshHeaders = new Headers();
+        if (csrfToken) {
+          refreshHeaders.set("X-CSRF-Token", csrfToken);
+        }
+        
+        const refreshResponse = await fetch(refreshUrl, {
+          method: "POST",
+          headers: refreshHeaders,
+          credentials: "include"
+        });
+
+        if (refreshResponse.ok) {
+          const data = await refreshResponse.json();
+          setAccessToken(data.token);
+          onRefreshed(data.token);
+        } else {
+          // Refresh failed, user needs to login again
+          setAccessToken(null);
+          onRefreshed("");
+        }
+      } catch (err) {
+        setAccessToken(null);
+        onRefreshed("");
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    // Wait for refresh to complete, then retry
+    const newToken = await new Promise<string>((resolve) => {
+      subscribeTokenRefresh((token) => resolve(token));
+    });
+
+    if (newToken) {
+      // Retry original request with new token
+      const newHeaders = new Headers(options.headers);
+      newHeaders.set("Authorization", `Bearer ${newToken}`);
+      const retryOptions = { ...options, headers: newHeaders };
+      response = await fetch(url, retryOptions);
+    }
+  }
+
+  return handleResponse<T>(response);
+}
 
 function buildUrl(path: string, params?: Record<string, unknown>): string {
   const base = getBaseUrl();
@@ -92,11 +184,10 @@ function buildUrl(path: string, params?: Record<string, unknown>): string {
 export const apiClient = {
   async get<T>(path: string, options?: { params?: Record<string, unknown> }): Promise<T> {
     const url = buildUrl(path, options?.params);
-    const response = await fetch(url, fetchOptions({
+    return executeWithRetry<T>(url, fetchOptions({
       method: "GET",
       headers: { Accept: "application/json" },
     }));
-    return handleResponse<T>(response);
   },
 
   async post<T>(path: string, body?: unknown): Promise<T> {
@@ -105,12 +196,11 @@ export const apiClient = {
     const headers: Record<string, string> = { Accept: "application/json" };
     if (body) headers["Content-Type"] = "application/json";
 
-    const response = await fetch(url, fetchOptions({
+    return executeWithRetry<T>(url, fetchOptions({
       method: "POST",
       headers,
       body: body ? JSON.stringify(body) : undefined,
     }));
-    return handleResponse<T>(response);
   },
 
   async patch<T>(path: string, body?: unknown): Promise<T> {
@@ -119,12 +209,11 @@ export const apiClient = {
     const headers: Record<string, string> = { Accept: "application/json" };
     if (body) headers["Content-Type"] = "application/json";
 
-    const response = await fetch(url, fetchOptions({
+    return executeWithRetry<T>(url, fetchOptions({
       method: "PATCH",
       headers,
       body: body ? JSON.stringify(body) : undefined,
     }));
-    return handleResponse<T>(response);
   },
 
   async delete<T>(path: string): Promise<T> {
@@ -132,10 +221,9 @@ export const apiClient = {
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };
 
-    const response = await fetch(url, fetchOptions({
+    return executeWithRetry<T>(url, fetchOptions({
       method: "DELETE",
       headers,
     }));
-    return handleResponse<T>(response);
   },
 };

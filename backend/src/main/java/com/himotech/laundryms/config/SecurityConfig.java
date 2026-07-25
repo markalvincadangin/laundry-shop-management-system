@@ -16,7 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.himotech.laundryms.auth.JwtCookieAuthFilter;
+import com.himotech.laundryms.auth.JwtAuthFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -60,7 +60,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             SecurityProperties props,
-            JwtCookieAuthFilter jwtCookieAuthFilter) throws Exception {
+            JwtAuthFilter jwtAuthFilter) throws Exception {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/orders/reference/**", "/api/v1/orders/tracking/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/service-rates/**").permitAll()
                         .requestMatchers("/api/test/public").permitAll()
@@ -81,7 +82,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().permitAll())
-                .addFilterBefore(jwtCookieAuthFilter,
+                .addFilterBefore(jwtAuthFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

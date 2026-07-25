@@ -15,18 +15,20 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@/lib/api-client";
+import { ApiError, setAccessToken } from "@/lib/api-client";
 import { authService, type CurrentUserResponse } from "@/lib/api/auth";
 import { UI_LABELS } from "@/constants/ui";
 
 type AuthState = {
   user: CurrentUserResponse | null;
+  accessToken: string | null;
   loading: boolean;
   error: string | null;
 };
 
 const AuthContext = createContext<{
   user: CurrentUserResponse | null;
+  accessToken: string | null;
   loading: boolean;
   error: string | null;
   login: (username: string, password: string) => Promise<void>;
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<AuthState>({
     user: null,
+    accessToken: null,
     loading: true,
     error: null,
   });
@@ -60,10 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = useCallback(async () => {
     setState((s) => ({ ...s, loading: true, error: null }));
     try {
+      // The apiClient will automatically intercept a 401 response and attempt a 
+      // silent refresh via POST /api/v1/auth/refresh.
+      // If successful, it retries the me() request with the new access token.
       const user = await authService.me();
-      setState({ user, loading: false, error: null });
+      setState((s) => ({ ...s, user, loading: false, error: null }));
     } catch {
-      setState({ user: null, loading: false, error: null });
+      setState((s) => ({ ...s, user: null, loading: false, error: null }));
     }
   }, []);
 
@@ -75,7 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (username: string, password: string) => {
       setState((s) => ({ ...s, error: null }));
       try {
-        await authService.login({ username, password });
+        const response = await authService.login({ username, password });
+        setAccessToken(response.token); // set token in api client
+        setState((s) => ({ ...s, accessToken: response.token }));
         await refresh();
         toast.success(UI_LABELS.feedback.success.AUTH_SUCCESS);
       } catch (err) {
@@ -100,7 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
-    setState({ user: null, loading: false, error: null });
+    setAccessToken(null);
+    setState({ user: null, accessToken: null, loading: false, error: null });
     router.push("/login");
   }, [router]);
 
@@ -108,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user: state.user,
+        accessToken: state.accessToken,
         loading: state.loading,
         error: state.error,
         login,
