@@ -5,7 +5,7 @@ import { Sidebar, MobileNav, AuthGuard, Topbar, InactivityOverlay } from "@/comp
 import { LoadingState } from "@/features/shared";
 import { MeshBackground } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
-import { useAuth } from "@/stores/auth-store";
+import { useAuth, useRequireAuth } from "@/stores/auth-store";
 import { usePathname, useRouter } from "next/navigation";
 import { useLayout } from "@/stores/layout-store";
 import { useEffect } from "react";
@@ -47,6 +47,8 @@ export default function DashboardLayout({
   const { isSidebarCollapsed } = useLayout();
   const { user, loading } = useAuth();
   const title = getPageTitle(pathname ?? "/");
+
+  useRequireAuth(pathname ?? "/");
 
   // Prevent sidebar/layout rendering if session is invalid or loading
   // This ensures the LoadingState (rendered via AuthGuard) covers the entire screen
