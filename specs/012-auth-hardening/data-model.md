@@ -13,7 +13,7 @@ Tracks active, expired, and revoked refresh tokens for all users to enforce rota
 | `token_hash` | VARCHAR(64) | Not Null, Unique | SHA-256 hash of the opaque token value sent to the client. |
 | `family_id` | UUID | Not Null | Identifies a chain of rotated tokens originating from a single login. |
 | `issued_at` | TIMESTAMPTZ | Not Null, Default `now()` | When the token was issued. |
-| `expires_at` | TIMESTAMPTZ | Not Null | Hard expiration (typically `issued_at` + 7 days). |
+| `expires_at` | TIMESTAMPTZ | Not Null | Fixed family expiration: set to original login time + 7 days and copied unchanged to every rotated token in the family. |
 | `last_used_at` | TIMESTAMPTZ | Nullable | Tracks inactivity. If > 3 days ago, token is considered expired. |
 | `revoked` | BOOLEAN | Not Null, Default `false` | True if the token has been consumed, logged out, or flagged compromised. |
 | `replaced_by` | UUID | Foreign Key (`refresh_tokens.id`), Nullable | Points to the next token in the rotation chain, populated upon successful refresh. |
@@ -36,9 +36,10 @@ Tracks failed login attempts for brute-force protection. Can be implemented as a
 
 ### Business Rules & State Transitions
 - **Refresh Flow**: 
-  - Validate token hash exists, is not expired, and `revoked` is false.
+  - Validate token hash exists, is before the fixed family `expires_at`, has not been inactive for more than 3 days, and `revoked` is false.
   - If valid: Mark current row `revoked = true`, generate new token and row, set `replaced_by = new_row.id`, return new tokens.
-  - If invalid (row exists but `revoked` is true): **Compromise detected**. Find all rows where `family_id = compromised_row.family_id` and set `revoked = true`. Reject request.
+  - If invalid (row exists but `revoked` is true): **Compromise detected**. Find all rows where `family_id = compromised_row.family_id` and set `revoked = true`; persist an audit-log event containing `user_id` and `family_id`; reject request.
+  - Delete rows daily once they are 30 days past `expires_at`; retain the audit-log event as the durable record.
 - **Lockout Flow**:
   - `attempt_count` increments on failed password check.
   - Reaching 5 attempts sets `locked_until` to `now() + 15 minutes`.

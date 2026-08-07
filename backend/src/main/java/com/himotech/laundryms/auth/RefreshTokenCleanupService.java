@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Scheduled job to prune expired refresh tokens.
@@ -24,9 +25,9 @@ public class RefreshTokenCleanupService {
     @Transactional
     public void pruneExpiredTokens() {
         log.info("Starting scheduled cleanup of expired refresh tokens...");
-        Instant now = Instant.now();
+        Instant retentionCutoff = Instant.now().minus(30, ChronoUnit.DAYS);
         try {
-            refreshTokenRepository.deleteExpiredTokens(now);
+            refreshTokenRepository.deleteExpiredTokens(retentionCutoff);
             log.info("Finished scheduled cleanup of expired refresh tokens.");
         } catch (Exception e) {
             log.error("Error occurred during scheduled cleanup of expired refresh tokens", e);

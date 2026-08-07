@@ -37,7 +37,6 @@ The system uses a **unified `.env` file** at the project root for all runtime mo
 | `SPRING_PROFILES_ACTIVE` | `dev` | Activates profile-specific behavior (dev / prod). | Medium |
 | `JWT_SECRET` | _(none)_ | Secret key for HS256 signing. Must be ≥ 32 chars. | **CRITICAL** |
 | `ALLOWED_ORIGIN` | `http://localhost:3000` | CORS policy for frontend access. | High |
-| `ALLOWED_ORIGIN_PATTERNS` | `https://*.vercel.app,https://*.ngrok-free.dev,https://*.ngrok-free.app` | Comma-separated CORS patterns for Cloudflare / Ngrok / Vercel public tracking. | High |
 
 ### 3. Demo Seeding (Dev Only)
 *Optional variables to initialize the system with default accounts.*
@@ -53,7 +52,7 @@ The system uses a **unified `.env` file** at the project root for all runtime mo
 
 | Variable | Default (Dev) | Description | Exposed? |
 | :--- | :--- | :--- | :--- |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8080/api` | Base URL for API requests. | **YES** |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8080/api` | Browser-reachable API base URL, set to the public HTTPS tunnel URL for Vercel builds. | **YES** |
 
 ### 5. SMS Configuration (Optional)
 

@@ -20,6 +20,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -72,7 +74,8 @@ class AuthControllerTest {
                     .username(TEST_USERNAME)
                     .role(com.himotech.laundryms.shared.UserRole.ADMIN)
                     .build();
-            com.himotech.laundryms.auth.dto.LoginResult loginResult = new com.himotech.laundryms.auth.dto.LoginResult(user, "jwt-token", "refresh-plain");
+            com.himotech.laundryms.auth.dto.LoginResult loginResult = new com.himotech.laundryms.auth.dto.LoginResult(
+                    user, "jwt-token", "refresh-plain", Instant.now().plus(5, ChronoUnit.MINUTES));
             when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(loginResult);
 
             LoginRequest request = new LoginRequest();
@@ -84,10 +87,14 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.token").value("jwt-token"))
+                    .andExpect(jsonPath("$.accessToken").value("jwt-token"))
                     .andExpect(jsonPath("$.role").value("ADMIN"))
+                    .andExpect(header().exists("X-CSRF-Token"))
                     .andExpect(cookie().exists("refresh_token"))
-                    .andExpect(cookie().value("refresh_token", "refresh-plain"));
+                    .andExpect(cookie().value("refresh_token", "refresh-plain"))
+                    .andExpect(cookie().path("csrf_token", "/"))
+                    .andExpect(result -> org.junit.jupiter.api.Assertions.assertTrue(
+                            result.getResponse().getCookie("refresh_token").getMaxAge() <= 300));
         }
 
         @Test
@@ -119,5 +126,13 @@ class AuthControllerTest {
             mvc.perform(get("/api/v1/auth/me"))
                     .andExpect(status().isUnauthorized());
         }
+    }
+
+    @Test
+    void csrfBootstrapIssuesMatchingHeaderAndCookie() throws Exception {
+        mvc.perform(get("/api/v1/auth/csrf"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("X-CSRF-Token"))
+                .andExpect(cookie().exists("csrf_token"));
     }
 }

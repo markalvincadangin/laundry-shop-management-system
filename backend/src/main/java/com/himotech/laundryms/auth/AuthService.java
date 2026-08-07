@@ -1,6 +1,7 @@
 package com.himotech.laundryms.auth;
 
 import com.himotech.laundryms.auditlog.aspect.Auditable;
+import com.himotech.laundryms.auditlog.event.AuditLogEvent;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import com.himotech.laundryms.auth.dto.LoginResult;
@@ -9,6 +10,7 @@ import com.himotech.laundryms.auth.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.MessageDigest;
@@ -18,6 +20,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.Map;
 
 /**
  * Authentication service for login and credential verification.
@@ -31,6 +34,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginAttemptService loginAttemptService;
+    private final ApplicationEventPublisher eventPublisher;
     private final SecureRandom secureRandom = new SecureRandom();
 
     /**
@@ -77,20 +81,21 @@ public class AuthService {
         // Hash the refresh token
         String tokenHash = hashToken(refreshTokenPlain);
         
+        Instant refreshTokenExpiresAt = Instant.now().plus(7, ChronoUnit.DAYS);
         RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .user(user)
                 .tokenHash(tokenHash)
                 .familyId(UUID.randomUUID())
-                .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
+                .expiresAt(refreshTokenExpiresAt)
                 .build();
                 
         refreshTokenRepository.save(refreshTokenEntity);
 
-        return new LoginResult(user, accessToken, refreshTokenPlain);
+        return new LoginResult(user, accessToken, refreshTokenPlain, refreshTokenExpiresAt);
     }
     
     @Auditable(action = "USER_REFRESH", description = "User refresh token attempt")
-    @Transactional
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public LoginResult refresh(String refreshTokenPlain) {
         String tokenHash = hashToken(refreshTokenPlain);
         RefreshToken oldToken = refreshTokenRepository.findByTokenHash(tokenHash)
@@ -99,7 +104,15 @@ public class AuthService {
         if (oldToken.isRevoked()) {
             // Token Reuse Detected!
             refreshTokenRepository.revokeFamily(oldToken.getFamilyId());
-            // In a real app we might want to log this explicitly as a security event
+            eventPublisher.publishEvent(AuditLogEvent.builder()
+                    .userId(oldToken.getUser().getId().toString())
+                    .actionType("REFRESH_TOKEN_REUSE_DETECTED")
+                    .tableName("refresh_tokens")
+                    .recordId(oldToken.getFamilyId().toString())
+                    .newData(Map.of("familyId", oldToken.getFamilyId().toString()))
+                    .status("FAILURE")
+                    .description("Revoked refresh token was reused")
+                    .build());
             throw new InvalidCredentialsException();
         }
 
@@ -135,7 +148,7 @@ public class AuthService {
                 .user(user)
                 .tokenHash(newTokenHash)
                 .familyId(oldToken.getFamilyId()) // Same family
-                .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
+                .expiresAt(oldToken.getExpiresAt())
                 .build();
                 
         // The tests assert that the new token ID is set on the old token, but since UUIDs are auto-generated on save, we save newToken first.
@@ -143,7 +156,7 @@ public class AuthService {
         oldToken.setReplacedBy(newToken);
         refreshTokenRepository.save(oldToken);
 
-        return new LoginResult(user, accessToken, newRefreshTokenPlain);
+        return new LoginResult(user, accessToken, newRefreshTokenPlain, oldToken.getExpiresAt());
     }
 
     private String hashToken(String token) {

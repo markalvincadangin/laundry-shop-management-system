@@ -26,42 +26,40 @@ public class LoginAttemptService {
 
     public void loginFailed(String username) {
         Instant now = Instant.now();
-        AttemptData data = attempts.computeIfAbsent(username, k -> new AttemptData(0, now, null));
+        attempts.compute(username, (key, data) -> {
+            if (data == null) {
+                data = new AttemptData(0, now, null);
+            }
 
-        // If already locked and expired, reset
-        if (data.getLockedUntil() != null && data.getLockedUntil().isBefore(now)) {
-            data.setAttemptCount(1);
-            data.setFirstFailedAt(now);
-            data.setLockedUntil(null);
-            return;
-        }
+            if (data.getLockedUntil() != null) {
+                if (!data.getLockedUntil().isAfter(now)) {
+                    data.setAttemptCount(1);
+                    data.setFirstFailedAt(now);
+                    data.setLockedUntil(null);
+                }
+                return data;
+            }
 
-        // If locked and not expired, do nothing (keep it locked)
-        if (data.getLockedUntil() != null) {
-            return;
-        }
+            if (!data.getFirstFailedAt().plus(LOCKOUT_MINUTES, ChronoUnit.MINUTES).isAfter(now)) {
+                data.setAttemptCount(0);
+                data.setFirstFailedAt(now);
+            }
 
-        // Otherwise increment
-        data.setAttemptCount(data.getAttemptCount() + 1);
-
-        if (data.getAttemptCount() >= MAX_ATTEMPT) {
-            data.setLockedUntil(now.plus(LOCKOUT_MINUTES, ChronoUnit.MINUTES));
-        }
+            data.setAttemptCount(data.getAttemptCount() + 1);
+            if (data.getAttemptCount() >= MAX_ATTEMPT) {
+                data.setLockedUntil(now.plus(LOCKOUT_MINUTES, ChronoUnit.MINUTES));
+            }
+            return data;
+        });
     }
 
     public boolean isBlocked(String username) {
-        AttemptData data = attempts.get(username);
-        if (data == null || data.getLockedUntil() == null) {
-            return false;
-        }
-        
-        if (data.getLockedUntil().isBefore(Instant.now())) {
-            // Lockout expired
-            attempts.remove(username);
-            return false;
-        }
-        
-        return true;
+        Instant now = Instant.now();
+        AttemptData data = attempts.computeIfPresent(username, (key, existing) ->
+                existing.getLockedUntil() != null && !existing.getLockedUntil().isAfter(now)
+                        ? null
+                        : existing);
+        return data != null && data.getLockedUntil() != null;
     }
 
     static class AttemptData {

@@ -1940,7 +1940,7 @@ export interface components {
         };
         LoginResponse: {
             /** @description JWT access token */
-            token: string;
+            accessToken: string;
             /** @description User role string (ADMIN or STAFF) */
             role: string;
             /** @description Token expiration time in seconds (e.g. 900 for 15m) */

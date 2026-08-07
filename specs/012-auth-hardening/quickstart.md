@@ -69,3 +69,9 @@ curl -i -X POST http://localhost:8080/api/v1/auth/login \
   -d '{"username":"admin", "password":"password"}'
 ```
 **Expected**: HTTP 401 Unauthorized (Account is locked for 15 minutes). The error message should be identical to the "wrong password" message to prevent account enumeration.
+
+## Scenario 4: Fixed Family Expiry and Audit Event
+
+1. After rotating Token A, verify an attempt to reuse it returns HTTP 401 and creates an audit-log event containing the affected `user_id` and `family_id`.
+2. Verify the rotated token preserves the original family's `expires_at`; a refresh after that timestamp returns HTTP 401.
+3. Verify the daily cleanup deletes refresh-token rows only after they are 30 days past `expires_at`.

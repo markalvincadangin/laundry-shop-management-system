@@ -3,6 +3,7 @@ package com.himotech.laundryms.auth;
 import com.himotech.laundryms.auth.domain.RefreshToken;
 import com.himotech.laundryms.auth.dto.LoginResult;
 import com.himotech.laundryms.auth.repository.RefreshTokenRepository;
+import com.himotech.laundryms.auditlog.event.AuditLogEvent;
 import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -29,6 +32,34 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
+    @Test
+    void refreshDoesNotRollBackFamilyRevocationAfterReuse() throws NoSuchMethodException {
+        Transactional transactional = AuthService.class
+                .getDeclaredMethod("refresh", String.class)
+                .getAnnotation(Transactional.class);
+
+        assertNotNull(transactional);
+        assertTrue(java.util.Arrays.asList(transactional.noRollbackFor())
+                .contains(InvalidCredentialsException.class));
+    }
+
+    @Test
+    void refreshTokenLookupUsesPessimisticLocking() throws NoSuchMethodException {
+        org.springframework.data.jpa.repository.Lock lock = RefreshTokenRepository.class
+                .getMethod("findByTokenHash", String.class)
+                .getAnnotation(org.springframework.data.jpa.repository.Lock.class);
+
+        assertNotNull(lock);
+        assertEquals(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE, lock.value());
+    }
+
+    @Test
+    void loginResultCarriesRefreshFamilyExpiryForCookieLifetime() throws NoSuchMethodException {
+        assertEquals(Instant.class, LoginResult.class
+                .getMethod("refreshTokenExpiresAt")
+                .getReturnType());
+    }
+
     @Mock
     private UserRepository userRepository;
     
@@ -43,6 +74,9 @@ class AuthServiceTest {
 
     @Mock
     private LoginAttemptService loginAttemptService;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private AuthService authService;
@@ -187,6 +221,12 @@ class AuthServiceTest {
         assertThrows(InvalidCredentialsException.class, () -> authService.refresh(tokenPlain));
         
         verify(refreshTokenRepository).revokeFamily(familyId);
+        ArgumentCaptor<AuditLogEvent> eventCaptor = ArgumentCaptor.forClass(AuditLogEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        AuditLogEvent event = eventCaptor.getValue();
+        assertEquals("REFRESH_TOKEN_REUSE_DETECTED", event.getActionType());
+        assertEquals(testUser.getId().toString(), event.getUserId());
+        assertEquals(familyId.toString(), event.getRecordId());
     }
 
     @Test
@@ -232,5 +272,30 @@ class AuthServiceTest {
         
         // Assert
         verify(refreshTokenRepository, times(1)).revokeAllForUser(userId);
+    }
+
+    @Test
+    void refreshPreservesOriginalFamilyExpiry() throws Exception {
+        String plainToken = "family-expiry-token";
+        String tokenHash = hashToken(plainToken);
+        Instant familyExpiry = Instant.now().plus(2, ChronoUnit.DAYS);
+        RefreshToken oldToken = RefreshToken.builder()
+                .id(UUID.randomUUID())
+                .user(testUser)
+                .tokenHash(tokenHash)
+                .familyId(UUID.randomUUID())
+                .issuedAt(Instant.now().minus(1, ChronoUnit.DAYS))
+                .expiresAt(familyExpiry)
+                .revoked(false)
+                .build();
+        when(refreshTokenRepository.findByTokenHash(tokenHash)).thenReturn(Optional.of(oldToken));
+        when(jwtService.createToken(testUser)).thenReturn("access-token");
+        when(refreshTokenRepository.save(any(RefreshToken.class))).thenAnswer(i -> i.getArgument(0));
+
+        authService.refresh(plainToken);
+
+        ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
+        verify(refreshTokenRepository, times(2)).save(captor.capture());
+        assertEquals(familyExpiry, captor.getAllValues().get(0).getExpiresAt());
     }
 }

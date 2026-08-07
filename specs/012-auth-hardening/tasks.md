@@ -75,12 +75,12 @@
 
 > Write these tests FIRST. Verify they FAIL before implementation.
 
-- [ ] T011 [TDD] [US2] Write unit/integration tests for `AuthService` rotation and reuse detection (family-wide revocation) in `backend/src/test/java/com/himotech/laundryms/auth/service/AuthServiceTest.java`.
+- [x] T011 [TDD] [US2] Write unit/integration tests for `AuthService` rotation, fixed family expiry, three-day inactivity, and reuse detection (family-wide revocation plus audit event) in `backend/src/test/java/com/himotech/laundryms/auth/service/AuthServiceTest.java`.
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Implement `backend/src/main/java/com/himotech/laundryms/auth/security/CsrfDoubleSubmitFilter.java` for CSRF validation on cookie endpoints.
-- [ ] T013 [US2] Implement `AuthService.java` `refresh` logic (validate hash, check revocation, rotate token, detect reuse).
+- [x] T012 [P] [US2] Implement `backend/src/main/java/com/himotech/laundryms/auth/security/CsrfDoubleSubmitFilter.java` for CSRF validation on cookie endpoints.
+- [x] T013 [US2] Implement `AuthService.java` `refresh` logic (validate hash, enforce fixed family expiry and inactivity, rotate without extending expiry, detect reuse, revoke the family, and persist the audit event).
 - [ ] T014 [US2] Implement `AuthController.java` `refresh` endpoint logic.
 - [ ] T015 [US2] [REVIEW] Add 401 interceptor logic to `frontend/src/lib/api/api-client.ts` to attempt silent refresh via `POST /api/v1/auth/refresh` sending `credentials: 'include'` and `X-CSRF-Token` header.
 - [ ] T016 [P] [US2] Update `frontend/src/stores/auth-store.tsx` to perform silent refresh on initial application mount to restore session.
@@ -117,7 +117,7 @@
 ### Implementation for User Story 4
 
 - [ ] T022 [US4] Implement `backend/src/main/java/com/himotech/laundryms/auth/service/LoginAttemptService.java` using `ConcurrentHashMap` for in-memory tracking of attempts per username.
-- [ ] T023 [US4] Integrate `LoginAttemptService` into `AuthService.java` `login` method: check lock BEFORE checking password; increment on fail, reset on success; throw standard `BadCredentialsException` if locked.
+- [ ] T023 [US4] Integrate `LoginAttemptService` into `AuthService.java` `login` method: check lock BEFORE checking password; increment on fail, reset on success; throw auth-local `InvalidCredentialsException` if locked.
 
 **Checkpoint**: User Story 4 complete. Brute force properly mitigated.
 
@@ -130,7 +130,7 @@
 - [ ] T024 Code cleanup and refactoring in `auth` package (ensure Checkstyle compliance, no unused imports).
 - [ ] T025 Execute manual cURL validation scripts documented in `quickstart.md`.
 - [ ] T026 [REVIEW] Run full test suites (`make test-backend` and `make test-frontend`) to ensure no regressions.
-- [ ] T027 [SUBAGENT] Implement a Spring `@Scheduled` job to periodically prune expired tokens from the `refresh_tokens` table.
+- [ ] T027 [SUBAGENT] Implement and test a daily Spring `@Scheduled` job that prunes `refresh_tokens` rows only after they are 30 days past `expires_at`.
 - [ ] T028 Update `docs/05-tech-design/openapi.yaml` to reflect the new `/api/v1/auth/refresh` endpoint, the modifications to `LoginResponse`, and the introduction of the `X-CSRF-Token` header.
 
 ---
@@ -188,3 +188,16 @@ At every phase boundary:
 - [Story] label maps task to specific user story for traceability
 - Commit after each task or logical group
 - Stop at any checkpoint to validate independently
+
+## Phase 8: Convergence
+
+- [ ] T029 Correct refresh and CSRF cookie configuration end-to-end: issue/read the same `refresh_token` cookie, enforce `SameSite=None` and production `Secure`, and verify refresh/logout cookie clearing behavior per FR-004, FR-009, and US2/AC1 (contradicts)
+- [ ] T030 Align the login/refresh response contract to `{ accessToken, expiresIn }` across backend DTO/controller, frontend schema/client/store, and OpenAPI documentation per FR-001, FR-013, and plan: Polyglot Contract Sync (contradicts)
+- [ ] T031 Repair the frontend silent-refresh coordination so the initiating 401 request and concurrent requests each settle exactly once, retry with the new token, and synchronize React memory state; add coverage for initial session restoration per FR-014 and US2/AC1 (partial)
+- [ ] T032 Enforce the rolling 15-minute failed-attempt window in `LoginAttemptService` before applying the five-attempt lockout, with boundary tests for expired attempts and lock expiry per FR-011 and US4/AC1 (partial)
+- [ ] T033 Emit a distinct security alert/audit event when a revoked refresh token is reused, while retaining family-wide revocation, and cover it with a test per FR-008 and US2/AC3 (partial)
+- [ ] T034 Add the scheduled or routine cleanup of expired `refresh_tokens` records and cover its retention behavior per FR-005 and Database Migrations (missing)
+
+## Phase 9: Convergence
+
+- [ ] T035 Synchronize a successfully renewed access token from `frontend/src/lib/api-client.ts` into `frontend/src/stores/auth-store.tsx` during initial session restoration and add coverage per FR-013 and FR-014 (partial)
