@@ -25,9 +25,9 @@
 - [X] T008 Update installer frontend build invocations in `scripts/build-installer.ps1` and `scripts/build-installer.sh` to force `NEXT_DEPLOYMENT_TARGET=standalone` and `NEXT_PUBLIC_API_URL=/api`.
 - [X] T009 Bind production Spring Boot to `127.0.0.1` and remove obsolete origin-pattern configuration in `backend/src/main/resources/application.yml`, `backend/src/main/resources/application-prod.yml`, and `scripts/installer.iss`.
 - [X] T010 Normalize backend/frontend environment templates in `.env.example`, `frontend/.env.local.example`, and new `frontend/.env.standalone.example`.
-- [ ] T011 Add focused failing no-store and explicit filter-order coverage for health, login, refresh, protected reads, mutations, and errors in `backend/src/test/java/com/himotech/laundryms/config/ApiCacheControlFilterTest.java`.
-- [ ] T012 Run T011 and confirm it fails before implementation, then add `ApiCacheControlFilter` with explicit `@Order` and register it in `backend/src/main/java/com/himotech/laundryms/config/ApiCacheControlFilter.java` and `backend/src/main/java/com/himotech/laundryms/config/SecurityConfig.java`.
-- [ ] T013 Run the T002–T004 and T011 suites plus both frontend builds; confirm the standalone output contains no production localhost API base.
+- [X] T011 Add focused failing no-store and explicit filter-order coverage for health, login, refresh, protected reads, mutations, and errors in `backend/src/test/java/com/himotech/laundryms/config/ApiCacheControlFilterTest.java`.
+- [X] T012 Run T011 and confirm it fails before implementation, then add the Spring-managed `ApiCacheControlFilter` with explicit `@Order` in `backend/src/main/java/com/himotech/laundryms/config/ApiCacheControlFilter.java`.
+- [X] T013 Run the T002–T004 and T011 suites plus both frontend builds; confirm the standalone output contains no production localhost API base.
 
 **Checkpoint**: The dual-build, localhost-only, environment, and non-cacheable API foundations are verified. No user-story implementation begins until this checkpoint passes.
 
