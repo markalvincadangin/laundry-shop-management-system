@@ -128,6 +128,7 @@ export function CustomerEditModal({ isOpen, onClose, customer, onSuccess }: Cust
             <div className="flex flex-col sm:flex-row gap-grid-3">
               <Button 
                 type="submit"
+                requiresOnline
                 variant="primary" 
                 isLoading={loading}
                 className="flex-[2] h-14 gap-grid-2 font-black uppercase text-[11px] tracking-widest shadow-lg shadow-brand-blue/20 rounded-xl"

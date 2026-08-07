@@ -43,8 +43,8 @@
 - [X] T017 [US1] Implement the health probe, five-second deadline, online/offline/checking state, and retry policy in `frontend/src/lib/availability.ts`.
 - [X] T018 [US1] Implement `AvailabilityProvider` and wire it into `frontend/src/app/providers.tsx`.
 - [X] T019 [P] [US1] Define all availability UI copy in `frontend/src/constants/ui/remote-access.ts` and implement `OfflineScreen` and `AvailabilityBanner` in `frontend/src/components/system/OfflineScreen.tsx` and `frontend/src/components/system/AvailabilityBanner.tsx` using those constants.
-- [ ] T020 [US1] Guard common mutation controls with the provider’s write-enabled state in `frontend/src/components/features/` and shared form/action components discovered by T001.
-- [ ] T021 [US1] Run the focused availability suite, `npm run typecheck`, `npm run lint`, and `npm run test` from `frontend/`.
+- [X] T020 [US1] Guard common mutation controls with the provider’s write-enabled state in `frontend/src/components/features/` and shared form/action components discovered by T001.
+- [X] T021 [US1] Run the focused availability suite, `npm run typecheck`, `npm run lint`, and `npm run test` from `frontend/`.
 
 **Checkpoint**: The Vercel UI can report upstream loss safely before any remote business write is enabled.
 

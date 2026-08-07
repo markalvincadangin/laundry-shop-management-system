@@ -101,6 +101,7 @@ export function MachineModal({ isOpen, onClose, machine, onSuccess }: MachineMod
         <div className="flex flex-col sm:flex-row gap-grid-4 pt-grid-4">
           <Button
             type="submit"
+            requiresOnline
             isLoading={loading}
             className="flex-[2] h-14 bg-brand-blue shadow-lg shadow-brand-blue/25 uppercase font-black text-[11px] tracking-widest active:scale-95 transition-all rounded-xl"
           >

@@ -15,6 +15,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  requiresOnline?: boolean;
 }
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -257,5 +258,4 @@ export interface OrderPreviewProps {
   preview: components["schemas"]["OrderPreviewResponse"] | null;
   loading?: boolean;
 }
-
 

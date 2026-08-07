@@ -87,7 +87,7 @@ export function AddOnCatalogModal({ isOpen, onClose, addOn, onSuccess }: Props) 
         
         <div className="flex justify-end gap-4 mt-8">
           <Button variant="outline" onClick={onClose} type="button">{UI_LABELS.shared.buttons.CANCEL}</Button>
-          <Button variant="primary" type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+          <Button variant="primary" type="submit" requiresOnline disabled={createMutation.isPending || updateMutation.isPending}>
             {isEditing ? "Save Changes" : "Create"}
           </Button>
         </div>

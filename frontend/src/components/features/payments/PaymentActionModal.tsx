@@ -156,6 +156,7 @@ export function PaymentActionModal({
           </Button>
           <Button
             type="submit"
+            requiresOnline
             className="flex-[2] font-black uppercase tracking-widest text-caption bg-brand-blue shadow-xl shadow-brand-blue/20 h-12 rounded-xl"
             isLoading={isSubmitting}
             disabled={isSubmitting || !user}
