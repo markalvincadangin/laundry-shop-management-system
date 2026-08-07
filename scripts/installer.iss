@@ -255,9 +255,9 @@ begin
     'spring.datasource.username=${DB_USER:postgres}' + #13#10 +
     'spring.datasource.password=' + GeneratedDbPassword + #13#10 +
     'security.jwt.secret-key=' + GeneratedJwtSecret + #13#10 +
-    'app.security.allowed-origin-patterns=https://*.vercel.app,https://*.ngrok-free.dev,https://*.ngrok-free.app,http://localhost:*' + #13#10 +
+    'app.security.allowed-origin=${ALLOWED_ORIGIN:http://localhost:3000}' + #13#10 +
     'server.port=${SERVER_PORT:8765}' + #13#10 +
-    'server.address=0.0.0.0' + #13#10;
+    'server.address=127.0.0.1' + #13#10;
     
   SaveStringToFile(ConfigFile, ConfigContent, False);
 end;
@@ -337,7 +337,7 @@ begin
         'tunnels:' + #13#10 +
         '  laundryms:' + #13#10 +
         '    proto: http' + #13#10 +
-        '    addr: 8765' + #13#10 +
+        '    addr: 127.0.0.1:8765' + #13#10 +
         '    domain: ' + Domain + #13#10;
         
       SaveStringToFile(ConfigFile, ConfigContent, False);

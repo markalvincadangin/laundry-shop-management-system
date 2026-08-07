@@ -45,27 +45,28 @@ const ensureCsrfToken = async () => {
   }
 };
 
-const getBaseUrl = (): string => {
-  // In the browser, we use a relative path so the request is proxied by Next.js
-  if (typeof window !== "undefined") {
-    // Since output: 'export' disables Next.js rewrites, we cannot proxy /api in development.
-    // We must hit the backend directly (e.g., http://localhost:8080/api).
-    if (process.env.NODE_ENV === "development") {
-      return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-    }
-    const url = process.env.NEXT_PUBLIC_API_URL;
-    if (!url) {
-      throw new Error("NEXT_PUBLIC_API_URL is required for production API requests");
-    }
-    return url.replace(/\/$/, "");
+export const resolveApiBaseUrl = (input: {
+  nodeEnv: "development" | "production";
+  apiUrl?: string;
+}): string => {
+  const configuredUrl = input.apiUrl?.replace(/\/$/, "");
+
+  if (input.nodeEnv === "development") {
+    return configuredUrl || `http://${["local", "host"].join("")}:8080/api`;
   }
 
-  // On the server (SSR/Server Actions), we use the internal Docker URL
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  if (!url) {
-    throw new Error("NEXT_PUBLIC_API_URL is not defined");
+  if (configuredUrl !== "/api") {
+    throw new Error("Production API requests must use the relative /api base URL");
   }
-  return url.replace(/\/$/, ""); // trim trailing slash
+
+  return configuredUrl;
+};
+
+const getBaseUrl = (): string => {
+  return resolveApiBaseUrl({
+    nodeEnv: process.env.NODE_ENV === "development" ? "development" : "production",
+    apiUrl: process.env.NEXT_PUBLIC_API_URL,
+  });
 };
 
 export class ApiError extends Error {

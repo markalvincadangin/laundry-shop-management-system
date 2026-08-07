@@ -16,7 +16,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 echo ""
 echo "[1/4] Building Frontend Static Export..."
 cd "$PROJECT_ROOT/frontend"
-npm run build
+NEXT_DEPLOYMENT_TARGET=standalone NEXT_PUBLIC_API_URL=/api npm run build
 
 # 2. Copy Static Export into Spring Boot static resources
 echo ""

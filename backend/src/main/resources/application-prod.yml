@@ -1,6 +1,9 @@
 # Production profile: hardened for Render + Neon deployment
 # Activate with: SPRING_PROFILES_ACTIVE=prod
 
+server:
+  address: 127.0.0.1
+
 spring:
   datasource:
     # Neon requires SSL for external connections from Render
@@ -31,5 +34,5 @@ logging:
 app:
   security:
     cookie-secure: true
-    cookie-same-site: None
+    cookie-same-site: Lax
     bcrypt-strength: 12

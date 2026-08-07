@@ -16,6 +16,20 @@
 
 All authenticated durable non-auth `POST`, `PUT`, `PATCH`, and `DELETE` endpoints require `Idempotency-Key: <UUID>`. Login, refresh, logout, reads, and order preview are excluded.
 
+### Mutation inventory
+
+| Controller | Durable routes requiring idempotency |
+|------------|-------------------------------------|
+| Orders | `POST /orders`, `PATCH /orders/{id}`, `PATCH /orders/{id}/status`, `DELETE /orders/{id}` |
+| Payments | `POST /payments`, `POST /payments/order/{orderId}/void` |
+| Customers | `POST /customers`, `PATCH /customers/{id}`, `PATCH /customers/{id}/toggle-active` |
+| Users | `POST /users`, `PATCH /users/{id}`, `PATCH /users/{id}/toggle-status` |
+| Machines | `POST /machines`, `PATCH /machines/{id}/status`, `DELETE /machines/{id}` |
+| Rates and add-ons | `POST /service-rates`, `PATCH /service-rates/{id}`, `POST /add-ons`, `PATCH /add-ons/{id}` |
+| Settings and alerts | `PATCH /settings/pause`, `PATCH /client-alerts/{id}/read`, `PATCH /client-alerts/read-all` |
+
+Excluded routes: all `auth` mutations and `POST /orders/preview`; neither creates a recoverable business operation.
+
 | Situation | Result |
 |-----------|--------|
 | First valid request | Existing success response; outcome is stored atomically |

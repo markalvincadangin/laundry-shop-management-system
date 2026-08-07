@@ -14,6 +14,8 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host "`n[1/5] Building Frontend Static Export..." -ForegroundColor Yellow
 $frontendDir = Resolve-Path (Join-Path $PSScriptRoot "..\frontend")
 Set-Location $frontendDir
+$env:NEXT_DEPLOYMENT_TARGET = "standalone"
+$env:NEXT_PUBLIC_API_URL = "/api"
 npm run build
 
 # ── 2. Copy Static Export into Spring Boot static resources ──

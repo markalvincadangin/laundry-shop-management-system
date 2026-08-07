@@ -10,21 +10,21 @@
 
 **Purpose**: Establish the exact source inventory and test entry points before behavior changes.
 
-- [ ] T001 Run Graphify queries for API-controller, service-transaction, authentication, and installer relationships; record the mutation-route inventory and evidence in `specs/013-remote-access-resilience/contracts/api.md`.
-- [ ] T002 [P] Add API-base resolution tests in `frontend/src/tests/lib/api-client.test.ts` for development, standalone, and Vercel environment inputs.
-- [ ] T003 [P] Add a build-output inspection test/script in `frontend/src/tests/` that rejects a standalone artifact containing `http://localhost:8080/api`.
-- [ ] T004 [P] Add production-property validation tests in `backend/src/test/java/com/himotech/laundryms/config/SecurityPropertiesTest.java`.
+- [X] T001 Run Graphify queries for API-controller, service-transaction, authentication, and installer relationships; record the mutation-route inventory and evidence in `specs/013-remote-access-resilience/contracts/api.md`.
+- [X] T002 [P] Add API-base resolution tests in `frontend/src/tests/lib/api-client.test.ts` for development, standalone, and Vercel environment inputs.
+- [X] T003 [P] Add a build-output inspection test/script in `frontend/src/tests/` that rejects a standalone artifact containing `http://localhost:8080/api`.
+- [X] T004 [P] Add production-property validation tests in `backend/src/test/java/com/himotech/laundryms/config/SecurityPropertiesTest.java`.
 
 ## Phase 2: Foundational Deployment and API Safety
 
 **Purpose**: Build the shared production contract that blocks all remote user stories until complete.
 
-- [ ] T005 Run T002–T004 and confirm the new tests fail before implementation.
-- [ ] T006 Implement `NEXT_DEPLOYMENT_TARGET` modes and the Vercel external rewrite in `frontend/next.config.mjs`.
-- [ ] T007 Implement tested API-base URL resolution in `frontend/src/lib/api-client.ts` so both production targets use relative `/api` and only development can use the local URL.
-- [ ] T008 Update installer frontend build invocations in `scripts/build-installer.ps1` and `scripts/build-installer.sh` to force `NEXT_DEPLOYMENT_TARGET=standalone` and `NEXT_PUBLIC_API_URL=/api`.
-- [ ] T009 Bind production Spring Boot to `127.0.0.1` and remove obsolete origin-pattern configuration in `backend/src/main/resources/application.yml` and `backend/src/main/resources/application-prod.yml`.
-- [ ] T010 Normalize backend/frontend environment templates in `.env.example`, `frontend/.env.local.example`, and new `frontend/.env.standalone.example`.
+- [X] T005 Run T002–T004 and confirm the new tests fail before implementation.
+- [X] T006 Implement `NEXT_DEPLOYMENT_TARGET` modes and the Vercel external rewrite in `frontend/next.config.mjs`.
+- [X] T007 Implement tested API-base URL resolution in `frontend/src/lib/api-client.ts` so both production targets use relative `/api` and only development can use the local URL.
+- [X] T008 Update installer frontend build invocations in `scripts/build-installer.ps1` and `scripts/build-installer.sh` to force `NEXT_DEPLOYMENT_TARGET=standalone` and `NEXT_PUBLIC_API_URL=/api`.
+- [X] T009 Bind production Spring Boot to `127.0.0.1` and remove obsolete origin-pattern configuration in `backend/src/main/resources/application.yml`, `backend/src/main/resources/application-prod.yml`, and `scripts/installer.iss`.
+- [X] T010 Normalize backend/frontend environment templates in `.env.example`, `frontend/.env.local.example`, and new `frontend/.env.standalone.example`.
 - [ ] T011 Add focused failing no-store and explicit filter-order coverage for health, login, refresh, protected reads, mutations, and errors in `backend/src/test/java/com/himotech/laundryms/config/ApiCacheControlFilterTest.java`.
 - [ ] T012 Run T011 and confirm it fails before implementation, then add `ApiCacheControlFilter` with explicit `@Order` and register it in `backend/src/main/java/com/himotech/laundryms/config/ApiCacheControlFilter.java` and `backend/src/main/java/com/himotech/laundryms/config/SecurityConfig.java`.
 - [ ] T013 Run the T002–T004 and T011 suites plus both frontend builds; confirm the standalone output contains no production localhost API base.
