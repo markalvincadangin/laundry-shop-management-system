@@ -84,4 +84,4 @@ curl http://localhost:8080/api/v1/health
 ```
 
 ---
-*Updated 2026-07-24 — Aligned to Standalone Offline-First Architecture & Cloudflare Tunnel Topology.*ia prod profile, Render keep-alive guidance.*
+*Updated 2026-08-07 — Aligned to the standalone offline-first architecture with Ngrok as the current tunnel provider; Cloudflare remains optional.*

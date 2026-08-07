@@ -24,7 +24,7 @@
 
 To run the application locally or deploy it to a Windows machine, we have fully automated scripts that handle the PostgreSQL database setup, environment variable configuration, and `.exe` installer wizard generation.
 
-For full deployment instructions (including how to set up the Cloudflare Tunnel for online tracking), please see the [Deployment Guide](06-implementation/deployment-guide.md).
+For full deployment instructions (including how to set up the current Ngrok tunnel for online tracking and authenticated remote staff/admin access), please see the [Deployment Guide](06-implementation/deployment-guide.md).
 
 For development:
 1. Ensure Java 21, Node.js 20+, and Docker are installed.

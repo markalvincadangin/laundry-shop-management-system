@@ -16,7 +16,7 @@ The Laundry Shop Management System is designed to operate on a strict **Offline-
 
 The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static export) are packaged into a **single standalone `.exe` Windows Installer wizard** generated via **Inno Setup** and managed via **WinSW (Windows Service Wrapper)**. The database is a local PostgreSQL instance running as a silent Windows Service.
 
-To enable public customer tracking online, the local server is exposed to a Vercel-hosted frontend via a secure **Cloudflare Tunnel**.
+To enable online access, the local server is exposed to the Vercel-hosted frontend via a secure **Ngrok reverse tunnel**. This supports public customer tracking and authenticated remote Admin/Staff access while the shop laptop is running and connected to the internet. Cloudflare Tunnel remains available as an optional installer alternative.
 
 ---
 
@@ -101,7 +101,7 @@ If using Cloudflare, to ensure the remote Admin/Staff app cannot be accessed by 
 ## 5. Security & Maintenance
 
 ### Firewall
-- Windows Firewall requires outbound HTTPS access on Port 443 (used by `cloudflared`).
+- Windows Firewall requires outbound HTTPS access for the selected tunnel provider (`ngrok` is the current provider).
 - **No inbound router ports need to be opened.**
 
 ### Automated Nightly Database Backup
