@@ -3,7 +3,7 @@
 **Feature**: 012-auth-hardening
 
 ## Decision 1: Token Architecture
-- **Decision**: Implement a two-token model: 15-minute JWT access token (bearer) and a 7-day opaque refresh token (`HttpOnly`, `Secure`, `SameSite=None` cookie).
+- **Decision**: Implement a two-token model: 15-minute JWT access token (bearer) and an opaque refresh-token family capped at seven days from original login (`HttpOnly`, `Secure`, `SameSite=None` cookie). Rotation preserves the family's original expiration.
 - **Rationale**: Mitigates risk of XSS token theft. If an access token is leaked, its utility expires rapidly. A leaked refresh token cannot be read by malicious JavaScript due to the `HttpOnly` flag.
 - **Alternatives considered**: Single long-lived token (rejected as insecure over internet). DPoP / mTLS (rejected as overly complex for a 2-user system).
 
@@ -16,3 +16,8 @@
 - **Decision**: Double-submit cookie pattern for `/api/v1/auth/refresh` and `/api/v1/auth/logout`.
 - **Rationale**: `SameSite=None` on the refresh cookie exposes the endpoints to cross-site request forgery. The double-submit pattern validates intent without requiring server-side session state tracking.
 - **Alternatives considered**: Spring Security Synchronizer Token Pattern (rejected because it assumes server-rendered views and adds unnecessary state overhead for a stateless API + SPA architecture).
+
+## Decision 4: Reuse Audit and Token Retention
+- **Decision**: Persist a dedicated audit-log event with `user_id` and `family_id` on refresh-token reuse. Run daily cleanup that deletes refresh-token rows 30 days after expiry.
+- **Rationale**: The audit event makes compromise detection observable without external dependencies, while bounded row retention keeps the local database manageable.
+- **Alternatives considered**: Email or webhook alerts (rejected; introduces external operational dependencies); immediate deletion at expiry (rejected; removes a short forensic window).

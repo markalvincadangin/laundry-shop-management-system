@@ -39,17 +39,11 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(SecurityProperties props) {
         CorsConfiguration config = new CorsConfiguration();
-        // Use origin patterns from environment for maximum flexibility without
-        // hardcoding
-        if (props.getAllowedOriginPatterns() != null && props.getAllowedOriginPatterns().length > 0) {
-            config.setAllowedOriginPatterns(List.of(props.getAllowedOriginPatterns()));
-        } else {
-            // Safe fallback for local development
-            config.setAllowedOrigins(
-                    List.of(props.getAllowedOrigin() != null ? props.getAllowedOrigin() : "http://localhost:3000"));
-        }
+        config.setAllowedOrigins(
+                List.of(props.getAllowedOrigin() != null ? props.getAllowedOrigin() : "http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("X-CSRF-Token"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -71,6 +65,7 @@ public class SecurityConfig {
                                 .sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage())))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/v1/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()

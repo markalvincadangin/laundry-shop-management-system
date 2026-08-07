@@ -53,7 +53,8 @@ export interface paths {
         /**
          * Login
          * @description User authentication for role-based access (Admin / Staff).
-         *     Sets an HTTP-only cookie (access_token) in addition to returning the JWT in the body.
+         *     Returns an access token in the response body and sets an HTTP-only refresh_token
+         *     cookie plus a JavaScript-readable csrf_token cookie for double-submit CSRF protection.
          *     Supports: US-11.
          */
         post: {
@@ -72,6 +73,8 @@ export interface paths {
                 /** @description Login success */
                 200: {
                     headers: {
+                        /** @description CSRF value to retain in memory and send on credentialed refresh/logout requests. */
+                        "X-CSRF-Token"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -106,12 +109,14 @@ export interface paths {
         put?: never;
         /**
          * Logout
-         * @description Clears the HTTP-only JWT cookie (sets max-age=0).
+         * @description Revokes the presented refresh token and clears refresh_token and csrf_token cookies.
          */
         post: {
             parameters: {
                 query?: never;
-                header?: never;
+                header: {
+                    "X-CSRF-Token": string;
+                };
                 path?: never;
                 cookie?: never;
             };
@@ -124,8 +129,54 @@ export interface paths {
                     };
                     content?: never;
                 };
+                /** @description Missing or invalid CSRF token */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/csrf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bootstrap CSRF protection
+         * @description Issues a csrf_token cookie and returns the matching value in X-CSRF-Token for a cross-origin SPA to retain only in memory.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description CSRF token issued */
+                200: {
+                    headers: {
+                        /** @description CSRF value to retain in memory and send on credentialed refresh/logout requests. */
+                        "X-CSRF-Token"?: string;
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -160,6 +211,8 @@ export interface paths {
                 /** @description Refresh success */
                 200: {
                     headers: {
+                        /** @description Replacement CSRF value to retain in memory and send on the next credentialed request. */
+                        "X-CSRF-Token"?: string;
                         [name: string]: unknown;
                     };
                     content: {
@@ -168,6 +221,13 @@ export interface paths {
                 };
                 /** @description Unauthorized / Invalid token */
                 401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Missing or invalid CSRF token */
+                403: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1940,7 +2000,7 @@ export interface components {
         };
         LoginResponse: {
             /** @description JWT access token */
-            token: string;
+            accessToken: string;
             /** @description User role string (ADMIN or STAFF) */
             role: string;
             /** @description Token expiration time in seconds (e.g. 900 for 15m) */

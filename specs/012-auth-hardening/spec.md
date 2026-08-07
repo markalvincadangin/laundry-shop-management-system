@@ -90,9 +90,9 @@ As a system administrator, I want account login attempts to be rate-limited and 
 - **FR-003**: System MUST NOT include any Personally Identifiable Information (PII) in JWT access token payloads.
 - **FR-004**: System MUST deliver refresh tokens exclusively as `HttpOnly`, `Secure`, `SameSite=None`, `Path=/api/v1/auth` cookies.
 - **FR-005**: System MUST store SHA-256 hashes of refresh tokens in a `refresh_tokens` database table with tracking for `id`, `user_id`, `family_id`, `issued_at`, `expires_at`, `last_used_at`, `revoked`, and `replaced_by`.
-- **FR-006**: System MUST enforce a 7-day maximum refresh token lifetime and a 3-day sliding inactivity expiration.
+- **FR-006**: System MUST enforce a fixed 7-day maximum lifetime per refresh-token family, measured from the original login and never extended by rotation, plus a 3-day sliding inactivity expiration.
 - **FR-007**: System MUST perform refresh token rotation on every call to `POST /api/v1/auth/refresh`, revoking the presented token and issuing a new token in the same family.
-- **FR-008**: System MUST detect refresh token reuse (presentation of an already-revoked token) and immediately revoke ALL refresh tokens associated with that `family_id` while logging a security alert.
+- **FR-008**: System MUST detect refresh token reuse (presentation of an already-revoked token), immediately revoke ALL refresh tokens associated with that `family_id`, and persist a dedicated audit-log event containing the affected `user_id` and `family_id`.
 - **FR-009**: System MUST enforce double-submit cookie CSRF protection for `/api/v1/auth/refresh` and `/api/v1/auth/logout` endpoints by validating that the `X-CSRF-Token` header matches the `csrf_token` cookie.
 - **FR-010**: System MUST revoke all refresh tokens for a user when their password or role is updated.
 - **FR-011**: System MUST track failed login attempts by username and lock out a username after 5 failed attempts within 15 minutes for a 15-minute period.
@@ -121,7 +121,7 @@ As a system administrator, I want account login attempts to be rate-limited and 
 
 ### Database Migrations
 - **Flyway Target**: `V2__add_refresh_tokens_table.sql`
-- **Schema Changes**: Create `refresh_tokens` table with indexes on `family_id`, `user_id`, and `token_hash`. Add scheduled/routine cleanup for expired records.
+- **Schema Changes**: Create `refresh_tokens` table with indexes on `family_id`, `user_id`, and `token_hash`. Run daily cleanup that deletes refresh-token rows 30 days after expiry; audit-log events remain the durable security record.
 
 ### API Contracts
 - **`POST /api/v1/auth/login`**: Accepts `{ username, password }`. Returns `{ accessToken, expiresIn }` in body, sets `refresh_token` (HttpOnly, Secure, SameSite=None) and `csrf_token` cookies.
@@ -148,6 +148,11 @@ As a system administrator, I want account login attempts to be rate-limited and 
 - **Single Monolith Issuer**: Authentication is handled directly by the Spring Boot backend without third-party identity providers or OAuth2 server infrastructure.
 
 ## Clarifications
+### Session 2026-08-07
+- Q: Should the 7-day maximum apply to the refresh-token family from original login or to each rotated token? → A: A refresh-token family expires 7 days after login; rotation never extends that deadline.
+- Q: Where should a refresh-token reuse security alert be recorded? → A: Persist a dedicated audit-log event containing the affected user ID and token-family ID.
+- Q: What cleanup schedule and retention should apply to expired refresh-token rows? → A: Run cleanup daily and delete rows 30 days after expiry; retain audit-log events as the durable security record.
+
 ### Session 2026-07-25
 - Q: Do we need to include `docs/05-tech-design/openapi.yaml` to our spec, plan and tasks? → A: Yes, the OpenAPI contract must be updated to reflect the new `/api/v1/auth/refresh` endpoint, the modifications to `LoginResponse`, and the introduction of the `X-CSRF-Token` header.
 - Q: Do we still need `InvalidCredentialsException.java` in the auth package instead of `shared/exception`? → A: Yes. Per Principle I (Feature-First Backend Organization) in the Constitution, exceptions specific to authentication belong in the `auth` feature package. Only truly cross-cutting concerns go to `shared`.

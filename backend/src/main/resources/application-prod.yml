@@ -31,5 +31,5 @@ logging:
 app:
   security:
     cookie-secure: true
-    cookie-same-site: Lax
+    cookie-same-site: None
     bcrypt-strength: 12

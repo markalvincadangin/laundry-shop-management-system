@@ -63,4 +63,19 @@ class LoginAttemptServiceTest {
 
         assertFalse(loginAttemptService.isBlocked(username));
     }
+
+    @Test
+    void staleFailuresDoNotContributeToLockout() {
+        String username = "user4";
+        for (int i = 0; i < 4; i++) {
+            loginAttemptService.loginFailed(username);
+        }
+        Map<String, LoginAttemptService.AttemptData> attempts =
+                (Map<String, LoginAttemptService.AttemptData>) ReflectionTestUtils.getField(loginAttemptService, "attempts");
+        attempts.get(username).setFirstFailedAt(Instant.now().minus(16, ChronoUnit.MINUTES));
+
+        loginAttemptService.loginFailed(username);
+
+        assertFalse(loginAttemptService.isBlocked(username));
+    }
 }

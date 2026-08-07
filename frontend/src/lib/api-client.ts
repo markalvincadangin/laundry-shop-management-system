@@ -6,28 +6,43 @@
 import type { ErrorResponse } from "@/types/api";
 
 let currentAccessToken: string | null = null;
-let isRefreshing = false;
-let refreshSubscribers: ((token: string) => void)[] = [];
+let currentCsrfToken: string | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
 export const setAccessToken = (token: string | null) => {
   currentAccessToken = token;
 };
 
-const subscribeTokenRefresh = (cb: (token: string) => void) => {
-  refreshSubscribers.push(cb);
-};
+export const getAccessToken = () => currentAccessToken;
 
-const onRefreshed = (token: string) => {
-  refreshSubscribers.forEach((cb) => cb(token));
-  refreshSubscribers = [];
+const setCsrfToken = (token: string | null) => {
+  currentCsrfToken = token;
 };
 
 const getCsrfToken = (): string | undefined => {
-  if (typeof document !== "undefined") {
-    const match = document.cookie.split("; ").find(row => row.startsWith("csrf_token="));
-    return match ? match.split("=")[1] : undefined;
+  return currentCsrfToken ?? undefined;
+};
+
+const captureCsrfToken = (response: Response) => {
+  const csrfToken = response.headers.get("X-CSRF-Token");
+  if (csrfToken) {
+    setCsrfToken(csrfToken);
   }
-  return undefined;
+};
+
+const ensureCsrfToken = async () => {
+  if (currentCsrfToken) {
+    return;
+  }
+
+  const response = await fetch(buildUrl("/v1/auth/csrf"), {
+    method: "GET",
+    credentials: "include",
+  });
+  captureCsrfToken(response);
+  if (!response.ok || !currentCsrfToken) {
+    throw new Error("Unable to initialize CSRF protection");
+  }
 };
 
 const getBaseUrl = (): string => {
@@ -38,7 +53,11 @@ const getBaseUrl = (): string => {
     if (process.env.NODE_ENV === "development") {
       return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
     }
-    return "/api";
+    const url = process.env.NEXT_PUBLIC_API_URL;
+    if (!url) {
+      throw new Error("NEXT_PUBLIC_API_URL is required for production API requests");
+    }
+    return url.replace(/\/$/, "");
   }
 
   // On the server (SSR/Server Actions), we use the internal Docker URL
@@ -113,12 +132,14 @@ const fetchOptions = (init?: RequestInit): RequestInit => {
 
 async function executeWithRetry<T>(url: string, options: RequestInit): Promise<T> {
   let response = await fetch(url, options);
+  captureCsrfToken(response);
 
   if (response.status === 401 && !url.includes("/api/v1/auth/refresh") && !url.includes("/api/v1/auth/login")) {
-    if (!isRefreshing) {
-      isRefreshing = true;
-      try {
-        const refreshUrl = buildUrl("/api/v1/auth/refresh");
+    if (!refreshPromise) {
+      refreshPromise = (async () => {
+        try {
+        await ensureCsrfToken();
+        const refreshUrl = buildUrl("/v1/auth/refresh");
         const csrfToken = getCsrfToken();
         const refreshHeaders = new Headers();
         if (csrfToken) {
@@ -132,26 +153,27 @@ async function executeWithRetry<T>(url: string, options: RequestInit): Promise<T
         });
 
         if (refreshResponse.ok) {
+          captureCsrfToken(refreshResponse);
           const data = await refreshResponse.json();
-          setAccessToken(data.token);
-          onRefreshed(data.token);
+          setAccessToken(data.accessToken);
+          return data.accessToken as string;
         } else {
           // Refresh failed, user needs to login again
           setAccessToken(null);
-          onRefreshed("");
+          setCsrfToken(null);
+          return null;
         }
       } catch (err) {
         setAccessToken(null);
-        onRefreshed("");
+        setCsrfToken(null);
+        return null;
       } finally {
-        isRefreshing = false;
+        refreshPromise = null;
       }
+      })();
     }
 
-    // Wait for refresh to complete, then retry
-    const newToken = await new Promise<string>((resolve) => {
-      subscribeTokenRefresh((token) => resolve(token));
-    });
+    const newToken = await refreshPromise;
 
     if (newToken) {
       // Retry original request with new token
@@ -191,6 +213,9 @@ export const apiClient = {
   },
 
   async post<T>(path: string, body?: unknown): Promise<T> {
+    if (path === "/v1/auth/logout") {
+      await ensureCsrfToken();
+    }
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };

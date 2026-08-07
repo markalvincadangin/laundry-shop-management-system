@@ -15,7 +15,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
-import { ApiError, setAccessToken } from "@/lib/api-client";
+import { ApiError, getAccessToken, setAccessToken } from "@/lib/api-client";
 import { authService, type CurrentUserResponse } from "@/lib/api/auth";
 import { UI_LABELS } from "@/constants/ui";
 
@@ -67,7 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // silent refresh via POST /api/v1/auth/refresh.
       // If successful, it retries the me() request with the new access token.
       const user = await authService.me();
-      setState((s) => ({ ...s, user, loading: false, error: null }));
+      setState((s) => ({
+        ...s,
+        user,
+        accessToken: getAccessToken(),
+        loading: false,
+        error: null,
+      }));
     } catch {
       setState((s) => ({ ...s, user: null, loading: false, error: null }));
     }
@@ -82,8 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({ ...s, error: null }));
       try {
         const response = await authService.login({ username, password });
-        setAccessToken(response.token); // set token in api client
-        setState((s) => ({ ...s, accessToken: response.token }));
+        setAccessToken(response.accessToken); // set token in api client
+        setState((s) => ({ ...s, accessToken: response.accessToken }));
         await refresh();
         toast.success(UI_LABELS.feedback.success.AUTH_SUCCESS);
       } catch (err) {

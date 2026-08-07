@@ -5,7 +5,7 @@
 
 ## Summary
 
-Harden JWT-based authentication ahead of the system becoming internet-reachable (Vercel frontend + tunneled backend). Implements a two-token model (15-min JWT access token in memory + 7-day HttpOnly refresh token with reuse detection), CSRF protection via double-submit, and username-keyed brute-force lockout.
+Harden JWT-based authentication ahead of the system becoming internet-reachable (Vercel frontend + tunneled backend). Implements a two-token model (15-min JWT access token in memory + refresh-token families capped at seven days from login), double-submit CSRF protection, persisted reuse audit events, daily expired-token cleanup with 30-day retention, and username-keyed brute-force lockout.
 
 ## Technical Context
 
@@ -76,7 +76,7 @@ frontend/src/
 ### TDD Requirements
 
 - [x] `LoginAttemptService`: Complex locking logic and time windows (5 attempts / 15 minutes) require TDD to avoid off-by-one errors and ensure test reliability.
-- [x] `AuthService` (Refresh Logic): Rotation and family-wide reuse detection require TDD to ensure edge cases (re-use of revoked tokens) correctly trigger full invalidation.
+- [x] `AuthService` (Refresh Logic): Rotation, family-wide reuse detection, fixed family expiry, and 3-day inactivity expiration require TDD to ensure security boundaries are enforced.
 
 ### Parallel Execution Opportunities
 
@@ -86,7 +86,7 @@ frontend/src/
 ### Human Checkpoints
 
 1. After foundational backend setup — verify Flyway migration and entity relationships.
-2. After backend API implementation — verify API contracts (login, refresh, logout) via cURL or Postman.
+2. After backend API implementation — verify API contracts (login, refresh, logout), fixed family expiry, and reuse audit events via cURL or Postman.
 3. After frontend integration — verify silent refresh and storage locations in browser devtools.
 4. Before merge — final review against spec.
 
