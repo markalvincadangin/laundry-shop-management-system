@@ -7,9 +7,8 @@
 | Resource | Budget | Spent | Remaining |
 |----------|-------:|------:|----------:|
 | searches | 30 | 4 | 26 |
-| verifications | 20 | 4 | 16 |
+| verifications | 20 | 9 | 11 |
 | inspections | 40 | 2 | 38 |
-| verifications | 20 | 0 | 20 |
 
 Context render cap: 4000 tokens per iteration.
 
@@ -31,3 +30,8 @@ Context render cap: 4000 tokens per iteration.
 | 8 | VERIFY | External-origin cache-header behavior | 1 verification | Yes |
 | 9 | VERIFY | Current codebase deployment mismatch | 1 verification | Yes |
 | 10 | INSPECT | Mutation transaction boundaries and installer scripts | 1 inspection | Yes |
+| 11 | VERIFY | Existing public health endpoint | 1 verification | Yes |
+| 12 | VERIFY | CSRF enforcement for cookie-backed auth endpoints | 1 verification | Yes |
+| 13 | VERIFY | Service-layer transaction boundary | 1 verification | Yes |
+| 14 | VERIFY | Proxy cookie propagation | 1 verification | No |
+| 15 | VERIFY | Ngrok localhost endpoint configuration | 1 verification | Yes |

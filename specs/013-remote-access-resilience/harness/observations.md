@@ -10,3 +10,4 @@ duplicates (if anything). Never paste raw tool output here.
 - [O-005] Adversarial verification of the four load-bearing claims → all were confirmed; cookie-header forwarding remains an acceptance-test item rather than an assumed guarantee.
 - [O-006] Inspected write transactions and installer scripts → idempotency cannot be added as an after-the-fact controller record; it must share the business transaction. The sharing script is development-oriented and needs replacement or retirement.
 - [O-007] Review complete: the architecture is viable, with two plan corrections required before canonical planning—explicit transaction ownership and a proxy cookie integration test.
+- [O-008] Verified current health, CSRF, transaction, and Ngrok claims against primary code/docs. Proxy cookie propagation remains unverifiable without a production-like deployment, so it correctly remains an acceptance gate.
