@@ -8,6 +8,7 @@ describe("standalone build contract", () => {
   it("does not embed the development API URL in static JavaScript", () => {
     const assetPaths = readdirSync(join(outputDirectory, "_next/static"), {
       recursive: true,
+      encoding: "utf8",
     }).filter((assetPath) => assetPath.endsWith(".js"));
 
     expect(assetPaths.length).toBeGreaterThan(0);

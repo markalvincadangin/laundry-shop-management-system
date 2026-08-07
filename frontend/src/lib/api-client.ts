@@ -4,6 +4,7 @@
  */
 
 import type { ErrorResponse } from "@/types/api";
+import { requireRemoteWritesEnabled } from "@/lib/availability";
 
 let currentAccessToken: string | null = null;
 let currentCsrfToken: string | null = null;
@@ -214,6 +215,9 @@ export const apiClient = {
   },
 
   async post<T>(path: string, body?: unknown): Promise<T> {
+    if (!path.startsWith("/v1/auth/")) {
+      requireRemoteWritesEnabled();
+    }
     if (path === "/v1/auth/logout") {
       await ensureCsrfToken();
     }
@@ -230,6 +234,7 @@ export const apiClient = {
   },
 
   async patch<T>(path: string, body?: unknown): Promise<T> {
+    requireRemoteWritesEnabled();
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };
@@ -243,6 +248,7 @@ export const apiClient = {
   },
 
   async delete<T>(path: string): Promise<T> {
+    requireRemoteWritesEnabled();
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };

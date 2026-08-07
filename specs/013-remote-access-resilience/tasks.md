@@ -37,12 +37,12 @@
 
 **Independent Test**: Stop the upstream while the public frontend remains deployed; initial load shows offline within five seconds. Restore it and verify recovery; disconnect it mid-session and verify writes become unavailable.
 
-- [ ] T014 [P] [US1] Write availability-state tests for initial probe failure, timeout, recovery, and browser reconnect in `frontend/src/tests/lib/availability.test.ts`.
-- [ ] T015 [P] [US1] Write provider/UI tests for the initial offline screen, stale-data banner, retry action, and disabled-write state in `frontend/src/tests/components/system/AvailabilityProvider.test.tsx`.
-- [ ] T016 [US1] Run T014–T015 and confirm they fail before availability implementation.
-- [ ] T017 [US1] Implement the health probe, five-second deadline, online/offline/checking state, and retry policy in `frontend/src/lib/availability.ts`.
-- [ ] T018 [US1] Implement `AvailabilityProvider` and wire it into `frontend/src/app/providers.tsx`.
-- [ ] T019 [P] [US1] Define all availability UI copy in `frontend/src/constants/ui/remote-access.ts` and implement `OfflineScreen` and `AvailabilityBanner` in `frontend/src/components/system/OfflineScreen.tsx` and `frontend/src/components/system/AvailabilityBanner.tsx` using those constants.
+- [X] T014 [P] [US1] Write availability-state tests for initial probe failure, timeout, recovery, and browser reconnect in `frontend/src/tests/lib/availability.test.ts`.
+- [X] T015 [P] [US1] Write provider/UI tests for the initial offline screen, stale-data banner, retry action, and disabled-write state in `frontend/src/tests/components/system/AvailabilityProvider.test.tsx`.
+- [X] T016 [US1] Run T014–T015 and confirm they fail before availability implementation.
+- [X] T017 [US1] Implement the health probe, five-second deadline, online/offline/checking state, and retry policy in `frontend/src/lib/availability.ts`.
+- [X] T018 [US1] Implement `AvailabilityProvider` and wire it into `frontend/src/app/providers.tsx`.
+- [X] T019 [P] [US1] Define all availability UI copy in `frontend/src/constants/ui/remote-access.ts` and implement `OfflineScreen` and `AvailabilityBanner` in `frontend/src/components/system/OfflineScreen.tsx` and `frontend/src/components/system/AvailabilityBanner.tsx` using those constants.
 - [ ] T020 [US1] Guard common mutation controls with the provider’s write-enabled state in `frontend/src/components/features/` and shared form/action components discovered by T001.
 - [ ] T021 [US1] Run the focused availability suite, `npm run typecheck`, `npm run lint`, and `npm run test` from `frontend/`.
 
