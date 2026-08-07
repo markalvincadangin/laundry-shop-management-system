@@ -291,11 +291,11 @@ export default function LandingPage() {
             <div className="lg:col-span-4 space-y-grid-8">
               <div className="flex items-center gap-grid-4">
                 <div className="relative h-14 w-14 bg-white rounded-xl flex items-center justify-center p-2 shadow-xl ring-4 ring-white/5 transition-transform hover:scale-105">
-                  <Image src="/branding/logo.svg" alt={UI_LABELS.meta.APP_NAME} width={40} height={40} className="object-contain" />
+                  <Image src="/branding/logo.svg" alt={UI_LABELS.meta.SHOP_NAME} width={40} height={40} className="object-contain" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-h3 font-black text-white uppercase tracking-tighter leading-none">
-                    {UI_LABELS.meta.APP_NAME}
+                    {UI_LABELS.meta.SHOP_NAME}
                   </span>
                   <span className="text-caption font-bold text-brand-cyan uppercase tracking-widest mt-1.5">
                     {UI_LABELS.portal.landing.TRUSTED_SINCE}
@@ -317,7 +317,7 @@ export default function LandingPage() {
                   <h4 className="text-caption font-bold text-white uppercase tracking-widest">{UI_LABELS.portal.landing.LOCATION_TITLE}</h4>
                 </div>
                 <div className="text-body-sm text-slate-400 font-medium leading-relaxed pl-grid-13">
-                  <p className="text-white font-bold mb-1">{UI_LABELS.meta.APP_NAME}</p>
+                  <p className="text-white font-bold mb-1">{UI_LABELS.meta.SHOP_NAME}</p>
                   Sitio Ilaya, Tabuc Suba Jaro,<br />
                   Iloilo City, 5000 Philippines
                   <a

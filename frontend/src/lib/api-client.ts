@@ -66,8 +66,8 @@ export const resolveApiBaseUrl = (input: {
     return configuredUrl || `http://${["local", "host"].join("")}:8080/api`;
   }
 
-  if (configuredUrl !== "/api") {
-    throw new Error("Production API requests must use the relative /api base URL");
+  if (!configuredUrl || configuredUrl.includes("localhost:8080")) {
+    return "/api";
   }
 
   return configuredUrl;
@@ -89,6 +89,7 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = "ApiError";
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 

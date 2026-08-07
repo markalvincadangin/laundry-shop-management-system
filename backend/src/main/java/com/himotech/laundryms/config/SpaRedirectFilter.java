@@ -26,8 +26,21 @@ public class SpaRedirectFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // For Next.js static exports, forward /some-path to /some-path.html
-            // If the HTML file doesn't exist, Spring will naturally return 404 (or we could fallback to 404.html)
+            // Next.js dynamic route fallbacks
+            if (path.matches("/orders/[^/]+")) {
+                request.getRequestDispatcher("/orders/fallback.html").forward(request, response);
+                return;
+            }
+            if (path.matches("/orders/[^/]+/pay")) {
+                request.getRequestDispatcher("/orders/fallback/pay.html").forward(request, response);
+                return;
+            }
+            if (path.matches("/customers/[^/]+")) {
+                request.getRequestDispatcher("/customers/fallback.html").forward(request, response);
+                return;
+            }
+
+            // For standard Next.js static exports, forward /some-path to /some-path.html
             request.getRequestDispatcher(path + ".html").forward(request, response);
             return;
         }

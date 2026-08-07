@@ -78,9 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading: false,
         error: null,
       }));
-    } catch (err) {
+    } catch (err: any) {
       if (requestId !== requestIdRef.current) return;
-      toast.error("Refresh failed: " + String(err));
+      if (!(err instanceof ApiError && err.status === 401)) {
+        console.error("Auth check failed", err);
+      }
       setState((s) => ({ ...s, user: null, loading: false, error: null }));
     }
   }, []);

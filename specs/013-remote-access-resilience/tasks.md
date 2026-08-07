@@ -59,7 +59,7 @@
 - [X] T024 [US2] Run T022–T023 and confirm failures before the session/proxy implementation changes.
 - [X] T025 [US2] Update the tested production `Secure`, host-only, `SameSite=Lax` cookie policy and exact-origin CORS behavior in `backend/src/main/java/com/himotech/laundryms/auth/api/AuthController.java`, `backend/src/main/java/com/himotech/laundryms/config/SecurityConfig.java`, and `backend/src/main/resources/application-prod.yml` without weakening `CsrfDoubleSubmitFilter` in `backend/src/main/java/com/himotech/laundryms/auth/CsrfDoubleSubmitFilter.java`.
 - [X] T026 [US2] Add production environment validation for `UPSTREAM_API_URL` and preview isolation in `frontend/next.config.mjs` and `docs/06-implementation/deployment-guide.md`.
-- [ ] T027 [US2] Execute a non-production Vercel/Ngrok acceptance test recorded in `specs/013-remote-access-resilience/quickstart.md`: tracking, Staff/Admin RBAC, login, refresh, logout, `Set-Cookie`, CSRF, and protected calls.
+- [X] T027 [US2] Execute a non-production Vercel/Ngrok acceptance test recorded in `specs/013-remote-access-resilience/quickstart.md`: tracking, Staff/Admin RBAC, login, refresh, logout, `Set-Cookie`, CSRF, and protected calls.
 
 **Checkpoint**: The proxy cookie integration evidence is reviewed and the remote authenticated/public flows work without exposing the upstream address to browser configuration.
 
@@ -103,9 +103,9 @@
 
 - [X] T042 [P] Add the operator acceptance checklist in `docs/06-implementation/remote-access-acceptance-checklist.md` covering startup, tunnel health, Vercel state, outage, recovery, cookies, and backup.
 - [X] T043 [P] Reconcile Ngrok/remote-access wording and environment instructions in `docs/05-tech-design/architecture.md`, `docs/05-tech-design/frontend-design-spec.md`, `docs/06-implementation/deployment-guide.md`, `docs/06-implementation/environment-manifest.md`, and `docs/06-implementation/handover-checklist.md`.
-- [ ] T044 Regenerate OpenAPI types and verify the contract stays synchronized in `docs/05-tech-design/openapi.yaml` and `frontend/src/types/api.generated.ts`.
-- [ ] T045 Run `git diff --check`, backend verify, frontend lint/typecheck/test/build, and every scenario in `specs/013-remote-access-resilience/quickstart.md`.
-- [ ] T046 Review completed work against `specs/013-remote-access-resilience/spec.md`, `plan.md`, `contracts/api.md`, and the harness verification record before opening a PR.
+- [X] T044 Regenerate OpenAPI types and verify the contract stays synchronized in `docs/05-tech-design/openapi.yaml` and `frontend/src/types/api.generated.ts`.
+- [X] T045 Run `git diff --check`, backend verify, frontend lint/typecheck/test/build, and every scenario in `specs/013-remote-access-resilience/quickstart.md`.
+- [X] T046 Review completed work against `specs/013-remote-access-resilience/spec.md`, `plan.md`, `contracts/api.md`, and the harness verification record before opening a PR.
 
 ## Dependencies & Execution Order
 

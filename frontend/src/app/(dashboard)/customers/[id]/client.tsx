@@ -30,6 +30,7 @@ import { PageHeader } from "@/components/layout";
 import { DataTable, Pagination, EmptyState } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
 import { formatDate } from "@/lib/utils";
+import { useResolvedId } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/CurrencyDisplay";
 import { DataTableColumn } from "@/types/components";
 import { OrderResponse } from "@/lib/api/orders";
@@ -41,7 +42,8 @@ import { OrderResponse } from "@/lib/api/orders";
 export default function CustomerProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const customerId = String(params.id);
+  const rawId = String(params.id);
+  const customerId = useResolvedId(rawId, "/customers");
 
   const [page, setPage] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -54,7 +56,10 @@ export default function CustomerProfilePage() {
     refresh: refreshOrders 
   } = useOrders({ customerId, page, size: 10 });
 
-  if (customerLoading) {
+  const isFallbackId = !customerId || customerId === "fallback" || customerId === "%5Bid%5D" || customerId === "[id]";
+
+  // 1. Loading / Hydration Gate
+  if (customerLoading || isFallbackId) {
     return (
       <div className="max-w-7xl mx-auto space-y-grid-10 pb-grid-20 animate-pulse">
         <div className="h-24 bg-slate-100 rounded-3xl w-full" />
@@ -68,7 +73,37 @@ export default function CustomerProfilePage() {
     );
   }
 
-  if (customerError || !customer) {
+  // 2. Error State
+  if (customerError) {
+    return (
+      <div className="max-w-7xl mx-auto py-20 px-6">
+        <div className="max-w-md mx-auto text-center space-y-6">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-3xl bg-error-50 text-error-500 border border-error-100 shadow-inner">
+            <User className="h-10 w-10 opacity-20" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-h2 font-black text-slate-900 uppercase tracking-tight">
+              Error Loading Customer
+            </h2>
+            <p className="text-body-sm text-slate-500">
+              {customerError}
+            </p>
+          </div>
+          <Button 
+            onClick={() => router.push("/customers")} 
+            variant="outline"
+            className="h-12 px-8 rounded-xl border-slate-200"
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            {UI_LABELS.shared.buttons.BACK}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Not Found State
+  if (!customer) {
     return (
       <div className="max-w-7xl mx-auto py-20 px-6">
         <div className="max-w-md mx-auto text-center space-y-6">

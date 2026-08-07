@@ -22,6 +22,8 @@ import { usePaymentAction } from "@/hooks/usePaymentAction";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { Card, CardContent, Button, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
+import { formatCurrency } from "@/lib/utils";
+import { useResolvedId } from "@/lib/utils";
 import { PAYMENT_STATUS, PAYMENT_METHOD, type PaymentMethod } from "@/constants/payment";
 
 /**
@@ -32,7 +34,8 @@ import { PAYMENT_STATUS, PAYMENT_METHOD, type PaymentMethod } from "@/constants/
 export default function PayOrderPage() {
   const params = useParams();
   const router = useRouter();
-  const orderId = String(params.id);
+  const rawId = String(params.id);
+  const orderId = useResolvedId(rawId, "/orders");
   
   // Hardened Logic via Hooks (FRONT-002 Strategy 1)
   const { order, loading, error: fetchError } = useOrder(orderId);
@@ -83,7 +86,9 @@ export default function PayOrderPage() {
     }
   };
 
-  if (loading) return (
+  const isFallbackId = !orderId || orderId === "fallback" || orderId === "%5Bid%5D" || orderId === "[id]";
+
+  if (loading || isFallbackId) return (
     <div className="max-w-xl mx-auto pt-20">
       <CardSkeleton />
     </div>

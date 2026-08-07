@@ -40,7 +40,7 @@ export default function AuthLayout({
                 {UI_LABELS.meta.APP_NAME}
               </h2>
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-cyan/80 mt-1.5">
-                {UI_LABELS.meta.APP_TAGLINE}
+                Staff Operations Portal
               </span>
             </div>
           </div>
@@ -58,7 +58,7 @@ export default function AuthLayout({
         </div>
 
         <div className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 opacity-60">
-          &copy; {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} {UI_LABELS.dynamic.BULL} {UI_LABELS.meta.AGENCY}
+          © {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} • {UI_LABELS.meta.AGENCY}
         </div>
       </div>
 

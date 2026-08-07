@@ -36,6 +36,8 @@ import {
 } from "@/lib/api/orders";
 import type { components } from "@/types/api.generated";
 import { StatusBadge, CurrencyDisplay, Button, Input } from "@/components/ui";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { useResolvedId } from "@/lib/utils";
 import { paymentsService } from "@/lib/api/payments";
 import { OrderStatusTimeline } from "@/features/orders/OrderStatusTimeline";
 import { ClaimStub } from "@/features/orders/ClaimStub";
@@ -194,7 +196,8 @@ function OrderEditForm({
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = String(params.id);
+  const rawId = String(params.id);
+  const orderId = useResolvedId(rawId, "/orders");
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -212,6 +215,11 @@ export default function OrderDetailPage() {
   const [voidOperationId, setVoidOperationId] = useState(() => crypto.randomUUID());
 
   const fetchOrder = useCallback(() => {
+    if (!orderId || orderId === "fallback" || orderId === "%5Bid%5D" || orderId === "[id]") {
+      return;
+    }
+    setLoading(true);
+    setError(null);
     ordersService
       .getById(orderId)
       .then(setOrder)
@@ -290,8 +298,28 @@ export default function OrderDetailPage() {
     }
   };
 
-  if (loading) return <CardSkeleton />;
-  if (error || !order) return <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700">{error ?? UI_LABELS.feedback.error.NOT_FOUND}</div>;
+  const isFallbackId = !orderId || orderId === "fallback" || orderId === "%5Bid%5D" || orderId === "[id]";
+
+  // 1. Loading / Hydration Gate
+  if (loading || isFallbackId) return <CardSkeleton />;
+
+  // 2. Error State
+  if (error) {
+    return (
+      <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-center">
+        {error}
+      </div>
+    );
+  }
+
+  // 3. Not Found State
+  if (!order) {
+    return (
+      <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 font-bold text-center">
+        {UI_LABELS.feedback.error.NOT_FOUND}
+      </div>
+    );
+  }
 
   const transition = STATUS_TRANSITIONS[order.currentStatus as OrderStatus];
   const allowedNextStatuses = [];

@@ -42,11 +42,16 @@ public class IdempotencyAspect {
         // If your system uses a custom UserDetails object, you may need to cast it and extract the ID.
         // Assuming principal is the user ID as a String or Long.
         UUID actorId;
-        try {
-            actorId = UUID.fromString(authentication.getName());
-        } catch (IllegalArgumentException e) {
-            // Fallback if the name is not a UUID
-            throw new IllegalStateException("Unable to determine actor ID from authentication", e);
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof com.himotech.laundryms.auth.JwtPrincipal jwtPrincipal) {
+            actorId = jwtPrincipal.userId();
+        } else {
+            try {
+                actorId = UUID.fromString(authentication.getName());
+            } catch (IllegalArgumentException e) {
+                // Fallback if the name is not a UUID
+                throw new IllegalStateException("Unable to determine actor ID from authentication", e);
+            }
         }
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
