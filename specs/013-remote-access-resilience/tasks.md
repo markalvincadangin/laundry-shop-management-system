@@ -58,7 +58,7 @@
 - [X] T023 [P] [US2] Add Vercel rewrite configuration coverage in `frontend/src/tests/next-config.test.ts` for a HTTPS upstream and rejection of missing/non-HTTPS Vercel upstreams.
 - [X] T024 [US2] Run T022–T023 and confirm failures before the session/proxy implementation changes.
 - [X] T025 [US2] Update the tested production `Secure`, host-only, `SameSite=Lax` cookie policy and exact-origin CORS behavior in `backend/src/main/java/com/himotech/laundryms/auth/api/AuthController.java`, `backend/src/main/java/com/himotech/laundryms/config/SecurityConfig.java`, and `backend/src/main/resources/application-prod.yml` without weakening `CsrfDoubleSubmitFilter` in `backend/src/main/java/com/himotech/laundryms/auth/CsrfDoubleSubmitFilter.java`.
-- [ ] T026 [US2] Add production environment validation for `UPSTREAM_API_URL` and preview isolation in `frontend/next.config.mjs` and `docs/06-implementation/deployment-guide.md`.
+- [X] T026 [US2] Add production environment validation for `UPSTREAM_API_URL` and preview isolation in `frontend/next.config.mjs` and `docs/06-implementation/deployment-guide.md`.
 - [ ] T027 [US2] Execute a non-production Vercel/Ngrok acceptance test recorded in `specs/013-remote-access-resilience/quickstart.md`: tracking, Staff/Admin RBAC, login, refresh, logout, `Set-Cookie`, CSRF, and protected calls.
 
 **Checkpoint**: The proxy cookie integration evidence is reviewed and the remote authenticated/public flows work without exposing the upstream address to browser configuration.

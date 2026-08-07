@@ -18,6 +18,12 @@ The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static e
 
 To enable online access, the local server is exposed to the Vercel-hosted frontend via a secure **Ngrok reverse tunnel**. This supports public customer tracking and authenticated remote Admin/Staff access while the shop laptop is running and connected to the internet. Cloudflare Tunnel remains available as an optional installer alternative.
 
+### Vercel environment variables
+
+For a production Vercel deployment, set `NEXT_DEPLOYMENT_TARGET=vercel` and `UPSTREAM_API_URL` to the reserved **HTTPS** Ngrok shop-host URL. Do not expose this value as a `NEXT_PUBLIC_*` variable.
+
+For preview deployments, set `PREVIEW_UPSTREAM_API_URL` to a separate non-production HTTPS endpoint. A preview build never reads `UPSTREAM_API_URL`; this prevents a preview deployment from reaching the live shop host. Do not configure a preview build until a separate test endpoint exists.
+
 ---
 
 ## 2. Generating the Native Installer (.exe)
