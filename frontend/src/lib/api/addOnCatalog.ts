@@ -26,13 +26,13 @@ export const addOnCatalogService = {
     return response;
   },
 
-  async create(data: CreateAddOnCatalogRequest): Promise<AddOnCatalogResponse> {
-    const response = await apiClient.post<AddOnCatalogResponse>("/v1/add-ons", data);
+  async create(data: CreateAddOnCatalogRequest, options?: { operationIdentifier?: string }): Promise<AddOnCatalogResponse> {
+    const response = await apiClient.post<AddOnCatalogResponse>("/v1/add-ons", data, options);
     return response;
   },
 
-  async update(id: string, data: UpdateAddOnCatalogRequest): Promise<AddOnCatalogResponse> {
-    const response = await apiClient.patch<AddOnCatalogResponse>(`/v1/add-ons/${id}`, data);
+  async update(id: string, data: UpdateAddOnCatalogRequest, options?: { operationIdentifier?: string }): Promise<AddOnCatalogResponse> {
+    const response = await apiClient.patch<AddOnCatalogResponse>(`/v1/add-ons/${id}`, data, options);
     return response;
   },
 };

@@ -16,12 +16,19 @@ public class SpaRedirectFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        // Redirect all non-API and non-static requests to index.html for Next.js SPA routing
         if (!path.startsWith("/api") 
                 && !path.startsWith("/swagger-ui") 
                 && !path.startsWith("/v3/api-docs") 
                 && !path.matches(".*\\.[a-zA-Z0-9]+$")) {
-            request.getRequestDispatcher("/index.html").forward(request, response);
+            
+            if (path.equals("/")) {
+                request.getRequestDispatcher("/index.html").forward(request, response);
+                return;
+            }
+
+            // For Next.js static exports, forward /some-path to /some-path.html
+            // If the HTML file doesn't exist, Spring will naturally return 404 (or we could fallback to 404.html)
+            request.getRequestDispatcher(path + ".html").forward(request, response);
             return;
         }
 

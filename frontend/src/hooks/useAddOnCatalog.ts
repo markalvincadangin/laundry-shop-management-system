@@ -17,7 +17,7 @@ export function useAddOnCatalog(activeOnly: boolean = true) {
 export function useCreateAddOnCatalog() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateAddOnCatalogRequest) => addOnCatalogService.create(data),
+    mutationFn: ({ data, operationIdentifier }: { data: CreateAddOnCatalogRequest, operationIdentifier?: string }) => addOnCatalogService.create(data, { operationIdentifier }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADD_ON_CATALOG_KEYS.all });
     },
@@ -27,7 +27,7 @@ export function useCreateAddOnCatalog() {
 export function useUpdateAddOnCatalog() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateAddOnCatalogRequest }) => addOnCatalogService.update(id, data),
+    mutationFn: ({ id, data, operationIdentifier }: { id: string; data: UpdateAddOnCatalogRequest, operationIdentifier?: string }) => addOnCatalogService.update(id, data, { operationIdentifier }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ADD_ON_CATALOG_KEYS.all });
     },

@@ -37,20 +37,20 @@ export const customersService = {
   },
 
   /** Creates a new customer record (US-01) */
-  async create(body: CreateCustomerRequest): Promise<CustomerResponse> {
-    const response = await apiClient.post<CustomerResponse>("/v1/customers", body);
+  async create(body: CreateCustomerRequest, options?: { operationIdentifier?: string }): Promise<CustomerResponse> {
+    const response = await apiClient.post<CustomerResponse>("/v1/customers", body, options);
     return response;
   },
 
   /** Updates an existing customer record */
-  async update(customerId: string, body: Partial<CreateCustomerRequest>): Promise<CustomerResponse> {
-    const response = await apiClient.patch<CustomerResponse>(`/v1/customers/${customerId}`, body);
+  async update(customerId: string, body: Partial<CreateCustomerRequest>, options?: { operationIdentifier?: string }): Promise<CustomerResponse> {
+    const response = await apiClient.patch<CustomerResponse>(`/v1/customers/${customerId}`, body, options);
     return response;
   },
 
   /** Toggles the active status of a customer account */
-  async toggleActive(customerId: string): Promise<CustomerResponse> {
-    const response = await apiClient.patch<CustomerResponse>(`/v1/customers/${customerId}/toggle-active`);
+  async toggleActive(customerId: string, options?: { operationIdentifier?: string }): Promise<CustomerResponse> {
+    const response = await apiClient.patch<CustomerResponse>(`/v1/customers/${customerId}/toggle-active`, undefined, options);
     return response;
   },
 };

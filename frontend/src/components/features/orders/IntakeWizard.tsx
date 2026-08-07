@@ -64,6 +64,9 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   const [canSubmit, setCanSubmit] = useState(false);
   const [tempAddOnName, setTempAddOnName] = useState("");
   const [tempAddOnPrice, setTempAddOnPrice] = useState("");
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
+  const [paymentOperationId, setPaymentOperationId] = useState(() => crypto.randomUUID());
+  const [unconfirmedError, setUnconfirmedError] = useState(false);
 
   const {
     register,
@@ -250,8 +253,9 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
     }
 
     setLoading(true);
+    setUnconfirmedError(false);
     try {
-      const order = await ordersService.create(data);
+      const order = await ordersService.create(data, { operationIdentifier: operationId });
 
       if (collectPaymentNow && pricing.preview?.grandTotal) {
         await paymentsService.create({
@@ -260,7 +264,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
           paymentMethod: paymentMethod!,
           paymentReference: paymentRef || undefined,
           receivedByUserId: createdByUserId ?? undefined
-        });
+        }, { operationIdentifier: paymentOperationId });
 
         const updatedOrder = await ordersService.getById(order.id);
         setCreatedOrder(updatedOrder);
@@ -271,10 +275,20 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
       toast.success(UI_LABELS.feedback.success.ORDER_SAVED, {
         description: `${UI_LABELS.shared.common.ORDER_NUMBER} ${order.trackingNumber}`,
       });
+      
+      setOperationId(crypto.randomUUID());
+      setPaymentOperationId(crypto.randomUUID());
 
       setIsClaimStubOpen(true);
     } catch (error: any) {
-      toast.error(error.message || UI_LABELS.feedback.error.GENERIC);
+      if (error.name === "UnconfirmedOperationError") {
+        setUnconfirmedError(true);
+        toast.error("Network timeout. The order may have been saved. Please check or retry.", {
+          duration: 10000,
+        });
+      } else {
+        toast.error(error.message || UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setLoading(false);
     }

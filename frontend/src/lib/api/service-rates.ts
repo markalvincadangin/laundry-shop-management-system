@@ -11,8 +11,8 @@ export const serviceRatesService = {
       `/v1/service-rates?activeOnly=${activeOnly}`
     ),
   getActive: () => apiClient.get<ServiceRateResponse>("/v1/service-rates/active"),
-  create: (body: CreateServiceRateRequest) =>
-    apiClient.post<ServiceRateResponse>("/v1/service-rates", body),
-  update: (rateId: string, body: UpdateServiceRateRequest) =>
-    apiClient.patch<ServiceRateResponse>(`/v1/service-rates/${rateId}`, body),
+  create: (body: CreateServiceRateRequest, options?: { operationIdentifier?: string }) =>
+    apiClient.post<ServiceRateResponse>("/v1/service-rates", body, options),
+  update: (rateId: string, body: UpdateServiceRateRequest, options?: { operationIdentifier?: string }) =>
+    apiClient.patch<ServiceRateResponse>(`/v1/service-rates/${rateId}`, body, options),
 };

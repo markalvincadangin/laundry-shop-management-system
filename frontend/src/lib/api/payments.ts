@@ -32,8 +32,8 @@ export const paymentsService = {
   /**
    * Records a new payment settlement for an order.
    */
-  async create(body: CreatePaymentRequest): Promise<PaymentResponse> {
-    const response = await apiClient.post<PaymentResponse>("/v1/payments", body);
+  async create(body: CreatePaymentRequest, options?: { operationIdentifier?: string }): Promise<PaymentResponse> {
+    const response = await apiClient.post<PaymentResponse>("/v1/payments", body, options);
     return response;
   },
 
@@ -45,7 +45,7 @@ export const paymentsService = {
   /**
    * Voids an existing payment and reverts order status.
    */
-  async voidPayment(orderId: string): Promise<void> {
-    await apiClient.post(`/v1/payments/order/${orderId}/void`);
+  async voidPayment(orderId: string, options?: { operationIdentifier?: string }): Promise<void> {
+    await apiClient.post(`/v1/payments/order/${orderId}/void`, {}, options);
   },
 };

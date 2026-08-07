@@ -96,6 +96,8 @@ As a shop operator, I can continue to use the system locally on the shop laptop 
 - **FR-014**: The system MUST prevent public or intermediary caching of authenticated, availability, and data-changing responses.
 - **FR-015**: The system MUST keep configuration values for public access, the upstream shop connection, and local standalone operation clearly separated, validated, and free of secrets in browser-visible configuration.
 - **FR-016**: The system MUST document the required shop-host startup, public connection, deployment, outage handling, and recovery procedures for the operator.
+- **FR-017**: The Next.js API client proxy MUST implement a strict request timeout (e.g., 8 seconds) so that slow proxy responses or dropped tunnels result in a graceful offline state instead of a Vercel 504 Gateway Timeout.
+- **FR-018**: The Windows installation scripts MUST automatically configure the host machine's power plan to prevent sleep or hibernation when plugged in, ensuring the reverse tunnel remains active.
 
 ### Key Entities *(include if feature involves data)*
 

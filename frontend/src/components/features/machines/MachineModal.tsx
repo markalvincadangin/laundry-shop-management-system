@@ -21,6 +21,7 @@ interface MachineModalProps {
 
 export function MachineModal({ isOpen, onClose, machine, onSuccess }: MachineModalProps) {
   const [loading, setLoading] = useState(false);
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
   const [form, setForm] = useState({
     name: "",
     status: "OPERATIONAL" as MachineStatus,

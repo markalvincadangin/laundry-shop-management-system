@@ -41,6 +41,7 @@ interface RateModalProps {
 export function RateModal({ isOpen, onClose, rate, onSuccess }: RateModalProps) {
   const { createRate, updateRate, isCreating, isUpdating } = useRates();
   const loading = isCreating || isUpdating;
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
 
   const [form, setForm] = useState({
     serviceName: "",
@@ -82,11 +83,12 @@ export function RateModal({ isOpen, onClose, rate, onSuccess }: RateModalProps) 
       };
 
       if (rate) {
-        await updateRate(rate.id, payload);
+        await updateRate(rate.id, payload, operationId);
       } else {
-        await createRate(payload);
+        await createRate(payload, operationId);
       }
       
+      setOperationId(crypto.randomUUID());
       onSuccess();
       onClose();
     } catch (err: any) {

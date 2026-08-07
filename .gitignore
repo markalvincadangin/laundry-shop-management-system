@@ -77,3 +77,4 @@ scratch/
 
 # Graphify
 graphify-out/
+.env*

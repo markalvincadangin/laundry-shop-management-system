@@ -62,6 +62,7 @@ function OrderEditForm({
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
   const [extraMinutes, setExtraMinutes] = useState(order.extraMinutes?.toString() ?? "0");
   const [addOns, setAddOns] = useState<AddOnInput[]>(
     (order.addOns ?? []).map((a) => ({
@@ -84,11 +85,16 @@ function OrderEditForm({
         addOns: addOns.length > 0 ? addOns : undefined,
         machineIds: machineIds.length > 0 ? machineIds : undefined,
       };
-      await ordersService.update(order.id!, body);
+      await ordersService.update(order.id!, body, { operationIdentifier: operationId });
       toast.success(UI_LABELS.feedback.success.GENERIC);
+      setOperationId(crypto.randomUUID());
       onSaved();
-    } catch (err) {
-      onError(err instanceof ApiError ? err.message : "Update failed");
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The update may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        onError(err instanceof ApiError ? err.message : "Update failed");
+      }
     } finally {
       setSaving(false);
     }
@@ -201,6 +207,9 @@ export default function OrderDetailPage() {
   const [confirmVoidModal, setConfirmVoidModal] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  
+  const [statusOperationId, setStatusOperationId] = useState(() => crypto.randomUUID());
+  const [voidOperationId, setVoidOperationId] = useState(() => crypto.randomUUID());
 
   const fetchOrder = useCallback(() => {
     ordersService
@@ -230,7 +239,7 @@ export default function OrderDetailPage() {
       await ordersService.updateStatus(orderId, {
         newStatus: newStatus as OrderResponse["currentStatus"],
         changedByUserId: staffUserId,
-      });
+      }, { operationIdentifier: statusOperationId });
       toast.success(UI_LABELS.feedback.success.GENERIC, {
         action: {
           label: "Undo",
@@ -248,10 +257,15 @@ export default function OrderDetailPage() {
           }
         }
       });
+      setStatusOperationId(crypto.randomUUID());
       setConfirmStatusModal(null);
       fetchOrder();
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The status may have been updated. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setUpdating(false);
     }
@@ -260,12 +274,17 @@ export default function OrderDetailPage() {
   const doVoidPayment = async () => {
     setIsVoiding(true);
     try {
-      await paymentsService.voidPayment(orderId);
+      await paymentsService.voidPayment(orderId, { operationIdentifier: voidOperationId });
       toast.success(UI_LABELS.feedback.success.GENERIC);
+      setVoidOperationId(crypto.randomUUID());
       setConfirmVoidModal(false);
       fetchOrder();
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The payment may have been voided. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setIsVoiding(false);
     }

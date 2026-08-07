@@ -89,8 +89,8 @@ export const ordersService = {
   },
 
   /** Creates a new intake record (US-01, US-02) */
-  async create(body: CreateOrderRequest): Promise<OrderResponse> {
-    const response = await apiClient.post<OrderResponse>("/v1/orders", body);
+  async create(body: CreateOrderRequest, options?: { operationIdentifier?: string }): Promise<OrderResponse> {
+    const response = await apiClient.post<OrderResponse>("/v1/orders", body, options);
     return response;
   },
 
@@ -109,14 +109,14 @@ export const ordersService = {
   },
 
   /** Advances an order to the next process stage (US-03, US-05) */
-  async updateStatus(orderId: string, body: UpdateOrderStatusRequest): Promise<OrderResponse> {
-    const response = await apiClient.patch<OrderResponse>(`/v1/orders/${orderId}/status`, body);
+  async updateStatus(orderId: string, body: UpdateOrderStatusRequest, options?: { operationIdentifier?: string }): Promise<OrderResponse> {
+    const response = await apiClient.patch<OrderResponse>(`/v1/orders/${orderId}/status`, body, options);
     return response;
   },
 
   /** Updates non-status order details */
-  async update(orderId: string, body: UpdateOrderRequest): Promise<OrderResponse> {
-    const response = await apiClient.patch<OrderResponse>(`/v1/orders/${orderId}`, body);
+  async update(orderId: string, body: UpdateOrderRequest, options?: { operationIdentifier?: string }): Promise<OrderResponse> {
+    const response = await apiClient.patch<OrderResponse>(`/v1/orders/${orderId}`, body, options);
     return response;
   },
 };

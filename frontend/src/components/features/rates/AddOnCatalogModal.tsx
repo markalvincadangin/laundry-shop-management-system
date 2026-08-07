@@ -23,6 +23,7 @@ export function AddOnCatalogModal({ isOpen, onClose, addOn, onSuccess }: Props) 
   const isEditing = !!addOn;
   const createMutation = useCreateAddOnCatalog();
   const updateMutation = useUpdateAddOnCatalog();
+  const [operationId, setOperationId] = React.useState(() => crypto.randomUUID());
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<AddOnCatalogFormValues>({
     resolver: zodResolver(addOnCatalogSchema),
@@ -52,16 +53,21 @@ export function AddOnCatalogModal({ isOpen, onClose, addOn, onSuccess }: Props) 
   const onSubmit = async (data: AddOnCatalogFormValues) => {
     try {
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: addOn!.id, data });
+        await updateMutation.mutateAsync({ id: addOn!.id, data, operationIdentifier: operationId });
         toast.success("Add-on updated successfully");
       } else {
-        await createMutation.mutateAsync(data);
+        await createMutation.mutateAsync({ data, operationIdentifier: operationId });
         toast.success("Add-on created successfully");
       }
+      setOperationId(crypto.randomUUID());
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err.message || "Failed to save add-on");
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The add-on may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err.message || "Failed to save add-on");
+      }
     }
   };
 

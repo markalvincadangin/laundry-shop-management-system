@@ -1,17 +1,59 @@
-# scripts/share.ps1 — Faith Laundry System "Public Sharing"
-# Shares the local development environment via ngrok
+# =============================================================================
+# scripts/share.ps1 — DEVELOPMENT ONLY: Local Dev Server Sharing via Ngrok
+# =============================================================================
+#
+# ⚠️  WARNING — THIS IS NOT THE PRODUCTION REMOTE ACCESS WORKFLOW ⚠️
+#
+#   This script exposes the local Next.js DEVELOPMENT SERVER (port 3000) via a
+#   temporary Ngrok tunnel. It is intended ONLY for:
+#     • UI design reviews across devices on a local network
+#     • Quick demos during development sessions
+#
+#   The PRODUCTION remote access workflow uses the Spring Boot backend server
+#   (port 8080) and a STATIC DOMAIN configured via the Ngrok authtoken.
+#   That workflow is managed by the Windows Service installed via the .exe
+#   installer — NOT by this script.
+#
+#   Do NOT use this script to "share" the system with shop customers.
+#   Do NOT run this on the same machine where the production installer service
+#   is running — it will conflict with the production Ngrok session.
+#
+# HOW TO USE:
+#   1. Start the dev server first:  npm run dev  (in /frontend)
+#   2. Run this script:             .\scripts\share.ps1
+#   3. Copy the ngrok forwarding URL and share it with your collaborator.
+#   4. Press Ctrl+C to stop.
+#
+# =============================================================================
 
-# Move to the project root relative to this script
+$ErrorActionPreference = "Stop"
+
+# Ensure we are in the project root
 $ProjectRoot = Split-Path -Parent $PSScriptRoot
 Push-Location $ProjectRoot
 
-Write-Host "Initializing Public Environment Sharing..." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "======================================================" -ForegroundColor DarkYellow
+Write-Host "  DEV-ONLY: Local Development Server Sharing Script" -ForegroundColor DarkYellow
+Write-Host "  NOT for production use. See header comments." -ForegroundColor DarkYellow
+Write-Host "======================================================" -ForegroundColor DarkYellow
+Write-Host ""
 
-# 1. Load .env variables
+# Guard: refuse to run if the production Windows Service is active
+$ServiceName = "LaundryShopMS"
+$service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+if ($service -and $service.Status -eq "Running") {
+    Write-Host "[ABORT] The production $ServiceName Windows Service is currently running." -ForegroundColor Red
+    Write-Host "        This script must NOT run alongside the production installer service." -ForegroundColor Red
+    Write-Host "        Stop the service first or use the production Ngrok configuration." -ForegroundColor Red
+    Pop-Location
+    exit 1
+}
+
+# Load .env for FRONTEND_PORT
 if (Test-Path ".env") {
-    Write-Host "Loading .env configuration..." -ForegroundColor Gray
+    Write-Host "[Setup] Loading .env configuration..." -ForegroundColor Gray
     Get-Content .env | ForEach-Object {
-        # Matches name=value, ignores comments, handles optional quotes
         if ($_ -match '^\s*([^#=]+)=(.*)$') {
             $name = $matches[1].Trim()
             $value = $matches[2].Trim().Trim('"').Trim("'")
@@ -23,39 +65,30 @@ if (Test-Path ".env") {
 $FrontendPort = $env:FRONTEND_PORT
 if (!$FrontendPort) {
     $FrontendPort = 3000
-    Write-Host "FRONTEND_PORT not found in .env, defaulting to $FrontendPort" -ForegroundColor Gray
+    Write-Host "[Setup] FRONTEND_PORT not set, defaulting to $FrontendPort" -ForegroundColor Gray
 }
 
-# 2. Check if ngrok is installed
+# Guard: check ngrok is available
 if (!(Get-Command ngrok -ErrorAction SilentlyContinue)) {
-    Write-Host "Ngrok is not installed or not in PATH." -ForegroundColor Red
-    Write-Host "Install it from: https://ngrok.com/download"
+    Write-Host "[ERROR] ngrok is not installed or not in PATH." -ForegroundColor Red
+    Write-Host "        Install from: https://ngrok.com/download" -ForegroundColor Red
     Pop-Location
     exit 1
 }
 
-# 3. Kill existing ngrok processes to ensure a fresh start
-Write-Host "Cleaning up existing ngrok sessions..." -ForegroundColor Gray
+# Kill any stale ngrok session to avoid conflicts
+Write-Host "[Setup] Stopping any existing ngrok sessions..." -ForegroundColor Gray
 Stop-Process -Name ngrok -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 1
 
-Write-Host "Note: Ensure ALLOWED_ORIGIN_PATTERNS in .env includes *.ngrok-free.app" -ForegroundColor DarkGray
-Write-Host "Press Ctrl+C to stop sharing." -ForegroundColor Yellow
+Write-Host "[INFO ] Exposing Next.js dev server at http://localhost:$FrontendPort" -ForegroundColor Cyan
+Write-Host "[INFO ] This is the DEVELOPMENT server, not the production Spring Boot API." -ForegroundColor DarkCyan
+Write-Host "[INFO ] Press Ctrl+C to stop sharing." -ForegroundColor Yellow
+Write-Host ""
 
-# 4. Run ngrok dynamically
-if (Test-Path "ngrok.yml") {
-    $NgrokConfig = Get-Content "ngrok.yml" -Raw
-    if ($NgrokConfig -match 'domain:\s*([^\s\r\n]+)') {
-        $Domain = $matches[1]
-        Write-Host "Starting ngrok tunnel for port $FrontendPort with custom domain ($Domain)..." -ForegroundColor Yellow
-        ngrok http $FrontendPort --config ngrok.yml --domain $Domain
-    } else {
-        Write-Host "Starting ngrok tunnel for port $FrontendPort using local config..." -ForegroundColor Yellow
-        ngrok http $FrontendPort --config ngrok.yml
-    }
-} else {
-    Write-Host "Starting ngrok tunnel for port $FrontendPort using global config (random domain)..." -ForegroundColor Yellow
-    ngrok http $FrontendPort
-}
+# Start ngrok — use a random ephemeral domain (not the registered static domain)
+# which is reserved for the production backend tunnel.
+ngrok http $FrontendPort --log=stdout
 
 Pop-Location
+

@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -65,6 +66,7 @@ public class PaymentController {
     }
 
     @PostMapping
+    @Idempotent(actionType = "CREATE_RESOURCE")
     public ResponseEntity<PaymentResponse> create(
             @Valid @RequestBody CreatePaymentRequest request,
             @AuthenticationPrincipal JwtPrincipal principal) {
@@ -96,6 +98,7 @@ public class PaymentController {
 
     @PostMapping("/order/{orderId}/void")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "CREATE_RESOURCE")
     public ResponseEntity<Void> voidPayment(@PathVariable UUID orderId) {
         paymentService.voidPayment(orderId);
         return ResponseEntity.noContent().build();

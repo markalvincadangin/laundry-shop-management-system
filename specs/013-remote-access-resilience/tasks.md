@@ -69,16 +69,17 @@
 
 **Independent Test**: Interrupt representative requests after backend commit, then explicitly recover with the same key and prove a single business result exists; changed request reuse returns 409.
 
-- [ ] T028 [P] [US3] Write failing Testcontainers integration coverage for reservation, replay, changed-request conflict, missing/invalid key, rollback, and concurrent same-key requests in `backend/src/test/java/com/himotech/laundryms/idempotency/IdempotencyIntegrationTest.java`.
-- [ ] T029 [P] [US3] Write failing client tests for generated keys, one-key explicit retry, no automatic business retry, and `UnconfirmedOperationError` in `frontend/src/tests/lib/api-client.test.ts`.
-- [ ] T030 [US3] Run T028–T029 and confirm failures before idempotency implementation.
-- [ ] T031 [US3] Add the next Flyway migration and operation-recovery entity/repository in `backend/src/main/resources/db/migration/` and `backend/src/main/java/com/himotech/laundryms/idempotency/`.
-- [ ] T032 [US3] Implement transaction-scoped key validation, reservation-before-mutation, completion-before-commit, replay, conflict, and expiry cleanup in `backend/src/main/java/com/himotech/laundryms/idempotency/`.
-- [ ] T033 [US3] Map idempotency header errors and replay headers in `backend/src/main/java/com/himotech/laundryms/shared/exception/GlobalExceptionHandler.java`.
-- [ ] T034 [US3] Annotate or route every inventory item from T001 through the transaction executor in `backend/src/main/java/com/himotech/laundryms/*/api/`, explicitly excluding auth, reads, and `POST /orders/preview`.
-- [ ] T035 [US3] Implement mutation-key lifecycle and unconfirmed-operation behavior in `frontend/src/lib/api-client.ts`.
-- [ ] T036 [US3] Wire explicit unconfirmed/retry UX and duplicate-submit prevention into order, payment, and status flows under `frontend/src/components/features/`, then all remaining mutation call sites from T001.
-- [ ] T037 [US3] Run focused idempotency/frontend recovery tests and full `make test-backend`, frontend typecheck/lint/test suites.
+- [X] T028 [P] [US3] Write failing Testcontainers integration coverage for reservation, replay, changed-request conflict, missing/invalid key, rollback, and concurrent same-key requests in `backend/src/test/java/com/himotech/laundryms/idempotency/IdempotencyIntegrationTest.java`.
+- [X] T029 [P] [US3] Write failing client tests for generated keys, one-key explicit retry, no automatic business retry, and `UnconfirmedOperationError` in `frontend/src/tests/lib/api-client.test.ts`.
+- [X] T030 [US3] Run T028–T029 and confirm failures before idempotency implementation.
+- [X] T031 [US3] Add the next Flyway migration and operation-recovery entity/repository in `backend/src/main/resources/db/migration/` and `backend/src/main/java/com/himotech/laundryms/idempotency/`.
+- [X] T032 [US3] Implement transaction-scoped key validation, reservation-before-mutation, completion-before-commit, replay, conflict, and expiry cleanup in `backend/src/main/java/com/himotech/laundryms/idempotency/`.
+- [X] T033 [US3] Map idempotency header errors and replay headers in `backend/src/main/java/com/himotech/laundryms/shared/exception/GlobalExceptionHandler.java`.
+- [X] T034 [US3] Annotate or route every inventory item from T001 through the transaction executor in `backend/src/main/java/com/himotech/laundryms/*/api/`, explicitly excluding auth, reads, and `POST /orders/preview`.
+- [X] T035 [US3] Implement mutation-key lifecycle and unconfirmed-operation behavior in `frontend/src/lib/api-client.ts`.
+- [X] T035b [US3] Implement an 8-second `AbortController` timeout in `frontend/src/lib/api-client.ts` to intercept slow Vercel proxy requests and map to `RemoteServiceUnavailableError`.
+- [X] T036 [US3] Wire explicit unconfirmed/retry UX and duplicate-submit prevention into order, payment, and status flows under `frontend/src/components/features/`, then all remaining mutation call sites from T001.
+- [X] T037 [US3] Run focused idempotency/frontend recovery tests and full `make test-backend`, frontend typecheck/lint/test suites.
 
 **Checkpoint**: Matching retry returns the original response, altered reuse returns 409, failures roll back atomically, and no client path silently submits a new business operation.
 
@@ -88,10 +89,11 @@
 
 **Independent Test**: Disconnect laptop internet or stop Ngrok; complete a permitted local workflow while remote Vercel users see offline.
 
-- [ ] T038 [P] [US4] Add local-bind and standalone-build regression coverage in `backend/src/test/java/com/himotech/laundryms/config/` and `frontend/src/tests/`.
-- [ ] T039 [US4] Update standalone server/installer configuration in `scripts/installer.iss`, `scripts/build-installer.ps1`, and `scripts/build-installer.sh` so the local static UI and `/api` path work without the tunnel.
-- [ ] T040 [US4] Replace or explicitly restrict the dynamic development sharing behavior in `scripts/share.ps1` so it cannot be mistaken for the production Ngrok service workflow.
-- [ ] T041 [US4] Perform and record the local-outage acceptance scenario in `specs/013-remote-access-resilience/quickstart.md` and `docs/06-implementation/remote-access-acceptance-checklist.md`.
+- [X] T038 [P] [US4] Add local-bind and standalone-build regression coverage in `backend/src/test/java/com/himotech/laundryms/config/` and `frontend/src/tests/`.
+- [X] T039 [US4] Update standalone server/installer configuration in `scripts/installer.iss`, `scripts/build-installer.ps1`, and `scripts/build-installer.sh` so the local static UI and `/api` path work without the tunnel.
+- [X] T039b [US4] Update `scripts/installer.iss` and `scripts/build-installer.ps1` to configure Windows Power Management (prevent sleep/hibernation on AC power) using `powercfg`.
+- [X] T040 [US4] Replace or explicitly restrict the dynamic development sharing behavior in `scripts/share.ps1` so it cannot be mistaken for the production Ngrok service workflow.
+- [X] T041 [US4] Perform and record the local-outage acceptance scenario in `specs/013-remote-access-resilience/quickstart.md` and `docs/06-implementation/remote-access-acceptance-checklist.md`.
 
 **Checkpoint**: Internet/tunnel loss has no local business-operation dependency and produces only the remote offline state.
 
@@ -99,8 +101,8 @@
 
 **Purpose**: Make the feature operable, repeatable, and ready for review.
 
-- [ ] T042 [P] Add the operator acceptance checklist in `docs/06-implementation/remote-access-acceptance-checklist.md` covering startup, tunnel health, Vercel state, outage, recovery, cookies, and backup.
-- [ ] T043 [P] Reconcile Ngrok/remote-access wording and environment instructions in `docs/05-tech-design/architecture.md`, `docs/05-tech-design/frontend-design-spec.md`, `docs/06-implementation/deployment-guide.md`, `docs/06-implementation/environment-manifest.md`, and `docs/06-implementation/handover-checklist.md`.
+- [X] T042 [P] Add the operator acceptance checklist in `docs/06-implementation/remote-access-acceptance-checklist.md` covering startup, tunnel health, Vercel state, outage, recovery, cookies, and backup.
+- [X] T043 [P] Reconcile Ngrok/remote-access wording and environment instructions in `docs/05-tech-design/architecture.md`, `docs/05-tech-design/frontend-design-spec.md`, `docs/06-implementation/deployment-guide.md`, `docs/06-implementation/environment-manifest.md`, and `docs/06-implementation/handover-checklist.md`.
 - [ ] T044 Regenerate OpenAPI types and verify the contract stays synchronized in `docs/05-tech-design/openapi.yaml` and `frontend/src/types/api.generated.ts`.
 - [ ] T045 Run `git diff --check`, backend verify, frontend lint/typecheck/test/build, and every scenario in `specs/013-remote-access-resilience/quickstart.md`.
 - [ ] T046 Review completed work against `specs/013-remote-access-resilience/spec.md`, `plan.md`, `contracts/api.md`, and the harness verification record before opening a PR.

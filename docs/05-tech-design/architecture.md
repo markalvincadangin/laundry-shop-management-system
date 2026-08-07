@@ -4,8 +4,8 @@
 > **Client:** Faith Laundry Shop (Baseline Reference)  
 > **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** ARCH-001  
-> **Version:** 3.1 (Standalone & Tunnel Standardization)  
-> **Date:** 2026-07-24  
+> **Version:** 3.2 (Module Inventory & Dual-Build Update)  
+> **Date:** 2026-08-07  
 > **Purpose:** Define implementation-ready architecture aligned to the Standalone, Offline-First shift with Tunnel topology  
 > **Status:** Baseline
 
@@ -112,16 +112,28 @@ All business rules are enforced in the **Service layer only**. Controllers and r
 
 ## 6. Backend Modules (Spring Boot)
 
-- **auth** — Login, JWT/session, role guards
-- **users** — User management (Admin/Staff), seeded admin
-- **customers** — CRUD, search (US-01)
-- **rates** — Service rates management, active rate retrieval
-- **orders** — Order creation, pricing computation, reference generation (US-01, US-02)
-- **activity** — Read-only access to `activity_logs`; surfaces forensic audit trail to the dashboard (US-03, US-05)
-- **payments** — Create payment (1:1), validate amount equals grand total, update payment status (US-06)
-- **reports** — Daily, monthly, yearly sales from payments (US-08, US-09)
+### 6.1 Core Business Modules
 
-*(Note: The sync engine module has been deleted in favor of the Tunnel topology).*
+- **auth** — Login, JWT access token + rotating refresh token, role guards, CSRF double-submit cookie filter
+- **users** — User management (Admin/Staff), seeded admin account
+- **customers** — CRUD, search by name/contact (US-01)
+- **rates** — Service rates management, add-on catalog management, active rate retrieval
+- **orders** — Order creation, pricing computation, tracking number generation, status lifecycle, machine assignment (US-01, US-02, US-04)
+- **payments** — Create payment (1:1), validate amount equals grand total, update payment status (US-06)
+- **reports** — Daily, monthly, yearly sales aggregated from payments (US-08, US-09)
+
+### 6.2 Operational & Infrastructure Modules
+
+- **auditlog** — Read-only surface for `audit_logs`; exposes forensic trail to the dashboard (US-03, US-05)
+- **clientalert** — In-app notification queue for customer-facing order status communications; SMS adapter stub for future extension
+- **machines** — Physical laundry machine CRUD, availability tracking, double-assignment prevention (BR-MAC-01 through BR-MAC-04)
+- **settings** — Single-row `system_settings` for operational toggles (e.g., system pause)
+- **health** — Lightweight `/api/health` endpoint powering the remote availability probe (US1 — Availability Provider)
+- **idempotency** — Operation recovery store: AOP-based `@Idempotent` annotation, `IdempotencyAspect`, and `OperationRecoveryRepository`; prevents duplicate business mutations on retry (US3 — Remote Resilience)
+- **config** — Spring Security, CORS, Flyway, cache-control filter, request/response logging filter, global exception handler
+- **shared** — Cross-cutting DTOs: `PageResponse`, `ErrorResponse`, `GlobalExceptionHandler`
+
+*(Note: The sync engine module has been deleted in favor of the Tunnel topology.)*
 
 ---
 
@@ -147,6 +159,21 @@ The system must run entirely locally without requiring the end user (the shop ow
 - **Database Provisioning:** The local PostgreSQL instance is installed and configured automatically via a provided PowerShell setup script. It runs as a silent, automated Windows background service, invisible to the operator.
 - **Tunnel Provisioning:** The Ngrok authtoken and static domain are configured on the machine, securely linking it to the public endpoint.
 
+### 8.2 Dual-Target Frontend Build Strategy
+
+The Next.js frontend supports three build targets controlled by the `NEXT_DEPLOYMENT_TARGET` environment variable set at build time:
+
+| Target | Value | Output | API Base |
+|---|---|---|---|
+| **Local Development** | `development` (default) | Dev server | `NEXT_PUBLIC_API_URL` (e.g. `http://localhost:8080`) |
+| **Standalone (Installer)** | `standalone` | `output: "export"` (static HTML) | Relative `/api` (served by Spring Boot) |
+| **Vercel (Remote)** | `vercel` | Standard Next.js build | Relative `/api` (Vercel rewrite → `UPSTREAM_API_URL`) |
+
+**Key rules enforced in `next.config.mjs`:**
+- When `standalone`: forces static export; no server-side runtime. Frontend is served from Spring Boot's static resources directory.
+- When `vercel`: injects a rewrite rule `/api/:path* → UPSTREAM_API_URL/api/:path*`. `UPSTREAM_API_URL` **must** be an HTTPS URL — a build-time guard rejects non-HTTPS values, preventing accidental exposure of the shop host address. Preview deployments use `PREVIEW_UPSTREAM_API_URL` to isolate test traffic.
+- The standalone build artifact must contain **no** hardcoded `http://localhost:8080/api` — a CI contract test (`standalone-build-contract.test.ts`) enforces this.
+
 ---
 
 ## 9. Security & Hardening
@@ -171,5 +198,8 @@ To protect the system within a potentially unmanaged shop environment, a Zero-Tr
 - **Universal Unique Identifiers (UUIDs):** The database utilizes UUIDs or BigSerials securely mapped.
 - **Protect the Stack (Hardware Enforcement):** Opted to mandate a Windows OS deployment rather than rewriting the reliable Java/PostgreSQL stack into a mobile-friendly or browser-based offline application (e.g., PWA/IndexedDB).
 - **The Tunnel Topology Pivot:** We decisively moved away from the Transactional Outbox cloud-sync pattern in favor of a reverse tunnel, currently Ngrok, to permanently eliminate cloud database costs.
+- **Dual-Target Build (Standalone vs Vercel):** Rather than maintaining two separate frontend codebases, a single `NEXT_DEPLOYMENT_TARGET` environment variable at build time switches between static export (for the installer) and a full Next.js build with Vercel rewrites (for remote access). This keeps the UI codebase unified while supporting both deployment targets.
+- **Idempotency via AOP (`@Idempotent`):** Remote mutations are protected against duplicate submission using an AOP-based idempotency layer (Spring AOP + `operation_recovery` table) keyed by `X-Operation-Identifier` headers supplied by the frontend. This avoids polluting service method signatures and keeps the pattern orthogonal to business logic.
+- **Refresh Token Rotation:** Access tokens are short-lived (minutes); refresh tokens are stored hashed in `refresh_tokens` with family-based rotation detection. If a superseded token is replayed (theft indicator), the entire family is immediately revoked.
 - **Markdown Documentation:** maintained under `/docs` as a source of truth.
 - **OpenAPI Contract:** maintained as an API source of truth.

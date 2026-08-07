@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class CustomerController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "CREATE_RESOURCE")
     public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CreateCustomerRequest request) {
         Customer customer = customerService.create(
                 request.getFirstName(),
@@ -84,6 +86,7 @@ public class CustomerController {
 
     @PatchMapping("/{customerId}/toggle-active")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<CustomerResponse> toggleActive(@PathVariable UUID customerId) {
         Customer customer = customerService.toggleActive(customerId);
         return ResponseEntity.ok(customerMapper.toResponse(customer));
@@ -91,6 +94,7 @@ public class CustomerController {
 
     @PatchMapping("/{customerId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<CustomerResponse> update(
             @PathVariable UUID customerId,
             @Valid @RequestBody CreateCustomerRequest request) {

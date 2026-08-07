@@ -64,6 +64,10 @@ Name: "{group}\{#AppName}"; Filename: "{#AppURL}"; IconFilename: "{app}\app.ico"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 
 [Run]
+; Configure Windows Power Management to prevent sleep on AC power (FR-018)
+Filename: "powercfg.exe"; Parameters: "-change -standby-timeout-ac 0"; StatusMsg: "Configuring power settings..."; Flags: runhidden waituntilterminated
+Filename: "powercfg.exe"; Parameters: "-change -hibernate-timeout-ac 0"; StatusMsg: "Configuring power settings..."; Flags: runhidden waituntilterminated
+
 ; Register and start the LaundryShopMS Windows Service after file extraction and config generation
 Filename: "{app}\laundryms-service.exe"; Parameters: "install"; StatusMsg: "Registering {#AppName} Service..."; Flags: runhidden waituntilterminated
 Filename: "{app}\laundryms-service.exe"; Parameters: "start"; StatusMsg: "Starting {#AppName}..."; Flags: runhidden waituntilterminated
