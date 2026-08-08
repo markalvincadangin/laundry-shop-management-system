@@ -113,6 +113,7 @@ var
   TunnelWasPreviouslyEnabled: Boolean;
   TunnelAuthtoken: String;
   TunnelPublicUrl: String;
+  RemoteFrontendUrl: String;
   TunnelWarning: String;
   TunnelPayloadReady: Boolean;
 
@@ -131,6 +132,7 @@ var
   PgFallbackPage: TInputOptionWizardPage;
   TunnelModePage: TInputOptionWizardPage;
   TunnelConfigPage: TInputQueryWizardPage;
+  RemoteFrontendPage: TInputQueryWizardPage;
   RemoveDataCheckBox: TNewCheckBox;
   ExistingPostgresValidationError: String;
 
@@ -429,7 +431,7 @@ end;
 
 procedure PrepareCredentials;
 var
-  ConfigFile, JdbcUrl, RegPort, ManagedStr, PgMajorStr, PgBinStr, HostStr, TunnelEnabledStr, SavedTunnelUrl: String;
+  ConfigFile, JdbcUrl, RegPort, ManagedStr, PgMajorStr, PgBinStr, HostStr, TunnelEnabledStr, SavedTunnelUrl, SavedRemoteFrontendUrl: String;
 begin
   if CredentialsPrepared then Exit;
 
@@ -472,6 +474,8 @@ begin
         TunnelEnabled := True;
         if RegQueryStringValue(HKLM, 'Software\Himotech\LaundryShopMS', 'TunnelPublicUrl', SavedTunnelUrl) then
           TunnelPublicUrl := SavedTunnelUrl;
+        if RegQueryStringValue(HKLM, 'Software\Himotech\LaundryShopMS', 'RemoteFrontendUrl', SavedRemoteFrontendUrl) then
+          RemoteFrontendUrl := SavedRemoteFrontendUrl;
       end
       else
       begin
@@ -504,6 +508,7 @@ begin
     TunnelWasPreviouslyEnabled := False;
     TunnelAuthtoken := '';
     TunnelPublicUrl := '';
+    RemoteFrontendUrl := '';
     TunnelWarning := '';
     TunnelPayloadReady := False;
     Log('Deployment mode: CLEAN INSTALL');
@@ -1028,6 +1033,11 @@ begin
   Result := Pos('.', HostPart) > 1;
 end;
 
+function IsAcceptableRemoteFrontendUrl(Value: String): Boolean;
+begin
+  Result := IsAcceptableTunnelPublicUrl(Value);
+end;
+
 procedure CreateTunnelPages(AfterID: Integer);
 begin
   TunnelModePage := CreateInputOptionPage(AfterID,
@@ -1045,6 +1055,7 @@ begin
     'Enter the device authtoken and the reserved/static HTTPS domain that the remote Vercel deployment is configured to use. The authtoken is stored only in the ACL-protected tunnel configuration.');
   TunnelConfigPage.Add('Ngrok Authtoken:', True);
   TunnelConfigPage.Add('Static HTTPS Domain:', False);
+  TunnelConfigPage.Add('Remote Frontend URL:', False);
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
@@ -1075,7 +1086,18 @@ var
   PgState, FallbackPort, TunnelAfterID: Integer;
 begin
   PrepareCredentials;
-  if IsUpgrade then Exit;
+  if IsUpgrade then
+  begin
+    if TunnelEnabled and (RemoteFrontendUrl = '') then
+    begin
+      RemoteFrontendPage := CreateInputQueryPage(wpSelectDir,
+        'Remote Frontend Origin',
+        'Remote access is already enabled, but this installation predates production CORS origin metadata.',
+        'Enter the HTTPS origin of the deployed remote frontend (for example, the Vercel production URL). Setup will add it to the protected Spring Boot production configuration without changing existing database/JWT secrets.');
+      RemoteFrontendPage.Add('Remote Frontend URL:', False);
+    end;
+    Exit;
+  end;
 
   TunnelAfterID := wpSelectDir;
   PgState := DetectPostgreSQLState();
@@ -1207,6 +1229,7 @@ begin
     begin
       TunnelAuthtoken := '';
       TunnelPublicUrl := '';
+      RemoteFrontendUrl := '';
     end;
   end;
 
@@ -1214,6 +1237,7 @@ begin
   begin
     TunnelAuthtoken := Trim(TunnelConfigPage.Values[0]);
     TunnelPublicUrl := NormalizeTunnelPublicUrl(TunnelConfigPage.Values[1]);
+    RemoteFrontendUrl := NormalizeTunnelPublicUrl(TunnelConfigPage.Values[2]);
     if not IsAcceptableNgrokAuthtoken(TunnelAuthtoken) then
     begin
       MsgBox('Enter a valid Ngrok authtoken. The token must be 20-256 printable non-whitespace characters.', mbError, MB_OK);
@@ -1228,7 +1252,27 @@ begin
       Result := False;
       Exit;
     end;
+    if not IsAcceptableRemoteFrontendUrl(RemoteFrontendUrl) then
+    begin
+      MsgBox('Enter the remote frontend as a bare HTTPS origin, for example:' + #13#10 +
+        'https://laundry-shop-management-system.vercel.app' + #13#10#13#10 +
+        'Do not include a path, query string, localhost address, or trailing slash.', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
     TunnelEnabled := True;
+  end;
+
+  if (RemoteFrontendPage <> nil) and (CurPageID = RemoteFrontendPage.ID) then
+  begin
+    RemoteFrontendUrl := NormalizeTunnelPublicUrl(RemoteFrontendPage.Values[0]);
+    if not IsAcceptableRemoteFrontendUrl(RemoteFrontendUrl) then
+    begin
+      MsgBox('Enter the deployed remote frontend as a bare HTTPS origin, for example:' + #13#10 +
+        'https://laundry-shop-management-system.vercel.app', mbError, MB_OK);
+      Result := False;
+      Exit;
+    end;
   end;
 end;
 
@@ -1653,16 +1697,30 @@ begin
   ServiceExe := GetTargetAppDir() + '\laundryms-tunnel-service.exe';
   if not FileExists(ServiceExe) then
   begin
-    if RequireSuccess then RaiseException('Tunnel service executable is missing: ' + ServiceExe);
+    ErrorMsg := 'Tunnel service executable is missing: ' + ServiceExe;
+    Log(ErrorMsg);
+    if RequireSuccess then RaiseException(ErrorMsg);
     Exit;
   end;
-  if Exec(ServiceExe, Command, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
+
+  if not Exec(ServiceExe, Command, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin
-    Result := True;
+    ErrorMsg := 'LaundryShopMSTunnel service command could not be launched: ' + Command + '.';
+    Log(ErrorMsg);
+    if RequireSuccess then RaiseException(ErrorMsg);
     Exit;
   end;
-  ErrorMsg := 'LaundryShopMSTunnel service command failed: ' + Command + '.';
-  if RequireSuccess then RaiseException(ErrorMsg);
+
+  if ResultCode <> 0 then
+  begin
+    ErrorMsg := 'LaundryShopMSTunnel service command failed: ' + Command + ' (exit code ' + IntToStr(ResultCode) + ').';
+    Log(ErrorMsg);
+    if RequireSuccess then RaiseException(ErrorMsg);
+    Exit;
+  end;
+
+  Log('LaundryShopMSTunnel service command succeeded: ' + Command + '.');
+  Result := True;
 end;
 
 procedure StopTunnelServiceSafelyForUpgrade;
@@ -1683,6 +1741,55 @@ begin
     Sleep(500);
   end;
   TunnelWarning := 'The existing Ngrok tunnel service did not stop cleanly. Local application upgrade will continue, but remote access may need manual restart.';
+end;
+
+function RefreshOrRepairTunnelServiceRegistration(): Boolean;
+var
+  State, i, MaxPolls: Integer;
+begin
+  Result := False;
+  State := GetTunnelServiceState();
+  MaxPolls := SERVICE_STATE_TIMEOUT_MS div 500;
+
+  if State = SERVICE_NOT_INSTALLED then
+  begin
+    Result := ManageTunnelServiceCommand('install', False);
+    Exit;
+  end;
+
+  if State <> SERVICE_STOPPED then
+  begin
+    Log('Tunnel upgrade repair skipped because LaundryShopMSTunnel is not STOPPED.');
+    Exit;
+  end;
+
+  if ManageTunnelServiceCommand('refresh', False) then
+  begin
+    Result := True;
+    Exit;
+  end;
+
+  Log('Tunnel upgrade: WinSW refresh failed; attempting safe tunnel service re-registration.');
+  ManageTunnelServiceCommand('uninstall', False);
+  for i := 1 to MaxPolls do
+  begin
+    State := GetTunnelServiceState();
+    if State = SERVICE_NOT_INSTALLED then Break;
+    Sleep(500);
+  end;
+  if GetTunnelServiceState() <> SERVICE_NOT_INSTALLED then Exit;
+
+  if not ManageTunnelServiceCommand('install', False) then Exit;
+  for i := 1 to MaxPolls do
+  begin
+    State := GetTunnelServiceState();
+    if (State = SERVICE_STOPPED) or (State = SERVICE_RUNNING) then
+    begin
+      Result := True;
+      Exit;
+    end;
+    Sleep(500);
+  end;
 end;
 
 function ValidateNgrokConfiguration(): Boolean;
@@ -1766,20 +1873,23 @@ begin
   end
   else
   begin
-    State := GetTunnelServiceState();
-    if State = SERVICE_NOT_INSTALLED then
+    if not RefreshOrRepairTunnelServiceRegistration() then
     begin
-      if not ManageTunnelServiceCommand('install', False) then
+      TunnelWarning := 'Ngrok tunnel service could not be refreshed or safely re-registered after upgrade. Local operation is unaffected.';
+      Exit;
+    end;
+    State := GetTunnelServiceState();
+    if State = SERVICE_STOPPED then
+    begin
+      if not ManageTunnelServiceCommand('start', False) then
       begin
-        TunnelWarning := 'Ngrok tunnel service was missing during upgrade and could not be reinstalled. Local operation is unaffected.';
+        TunnelWarning := 'Ngrok tunnel service could not be started after upgrade. Local operation is unaffected.';
         Exit;
       end;
     end
-    else if State = SERVICE_STOPPED then
-      ManageTunnelServiceCommand('refresh', False);
-    if not ManageTunnelServiceCommand('start', False) then
+    else if State <> SERVICE_RUNNING then
     begin
-      TunnelWarning := 'Ngrok tunnel service could not be started after upgrade. Local operation is unaffected.';
+      TunnelWarning := 'Ngrok tunnel service registration did not stabilize after upgrade. Local operation is unaffected.';
       Exit;
     end;
   end;
@@ -1804,20 +1914,75 @@ begin
   end;
 end;
 
+function UpsertPropertyInFile(FilePath, PropName, PropValue: String): Boolean;
+var
+  Lines: TArrayOfString;
+  i, EqualPos: Integer;
+  Line, Key, Text: String;
+  Found: Boolean;
+begin
+  Result := False;
+  Text := '';
+  Found := False;
+  if FileExists(FilePath) then
+  begin
+    if not LoadStringsFromFile(FilePath, Lines) then Exit;
+    for i := 0 to GetArrayLength(Lines) - 1 do
+    begin
+      Line := Lines[i];
+      EqualPos := Pos('=', Trim(Line));
+      if (EqualPos > 1) and (Pos('#', Trim(Line)) <> 1) and (Pos('!', Trim(Line)) <> 1) then
+      begin
+        Key := Trim(Copy(Trim(Line), 1, EqualPos - 1));
+        if CompareText(Key, PropName) = 0 then
+        begin
+          Line := PropName + '=' + PropValue;
+          Found := True;
+        end;
+      end;
+      Text := Text + Line + #13#10;
+    end;
+  end;
+  if not Found then
+    Text := Text + PropName + '=' + PropValue + #13#10;
+  Result := SaveStringToFile(FilePath, Text, False);
+end;
+
+function BuildProductionAllowedOrigins(): String;
+begin
+  Result := 'http://localhost:8765,http://127.0.0.1:8765';
+  if TunnelEnabled then
+  begin
+    if TunnelPublicUrl <> '' then Result := Result + ',' + NormalizeTunnelPublicUrl(TunnelPublicUrl);
+    if RemoteFrontendUrl <> '' then Result := Result + ',' + NormalizeTunnelPublicUrl(RemoteFrontendUrl);
+  end;
+end;
+
 procedure ConfigureProductionProperties;
 var
-  ConfigDir, ConfigFile, ConfigText: String;
+  ConfigDir, ConfigFile, ConfigText, AllowedOrigins: String;
 begin
   EnsureProgramDataSecurity;
   ConfigDir := ExpandConstant('{commonappdata}\LaundryShopMS\config');
   ConfigFile := ConfigDir + '\application-prod.properties';
+  AllowedOrigins := BuildProductionAllowedOrigins();
 
   if IsUpgrade then
   begin
     if not FileExists(ConfigFile) then
       RaiseException('Upgrade configuration disappeared before file replacement.');
+    if TunnelEnabled and ((TunnelPublicUrl = '') or (RemoteFrontendUrl = '')) then
+      RaiseException('Remote-access upgrade is missing the Ngrok or remote frontend HTTPS origin required for production CORS.');
+    if not UpsertPropertyInFile(ConfigFile, 'server.forward-headers-strategy', 'framework') then
+      RaiseException('Could not update forwarded-header handling in production configuration.');
+    if not UpsertPropertyInFile(ConfigFile, 'app.security.allowed-origin', AllowedOrigins) then
+      RaiseException('Could not update production CORS origins.');
+    HardenFileForSystemAndAdmins(ConfigFile);
     Exit;
   end;
+
+  if TunnelEnabled and ((TunnelPublicUrl = '') or (RemoteFrontendUrl = '')) then
+    RaiseException('Ngrok remote access requires both the static Ngrok HTTPS domain and the deployed remote frontend HTTPS origin.');
 
   ConfigText := '# Laundry Shop Management System - Secure Production Configuration' + #13#10 +
     'spring.datasource.url=jdbc:postgresql://' + DbHost + ':' + IntToStr(AssignedDbPort) + '/laundryms' + #13#10 +
@@ -1826,7 +1991,9 @@ begin
     'spring.flyway.enabled=true' + #13#10 +
     'security.jwt.secret-key=' + GeneratedJwtSecret + #13#10 +
     'server.port=8765' + #13#10 +
-    'server.address=127.0.0.1' + #13#10;
+    'server.address=127.0.0.1' + #13#10 +
+    'server.forward-headers-strategy=framework' + #13#10 +
+    'app.security.allowed-origin=' + AllowedOrigins + #13#10;
 
   if not SaveStringToFile(ConfigFile, ConfigText, False) then
     RaiseException('Could not write production configuration.');
@@ -1842,16 +2009,30 @@ begin
   ServiceExe := GetTargetAppDir() + '\laundryms-service.exe';
   if not FileExists(ServiceExe) then
   begin
-    if RequireSuccess then RaiseException('Service executable is missing: ' + ServiceExe);
+    ErrorMsg := 'Service executable is missing: ' + ServiceExe;
+    Log(ErrorMsg);
+    if RequireSuccess then RaiseException(ErrorMsg);
     Exit;
   end;
-  if Exec(ServiceExe, Command, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
+
+  if not Exec(ServiceExe, Command, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin
-    Result := True;
+    ErrorMsg := 'LaundryShopMS service command could not be launched: ' + Command + '.';
+    Log(ErrorMsg);
+    if RequireSuccess then RaiseException(ErrorMsg);
     Exit;
   end;
-  ErrorMsg := 'LaundryShopMS service command failed: ' + Command + '.';
-  if RequireSuccess then RaiseException(ErrorMsg);
+
+  if ResultCode <> 0 then
+  begin
+    ErrorMsg := 'LaundryShopMS service command failed: ' + Command + ' (exit code ' + IntToStr(ResultCode) + ').';
+    Log(ErrorMsg);
+    if RequireSuccess then RaiseException(ErrorMsg);
+    Exit;
+  end;
+
+  Log('LaundryShopMS service command succeeded: ' + Command + '.');
+  Result := True;
 end;
 
 procedure StopServiceSafelyForUpgrade;
@@ -1887,6 +2068,64 @@ begin
     Sleep(500);
   end;
   RaiseException('LaundryShopMS service did not reach STOPPED state before upgrade.');
+end;
+
+procedure RefreshOrRepairApplicationServiceRegistration;
+var
+  SvcState, i, MaxPolls: Integer;
+begin
+  SvcState := GetWindowsServiceState();
+  if SvcState <> SERVICE_STOPPED then
+    RaiseException('Application service must be STOPPED before refresh/repair.');
+
+  if ManageServiceCommand('refresh', False) then
+  begin
+    Log('Upgrade: WinSW service refresh succeeded.');
+    Exit;
+  end;
+
+  Log('Upgrade: WinSW refresh failed; attempting safe service re-registration without touching application data or PostgreSQL.');
+  MaxPolls := SERVICE_STATE_TIMEOUT_MS div 500;
+
+  // The service is already stopped. Removing only the SCM registration is safe;
+  // ProgramData, PostgreSQL, backups, secrets, and Ngrok configuration are untouched.
+  // WinSW can occasionally return a non-zero uninstall result while SCM is still
+  // completing service removal. Poll SCM instead of trusting only the wrapper exit code.
+  ManageServiceCommand('uninstall', False);
+  for i := 1 to MaxPolls do
+  begin
+    SvcState := GetWindowsServiceState();
+    if SvcState = SERVICE_NOT_INSTALLED then Break;
+    Sleep(500);
+  end;
+  if GetWindowsServiceState() <> SERVICE_NOT_INSTALLED then
+    RaiseException('Timed out waiting for the old LaundryShopMS service registration to be removed.');
+
+  // As above, the authoritative outcome is the SCM state after the command.
+  ManageServiceCommand('install', False);
+  for i := 1 to MaxPolls do
+  begin
+    SvcState := GetWindowsServiceState();
+    if (SvcState = SERVICE_STOPPED) or (SvcState = SERVICE_RUNNING) then
+    begin
+      Log('Upgrade: LaundryShopMS service registration repaired successfully.');
+      Exit;
+    end;
+    Sleep(500);
+  end;
+
+  RaiseException('LaundryShopMS service re-registration did not stabilize after WinSW refresh failure.');
+end;
+
+procedure StartApplicationServiceAfterUpgrade;
+var
+  SvcState: Integer;
+begin
+  SvcState := GetWindowsServiceState();
+  if SvcState = SERVICE_STOPPED then
+    ManageServiceCommand('start', True)
+  else if SvcState <> SERVICE_RUNNING then
+    RaiseException('LaundryShopMS service is not in a startable state after upgrade service registration refresh/repair.');
 end;
 
 procedure VerifyBundledRuntime;
@@ -1964,11 +2203,14 @@ begin
     RegWriteStringValue(HKLM, 'Software\Himotech\LaundryShopMS', 'TunnelEnabled', 'true');
     if TunnelPublicUrl <> '' then
       RegWriteStringValue(HKLM, 'Software\Himotech\LaundryShopMS', 'TunnelPublicUrl', TunnelPublicUrl);
+    if RemoteFrontendUrl <> '' then
+      RegWriteStringValue(HKLM, 'Software\Himotech\LaundryShopMS', 'RemoteFrontendUrl', RemoteFrontendUrl);
   end
   else
   begin
     RegWriteStringValue(HKLM, 'Software\Himotech\LaundryShopMS', 'TunnelEnabled', 'false');
     RegDeleteValue(HKLM, 'Software\Himotech\LaundryShopMS', 'TunnelPublicUrl');
+    RegDeleteValue(HKLM, 'Software\Himotech\LaundryShopMS', 'RemoteFrontendUrl');
   end;
 end;
 
@@ -1996,8 +2238,8 @@ begin
       RevalidatePostgresPlan;
       InstallPostgreSQLIfNeeded;
       ProvisionDatabaseAndUser;
-      ConfigureProductionProperties;
     end;
+    ConfigureProductionProperties;
   end;
 
   if CurStep = ssPostInstall then
@@ -2014,9 +2256,9 @@ begin
     begin
       SvcState := GetWindowsServiceState();
       if SvcState <> SERVICE_STOPPED then
-        RaiseException('Normal upgrade expected the registered service to remain STOPPED before refresh.');
-      ManageServiceCommand('refresh', True);
-      ManageServiceCommand('start', True);
+        RaiseException('Normal upgrade expected the registered service to remain STOPPED before refresh/repair.');
+      RefreshOrRepairApplicationServiceRegistration;
+      StartApplicationServiceAfterUpgrade;
     end;
 
     VerifyServiceHealth;

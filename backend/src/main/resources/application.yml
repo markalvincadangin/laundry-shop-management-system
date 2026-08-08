@@ -1,6 +1,9 @@
 server:
   port: ${SPRING_PORT:8080}
   address: 0.0.0.0
+  # Reverse-proxy headers are disabled by default for development. The Windows
+  # installer overrides this to "framework" when running behind Ngrok/Vercel.
+  forward-headers-strategy: ${FORWARD_HEADERS_STRATEGY:none}
 
 spring:
   application:
@@ -62,7 +65,9 @@ app:
     cookie-name: refresh_token
     cookie-secure: false          # Overridden to true in application-prod.yml
     cookie-same-site: Lax
-    allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000,https://*.vercel.app,https://laundry-shop-management-system.vercel.app}
+    # Development default only. Production origins are written by the Windows
+    # installer into application-prod.properties. Multiple origins are comma-separated.
+    allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
     jwt-secret: ${JWT_SECRET}
   sms:
     semaphore:
