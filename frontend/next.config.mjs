@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const deploymentTarget = process.env.NEXT_DEPLOYMENT_TARGET ?? "development";
+const deploymentTarget = process.env.NEXT_DEPLOYMENT_TARGET ?? (process.env.VERCEL === "1" ? "vercel" : "development");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
