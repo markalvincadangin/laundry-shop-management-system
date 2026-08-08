@@ -21,7 +21,7 @@ export function PublicTopNav({ variant = "landing" }: PublicTopNavProps) {
         <Link href="/" className="flex items-center gap-grid-4 group">
           <div className="relative h-12 w-12 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-sm border border-slate-100 transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-brand-blue/10">
             <Image
-              src="/branding/logo.svg"
+              src="/assets/app-icon/app-icon.svg"
               alt={UI_LABELS.meta.SHOP_NAME}
               width={32}
               height={32}
@@ -39,7 +39,7 @@ export function PublicTopNav({ variant = "landing" }: PublicTopNavProps) {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-700" />
               </span>
               <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em]">
-                {variant === "landing" ? "Official Customer Portal" : UI_LABELS.portal.tracking.TITLE}
+                {variant === "landing" ? UI_LABELS.portal.topnav.OFFICIAL_WEBSITE : UI_LABELS.portal.tracking.TITLE}
               </p>
             </div>
           </div>

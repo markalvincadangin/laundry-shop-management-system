@@ -15,6 +15,15 @@ const nextConfig = {
   },
 };
 
+if (deploymentTarget === "development") {
+  nextConfig.rewrites = async () => [
+    {
+      source: "/api/:path*",
+      destination: "http://localhost:8080/api/:path*",
+    },
+  ];
+}
+
 if (deploymentTarget === "vercel") {
   const isPreview = process.env.VERCEL_ENV === "preview";
   const upstreamVariable = isPreview ? "PREVIEW_UPSTREAM_API_URL" : "UPSTREAM_API_URL";

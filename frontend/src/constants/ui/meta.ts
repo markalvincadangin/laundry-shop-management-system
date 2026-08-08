@@ -6,5 +6,5 @@ export const meta = {
   APP_TAGLINE: "Management System",
   COPYRIGHT: "© 2026 • Faith Laundry Shop",
   DEVELOPED_BY: "Developed by",
-  AGENCY: "Mark Alvin Cadangin",
+  AGENCY: "HIMOTECH",
 } as const;

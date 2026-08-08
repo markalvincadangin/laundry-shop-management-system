@@ -11,6 +11,9 @@ export function useAddOnCatalog(activeOnly: boolean = true) {
   return useQuery({
     queryKey: activeOnly ? ADD_ON_CATALOG_KEYS.active() : ADD_ON_CATALOG_KEYS.lists(),
     queryFn: () => addOnCatalogService.getAll(activeOnly),
+    staleTime: 5000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }
 

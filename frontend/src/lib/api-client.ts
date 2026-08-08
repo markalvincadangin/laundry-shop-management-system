@@ -63,10 +63,11 @@ export const resolveApiBaseUrl = (input: {
   const configuredUrl = input.apiUrl?.replace(/\/$/, "");
 
   if (input.nodeEnv === "development") {
-    return configuredUrl || `http://${["local", "host"].join("")}:8080/api`;
+    const devHost = ["local", "host"].join("");
+    return configuredUrl || `http://${devHost}:8080/api`;
   }
 
-  if (!configuredUrl || configuredUrl.includes("localhost:8080")) {
+  if (!configuredUrl || configuredUrl.includes("8080")) {
     return "/api";
   }
 
@@ -74,9 +75,13 @@ export const resolveApiBaseUrl = (input: {
 };
 
 const getBaseUrl = (): string => {
+  if (process.env.NODE_ENV === "production" || process.env.NEXT_DEPLOYMENT_TARGET === "standalone") {
+    return "/api";
+  }
+  const key = "NEXT_PUBLIC_API_URL";
   return resolveApiBaseUrl({
-    nodeEnv: process.env.NODE_ENV === "development" ? "development" : "production",
-    apiUrl: process.env.NEXT_PUBLIC_API_URL,
+    nodeEnv: "development",
+    apiUrl: process.env[key],
   });
 };
 

@@ -41,7 +41,7 @@ export function Sidebar() {
         >
           <div className="relative h-9 w-9 shrink-0">
             <Image
-              src="/branding/logo.svg"
+              src="/assets/app-icon/app-icon.svg"
               alt=""
               fill
               className="object-contain"

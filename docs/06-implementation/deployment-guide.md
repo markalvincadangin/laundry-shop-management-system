@@ -14,7 +14,9 @@
 
 The Laundry Shop Management System is designed to operate on a strict **Offline-First, Zero-Cloud-Cost Architecture**.
 
-The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static export) are packaged into a **single standalone `.exe` Windows Installer wizard** generated via **Inno Setup** and managed via **WinSW (Windows Service Wrapper)**. The database is a local PostgreSQL instance running as a silent Windows Service.
+The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static export) are packaged using a **Thin Bootstrapper + Smart PostgreSQL Detection** Windows installer wizard generated via **Inno Setup** and managed via **WinSW (Windows Service Wrapper)**.
+
+For full architectural details, PostgreSQL compatibility matrix (supporting versions 16, 17, and 18), Flyway migration sequence, and data retention policies during uninstallation/upgrades, see the official [Installer Specification](file:///home/markc/projects/active/laundry-shop-management-system/docs/06-implementation/installer-spec.md).
 
 To enable online access, the local server is exposed to the Vercel-hosted frontend via a secure **Ngrok reverse tunnel**. This supports public customer tracking and authenticated remote Admin/Staff access while the shop laptop is running and connected to the internet. Cloudflare Tunnel remains available as an optional installer alternative.
 

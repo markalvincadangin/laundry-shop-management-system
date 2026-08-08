@@ -1,15 +1,29 @@
 <service>
   <id>LaundryShopMS</id>
   <name>Laundry Shop Management System</name>
-  <description>Laundry Shop Management System - Local POS Server</description>
-  <executable>java</executable>
-  <arguments>-Xmx512m -jar "%BASE%\laundryms.jar" --spring.profiles.active=prod --spring.config.additional-location="%BASE%\config\application-prod.properties"</arguments>
-  <logpath>%BASE%\logs</logpath>
-  <logmode>rotate</logmode>
-  <onfailure action="restart" delay="10 sec"/>
-  <onfailure action="restart" delay="20 sec"/>
-  <onfailure action="none"/>
+  <description>Local Laundry Shop Management System application service.</description>
+
+  <executable>%BASE%\runtime\bin\java.exe</executable>
+  <arguments>-Dfile.encoding=UTF-8 -jar "%BASE%\laundryms.jar" --spring.profiles.active=prod --spring.config.additional-location="file:C:/ProgramData/LaundryShopMS/config/application-prod.properties"</arguments>
+  <workingdirectory>%BASE%</workingdirectory>
+
+  <serviceaccount>
+    <username>LocalSystem</username>
+  </serviceaccount>
+
   <startmode>Automatic</startmode>
-  <delayedAutoStart>false</delayedAutoStart>
+  <delayedAutoStart>true</delayedAutoStart>
+  <autoRefresh>true</autoRefresh>
   <stoptimeout>30 sec</stoptimeout>
+  <hidewindow>true</hidewindow>
+
+  <logpath>C:\ProgramData\LaundryShopMS\logs</logpath>
+  <log mode="roll-by-time">
+    <pattern>yyyyMMdd</pattern>
+    <keepFiles>14</keepFiles>
+  </log>
+
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <resetfailure>1 hour</resetfailure>
 </service>

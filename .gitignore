@@ -78,3 +78,5 @@ scratch/
 # Graphify
 graphify-out/
 .env*
+.cache/
+*:Zone.Identifier
