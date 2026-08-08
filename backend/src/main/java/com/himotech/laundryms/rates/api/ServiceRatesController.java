@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class ServiceRatesController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "CREATE_RESOURCE")
     public ResponseEntity<ServiceRateResponse> create(
             @Valid @RequestBody CreateServiceRateRequest request) {
         ServiceRate rate = serviceRateService.create(request);
@@ -48,6 +50,7 @@ public class ServiceRatesController {
 
     @PatchMapping("/{rateId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<ServiceRateResponse> update(
             @PathVariable UUID rateId,
             @Valid @RequestBody UpdateServiceRateRequest request) {

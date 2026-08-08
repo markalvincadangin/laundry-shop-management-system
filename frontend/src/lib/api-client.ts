@@ -4,6 +4,17 @@
  */
 
 import type { ErrorResponse } from "@/types/api";
+import { requireRemoteWritesEnabled, RemoteServiceUnavailableError } from "@/lib/availability";
+
+export class UnconfirmedOperationError extends Error {
+  constructor(
+    public readonly operationIdentifier: string,
+    message: string = "Operation interrupted. The system could not confirm if the change was saved."
+  ) {
+    super(message);
+    this.name = "UnconfirmedOperationError";
+  }
+}
 
 let currentAccessToken: string | null = null;
 let currentCsrfToken: string | null = null;
@@ -45,27 +56,33 @@ const ensureCsrfToken = async () => {
   }
 };
 
-const getBaseUrl = (): string => {
-  // In the browser, we use a relative path so the request is proxied by Next.js
-  if (typeof window !== "undefined") {
-    // Since output: 'export' disables Next.js rewrites, we cannot proxy /api in development.
-    // We must hit the backend directly (e.g., http://localhost:8080/api).
-    if (process.env.NODE_ENV === "development") {
-      return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-    }
-    const url = process.env.NEXT_PUBLIC_API_URL;
-    if (!url) {
-      throw new Error("NEXT_PUBLIC_API_URL is required for production API requests");
-    }
-    return url.replace(/\/$/, "");
+export const resolveApiBaseUrl = (input: {
+  nodeEnv: "development" | "production";
+  apiUrl?: string;
+}): string => {
+  const configuredUrl = input.apiUrl?.replace(/\/$/, "");
+
+  if (input.nodeEnv === "development") {
+    const devHost = ["local", "host"].join("");
+    return configuredUrl || `http://${devHost}:8080/api`;
   }
 
-  // On the server (SSR/Server Actions), we use the internal Docker URL
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  if (!url) {
-    throw new Error("NEXT_PUBLIC_API_URL is not defined");
+  if (!configuredUrl || configuredUrl.includes("8080")) {
+    return "/api";
   }
-  return url.replace(/\/$/, ""); // trim trailing slash
+
+  return configuredUrl;
+};
+
+const getBaseUrl = (): string => {
+  if (process.env.NODE_ENV === "production" || process.env.NEXT_DEPLOYMENT_TARGET === "standalone") {
+    return "/api";
+  }
+  const key = "NEXT_PUBLIC_API_URL";
+  return resolveApiBaseUrl({
+    nodeEnv: "development",
+    apiUrl: process.env[key],
+  });
 };
 
 export class ApiError extends Error {
@@ -77,6 +94,7 @@ export class ApiError extends Error {
   ) {
     super(message);
     this.name = "ApiError";
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
@@ -116,12 +134,17 @@ const fetchOptions = (init?: RequestInit): RequestInit => {
   const headers = new Headers(init?.headers);
   if (currentAccessToken) {
     headers.set("Authorization", `Bearer ${currentAccessToken}`);
+    // Vercel Protection intercepts and strips the standard Authorization header.
+    // We send a custom header as a fallback for the backend to read.
+    headers.set("X-LMS-Authorization", `Bearer ${currentAccessToken}`);
   }
   
   const csrfToken = getCsrfToken();
   if (csrfToken && init?.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(init.method.toUpperCase())) {
     headers.set("X-CSRF-Token", csrfToken);
   }
+  
+  headers.set("ngrok-skip-browser-warning", "true");
   
   return {
     ...init,
@@ -130,46 +153,71 @@ const fetchOptions = (init?: RequestInit): RequestInit => {
   };
 };
 
-async function executeWithRetry<T>(url: string, options: RequestInit): Promise<T> {
-  let response = await fetch(url, options);
+async function executeWithRetry<T>(url: string, options: RequestInit, isMutation: boolean = false): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  options.signal = controller.signal;
+
+  let response: Response;
+  try {
+    response = await fetch(url, options);
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      const headers = new Headers(options.headers);
+      const opId = headers.get("X-Operation-Identifier");
+      if (isMutation && opId) {
+        throw new UnconfirmedOperationError(opId);
+      }
+      throw new RemoteServiceUnavailableError();
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
   captureCsrfToken(response);
 
   if (response.status === 401 && !url.includes("/api/v1/auth/refresh") && !url.includes("/api/v1/auth/login")) {
     if (!refreshPromise) {
       refreshPromise = (async () => {
         try {
-        await ensureCsrfToken();
-        const refreshUrl = buildUrl("/v1/auth/refresh");
-        const csrfToken = getCsrfToken();
-        const refreshHeaders = new Headers();
-        if (csrfToken) {
-          refreshHeaders.set("X-CSRF-Token", csrfToken);
-        }
-        
-        const refreshResponse = await fetch(refreshUrl, {
-          method: "POST",
-          headers: refreshHeaders,
-          credentials: "include"
-        });
+          await ensureCsrfToken();
+          const refreshUrl = buildUrl("/v1/auth/refresh");
+          const csrfToken = getCsrfToken();
+          const refreshHeaders = new Headers();
+          if (csrfToken) {
+            refreshHeaders.set("X-CSRF-Token", csrfToken);
+          }
+          
+          // Capture the token at start of refresh
+          const tokenAtRefreshStart = getAccessToken();
+          
+          const refreshResponse = await fetch(refreshUrl, {
+            method: "POST",
+            headers: refreshHeaders,
+            credentials: "include"
+          });
 
-        if (refreshResponse.ok) {
-          captureCsrfToken(refreshResponse);
-          const data = await refreshResponse.json();
-          setAccessToken(data.accessToken);
-          return data.accessToken as string;
-        } else {
-          // Refresh failed, user needs to login again
+          if (refreshResponse.ok) {
+            captureCsrfToken(refreshResponse);
+            const data = await refreshResponse.json();
+            setAccessToken(data.accessToken);
+            return data.accessToken as string;
+          } else {
+            // Only wipe token if it hasn't been updated (e.g. by a parallel login)
+            if (getAccessToken() === tokenAtRefreshStart) {
+              setAccessToken(null);
+              setCsrfToken(null);
+            }
+            return null;
+          }
+        } catch (err) {
           setAccessToken(null);
           setCsrfToken(null);
           return null;
+        } finally {
+          refreshPromise = null;
         }
-      } catch (err) {
-        setAccessToken(null);
-        setCsrfToken(null);
-        return null;
-      } finally {
-        refreshPromise = null;
-      }
       })();
     }
 
@@ -209,10 +257,13 @@ export const apiClient = {
     return executeWithRetry<T>(url, fetchOptions({
       method: "GET",
       headers: { Accept: "application/json" },
-    }));
+    }), false);
   },
 
-  async post<T>(path: string, body?: unknown): Promise<T> {
+  async post<T>(path: string, body?: unknown, options?: { operationIdentifier?: string }): Promise<T> {
+    if (!path.startsWith("/v1/auth/") && !path.startsWith("/v1/orders/preview")) {
+      requireRemoteWritesEnabled();
+    }
     if (path === "/v1/auth/logout") {
       await ensureCsrfToken();
     }
@@ -220,35 +271,46 @@ export const apiClient = {
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };
     if (body) headers["Content-Type"] = "application/json";
+    
+    const opId = options?.operationIdentifier || crypto.randomUUID();
+    if (!path.startsWith("/v1/auth/") && !path.startsWith("/v1/orders/preview")) {
+      headers["X-Operation-Identifier"] = opId;
+    }
 
     return executeWithRetry<T>(url, fetchOptions({
       method: "POST",
       headers,
       body: body ? JSON.stringify(body) : undefined,
-    }));
+    }), true);
   },
 
-  async patch<T>(path: string, body?: unknown): Promise<T> {
+  async patch<T>(path: string, body?: unknown, options?: { operationIdentifier?: string }): Promise<T> {
+    requireRemoteWritesEnabled();
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };
     if (body) headers["Content-Type"] = "application/json";
+    
+    headers["X-Operation-Identifier"] = options?.operationIdentifier || crypto.randomUUID();
 
     return executeWithRetry<T>(url, fetchOptions({
       method: "PATCH",
       headers,
       body: body ? JSON.stringify(body) : undefined,
-    }));
+    }), true);
   },
 
-  async delete<T>(path: string): Promise<T> {
+  async delete<T>(path: string, options?: { operationIdentifier?: string }): Promise<T> {
+    requireRemoteWritesEnabled();
     const base = getBaseUrl();
     const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
     const headers: Record<string, string> = { Accept: "application/json" };
+    
+    headers["X-Operation-Identifier"] = options?.operationIdentifier || crypto.randomUUID();
 
     return executeWithRetry<T>(url, fetchOptions({
       method: "DELETE",
       headers,
-    }));
+    }), true);
   },
 };

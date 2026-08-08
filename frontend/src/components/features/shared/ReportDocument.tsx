@@ -249,7 +249,7 @@ export function ReportDocument({ data }: ReportDocumentProps) {
           <View style={styles.headerLeft}>
             <View style={styles.brandWrapper}>
               {/* eslint-disable-next-line jsx-a11y/alt-text */}
-              <Image src={getFontPath("/branding/logo.svg")} style={styles.logo} />
+              <Image src={getFontPath("/assets/app-icon/app-icon.png")} style={styles.logo} />
               <Text style={styles.shopName}>{UI_LABELS.dynamic.FAITH_LAUNDRY_SHOP_2a14}</Text>
             </View>
             <Text style={styles.reportTitle}>{data.title}</Text>

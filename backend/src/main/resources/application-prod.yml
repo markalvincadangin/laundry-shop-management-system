@@ -1,10 +1,13 @@
-# Production profile: hardened for Render + Neon deployment
+# Production profile: hardened for the on-premises shop host
 # Activate with: SPRING_PROFILES_ACTIVE=prod
+
+server:
+  address: 127.0.0.1
 
 spring:
   datasource:
-    # Neon requires SSL for external connections from Render
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}?stringtype=unspecified&sslmode=require
+    # PostgreSQL runs on the same shop-host laptop as the application.
+    url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME}?stringtype=unspecified
 
   # --- Flyway: production settings ---
   flyway:
@@ -31,5 +34,5 @@ logging:
 app:
   security:
     cookie-secure: true
-    cookie-same-site: None
+    cookie-same-site: Lax
     bcrypt-strength: 12

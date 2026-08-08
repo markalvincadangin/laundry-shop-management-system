@@ -88,3 +88,28 @@ export const calculateEstimatedTime = (totalLoads: number = 0, extraMinutes: num
   const mins = total % 60;
   return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
 };
+
+/**
+ * Next.js App Router Static Export workaround for dynamic routes.
+ * When the page is hydrated from a statically exported fallback.html, 
+ * useParams() will always return the fallback value (e.g., 'fallback').
+ * This utility resolves the actual ID from the URL pathname.
+ */
+export function useResolvedId(paramsId: string | string[], routePrefix: string): string {
+  const [id, setId] = require("react").useState(String(paramsId));
+
+  require("react").useEffect(() => {
+    if (id === "fallback" || id === "%5Bid%5D" || id === "[id]") {
+      try {
+        const match = window.location.pathname.match(new RegExp(`^${routePrefix}/([^/?]+)`));
+        if (match) {
+          setId(match[1]);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [id, routePrefix]);
+
+  return id;
+}

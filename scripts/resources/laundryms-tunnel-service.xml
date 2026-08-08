@@ -1,0 +1,29 @@
+<service>
+  <id>LaundryShopMSTunnel</id>
+  <name>Laundry Shop Management System - Ngrok Tunnel</name>
+  <description>Optional Ngrok reverse tunnel for Laundry Shop Management System remote access.</description>
+
+  <executable>%BASE%\tunnel\ngrok.exe</executable>
+  <arguments>start --all --config "C:\ProgramData\LaundryShopMS\tunnel\ngrok.yml"</arguments>
+  <workingdirectory>%BASE%\tunnel</workingdirectory>
+
+  <serviceaccount>
+    <username>LocalSystem</username>
+  </serviceaccount>
+
+  <startmode>Automatic</startmode>
+  <delayedAutoStart>true</delayedAutoStart>
+  <autoRefresh>true</autoRefresh>
+  <stoptimeout>20 sec</stoptimeout>
+  <hidewindow>true</hidewindow>
+
+  <logpath>C:\ProgramData\LaundryShopMS\logs</logpath>
+  <log mode="roll-by-time">
+    <pattern>yyyyMMdd</pattern>
+    <keepFiles>14</keepFiles>
+  </log>
+
+  <onfailure action="restart" delay="10 sec"/>
+  <onfailure action="restart" delay="30 sec"/>
+  <resetfailure>1 hour</resetfailure>
+</service>

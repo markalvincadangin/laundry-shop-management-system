@@ -3,6 +3,7 @@
 import { AuthProvider } from '@/stores/auth-store';
 import { LayoutProvider } from '@/stores/layout-store';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { AvailabilityProvider } from '@/components/system/AvailabilityProvider';
 
 /**
  * Global Providers aggregation.
@@ -11,12 +12,14 @@ import { QueryProvider } from '@/components/providers/QueryProvider';
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <QueryProvider>
-      <LayoutProvider>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </LayoutProvider>
-    </QueryProvider>
+    <AvailabilityProvider>
+      <QueryProvider>
+        <LayoutProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </LayoutProvider>
+      </QueryProvider>
+    </AvailabilityProvider>
   );
 }

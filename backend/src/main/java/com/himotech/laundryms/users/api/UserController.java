@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,17 +52,20 @@ public class UserController {
     }
 
     @PostMapping
+    @Idempotent(actionType = "CREATE_RESOURCE")
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse createUser(@Valid @RequestBody CreateUserRequest request) {
         return userService.createUser(request);
     }
 
     @PatchMapping("/{id}")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public UserResponse updateUser(@PathVariable UUID id, @RequestBody UpdateUserRequest request) {
         return userService.updateUser(id, request);
     }
 
     @PatchMapping("/{id}/toggle-status")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public void toggleStatus(@PathVariable UUID id) {
         userService.toggleUserStatus(id);
     }

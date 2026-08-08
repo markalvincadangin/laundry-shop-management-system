@@ -105,7 +105,7 @@ describe("PayOrderPage", () => {
         orderId: '1',
         amountPaid: 150,
         paymentMethod: "CASH",
-      }));
+      }), expect.objectContaining({ operationIdentifier: expect.any(String) }));
     });
   });
 

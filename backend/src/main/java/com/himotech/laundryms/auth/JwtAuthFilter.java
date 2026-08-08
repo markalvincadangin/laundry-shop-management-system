@@ -43,6 +43,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            // Fallback for Vercel preview environments where Vercel Protection strips Authorization
+            authHeader = request.getHeader("X-LMS-Authorization");
+        }
+        
         Optional<String> token = Optional.empty();
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -54,7 +59,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (claims != null) {
                 UUID userId = jwtService.getUserIdFromClaims(claims);
                 UserRole role = jwtService.getRoleFromClaims(claims);
-                String username = claims.getSubject();
+                String username = claims.get("username", String.class);
+                if (username == null) {
+                    username = claims.getSubject(); // Fallback for old tokens
+                }
 
                 var authorities = role != null
                         ? Stream.of(new SimpleGrantedAuthority("ROLE_" + role.name()))

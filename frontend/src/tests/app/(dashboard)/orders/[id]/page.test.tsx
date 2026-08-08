@@ -138,7 +138,7 @@ describe("OrderDetailsPage", () => {
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(ordersService.updateStatus).toHaveBeenCalledWith('1', expect.objectContaining({ newStatus: "WASHING" }));
+      expect(ordersService.updateStatus).toHaveBeenCalledWith('1', expect.objectContaining({ newStatus: "WASHING" }), expect.objectContaining({ operationIdentifier: expect.any(String) }));
     });
 
     await waitFor(() => {

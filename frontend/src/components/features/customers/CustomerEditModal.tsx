@@ -22,6 +22,8 @@ interface CustomerEditModalProps {
 export function CustomerEditModal({ isOpen, onClose, customer, onSuccess }: CustomerEditModalProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
+  const [toggleOperationId, setToggleOperationId] = useState(() => crypto.randomUUID());
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
   const [form, setForm] = useState<components["schemas"]["CreateCustomerRequest"]>({
     firstName: "",
@@ -50,17 +52,22 @@ export function CustomerEditModal({ isOpen, onClose, customer, onSuccess }: Cust
     setLoading(true);
     try {
       if (customer) {
-        await customersService.update(customer.id, form);
+        await customersService.update(customer.id, form, { operationIdentifier: operationId });
         toast.success(UI_LABELS.feedback.success.UPDATED);
       } else {
-        await customersService.create(form);
+        await customersService.create(form, { operationIdentifier: operationId });
         toast.success(UI_LABELS.feedback.success.REGISTERED);
       }
+      setOperationId(crypto.randomUUID());
       onSuccess();
       onClose();
     } catch (err: any) {
-      const message = err.response?.data?.message || UI_LABELS.feedback.error.GENERIC;
-      toast.error(message);
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The profile may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        const message = err.response?.data?.message || UI_LABELS.feedback.error.GENERIC;
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -70,12 +77,17 @@ export function CustomerEditModal({ isOpen, onClose, customer, onSuccess }: Cust
     if (!customer) return;
     setLoading(true);
     try {
-      await customersService.toggleActive(customer.id);
+      await customersService.toggleActive(customer.id, { operationIdentifier: toggleOperationId });
       toast.success(UI_LABELS.feedback.success.GENERIC);
+      setToggleOperationId(crypto.randomUUID());
       onSuccess();
       onClose();
-    } catch (err) {
-      toast.error(UI_LABELS.feedback.error.GENERIC);
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The status may have been toggled. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setLoading(false);
       setShowStatusConfirm(false);
@@ -128,6 +140,7 @@ export function CustomerEditModal({ isOpen, onClose, customer, onSuccess }: Cust
             <div className="flex flex-col sm:flex-row gap-grid-3">
               <Button 
                 type="submit"
+                requiresOnline
                 variant="primary" 
                 isLoading={loading}
                 className="flex-[2] h-14 gap-grid-2 font-black uppercase text-[11px] tracking-widest shadow-lg shadow-brand-blue/20 rounded-xl"

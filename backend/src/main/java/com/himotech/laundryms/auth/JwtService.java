@@ -42,6 +42,7 @@ public class JwtService {
     public String createToken(User user) {
         return Jwts.builder()
                 .subject(user.getId().toString())
+                .claim("username", user.getUsername())
                 .claim(CLAIM_ROLE, user.getRole().name())
                 .id(UUID.randomUUID().toString())
                 .issuedAt(new Date())
@@ -62,7 +63,7 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            log.debug("Invalid JWT: {}", e.getMessage());
+            log.error("Invalid JWT: {}", e.getMessage(), e);
             return null;
         }
     }

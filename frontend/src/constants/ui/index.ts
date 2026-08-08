@@ -9,6 +9,7 @@ import { modals } from "./modals";
 import { pagination } from "./pagination";
 import { services } from "./services";
 import { dynamic } from "./dynamic";
+import { remoteAccess } from "./remote-access";
 
 // Modules
 import { dashboard } from "./modules/dashboard";
@@ -36,6 +37,7 @@ export const UI_LABELS = {
   pagination,
   services,
   dynamic,
+  remoteAccess,
   modules: {
     dashboard,
     orders,

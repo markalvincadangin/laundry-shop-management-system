@@ -54,7 +54,7 @@ export function MobileNav() {
         <Link href={user ? "/overview" : "/"} className="flex items-center gap-2 min-w-0 flex-1 justify-center">
           <div className="relative h-8 w-8 shrink-0">
             <Image
-              src="/branding/logo.svg"
+              src="/assets/app-icon/app-icon.svg"
               alt=""
               fill
               className="object-contain"
@@ -99,7 +99,7 @@ export function MobileNav() {
               <div className="flex items-center gap-3">
                 <div className="relative h-7 w-7 shrink-0">
                   <Image
-                    src="/branding/logo.svg"
+                    src="/assets/app-icon/app-icon.svg"
                     alt=""
                     fill
                     className="object-contain"

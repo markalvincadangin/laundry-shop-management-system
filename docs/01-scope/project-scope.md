@@ -165,7 +165,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 2. Admin and staff possess basic computer literacy.
 3. Payment is typically collected upon pickup.
 4. The system is deployed on a physical Windows device kept powered on at the counter.
-5. Internet connectivity is required *only* for customer online tracking (via Cloudflare Tunnel). Local operations continue seamlessly without internet.
+5. Internet connectivity is required for remote customer tracking and remote authenticated staff/admin access via the Ngrok reverse tunnel. Local operations continue seamlessly without internet.
 
 ---
 
@@ -177,7 +177,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 - Database: PostgreSQL 16 (Local Windows Service)
 - Migration Tool: Flyway
 - Frontend: Next.js 15+, TypeScript
-- Infrastructure: Standalone Windows Native Application (`.exe` wizard) + Cloudflare Tunnel
+- Infrastructure: Standalone Windows Native Application (`.exe` wizard) + Ngrok reverse tunnel
 - Testing: Testcontainers
 - CI/CD: GitHub Actions
 
@@ -207,7 +207,7 @@ The project shall be considered successful if:
 For the system to be considered **complete and production-ready**, the following must be in place (see [Deployment Guide](../06-implementation/deployment-guide.md) and [Handover Checklist](../06-implementation/handover-checklist.md)):
 
 - **Deployment:** Production stack deployable natively on Windows via the provided `.exe` installer wizard.
-- **Tunnel:** Cloudflare Tunnel (`cloudflared`) configured to securely expose the local backend to the public tracking frontend.
+- **Tunnel:** Ngrok (`ngrok`) configured to securely expose the local backend to public tracking and authenticated remote staff/admin access; Cloudflare remains an optional installer alternative.
 - **Backup:** Database backup script available and scheduled (e.g., nightly) using the provided `backup-database.sh`/`.ps1`.
 - **Security:** Strong JWT secret and DB password in production generated securely during Windows setup.
 - **Handover:** User manual and handover checklist completed; Admin and Staff trained; sign-off obtained.

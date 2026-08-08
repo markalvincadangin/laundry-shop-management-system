@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -63,12 +64,14 @@ public class ClientAlertController {
     }
 
     @PatchMapping("/{id}/read")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<Void> markAsRead(@PathVariable UUID id) {
         clientAlertService.markAsRead(id);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/read-all")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<Void> markAllAsRead() {
         clientAlertService.markAllAsRead();
         return ResponseEntity.ok().build();

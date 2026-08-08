@@ -14,7 +14,7 @@ export default function AuthLayout({
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <Image
-            src="/auth-bg.png"
+            src="/images/auth/auth-bg.png"
             alt="Faith Laundry Premium Service"
             fill
             className="object-cover opacity-30 scale-105 animate-pulse-slow transition-transform duration-[10000ms] hover:scale-110"
@@ -28,7 +28,7 @@ export default function AuthLayout({
           <div className="flex items-center gap-grid-4">
             <div className="h-14 w-14 rounded-2xl bg-white p-2.5 shadow-2xl shadow-white/10 ring-1 ring-white/20">
               <Image
-                src="/branding/logo.svg"
+                src="/assets/app-icon/app-icon.svg"
                 alt="Logo"
                 width={40}
                 height={40}
@@ -40,7 +40,7 @@ export default function AuthLayout({
                 {UI_LABELS.meta.APP_NAME}
               </h2>
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-cyan/80 mt-1.5">
-                {UI_LABELS.meta.APP_TAGLINE}
+                Staff Operations Portal
               </span>
             </div>
           </div>
@@ -58,7 +58,7 @@ export default function AuthLayout({
         </div>
 
         <div className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 opacity-60">
-          &copy; {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} {UI_LABELS.dynamic.BULL} {UI_LABELS.meta.AGENCY}
+          © {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME} • {UI_LABELS.meta.AGENCY}
         </div>
       </div>
 
@@ -68,7 +68,7 @@ export default function AuthLayout({
         <div className="lg:hidden mb-8 flex flex-col items-center text-center">
           <div className="mb-4 h-16 w-16 bg-white rounded-2xl flex items-center justify-center p-3 shadow-xl ring-1 ring-slate-200">
             <Image
-              src="/branding/logo.svg"
+              src="/assets/app-icon/app-icon.svg"
               alt="Logo"
               width={40}
               height={40}

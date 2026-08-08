@@ -14,9 +14,17 @@
 
 The Laundry Shop Management System is designed to operate on a strict **Offline-First, Zero-Cloud-Cost Architecture**.
 
-The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static export) are packaged into a **single standalone `.exe` Windows Installer wizard** generated via **Inno Setup** and managed via **WinSW (Windows Service Wrapper)**. The database is a local PostgreSQL instance running as a silent Windows Service.
+The entire backend (Spring Boot 3.5) and staff-facing frontend (Next.js static export) are packaged using a **Thin Bootstrapper + Smart PostgreSQL Detection** Windows installer wizard generated via **Inno Setup** and managed via **WinSW (Windows Service Wrapper)**.
 
-To enable public customer tracking online, the local server is exposed to a Vercel-hosted frontend via a secure **Cloudflare Tunnel**.
+For full architectural details, PostgreSQL compatibility matrix (supporting versions 16, 17, and 18), Flyway migration sequence, and data retention policies during uninstallation/upgrades, see the official [Installer Specification](file:///home/markc/projects/active/laundry-shop-management-system/docs/06-implementation/installer-spec.md).
+
+To enable online access, the local server is exposed to the Vercel-hosted frontend via a secure **Ngrok reverse tunnel**. This supports public customer tracking and authenticated remote Admin/Staff access while the shop laptop is running and connected to the internet. Cloudflare Tunnel remains available as an optional installer alternative.
+
+### Vercel environment variables
+
+For a production Vercel deployment, set `NEXT_DEPLOYMENT_TARGET=vercel` and `UPSTREAM_API_URL` to the reserved **HTTPS** Ngrok shop-host URL. Do not expose this value as a `NEXT_PUBLIC_*` variable.
+
+For preview deployments, set `PREVIEW_UPSTREAM_API_URL` to a separate non-production HTTPS endpoint. A preview build never reads `UPSTREAM_API_URL`; this prevents a preview deployment from reaching the live shop host. Do not configure a preview build until a separate test endpoint exists.
 
 ---
 
@@ -101,7 +109,7 @@ If using Cloudflare, to ensure the remote Admin/Staff app cannot be accessed by 
 ## 5. Security & Maintenance
 
 ### Firewall
-- Windows Firewall requires outbound HTTPS access on Port 443 (used by `cloudflared`).
+- Windows Firewall requires outbound HTTPS access for the selected tunnel provider (`ngrok` is the current provider).
 - **No inbound router ports need to be opened.**
 
 ### Automated Nightly Database Backup

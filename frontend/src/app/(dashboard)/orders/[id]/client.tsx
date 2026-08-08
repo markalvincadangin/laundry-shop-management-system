@@ -36,6 +36,8 @@ import {
 } from "@/lib/api/orders";
 import type { components } from "@/types/api.generated";
 import { StatusBadge, CurrencyDisplay, Button, Input } from "@/components/ui";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { useResolvedId } from "@/lib/utils";
 import { paymentsService } from "@/lib/api/payments";
 import { OrderStatusTimeline } from "@/features/orders/OrderStatusTimeline";
 import { ClaimStub } from "@/features/orders/ClaimStub";
@@ -62,6 +64,7 @@ function OrderEditForm({
   onError: (msg: string) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
   const [extraMinutes, setExtraMinutes] = useState(order.extraMinutes?.toString() ?? "0");
   const [addOns, setAddOns] = useState<AddOnInput[]>(
     (order.addOns ?? []).map((a) => ({
@@ -84,11 +87,16 @@ function OrderEditForm({
         addOns: addOns.length > 0 ? addOns : undefined,
         machineIds: machineIds.length > 0 ? machineIds : undefined,
       };
-      await ordersService.update(order.id!, body);
+      await ordersService.update(order.id!, body, { operationIdentifier: operationId });
       toast.success(UI_LABELS.feedback.success.GENERIC);
+      setOperationId(crypto.randomUUID());
       onSaved();
-    } catch (err) {
-      onError(err instanceof ApiError ? err.message : "Update failed");
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The update may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        onError(err instanceof ApiError ? err.message : "Update failed");
+      }
     } finally {
       setSaving(false);
     }
@@ -188,7 +196,8 @@ function OrderEditForm({
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = String(params.id);
+  const rawId = String(params.id);
+  const orderId = useResolvedId(rawId, "/orders");
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -201,8 +210,16 @@ export default function OrderDetailPage() {
   const [confirmVoidModal, setConfirmVoidModal] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  
+  const [statusOperationId, setStatusOperationId] = useState(() => crypto.randomUUID());
+  const [voidOperationId, setVoidOperationId] = useState(() => crypto.randomUUID());
 
   const fetchOrder = useCallback(() => {
+    if (!orderId || orderId === "fallback" || orderId === "%5Bid%5D" || orderId === "[id]") {
+      return;
+    }
+    setLoading(true);
+    setError(null);
     ordersService
       .getById(orderId)
       .then(setOrder)
@@ -230,7 +247,7 @@ export default function OrderDetailPage() {
       await ordersService.updateStatus(orderId, {
         newStatus: newStatus as OrderResponse["currentStatus"],
         changedByUserId: staffUserId,
-      });
+      }, { operationIdentifier: statusOperationId });
       toast.success(UI_LABELS.feedback.success.GENERIC, {
         action: {
           label: "Undo",
@@ -248,10 +265,15 @@ export default function OrderDetailPage() {
           }
         }
       });
+      setStatusOperationId(crypto.randomUUID());
       setConfirmStatusModal(null);
       fetchOrder();
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The status may have been updated. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setUpdating(false);
     }
@@ -260,19 +282,44 @@ export default function OrderDetailPage() {
   const doVoidPayment = async () => {
     setIsVoiding(true);
     try {
-      await paymentsService.voidPayment(orderId);
+      await paymentsService.voidPayment(orderId, { operationIdentifier: voidOperationId });
       toast.success(UI_LABELS.feedback.success.GENERIC);
+      setVoidOperationId(crypto.randomUUID());
       setConfirmVoidModal(false);
       fetchOrder();
-    } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+    } catch (err: any) {
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The payment may have been voided. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err instanceof ApiError ? err.message : UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setIsVoiding(false);
     }
   };
 
-  if (loading) return <CardSkeleton />;
-  if (error || !order) return <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700">{error ?? UI_LABELS.feedback.error.NOT_FOUND}</div>;
+  const isFallbackId = !orderId || orderId === "fallback" || orderId === "%5Bid%5D" || orderId === "[id]";
+
+  // 1. Loading / Hydration Gate
+  if (loading || isFallbackId) return <CardSkeleton />;
+
+  // 2. Error State
+  if (error) {
+    return (
+      <div className="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-center">
+        {error}
+      </div>
+    );
+  }
+
+  // 3. Not Found State
+  if (!order) {
+    return (
+      <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 font-bold text-center">
+        {UI_LABELS.feedback.error.NOT_FOUND}
+      </div>
+    );
+  }
 
   const transition = STATUS_TRANSITIONS[order.currentStatus as OrderStatus];
   const allowedNextStatuses = [];

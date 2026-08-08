@@ -42,6 +42,7 @@ interface UserModalProps {
  */
 export function UserModal({ isOpen, onClose, user, onSuccess }: UserModalProps) {
   const [loading, setLoading] = useState(false);
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
   const [form, setForm] = useState({
     username: "",
     password: "",
@@ -80,15 +81,20 @@ export function UserModal({ isOpen, onClose, user, onSuccess }: UserModalProps) 
           lastName: form.lastName,
           role: form.role,
           password: form.password || undefined,
-        });
+        }, { operationIdentifier: operationId });
       } else {
-        await usersService.create(form);
+        await usersService.create(form, { operationIdentifier: operationId });
       }
       toast.success(UI_LABELS.feedback.success.SAVED);
+      setOperationId(crypto.randomUUID());
       onSuccess();
       onClose();
     } catch (err: any) {
-      toast.error(err.message || UI_LABELS.feedback.error.GENERIC);
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The user may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err.message || UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setLoading(false);
     }
@@ -161,6 +167,7 @@ export function UserModal({ isOpen, onClose, user, onSuccess }: UserModalProps) 
         <div className="flex flex-col sm:flex-row gap-grid-4 pt-grid-4">
           <Button
             type="submit"
+            requiresOnline
             isLoading={loading}
             className="flex-[2] h-14 bg-brand-blue shadow-lg shadow-brand-blue/25 uppercase font-black text-[11px] tracking-widest active:scale-95 transition-all rounded-xl"
           >

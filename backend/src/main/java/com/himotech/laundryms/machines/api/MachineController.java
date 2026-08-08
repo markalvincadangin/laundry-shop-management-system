@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class MachineController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "CREATE_RESOURCE")
     public ResponseEntity<MachineResponse> create(final @Valid @RequestBody CreateMachineRequest request) {
         Machine machine = machineService.createMachine(request.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(machineMapper.toResponse(machine));
@@ -44,6 +46,7 @@ public class MachineController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<MachineResponse> updateStatus(
             final @PathVariable UUID id,
             final @Valid @RequestBody UpdateMachineStatusRequest request) {
@@ -53,6 +56,7 @@ public class MachineController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "DELETE_RESOURCE")
     public ResponseEntity<Void> delete(final @PathVariable UUID id) {
         machineService.deleteMachine(id);
         return ResponseEntity.noContent().build();

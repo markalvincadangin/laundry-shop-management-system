@@ -48,6 +48,8 @@ import { OrderPreview } from "./OrderPreview";
 import { OrderResponse } from "@/lib/api/orders";
 import { ProcessStepper } from "@/components/features/shared/ProcessStepper";
 import { useMachines } from "@/hooks/useMachines";
+import { useAddOnCatalog } from "@/hooks/useAddOnCatalog";
+import { Tag } from "lucide-react";
 
 type IntakeStep = "CUSTOMER" | "SERVICE" | "ADDONS" | "CONFIRM";
 
@@ -64,6 +66,9 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   const [canSubmit, setCanSubmit] = useState(false);
   const [tempAddOnName, setTempAddOnName] = useState("");
   const [tempAddOnPrice, setTempAddOnPrice] = useState("");
+  const [operationId, setOperationId] = useState(() => crypto.randomUUID());
+  const [paymentOperationId, setPaymentOperationId] = useState(() => crypto.randomUUID());
+  const [unconfirmedError, setUnconfirmedError] = useState(false);
 
   const {
     register,
@@ -94,6 +99,26 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   });
 
   const { machines, loading: machinesLoading } = useMachines();
+  const { data: catalogAddOns = [], isLoading: catalogLoading } = useAddOnCatalog(true);
+
+  const activeCatalogItems = (catalogAddOns || []).filter(
+    (item) => Boolean(item.isActive) === true && item.name.toLowerCase() !== "rush fee" && item.name.toLowerCase() !== "rush order"
+  );
+
+  const handleToggleCatalogAddOn = (item: { name: string; defaultPrice: number }) => {
+    const existingIndex = addOnsFields.findIndex(
+      (field) => field.name.toLowerCase() === item.name.toLowerCase()
+    );
+    if (existingIndex >= 0) {
+      removeAddOnField(existingIndex);
+    } else {
+      appendAddOn({
+        name: item.name,
+        price: item.defaultPrice,
+        quantity: 1,
+      });
+    }
+  };
 
   // Watch values
   const weightKg = watch("weightKg");
@@ -250,8 +275,9 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
     }
 
     setLoading(true);
+    setUnconfirmedError(false);
     try {
-      const order = await ordersService.create(data);
+      const order = await ordersService.create(data, { operationIdentifier: operationId });
 
       if (collectPaymentNow && pricing.preview?.grandTotal) {
         await paymentsService.create({
@@ -260,7 +286,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
           paymentMethod: paymentMethod!,
           paymentReference: paymentRef || undefined,
           receivedByUserId: createdByUserId ?? undefined
-        });
+        }, { operationIdentifier: paymentOperationId });
 
         const updatedOrder = await ordersService.getById(order.id);
         setCreatedOrder(updatedOrder);
@@ -271,10 +297,20 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
       toast.success(UI_LABELS.feedback.success.ORDER_SAVED, {
         description: `${UI_LABELS.shared.common.ORDER_NUMBER} ${order.trackingNumber}`,
       });
+      
+      setOperationId(crypto.randomUUID());
+      setPaymentOperationId(crypto.randomUUID());
 
       setIsClaimStubOpen(true);
     } catch (error: any) {
-      toast.error(error.message || UI_LABELS.feedback.error.GENERIC);
+      if (error.name === "UnconfirmedOperationError") {
+        setUnconfirmedError(true);
+        toast.error("Network timeout. The order may have been saved. Please check or retry.", {
+          duration: 10000,
+        });
+      } else {
+        toast.error(error.message || UI_LABELS.feedback.error.GENERIC);
+      }
     } finally {
       setLoading(false);
     }
@@ -680,7 +716,65 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                   </div>
 
                   <div className="space-y-6">
-                    <div className="flex gap-4">
+                    {/* Catalog Quick Select Section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-brand-blue" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                          Catalog Add-Ons
+                        </span>
+                      </div>
+                      {catalogLoading ? (
+                        <div className="text-xs font-bold text-slate-400 py-3 animate-pulse">Loading catalog add-ons...</div>
+                      ) : activeCatalogItems.length === 0 ? (
+                        <div className="text-xs font-medium text-slate-400 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                          No active catalog items configured. You can enter custom items below.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {activeCatalogItems.map((item) => {
+                            const isSelected = addOnsFields.some(
+                              (field) => field.name.toLowerCase() === item.name.toLowerCase()
+                            );
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => handleToggleCatalogAddOn(item)}
+                                className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 text-left group ${
+                                  isSelected
+                                    ? "border-brand-blue bg-brand-blue/5 text-brand-blue shadow-sm"
+                                    : "border-slate-100 bg-white hover:border-slate-200 text-slate-700 hover:bg-slate-50/80"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`h-8 w-8 rounded-xl flex items-center justify-center transition-colors ${
+                                    isSelected ? "bg-brand-blue text-white" : "bg-slate-100 text-slate-500 group-hover:bg-brand-blue/10 group-hover:text-brand-blue"
+                                  }`}>
+                                    {isSelected ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                                  </div>
+                                  <div>
+                                    <span className="block text-sm font-black uppercase tracking-tight">{item.name}</span>
+                                    <CurrencyDisplay amount={item.defaultPrice} size="sm" className={isSelected ? "text-brand-blue font-bold" : "text-slate-500 font-bold"} />
+                                  </div>
+                                </div>
+                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full transition-colors ${
+                                  isSelected ? "bg-brand-blue text-white" : "bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600"
+                                }`}>
+                                  {isSelected ? "ADDED" : "SELECT"}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-4">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-3">
+                        Or Add Custom Item
+                      </span>
+                      <div className="flex gap-4">
                       <Input
                         id="addon-name"
                         value={tempAddOnName}
@@ -713,6 +807,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                         <span>{UI_LABELS.dynamic.ADD}</span>
                       </Button>
                     </div>
+                  </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <AnimatePresence mode="popLayout">

@@ -6,11 +6,12 @@ import com.himotech.laundryms.auth.dto.LoginResponse;
 import com.himotech.laundryms.auth.AuthService;
 import com.himotech.laundryms.auth.JwtPrincipal;
 import com.himotech.laundryms.config.SecurityProperties;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,23 +40,13 @@ public class AuthController {
                 ? securityProperties.getCookieName()
                 : "refresh_token";
 
-        Cookie cookie = new Cookie(cookieName, result.refreshToken());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(securityProperties.isCookieSecure());
-        cookie.setPath("/api/v1/auth"); // Restrict path to auth endpoints
-        cookie.setMaxAge(cookieMaxAge(result.refreshTokenExpiresAt()));
-        cookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
-        response.addCookie(cookie);
+        addCookie(response, cookieName, result.refreshToken(), true, "/api/v1/auth",
+                cookieMaxAge(result.refreshTokenExpiresAt()));
 
         // Generate CSRF token for the session
         String csrfTokenValue = java.util.UUID.randomUUID().toString();
-        Cookie csrfCookie = new Cookie("csrf_token", csrfTokenValue);
-        csrfCookie.setHttpOnly(false); // Must be readable by frontend JavaScript
-        csrfCookie.setSecure(securityProperties.isCookieSecure());
-        csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(cookieMaxAge(result.refreshTokenExpiresAt()));
-        csrfCookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
-        response.addCookie(csrfCookie);
+        addCookie(response, "csrf_token", csrfTokenValue, false, "/",
+                cookieMaxAge(result.refreshTokenExpiresAt()));
 
         return ResponseEntity.ok()
                 .header("X-CSRF-Token", csrfTokenValue)
@@ -82,22 +73,12 @@ public class AuthController {
                     ? securityProperties.getCookieName()
                     : "refresh_token";
 
-            Cookie cookie = new Cookie(cookieName, result.refreshToken());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(securityProperties.isCookieSecure());
-            cookie.setPath("/api/v1/auth");
-            cookie.setMaxAge(cookieMaxAge(result.refreshTokenExpiresAt()));
-            cookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
-            response.addCookie(cookie);
+            addCookie(response, cookieName, result.refreshToken(), true, "/api/v1/auth",
+                    cookieMaxAge(result.refreshTokenExpiresAt()));
 
             String csrfTokenValue = java.util.UUID.randomUUID().toString();
-            Cookie csrfCookie = new Cookie("csrf_token", csrfTokenValue);
-            csrfCookie.setHttpOnly(false);
-            csrfCookie.setSecure(securityProperties.isCookieSecure());
-            csrfCookie.setPath("/");
-            csrfCookie.setMaxAge(cookieMaxAge(result.refreshTokenExpiresAt()));
-            csrfCookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
-            response.addCookie(csrfCookie);
+            addCookie(response, "csrf_token", csrfTokenValue, false, "/",
+                    cookieMaxAge(result.refreshTokenExpiresAt()));
 
             return ResponseEntity.ok()
                     .header("X-CSRF-Token", csrfTokenValue)
@@ -124,17 +105,8 @@ public class AuthController {
                 ? securityProperties.getCookieName()
                 : "refresh_token";
 
-        Cookie cookie = new Cookie(cookieName, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/api/v1/auth");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
-        
-        Cookie csrfCookie = new Cookie("csrf_token", "");
-        csrfCookie.setHttpOnly(false);
-        csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(0);
-        response.addCookie(csrfCookie);
+        addCookie(response, cookieName, "", true, "/api/v1/auth", 0);
+        addCookie(response, "csrf_token", "", false, "/", 0);
 
         return ResponseEntity.ok().build();
     }
@@ -142,13 +114,7 @@ public class AuthController {
     @GetMapping("/csrf")
     public ResponseEntity<Void> csrf(HttpServletResponse response) {
         String csrfTokenValue = java.util.UUID.randomUUID().toString();
-        Cookie csrfCookie = new Cookie("csrf_token", csrfTokenValue);
-        csrfCookie.setHttpOnly(false);
-        csrfCookie.setSecure(securityProperties.isCookieSecure());
-        csrfCookie.setPath("/");
-        csrfCookie.setMaxAge(7 * 24 * 60 * 60);
-        csrfCookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
-        response.addCookie(csrfCookie);
+        addCookie(response, "csrf_token", csrfTokenValue, false, "/", 7 * 24 * 60 * 60);
         return ResponseEntity.ok().header("X-CSRF-Token", csrfTokenValue).build();
     }
 
@@ -169,5 +135,17 @@ public class AuthController {
             return 7 * 24 * 60 * 60;
         }
         return (int) Math.max(0, Duration.between(Instant.now(), expiresAt).getSeconds());
+    }
+
+    private void addCookie(HttpServletResponse response, String name, String value, boolean httpOnly,
+            String path, int maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .secure(securityProperties.isCookieSecure())
+                .sameSite(securityProperties.getCookieSameSite())
+                .path(path)
+                .maxAge(maxAge)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

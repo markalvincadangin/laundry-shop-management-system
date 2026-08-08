@@ -12,6 +12,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
@@ -53,6 +54,7 @@ function isAdminOnlyPath(pathname: string) {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const requestIdRef = useRef(0);
   const [state, setState] = useState<AuthState>({
     user: null,
     accessToken: null,
@@ -61,12 +63,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const refresh = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setState((s) => ({ ...s, loading: true, error: null }));
     try {
       // The apiClient will automatically intercept a 401 response and attempt a 
       // silent refresh via POST /api/v1/auth/refresh.
       // If successful, it retries the me() request with the new access token.
       const user = await authService.me();
+      if (requestId !== requestIdRef.current) return;
       setState((s) => ({
         ...s,
         user,
@@ -74,7 +78,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading: false,
         error: null,
       }));
-    } catch {
+    } catch (err: any) {
+      if (requestId !== requestIdRef.current) return;
+      if (!(err instanceof ApiError && err.status === 401)) {
+        console.error("Auth check failed", err);
+      }
       setState((s) => ({ ...s, user: null, loading: false, error: null }));
     }
   }, []);
