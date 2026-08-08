@@ -16,3 +16,7 @@ logging:
         SQL: debug
     com.himotech.laundryms.config.RequestResponseLoggingFilter: debug
     com.himotech: debug
+
+app:
+  security:
+    jwt-secret: ${JWT_SECRET:dev-secret-change-in-production-minimum-32-characters-required}

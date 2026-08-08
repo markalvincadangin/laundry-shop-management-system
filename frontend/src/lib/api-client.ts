@@ -261,7 +261,7 @@ export const apiClient = {
   },
 
   async post<T>(path: string, body?: unknown, options?: { operationIdentifier?: string }): Promise<T> {
-    if (!path.startsWith("/v1/auth/")) {
+    if (!path.startsWith("/v1/auth/") && !path.startsWith("/v1/orders/preview")) {
       requireRemoteWritesEnabled();
     }
     if (path === "/v1/auth/logout") {
