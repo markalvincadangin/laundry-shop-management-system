@@ -29,6 +29,15 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: UI_LABELS.meta.TITLE,
   description: UI_LABELS.meta.DESC,
+  icons: {
+    icon: [
+      { url: "/assets/app-icon/app-icon.svg", type: "image/svg+xml" },
+      { url: "/assets/app-icon/app-icon-32x32.ico", sizes: "32x32" },
+      { url: "/assets/app-icon/app-icon-16x16.ico", sizes: "16x16" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/assets/app-icon/app-icon-512.png",
+  },
 };
 
 /**

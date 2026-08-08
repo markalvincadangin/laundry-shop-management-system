@@ -13,7 +13,6 @@ public class SecurityProperties {
     private String jwtSecret;
     private String cookieName;
     private String allowedOrigin;
-    private String[] allowedOriginPatterns;
     private boolean cookieSecure = false;
     private String cookieSameSite = "Lax";
     private int bcryptStrength = 10;

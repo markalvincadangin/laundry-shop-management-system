@@ -1,13 +1,13 @@
 # Business Rules Catalog
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client / Case Study:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** BR-CATALOG (BR-PR-*, BR-OL-*, BR-PAY-*, BR-REC-*, BR-NOTIF-*)  
-> **Version:** 1.2  
-> **Date:** 2026-07-24  
-> **Source:** Client Interview & Case Study  
-> **Purpose:** Define enforceable rules that drive backend logic, validation, and computations  
+> **Version:** 1.3  
+> **Date:** 2026-07-25  
+> **Source:** Client Interview & Case Study Baseline  
+> **Purpose:** Define enforceable rules that drive backend logic, validation, and computations dynamically  
 > **Status:** Baseline (MVP)
 
 ---
@@ -20,9 +20,10 @@
 ### Revision History
 | Version | Date       | Author   | Changes |
 |---------|------------|----------|---------|
-| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
-| 1.1     | 2026-02-20 | HIMÓTECH  | Baseline MVP release |
-| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and UUID data model |
+| 1.0     | 2026-02-13 | Mark Alvin Cadangin | Initial baseline |
+| 1.1     | 2026-02-20 | Mark Alvin Cadangin | Baseline MVP release |
+| 1.2     | 2026-07-24 | Mark Alvin Cadangin | Standardized `tracking_number` terminology and UUID data model |
+| 1.3     | 2026-07-25 | Mark Alvin Cadangin | Parameterized pricing rules to dynamic service rates and generalized application scope |
 
 ---
 
@@ -30,10 +31,11 @@
 
 ### BR-PR-01 – Base Load Pricing
 
-**Rule:** One (1) load costs **₱140** and covers up to **8 kg**.  
+**Rule:** One (1) load is charged at `base_price_per_load` and covers up to `kg_limit_per_load` as defined by the active service rate.  
 **Condition:** Order creation or price computation.  
-**System Behavior:** Apply base price per load.  
-**Constraint:** Reject order if weight is missing or invalid.  
+**System Behavior:** Apply configured `base_price_per_load` per computed load (`base_amount = total_loads × base_price_per_load`).  
+**Default/Baseline Example:** ₱140.00 base price covering up to 8.00 kg.  
+**Constraint:** Reject order if weight is missing, zero, or invalid.  
 **Applies To:** Order creation / price computation  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-01](user-stories.md#us-01--record-laundry-order), [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
@@ -42,10 +44,11 @@
 
 ### BR-PR-02 – Additional Load for Excess Weight
 
-**Rule:** If laundry weight exceeds **8 kg**, the excess MUST be charged as an additional load.  
-**Condition:** Weight exceeds 8 kg per load.  
-**System Behavior:** Compute total loads as `ceil(weight_kg / kg_limit_per_load)`.  
-**Constraint:** Each load covers at most 8 kg.  
+**Rule:** If laundry weight exceeds `kg_limit_per_load`, the total required loads MUST be calculated dynamically based on capacity.  
+**Condition:** Weight input provided.  
+**System Behavior:** Compute total loads using the dynamic formula `total_loads = ceil(weight_kg / kg_limit_per_load)`.  
+**Default/Baseline Example:** For an 8 kg limit per load, 8.00 kg = 1 load; 8.01 kg = 2 loads.  
+**Constraint:** Each load covers up to `kg_limit_per_load` (configurable per active service rate).  
 **Applies To:** Order creation / price computation  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-02](user-stories.md#us-02-automatically-compute-laundry-price)
@@ -54,10 +57,11 @@
 
 ### BR-PR-03 – Extra Washing Time Charge
 
-**Rule:** Washing time beyond the **included 45 minutes per load** is charged at **₱1 per extra minute**.  
-**Condition:** Extra minutes are recorded.  
-**System Behavior:** Apply `extra_minutes × price_per_extra_minute`.  
-**Constraint:** Base price includes up to 45 minutes per load; if extra minutes are not provided, the charge is 0.  
+**Rule:** Washing time beyond the included base duration per load is charged at `price_per_extra_minute` per minute.  
+**Condition:** Extra minutes recorded.  
+**System Behavior:** Apply `extra_minutes_amount = extra_minutes × price_per_extra_minute`.  
+**Default/Baseline Example:** Includes up to 45 minutes per load; extra minutes charged at ₱1.00/min.  
+**Constraint:** Base price includes standard duration per load; if no extra minutes are recorded, `extra_minutes_amount = 0`.  
 **Applies To:** Order creation / price computation  
 **Enforcement:** Backend service  
 **Supports User Stories:** [US-02](user-stories.md#us-02-automatically-compute-laundry-price)

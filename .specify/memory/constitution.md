@@ -12,7 +12,7 @@ Sync Impact Report:
 - Follow-up TODOs: None
 -->
 
-# Faith Laundry Shop Management System Constitution
+# Laundry Shop Management System Constitution
 
 ## Core Principles
 
@@ -106,7 +106,7 @@ This project maintains a graphify knowledge graph at `graphify-out/`.
 All React/Next.js code MUST follow the Vercel React Best Practices rules (including App Router conventions, waterfall elimination, Suspense, and memoization discipline) as detailed in the Coding Standards section.
 
 ### IX. Offline-First & Tunnel Deployment Architecture
-The system MUST operate on a zero-cost, offline-first deployment topology. The Spring Boot backend and PostgreSQL database MUST run locally on the shop's Windows machine. Customer online tracking MUST be facilitated via a secure reverse tunnel (e.g., Cloudflare Tunnels) connecting the public internet (Vercel Frontend) directly to the local machine. Background cloud database synchronization (e.g., Transactional Outbox Pattern) is strictly prohibited to avoid cloud hosting costs.
+The system MUST operate on a zero-cost, offline-first deployment topology. The Spring Boot backend and PostgreSQL database MUST run locally on the shop's Windows machine. Customer online tracking and authenticated remote Admin/Staff access MUST be facilitated via a secure reverse tunnel (currently Ngrok; Cloudflare remains an optional installer alternative) connecting the Vercel frontend directly to the local machine. Background cloud database synchronization (e.g., Transactional Outbox Pattern) is strictly prohibited to avoid cloud hosting costs.
 
 ## Coding Standards & Code Quality
 

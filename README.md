@@ -34,7 +34,7 @@ Built with **Next.js** · **Spring Boot 3.5** · **PostgreSQL** · **Docker**
 
 This system digitizes the entire workflow: from order intake with automatic pricing computation, through a 6-stage status pipeline, to payment collection and automated sales reports.
 
-> **Academic Context:** Developed by **HIMÓTECH** as a Systems Analysis and Design course deliverable at West Visayas State University.
+> **Author & Developer:** **Mark Alvin Cadangin**
 
 ## Screenshots
 
@@ -384,6 +384,6 @@ This project is developed for academic purposes as part of the Systems Analysis 
 
 <div align="center">
 
-**Faith Laundry Shop Management System** · Built with ❤️ by HIMÓTECH · May 2026
+**Laundry Shop Management System** · Built with ❤️ by Mark Alvin Cadangin · 2026
 
 </div>

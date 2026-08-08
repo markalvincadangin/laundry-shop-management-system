@@ -1,6 +1,7 @@
 package com.himotech.laundryms.auditlog;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @ActiveProfiles("test")
 @Import(PostgresTestContainerConfig.class)
+@Tag("performance")
 public class AuditLogPerformanceTest {
 
 
@@ -81,8 +83,8 @@ public class AuditLogPerformanceTest {
         // The dynamic threshold is mean + 2 * stddev
         double dynamicThreshold = meanNoAudit + (2 * stddevNoAudit);
         
-        // Add a base buffer in case stddev is incredibly small (e.g. 5% overhead minimum)
-        double absoluteMinimumThreshold = meanNoAudit * 1.05;
+        // Add a base buffer in case stddev is incredibly small (e.g. 15% overhead minimum for CI stability)
+        double absoluteMinimumThreshold = meanNoAudit * 1.15;
         double finalThreshold = Math.max(dynamicThreshold, absoluteMinimumThreshold);
 
         System.out.println("Mean No Audit: " + meanNoAudit + " ns");

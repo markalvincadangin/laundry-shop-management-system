@@ -2,7 +2,7 @@
 ## Faith Laundry Shop Management System
 
 > **Client:** Faith Laundry Shop
-> **Prepared By:** HIMÓTECH
+> **Prepared By:** Mark Alvin Cadangin
 > **Document ID:** FRONT-001
 > **Version:** 3.4.0
 > **Date:** 2026-07-22
@@ -522,7 +522,8 @@ The Order Intake process is the most critical staff workflow. To ensure high adm
 ### 3.4 Public Tracking Portal *(US-04)*
 
 - **Zero-Login Access:** Accessible at `(public)/track` — no authentication required. The tracking number is entered as a search input on the page itself (not a URL dynamic segment). Directly addresses the client's stated priority: "Customers should receive updates and track laundry status" (INT-001 Q25).
-- **Offline-First Tunnel Topology:** Requests to `(public)/track` route down a secure Cloudflare Reverse Tunnel directly to the shop's local standalone PostgreSQL instance. This provides zero cloud database costs while guaranteeing instant local shop autonomy and public tracking accessibility when connected.
+- **Offline-First Tunnel Topology:** Requests to `(public)/track` route through the configured Ngrok reverse tunnel to the shop's local standalone server and PostgreSQL instance. This provides zero cloud database costs while guaranteeing instant local shop autonomy and public tracking accessibility when connected.
+- **Authenticated Remote Access:** The same tunnel also supports remote Admin and Staff use of the authenticated application. Those routes require the normal JWT session and role authorization; only `(public)/track` is unauthenticated.
 - **Anonymized Data:** Renders Process Stage and order summary only. Hides internal notes, staff names, and financial amounts.
 
 ---

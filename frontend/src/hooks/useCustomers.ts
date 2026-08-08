@@ -47,7 +47,7 @@ export function useCustomer(customerId?: string) {
   } = useQuery({
     queryKey: ["customer", customerId],
     queryFn: () => customerId ? customersService.getById(customerId) : Promise.reject("No customer ID provided"),
-    enabled: !!customerId,
+    enabled: !!customerId && customerId !== "fallback" && customerId !== "%5Bid%5D" && customerId !== "[id]",
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

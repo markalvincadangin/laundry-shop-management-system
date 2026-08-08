@@ -1,7 +1,8 @@
 -- ==========================================================
--- FAITH LAUNDRY SHOP MANAGEMENT SYSTEM: MASTER SCHEMA
+-- LAUNDRY SHOP MANAGEMENT SYSTEM: MASTER SCHEMA
 -- Consolidated Blueprint (Standardized for JPA Compatibility)
--- Synced with Flyway V1__init.sql
+-- Synced with Flyway V1__init.sql, V2__add_refresh_tokens_table.sql,
+--             V3__create_operation_recovery.sql
 -- ==========================================================
 
 -- Enable UUID generation
@@ -317,3 +318,62 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Initialize the single SystemSettings row
 INSERT INTO system_settings (id, is_system_paused, updated_at) VALUES (1, FALSE, CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING;
+
+-- Seed Initial Admin Account (Single initial admin account; Admin creates staff accounts)
+-- Default Credentials: username = admin, password = admin123
+INSERT INTO users (id, username, password_hash, role, first_name, last_name, is_active)
+VALUES (
+    gen_random_uuid(),
+    'admin',
+    '$2a$12$9MJM2hnl7ni3hwOSu.mNq.Kd.t4qrf3Q1QBFpTmF3OuERm2mxSAxW',
+    'ADMIN',
+    'System',
+    'Administrator',
+    TRUE
+)
+ON CONFLICT (username) DO NOTHING;
+
+-- ==========================================
+-- V2: AUTH HARDENING — REFRESH TOKEN ROTATION
+-- ==========================================
+-- Migrated from: V2__add_refresh_tokens_table.sql
+-- Purpose: Persistent refresh token store enabling token-family rotation
+--          and revocation to prevent replay attacks.
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash     VARCHAR(64) NOT NULL UNIQUE,   -- SHA-256 of raw token
+    family_id      UUID NOT NULL,                  -- Detects token reuse across a rotation chain
+    issued_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at     TIMESTAMPTZ NOT NULL,
+    last_used_at   TIMESTAMPTZ,
+    revoked        BOOLEAN NOT NULL DEFAULT FALSE,
+    replaced_by    UUID REFERENCES refresh_tokens(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_refresh_tokens_family ON refresh_tokens(family_id);
+CREATE INDEX idx_refresh_tokens_user   ON refresh_tokens(user_id);
+
+-- ==========================================
+-- V3: REMOTE RESILIENCE — IDEMPOTENCY STORE
+-- ==========================================
+-- Migrated from: V3__create_operation_recovery.sql
+-- Purpose: Stores completed mutation outcomes keyed by client-supplied
+--          X-Operation-Identifier so retries after an interrupted remote
+--          request replay the original result rather than creating a duplicate.
+
+CREATE TABLE IF NOT EXISTS operation_recovery (
+    operation_identifier VARCHAR(255) NOT NULL,        -- Client UUID from X-Operation-Identifier header
+    actor_id             UUID NOT NULL,                 -- Authenticated user who initiated the operation
+    action_type          VARCHAR(50) NOT NULL,          -- e.g. CREATE_ORDER, RECORD_PAYMENT, UPDATE_STATUS
+    status               VARCHAR(20) NOT NULL,          -- IN_PROGRESS | COMPLETED | FAILED
+    response_body        TEXT,                          -- Serialized JSON of the original response
+    response_status      INTEGER,                       -- HTTP status code of the original response
+    created_at           TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at           TIMESTAMP WITH TIME ZONE NOT NULL,  -- TTL for cleanup job
+    PRIMARY KEY (operation_identifier)
+);
+
+CREATE INDEX idx_operation_recovery_actor_action ON operation_recovery(actor_id, action_type);
+CREATE INDEX idx_operation_recovery_expires      ON operation_recovery(expires_at);

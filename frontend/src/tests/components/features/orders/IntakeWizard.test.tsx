@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useCustomerLookup } from "@/hooks/useCustomerLookup";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useMachines } from "@/hooks/useMachines";
+import { useAddOnCatalog } from "@/hooks/useAddOnCatalog";
 import { UI_LABELS } from "@/constants/ui";
 
 vi.mock("@/lib/api/orders", () => ({
@@ -32,6 +33,10 @@ vi.mock("@/hooks/usePriceCalculation", () => ({
 
 vi.mock("@/hooks/useMachines", () => ({
   useMachines: vi.fn(),
+}));
+
+vi.mock("@/hooks/useAddOnCatalog", () => ({
+  useAddOnCatalog: vi.fn(),
 }));
 
 vi.mock("@/components/features/orders/OrderPreview", () => ({
@@ -69,6 +74,13 @@ describe("IntakeWizard Submission", () => {
     });
     (useMachines as any).mockReturnValue({
       machines: [],
+      isLoading: false,
+    });
+    (useAddOnCatalog as any).mockReturnValue({
+      data: [
+        { id: "1", name: "Fabric Conditioner", defaultPrice: 15, isActive: true },
+        { id: "2", name: "Rush Fee", defaultPrice: 50, isActive: true },
+      ],
       isLoading: false,
     });
   });

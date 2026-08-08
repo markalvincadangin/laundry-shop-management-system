@@ -3,6 +3,7 @@
 import * as React from "react";
 import { ButtonProps } from "@/types/components";
 import { Spinner } from "./Spinner";
+import { useAvailability } from "@/components/system/AvailabilityProvider";
 
 /**
  * Standardized Button Atom — v5.0 Premium
@@ -12,9 +13,10 @@ import { Spinner } from "./Spinner";
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className = "", variant = "primary", size = "md", isLoading, children, disabled, leftIcon, rightIcon, ...props },
+    { className = "", variant = "primary", size = "md", isLoading, children, disabled, leftIcon, rightIcon, requiresOnline, ...props },
     ref
   ) => {
+    const { isWriteEnabled } = useAvailability();
     const baseStyles =
       "inline-flex items-center justify-center font-black uppercase tracking-[0.2em] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-offset-0 touch-manipulation rounded-2xl gap-grid-2";
 
@@ -38,7 +40,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
-        disabled={disabled || isLoading}
+        disabled={disabled || isLoading || (requiresOnline && !isWriteEnabled)}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
         {...props}
       >

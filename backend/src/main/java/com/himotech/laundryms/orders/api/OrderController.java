@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 /**
  * Controller for managing laundry orders.
@@ -71,6 +72,7 @@ public class OrderController {
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @Idempotent(actionType = "CREATE_ORDER")
     public ResponseEntity<OrderResponse> create(
             @Valid @RequestBody final CreateOrderRequest request,
             @AuthenticationPrincipal final JwtPrincipal principal) {
@@ -195,6 +197,7 @@ public class OrderController {
      */
     @PatchMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @Idempotent(actionType = "UPDATE_ORDER")
     public ResponseEntity<OrderResponse> update(
             @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderRequest request) {
@@ -212,6 +215,7 @@ public class OrderController {
      */
     @PatchMapping("/{orderId}/status")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @Idempotent(actionType = "UPDATE_ORDER_STATUS")
     public ResponseEntity<OrderResponse> updateStatus(
             @PathVariable final UUID orderId,
             @Valid @RequestBody final UpdateOrderStatusRequest request,
@@ -243,6 +247,7 @@ public class OrderController {
      */
     @DeleteMapping("/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "DELETE_ORDER")
     public ResponseEntity<Void> delete(@PathVariable final UUID orderId) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.noContent().build();

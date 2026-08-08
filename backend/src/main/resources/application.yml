@@ -22,9 +22,9 @@ spring:
     # WARNING: DB_PASSWORD default is for development only - MUST be set via environment variable in production
     # CRITICAL: ?stringtype=unspecified enables PostgreSQL enum compatibility (order_status, payment_status, etc.)
     # DB_PORT defaults: 5433 for local dev (host-mapped), overridden to 5432 in application-prod.yml
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5433}/${DB_NAME}?stringtype=unspecified
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:laundry_db}?stringtype=unspecified
+    username: ${DB_USER:laundry_user}
+    password: ${DB_PASSWORD:laundry_password}
     driver-class-name: org.postgresql.Driver
 
   flyway:
@@ -59,15 +59,13 @@ app:
     cloud-api-url: ${CLOUD_API_URL:https://api.faithlaundry.com/sync}
     sync-secret: ${SYNC_SECRET:default-secret-change-in-prod}
   security:
-    cookie-name: access_token
+    cookie-name: refresh_token
     cookie-secure: false          # Overridden to true in application-prod.yml
     cookie-same-site: Lax
     allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
-    allowed-origin-patterns: ${ALLOWED_ORIGIN_PATTERNS:}
     jwt-secret: ${JWT_SECRET}
   sms:
     semaphore:
       api-key: ${SEMAPHORE_API_KEY:}
       sender-name: ${SEMAPHORE_SENDER_NAME:FaithLaundry}
     template: "Hi %s, your order #%s from Faith Laundry is ready for pickup! Total: P%s. See you soon!"
-

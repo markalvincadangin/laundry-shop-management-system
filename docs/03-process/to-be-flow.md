@@ -2,7 +2,7 @@
 ## Faith Laundry Shop Management System
 
 > **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** PROC-001  
 > **Version:** 1.1  
 > **Date:** 2026-07-24  
@@ -19,8 +19,8 @@
 ### Revision History
 | Version | Date       | Author   | Changes |
 |---------|------------|----------|---------|
-| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
-| 1.1     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and Standalone Cloudflare Tunnel flow |
+| 1.0     | 2026-02-13 | Mark Alvin Cadangin | Initial baseline |
+| 1.1     | 2026-07-24 | Mark Alvin Cadangin | Standardized `tracking_number` terminology and Standalone Cloudflare Tunnel flow |
 
 ---
 

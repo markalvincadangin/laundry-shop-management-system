@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 import java.util.List;
 
@@ -30,6 +31,7 @@ public class AddOnCatalogController {
     }
 
     @PostMapping
+    @Idempotent(actionType = "CREATE_RESOURCE")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     public AddOnCatalogResponse create(@Valid @RequestBody CreateAddOnCatalogRequest request) {
@@ -38,6 +40,7 @@ public class AddOnCatalogController {
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public AddOnCatalogResponse update(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateAddOnCatalogRequest request) {

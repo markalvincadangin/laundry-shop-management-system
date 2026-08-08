@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.himotech.laundryms.idempotency.aspect.Idempotent;
 
 @RestController
 @RequestMapping("/api/v1/settings")
@@ -23,6 +24,7 @@ public class SystemSettingsController {
 
     @PatchMapping("/pause")
     @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
     public ResponseEntity<SystemSettingsResponse> updateSettings(
             final @Valid @RequestBody UpdateSystemSettingsRequest request) {
         return ResponseEntity.ok(systemSettingsService.updateSettings(request));

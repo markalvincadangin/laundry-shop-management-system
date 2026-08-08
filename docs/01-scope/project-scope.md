@@ -1,12 +1,12 @@
 # Project Scope
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client / Case Study:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** SCOPE-001  
-> **Version:** 1.2  
-> **Date:** 2026-07-24  
-> **Purpose:** Define MVP boundaries, deliverables, and constraints  
+> **Version:** 1.3  
+> **Date:** 2026-07-25  
+> **Purpose:** Define MVP boundaries, deliverables, and constraints for system deployment  
 > **Status:** Baseline (MVP Reference)
 
 ---
@@ -19,20 +19,21 @@
 ### Revision History
 | Version | Date       | Author   | Changes |
 |---------|------------|----------|---------|
-| 1.0     | 2026-02-13 | HIMÓTECH  | Initial baseline |
-| 1.1     | 2026-02-20 | HIMÓTECH  | Release precondition (Ready + Paid); payment method recording in scope; NFR reference; glossary; operational readiness |
-| 1.2     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology, UUID data model, and aligned with Standalone Cloudflare Tunnel Architecture |
+| 1.0     | 2026-02-13 | Mark Alvin Cadangin | Initial baseline |
+| 1.1     | 2026-02-20 | Mark Alvin Cadangin | Release precondition (Ready + Paid); payment method recording in scope; NFR reference; glossary; operational readiness |
+| 1.2     | 2026-07-24 | Mark Alvin Cadangin | Standardized `tracking_number` terminology, UUID data model, and aligned with Standalone Cloudflare Tunnel Architecture |
+| 1.3     | 2026-07-25 | Mark Alvin Cadangin | Generalized project scope to customizable laundry management platform with configurable business rules |
 
 ---
 
 ## 1. Introduction
 
-This document defines the boundaries, deliverables, and constraints of the Faith Laundry Shop Management System.
+This document defines the boundaries, deliverables, and constraints of the Laundry Shop Management System.
 
 **Purpose:**
-- Establish clear system boundaries
+- Establish clear system boundaries and multi-shop configurability
 - Prevent scope creep
-- Align development with stakeholder needs
+- Align development with general laundry shop business processes (using Faith Laundry Shop as baseline case study)
 - Serve as the reference for implementation and validation
 
 Scope is derived from the approved Case Study and Client Interview and aligns with academic baseline documents (PC-001, SSR-001, CS-001, SA-001, RRM-001).
@@ -164,7 +165,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 2. Admin and staff possess basic computer literacy.
 3. Payment is typically collected upon pickup.
 4. The system is deployed on a physical Windows device kept powered on at the counter.
-5. Internet connectivity is required *only* for customer online tracking (via Cloudflare Tunnel). Local operations continue seamlessly without internet.
+5. Internet connectivity is required for remote customer tracking and remote authenticated staff/admin access via the Ngrok reverse tunnel. Local operations continue seamlessly without internet.
 
 ---
 
@@ -176,7 +177,7 @@ Non-functional requirements are detailed in **[docs/02-requirements/non-function
 - Database: PostgreSQL 16 (Local Windows Service)
 - Migration Tool: Flyway
 - Frontend: Next.js 15+, TypeScript
-- Infrastructure: Standalone Windows Native Application (`.exe` wizard) + Cloudflare Tunnel
+- Infrastructure: Standalone Windows Native Application (`.exe` wizard) + Ngrok reverse tunnel
 - Testing: Testcontainers
 - CI/CD: GitHub Actions
 
@@ -206,7 +207,7 @@ The project shall be considered successful if:
 For the system to be considered **complete and production-ready**, the following must be in place (see [Deployment Guide](../06-implementation/deployment-guide.md) and [Handover Checklist](../06-implementation/handover-checklist.md)):
 
 - **Deployment:** Production stack deployable natively on Windows via the provided `.exe` installer wizard.
-- **Tunnel:** Cloudflare Tunnel (`cloudflared`) configured to securely expose the local backend to the public tracking frontend.
+- **Tunnel:** Ngrok (`ngrok`) configured to securely expose the local backend to public tracking and authenticated remote staff/admin access; Cloudflare remains an optional installer alternative.
 - **Backup:** Database backup script available and scheduled (e.g., nightly) using the provided `backup-database.sh`/`.ps1`.
 - **Security:** Strong JWT secret and DB password in production generated securely during Windows setup.
 - **Handover:** User manual and handover checklist completed; Admin and Staff trained; sign-off obtained.

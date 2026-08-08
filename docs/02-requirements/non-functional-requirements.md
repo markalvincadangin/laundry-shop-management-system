@@ -1,11 +1,11 @@
 # Non-Functional Requirements
-## Faith Laundry Shop Management System
+## Laundry Shop Management System
 
-> **Client:** Faith Laundry Shop  
-> **Prepared By:** HIMÓTECH  
+> **Client / Case Study:** Faith Laundry Shop (Baseline Reference)  
+> **Prepared By:** Mark Alvin Cadangin  
 > **Document ID:** NFR-001  
-> **Version:** 1.1  
-> **Date:** 2026-07-24  
+> **Version:** 1.2  
+> **Date:** 2026-07-25  
 > **Purpose:** Define non-functional requirements for security, performance, availability, and maintainability  
 > **Status:** Baseline (MVP)
 
@@ -19,8 +19,9 @@
 ### Revision History
 | Version | Date       | Author   | Changes |
 |---------|------------|----------|---------|
-| 1.0     | 2026-02-20 | HIMÓTECH  | Initial baseline |
-| 1.1     | 2026-07-24 | HIMÓTECH  | Standardized `tracking_number` terminology and Standalone Cloudflare Tunnel NFRs |
+| 1.0     | 2026-02-20 | Mark Alvin Cadangin | Initial baseline |
+| 1.1     | 2026-07-24 | Mark Alvin Cadangin | Standardized `tracking_number` terminology and Standalone Cloudflare Tunnel NFRs |
+| 1.2     | 2026-07-25 | Mark Alvin Cadangin | Generalized project title and system scope |
 
 ---
 
@@ -54,7 +55,7 @@
 | NFR-A1 | The system SHALL be deployed natively on a local Windows machine located at the shop counter, acting as the offline-first server. | Must |
 | NFR-A2 | Database backup SHALL be supported via documented script (e.g., `scripts/backup-database.ps1`); backup format SHALL allow restore to PostgreSQL. | Must |
 | NFR-A3 | Deployment and restore procedures SHALL be documented in [Deployment Guide](../06-implementation/deployment-guide.md). | Must |
-| NFR-A4 | The public order tracking endpoint relies on a Cloudflare Tunnel; tracking SHALL only be available while the local Windows machine is powered on and connected to the internet. | Must |
+| NFR-A4 | Remote customer tracking and authenticated Admin/Staff access rely on the configured Ngrok reverse tunnel; remote access SHALL only be available while the local Windows machine is powered on and connected to the internet. Local shop operations SHALL continue without internet. | Must |
 
 ---
 

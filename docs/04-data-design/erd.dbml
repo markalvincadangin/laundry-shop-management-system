@@ -1,6 +1,6 @@
-Project Faith_Laundry_Shop_System {
+Project Laundry_Shop_Management_System {
   database_type: 'PostgreSQL'
-  Note: 'ERD for Faith Laundry Shop. Supports dynamic pricing, order lifecycle, payment recording, and reporting. Standardized on varchar for enums to ensure JPA/PostgreSQL casting stability. Forensic audit trail via database-level triggers writing to activity_logs.'
+  Note: 'ERD for Laundry Shop Management System (Faith Laundry Shop as baseline case study). Supports dynamic configurable pricing, order lifecycle, payment recording, and reporting. Standardized on varchar for enums to ensure JPA/PostgreSQL casting stability. Forensic audit trail via database-level triggers writing to activity_logs.'
 }
 
 // --- ENUMS (Documented for Reference; Implemented as varchar) --- //
@@ -43,14 +43,14 @@ Table audit_logs {
 Table service_rates {
   id uuid [pk, default: `gen_random_uuid()`]
   service_name varchar [default: 'Standard Wash', note: 'Standard Wash-Dry-Fold']
-  base_price_per_load decimal(10,2) [default: 140.00, note: 'BR-PR-01: ₱140 per load']
-  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: 8 kg limit per load']
-  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: ₱1 per extra minute']
+  base_price_per_load decimal(10,2) [default: 140.00, note: 'BR-PR-01: Configurable base price per load (default: ₱140.00)']
+  kg_limit_per_load decimal(5,2) [default: 8.00, note: 'BR-PR-01: Configurable weight limit per load (default: 8.00 kg)']
+  price_per_extra_minute decimal(10,2) [default: 1.00, note: 'BR-PR-03: Configurable extra minute price (default: ₱1.00)']
   is_active boolean [default: true]
   created_at timestamp [default: `now()`]
   updated_at timestamp [default: `now()`, note: 'Auto-updated by trg_service_rates_updated_at trigger']
 
-  Note: 'Stores pricing rules. Owner can update without code changes. Snapshot copied to orders at creation. Audited by trg_audit_service_rates trigger.'
+  Note: 'Stores dynamic pricing rules. Owner can update without code changes. Snapshot copied to orders at creation. Audited by trg_audit_service_rates trigger.'
 }
 
 // --- USERS & CUSTOMERS --- //
@@ -199,7 +199,7 @@ Table client_alerts {
 Table machines {
   id uuid [pk, default: `gen_random_uuid()`]
   name varchar(50) [unique, not null]
-  status varchar(30) [not null, default: 'OPERATIONAL', note: 'OPERATIONAL, MAINTENANCE, OUT_OF_SERVICE']
+  status varchar(30) [not null, default: 'OPERATIONAL', note: 'OPERATIONAL, MAINTENANCE, OUT_OF_ORDER (BROKEN)']
   is_active boolean [default: true, note: 'Soft delete flag']
   created_at timestamp [not null, default: `now()`]
   updated_at timestamp [not null, default: `now()`]
@@ -214,4 +214,45 @@ Table order_machines {
   Indexes {
     (order_id, machine_id) [pk]
   }
+}
+
+// --- AUTH HARDENING (V2) --- //
+
+Table refresh_tokens {
+  id uuid [pk, default: `gen_random_uuid()`]
+  user_id uuid [ref: > users.id, not null, note: 'Cascades on user delete']
+  token_hash varchar(64) [unique, not null, note: 'SHA-256 of raw refresh token — never stored in plain text']
+  family_id uuid [not null, note: 'Rotation family; if a superseded token is reused, the whole family is revoked']
+  issued_at timestamptz [not null, default: `now()`]
+  expires_at timestamptz [not null]
+  last_used_at timestamptz [null]
+  revoked boolean [not null, default: false]
+  replaced_by uuid [ref: > refresh_tokens.id, null, note: 'Points to the successor token after rotation']
+
+  Indexes {
+    family_id [name: 'idx_refresh_tokens_family']
+    user_id [name: 'idx_refresh_tokens_user']
+  }
+
+  Note: 'Auth-hardening feature (V2). Enables refresh-token rotation and replay detection. One active (non-revoked, non-expired) token per session.'
+}
+
+// --- REMOTE RESILIENCE (V3) --- //
+
+Table operation_recovery {
+  operation_identifier varchar(255) [pk, note: 'Client UUID from X-Operation-Identifier header']
+  actor_id uuid [not null, note: 'Authenticated user who initiated the mutation']
+  action_type varchar(50) [not null, note: 'e.g. CREATE_ORDER, RECORD_PAYMENT, UPDATE_STATUS']
+  status varchar(20) [not null, note: 'IN_PROGRESS | COMPLETED | FAILED']
+  response_body text [null, note: 'Serialized JSON of the original response for replay']
+  response_status integer [null, note: 'Original HTTP status code']
+  created_at timestamptz [default: `now()`]
+  expires_at timestamptz [not null, note: 'TTL for background cleanup; typically 24h']
+
+  Indexes {
+    (actor_id, action_type) [name: 'idx_operation_recovery_actor_action']
+    expires_at [name: 'idx_operation_recovery_expires']
+  }
+
+  Note: 'Remote Resilience feature (V3, US3). Allows safe retry of interrupted mutations without creating duplicate records. Keyed by X-Operation-Identifier.'
 }

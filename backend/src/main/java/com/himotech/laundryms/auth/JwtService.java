@@ -26,9 +26,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private static final String CLAIM_USER_ID = "userId";
     private static final String CLAIM_ROLE = "role";
-    private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+    private static final long EXPIRATION_MS = 15 * 60 * 1000; // 15 minutes
 
     private final SecurityProperties props;
 
@@ -42,9 +41,10 @@ public class JwtService {
 
     public String createToken(User user) {
         return Jwts.builder()
-                .subject(user.getUsername())
-                .claim(CLAIM_USER_ID, user.getId().toString())
+                .subject(user.getId().toString())
+                .claim("username", user.getUsername())
                 .claim(CLAIM_ROLE, user.getRole().name())
+                .id(UUID.randomUUID().toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(getSigningKey())
@@ -58,18 +58,19 @@ public class JwtService {
         try {
             return Jwts.parser()
                     .verifyWith(getSigningKey())
+                    .clockSkewSeconds(60) // 60 seconds leeway for clock skew
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
-            log.debug("Invalid JWT: {}", e.getMessage());
+            log.error("Invalid JWT: {}", e.getMessage(), e);
             return null;
         }
     }
 
     public UUID getUserIdFromClaims(Claims claims) {
-        String userId = claims.get(CLAIM_USER_ID, String.class);
-        return userId != null ? UUID.fromString(userId) : null;
+        String subject = claims.getSubject();
+        return subject != null ? UUID.fromString(subject) : null;
     }
 
     public UserRole getRoleFromClaims(Claims claims) {

@@ -4,17 +4,19 @@ import com.himotech.laundryms.auth.dto.LoginRequest;
 import com.himotech.laundryms.auth.dto.CurrentUserResponse;
 import com.himotech.laundryms.auth.dto.LoginResponse;
 import com.himotech.laundryms.auth.AuthService;
-import com.himotech.laundryms.auth.JwtService;
 import com.himotech.laundryms.auth.JwtPrincipal;
 import com.himotech.laundryms.config.SecurityProperties;
-import com.himotech.laundryms.users.entity.User;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Authentication controller for login and current user.
@@ -25,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtService jwtService;
     private final SecurityProperties securityProperties;
 
     @PostMapping("/login")
@@ -33,40 +34,88 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
 
-        User user = authService.authenticate(request.getUsername(), request.getPassword());
-        String token = jwtService.createToken(user);
-
+        var result = authService.authenticate(request.getUsername(), request.getPassword());
+        
         String cookieName = securityProperties.getCookieName() != null
                 ? securityProperties.getCookieName()
-                : "access_token";
+                : "refresh_token";
 
-        Cookie cookie = new Cookie(cookieName, token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(securityProperties.isCookieSecure());
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60); // 24 hours
-        cookie.setAttribute("SameSite", securityProperties.getCookieSameSite());
-        response.addCookie(cookie);
+        addCookie(response, cookieName, result.refreshToken(), true, "/api/v1/auth",
+                cookieMaxAge(result.refreshTokenExpiresAt()));
 
-        return ResponseEntity.ok(LoginResponse.builder()
-                .token(token)
-                .role(user.getRole().name())
-                .build());
+        // Generate CSRF token for the session
+        String csrfTokenValue = java.util.UUID.randomUUID().toString();
+        addCookie(response, "csrf_token", csrfTokenValue, false, "/",
+                cookieMaxAge(result.refreshTokenExpiresAt()));
+
+        return ResponseEntity.ok()
+                .header("X-CSRF-Token", csrfTokenValue)
+                .body(LoginResponse.builder()
+                        .accessToken(result.accessToken())
+                        .role(result.user().getRole().name())
+                        .expiresIn(900)
+                        .build());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(
+            @CookieValue(name = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response) {
+            
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.status(401).build();
+        }
+        
+        try {
+            var result = authService.refresh(refreshToken);
+            
+            String cookieName = securityProperties.getCookieName() != null
+                    ? securityProperties.getCookieName()
+                    : "refresh_token";
+
+            addCookie(response, cookieName, result.refreshToken(), true, "/api/v1/auth",
+                    cookieMaxAge(result.refreshTokenExpiresAt()));
+
+            String csrfTokenValue = java.util.UUID.randomUUID().toString();
+            addCookie(response, "csrf_token", csrfTokenValue, false, "/",
+                    cookieMaxAge(result.refreshTokenExpiresAt()));
+
+            return ResponseEntity.ok()
+                    .header("X-CSRF-Token", csrfTokenValue)
+                    .body(LoginResponse.builder()
+                            .accessToken(result.accessToken())
+                            .role(result.user().getRole().name())
+                            .expiresIn(900)
+                            .build());
+        } catch (com.himotech.laundryms.auth.InvalidCredentialsException e) {
+            return ResponseEntity.status(401).build();
+        }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletResponse response) {
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response) {
+            
+        if (refreshToken != null && !refreshToken.isEmpty()) {
+            authService.logout(refreshToken);
+        }
+        
         String cookieName = securityProperties.getCookieName() != null
                 ? securityProperties.getCookieName()
-                : "access_token";
+                : "refresh_token";
 
-        Cookie cookie = new Cookie(cookieName, "");
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        addCookie(response, cookieName, "", true, "/api/v1/auth", 0);
+        addCookie(response, "csrf_token", "", false, "/", 0);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/csrf")
+    public ResponseEntity<Void> csrf(HttpServletResponse response) {
+        String csrfTokenValue = java.util.UUID.randomUUID().toString();
+        addCookie(response, "csrf_token", csrfTokenValue, false, "/", 7 * 24 * 60 * 60);
+        return ResponseEntity.ok().header("X-CSRF-Token", csrfTokenValue).build();
     }
 
     @GetMapping("/me")
@@ -79,5 +128,24 @@ public class AuthController {
                 .username(principal.username())
                 .role(principal.role().name())
                 .build());
+    }
+
+    private int cookieMaxAge(Instant expiresAt) {
+        if (expiresAt == null) {
+            return 7 * 24 * 60 * 60;
+        }
+        return (int) Math.max(0, Duration.between(Instant.now(), expiresAt).getSeconds());
+    }
+
+    private void addCookie(HttpServletResponse response, String name, String value, boolean httpOnly,
+            String path, int maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .secure(securityProperties.isCookieSecure())
+                .sameSite(securityProperties.getCookieSameSite())
+                .path(path)
+                .maxAge(maxAge)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

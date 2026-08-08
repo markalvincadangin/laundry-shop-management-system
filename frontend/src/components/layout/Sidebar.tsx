@@ -41,7 +41,7 @@ export function Sidebar() {
         >
           <div className="relative h-9 w-9 shrink-0">
             <Image
-              src="/branding/logo.svg"
+              src="/assets/app-icon/app-icon.svg"
               alt=""
               fill
               className="object-contain"
@@ -49,12 +49,12 @@ export function Sidebar() {
             />
           </div>
           {!isSidebarCollapsed && (
-            <div className="flex flex-col leading-none min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
-              <span className="text-[13px] font-black text-slate-800 tracking-tight truncate leading-tight">
-                {UI_LABELS.meta.APP_NAME}
+            <div className="flex flex-col min-w-0 justify-center animate-in fade-in slide-in-from-left-2 duration-300">
+              <span className="text-[13px] font-black text-slate-900 tracking-tight leading-none uppercase">
+                Laundry Shop
               </span>
-              <span className="text-[8.5px] font-black uppercase tracking-wider text-brand-blue/80 mt-0.5 truncate">
-                {UI_LABELS.meta.APP_TAGLINE}
+              <span className="text-[9.5px] font-extrabold uppercase tracking-widest text-brand-blue mt-1 leading-none">
+                Management System
               </span>
             </div>
           )}

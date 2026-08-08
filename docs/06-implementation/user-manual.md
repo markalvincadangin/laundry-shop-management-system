@@ -150,4 +150,4 @@ Admin users have access to **Business Insights & Reports** (`/reports`):
 
 ## 9. Support
 
-For technical issues or training, contact **HIMÓTECH** or your system administrator.
+For technical issues or training, contact developer **Mark Alvin Cadangin** or your system administrator.

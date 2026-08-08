@@ -9,7 +9,7 @@
 
 - [ ] Standalone production stack running: PostgreSQL 16 service + `.exe` installer / Spring Boot server
 - [ ] Application accessible via local counter browser (`http://localhost:8080`)
-- [ ] Cloudflare Tunnel daemon (`cloudflared`) active for public customer tracking (`https://track.faithlaundry.com`)
+- [ ] Ngrok daemon (`ngrok`) active with the configured static public domain for customer tracking and authenticated remote Admin/Staff access
 - [ ] Admin and Staff accounts created (via seed or migration)
 - [ ] User manual printed or available: [user-manual.md](user-manual.md)
 - [ ] Backup script tested: `./scripts/backup-database.sh` or `backup-database.ps1`
@@ -51,6 +51,11 @@
 
 - Show public Track Order page
 - Enter tracking number, view status
+
+### 7. Remote Staff and Admin Access (5 min)
+
+- Demonstrate a remote login through the Ngrok public domain
+- Confirm role-based access remains enforced outside the shop
 
 ### 7. Backup and Support (5 min)
 

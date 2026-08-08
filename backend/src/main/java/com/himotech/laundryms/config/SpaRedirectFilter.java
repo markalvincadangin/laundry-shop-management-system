@@ -16,12 +16,32 @@ public class SpaRedirectFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        // Redirect all non-API and non-static requests to index.html for Next.js SPA routing
         if (!path.startsWith("/api") 
                 && !path.startsWith("/swagger-ui") 
                 && !path.startsWith("/v3/api-docs") 
                 && !path.matches(".*\\.[a-zA-Z0-9]+$")) {
-            request.getRequestDispatcher("/index.html").forward(request, response);
+            
+            if (path.equals("/")) {
+                request.getRequestDispatcher("/index.html").forward(request, response);
+                return;
+            }
+
+            // Next.js dynamic route fallbacks
+            if (path.matches("/orders/[^/]+")) {
+                request.getRequestDispatcher("/orders/fallback.html").forward(request, response);
+                return;
+            }
+            if (path.matches("/orders/[^/]+/pay")) {
+                request.getRequestDispatcher("/orders/fallback/pay.html").forward(request, response);
+                return;
+            }
+            if (path.matches("/customers/[^/]+")) {
+                request.getRequestDispatcher("/customers/fallback.html").forward(request, response);
+                return;
+            }
+
+            // For standard Next.js static exports, forward /some-path to /some-path.html
+            request.getRequestDispatcher(path + ".html").forward(request, response);
             return;
         }
 

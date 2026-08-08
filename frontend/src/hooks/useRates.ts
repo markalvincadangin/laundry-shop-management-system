@@ -30,34 +30,42 @@ export function useRates() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateServiceRateRequest) => serviceRatesService.create(data),
+    mutationFn: ({ data, operationIdentifier }: { data: CreateServiceRateRequest, operationIdentifier?: string }) => serviceRatesService.create(data, { operationIdentifier }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["service-rates"] });
       toast.success(UI_LABELS.feedback.success.SAVED);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || UI_LABELS.feedback.error.GENERIC);
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The rate may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err.response?.data?.message || UI_LABELS.feedback.error.GENERIC);
+      }
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (variables: { id: string; data: UpdateServiceRateRequest }) =>
-      serviceRatesService.update(variables.id, variables.data),
+    mutationFn: (variables: { id: string; data: UpdateServiceRateRequest, operationIdentifier?: string }) =>
+      serviceRatesService.update(variables.id, variables.data, { operationIdentifier: variables.operationIdentifier }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["service-rates"] });
       toast.success(UI_LABELS.feedback.success.SAVED);
     },
     onError: (err: any) => {
-      toast.error(err.response?.data?.message || UI_LABELS.feedback.error.GENERIC);
+      if (err.name === "UnconfirmedOperationError") {
+        toast.error("Network timeout. The rate may have been saved. Please check or retry.", { duration: 10000 });
+      } else {
+        toast.error(err.response?.data?.message || UI_LABELS.feedback.error.GENERIC);
+      }
     },
   });
 
-  const createRate = async (data: CreateServiceRateRequest) => {
-    return createMutation.mutateAsync(data);
+  const createRate = async (data: CreateServiceRateRequest, operationIdentifier?: string) => {
+    return createMutation.mutateAsync({ data, operationIdentifier });
   };
 
-  const updateRate = async (id: string, data: UpdateServiceRateRequest) => {
-    return updateMutation.mutateAsync({ id, data });
+  const updateRate = async (id: string, data: UpdateServiceRateRequest, operationIdentifier?: string) => {
+    return updateMutation.mutateAsync({ id, data, operationIdentifier });
   };
 
   return {

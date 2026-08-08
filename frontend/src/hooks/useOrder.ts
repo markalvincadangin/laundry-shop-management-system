@@ -16,8 +16,8 @@ export function useOrder(orderId: string) {
     refetch: refresh,
   } = useQuery({
     queryKey: ["orders", orderId],
-    queryFn: () => ordersService.getById(orderId),
-    enabled: !!orderId,
+    queryFn: () => orderId ? ordersService.getById(orderId) : Promise.reject("No order ID provided"),
+    enabled: !!orderId && orderId !== "fallback" && orderId !== "%5Bid%5D" && orderId !== "[id]",
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 

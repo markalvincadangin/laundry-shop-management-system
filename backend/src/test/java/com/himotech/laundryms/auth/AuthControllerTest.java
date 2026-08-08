@@ -20,6 +20,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import java.util.UUID;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import jakarta.servlet.http.Cookie;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -43,9 +46,6 @@ class AuthControllerTest {
     AuthService authService;
 
     @MockitoBean
-    com.himotech.laundryms.auth.JwtService jwtService;
-
-    @MockitoBean
     UserRepository userRepository;
 
     @MockitoBean
@@ -60,7 +60,9 @@ class AuthControllerTest {
     @DynamicPropertySource
     static void dynamicProperties(DynamicPropertyRegistry registry) {
         registry.add("app.security.jwt-secret", () -> TEST_JWT_SECRET);
-        registry.add("app.security.cookie-name", () -> "access_token");
+        registry.add("app.security.cookie-name", () -> "refresh_token");
+        registry.add("app.security.cookie-secure", () -> true);
+        registry.add("app.security.cookie-same-site", () -> "Lax");
     }
 
     @Nested
@@ -75,8 +77,9 @@ class AuthControllerTest {
                     .username(TEST_USERNAME)
                     .role(com.himotech.laundryms.shared.UserRole.ADMIN)
                     .build();
-            when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(user);
-            when(jwtService.createToken(user)).thenReturn("jwt-token");
+            com.himotech.laundryms.auth.dto.LoginResult loginResult = new com.himotech.laundryms.auth.dto.LoginResult(
+                    user, "jwt-token", "refresh-plain", Instant.now().plus(5, ChronoUnit.MINUTES));
+            when(authService.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(loginResult);
 
             LoginRequest request = new LoginRequest();
             request.setUsername(TEST_USERNAME);
@@ -87,10 +90,16 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.token").value("jwt-token"))
+                    .andExpect(jsonPath("$.accessToken").value("jwt-token"))
                     .andExpect(jsonPath("$.role").value("ADMIN"))
-                    .andExpect(cookie().exists("access_token"))
-                    .andExpect(cookie().value("access_token", "jwt-token"));
+                    .andExpect(header().exists("X-CSRF-Token"))
+                    .andExpect(cookie().exists("refresh_token"))
+                    .andExpect(cookie().value("refresh_token", "refresh-plain"))
+                    .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Secure")))
+                    .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("SameSite=Lax")))
+                    .andExpect(cookie().path("csrf_token", "/"))
+                    .andExpect(result -> org.junit.jupiter.api.Assertions.assertTrue(
+                            result.getResponse().getCookie("refresh_token").getMaxAge() <= 300));
         }
 
         @Test
@@ -122,5 +131,39 @@ class AuthControllerTest {
             mvc.perform(get("/api/v1/auth/me"))
                     .andExpect(status().isUnauthorized());
         }
+    }
+
+    @Test
+    void csrfBootstrapIssuesMatchingHeaderAndCookie() throws Exception {
+        mvc.perform(get("/api/v1/auth/csrf"))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("X-CSRF-Token"))
+                .andExpect(cookie().exists("csrf_token"));
+    }
+
+    @Test
+    void logoutClearsSecureLaxHostOnlySessionCookies() throws Exception {
+        mvc.perform(post("/api/v1/auth/logout"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("refresh_token=;")))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Secure")))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("SameSite=Lax")));
+    }
+
+    @Test
+    void refreshRotatesTheSecureLaxHostOnlySessionCookie() throws Exception {
+        User user = User.builder().id(USER_ID).username(TEST_USERNAME)
+                .role(com.himotech.laundryms.shared.UserRole.ADMIN).build();
+        when(authService.refresh("existing-refresh-token")).thenReturn(
+                new com.himotech.laundryms.auth.dto.LoginResult(
+                        user, "rotated-jwt", "rotated-refresh-token", Instant.now().plus(5, ChronoUnit.MINUTES)));
+
+        mvc.perform(post("/api/v1/auth/refresh").cookie(new Cookie("refresh_token", "existing-refresh-token")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").value("rotated-jwt"))
+                .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.allOf(
+                        org.hamcrest.Matchers.containsString("refresh_token=rotated-refresh-token"),
+                        org.hamcrest.Matchers.containsString("Secure"),
+                        org.hamcrest.Matchers.containsString("SameSite=Lax"))));
     }
 }
