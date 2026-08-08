@@ -2,7 +2,7 @@
 ## Laundry Shop Management System
 
 > **Document ID:** SPEC-INSTALLER-001  
-> **Version:** 8.0 (Ngrok Tunnel Integration)  
+> **Version:** 8.1 (Ngrok Tunnel + Production CORS Integration)  
 > **Date:** 2026-08-08  
 > **Status:** Implementation complete; Windows compile/VM validation required before release sign-off
 
@@ -91,7 +91,7 @@ Behavior:
 6. Provision the application database/role.
 7. Write protected production configuration.
 8. Offer **Local only** or **Enable Ngrok remote access**.
-9. When Ngrok is selected, collect the device authtoken and reserved/static HTTPS domain, write the protected v3 Ngrok configuration, and obtain/verify the pinned Ngrok agent.
+9. When Ngrok is selected, collect the device authtoken, reserved/static HTTPS domain, and deployed remote frontend HTTPS origin; write the protected v3 Ngrok configuration, generate the Spring production CORS origins, and obtain/verify the pinned Ngrok agent.
 10. Copy binaries/runtime.
 11. Install/start the LaundryShopMS service.
 12. Verify local SCM + HTTP readiness.
@@ -331,11 +331,13 @@ spring.flyway.enabled=true
 security.jwt.secret-key=<secure generated value>
 server.port=8765
 server.address=127.0.0.1
+server.forward-headers-strategy=framework
+app.security.allowed-origin=http://localhost:8765,http://127.0.0.1:8765,<NGROK_HTTPS_ORIGIN>,<REMOTE_FRONTEND_HTTPS_ORIGIN>
 ```
 
-The previous development-only `app.security.allowed-origin=http://localhost:3000` value is intentionally not written. The packaged frontend is served from the backend application and uses the same origin.
+The development-only `http://localhost:3000` origin is intentionally not written to production. When remote access is enabled, both the configured Ngrok static origin and the deployed remote frontend origin (for example the Vercel production URL) are included. `server.forward-headers-strategy=framework` lets Spring interpret reverse-proxy forwarding information while the actual listener remains bound to `127.0.0.1`.
 
-Upgrade/repair never rewrites a valid existing production configuration.
+Upgrade/repair preserves database/JWT secrets but may idempotently upsert the non-secret reverse-proxy/CORS properties above. Installations created before this metadata existed prompt once for the remote frontend HTTPS origin during upgrade.
 
 ---
 
@@ -420,6 +422,7 @@ Allowed non-secret values:
 - `ManagedPostgres`
 - `TunnelEnabled`
 - `TunnelPublicUrl` (public endpoint, non-secret)
+- `RemoteFrontendUrl` (deployed remote frontend origin, non-secret)
 
 Forbidden:
 
@@ -579,11 +582,12 @@ Critical scenarios include:
 - Windows smoke test and test matrix
 - static installer regression checker integrated into deployment staging
 - post-staging manifest/hash revalidation before Inno compilation
-- optional Ngrok Remote Access wizard with authtoken + reserved/static HTTPS domain validation
+- optional Ngrok Remote Access wizard with authtoken + reserved/static HTTPS domain + remote frontend HTTPS origin validation
 - pinned/cached Ngrok archive verification plus Authenticode publisher validation
 - ACL-protected Ngrok v3 configuration with fixed localhost upstream
 - dedicated `LaundryShopMSTunnel` WinSW lifecycle for install, upgrade, retained-data repair, and uninstall
 - tunnel-specific smoke/static checks and Windows acceptance scenarios
+- production CORS origin generation, forwarded-header handling, and CORS preflight smoke validation
 
 ### Still required before calling a release production-validated
 

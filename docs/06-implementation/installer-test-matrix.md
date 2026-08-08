@@ -29,7 +29,7 @@ Run each destructive scenario from a disposable Windows 10/11 x64 VM snapshot. R
 | P04 | Database and role already present after interrupted install | Retry succeeds without dropping tables/data |
 | P05 | SQL error injected | Setup aborts before service registration |
 | N01 | Clean install, choose Local only | No Ngrok download/config/service is created; local app remains healthy |
-| N02 | Clean install, enable Ngrok with valid authtoken + reserved HTTPS domain | Pinned Ngrok archive is SHA-verified/cached, Authenticode validates publisher, protected v3 config written, `LaundryShopMSTunnel` runs, public `/api/v1/health` returns 200 |
+| N02 | Clean install, enable Ngrok with valid authtoken + reserved HTTPS domain + remote frontend HTTPS origin | Pinned Ngrok archive is SHA-verified/cached, Authenticode validates publisher, protected v3 config written, production CORS includes both origins, `LaundryShopMSTunnel` runs, public `/api/v1/health` returns 200 |
 | N03 | Ngrok authtoken missing/invalid | Next is blocked before install |
 | N04 | Ngrok URL is HTTP, localhost, contains path/query, or malformed | Next is blocked before install |
 | N05 | No internet / Ngrok download failure | LaundryMS local install still succeeds; tunnel warning shown; no tunnel process starts |
@@ -39,6 +39,9 @@ Run each destructive scenario from a disposable Windows 10/11 x64 VM snapshot. R
 | N09 | Upgrade with enabled tunnel | Tunnel service stops before replacement, protected `ngrok.yml` is preserved, pinned agent is refreshed/reused, tunnel service restarts |
 | N10 | Default uninstall then reinstall with tunnel enabled | Tunnel service is removed on uninstall; protected `ngrok.yml` + public metadata retained; reinstall reattaches without requesting the authtoken again |
 | N11 | Destructive uninstall | Tunnel service stops/unregisters and protected Ngrok config is deleted with ProgramData |
+| N12 | Remote frontend URL is HTTP, localhost, contains path/query, or malformed | Next is blocked before install; only a bare non-local HTTPS origin is accepted |
+| N13 | Production CORS contract | `application-prod.properties` contains `server.forward-headers-strategy=framework` and both Ngrok + remote frontend origins; OPTIONS preflight for each origin returns matching `Access-Control-Allow-Origin` |
+| N14 | Upgrade from pre-CORS tunnel deployment | Setup prompts once for remote frontend HTTPS origin, preserves DB/JWT/Ngrok secrets, upserts CORS/forwarded-header properties, and remote login no longer returns CORS 403 |
 | U01 | Upgrade with service running | Exact STOPPED before replacement; refresh/start; secrets unchanged |
 | U02 | Upgrade with service already stopped | No false failure; refresh/start; secrets unchanged |
 | U03 | Upgrade with SCM UNKNOWN/pending unsupported state | Fail closed before file replacement |
@@ -69,6 +72,6 @@ Run each destructive scenario from a disposable Windows 10/11 x64 VM snapshot. R
 A production release is approved only if:
 
 1. `ISCC.exe` compiles `installer.iss` with zero errors.
-2. C01, C03, C04, C07, C08A, C11, C12, A01, A04, A05, A06, P04, N01, N02, N05, N06, N07, N08, N09, N10, N11, U01, U05, J02, D01, D01A, S01, ACL01, R02, UN01, UN02, UN03, B01, B02, and B04 pass.
+2. C01, C03, C04, C07, C08A, C11, C12, A01, A04, A05, A06, P04, N01, N02, N05, N06, N07, N08, N09, N10, N11, N12, N13, N14, U01, U05, J02, D01, D01A, S01, ACL01, R02, UN01, UN02, UN03, B01, B02, and B04 pass.
 3. `installer-smoke-test.ps1 -ExpectedVersion <version>` passes after clean install and after upgrade.
 4. No test shows an existing PostgreSQL installation/data directory being deleted or overwritten.

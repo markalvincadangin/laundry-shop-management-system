@@ -39,12 +39,17 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(SecurityProperties props) {
         CorsConfiguration config = new CorsConfiguration();
+        // Production origins are injected by the Windows installer through
+        // app.security.allowed-origin. Keep the Java fallback development-only so a
+        // missing production property fails closed instead of silently trusting broad
+        // cloud-host patterns.
         List<String> origins = (props.getAllowedOrigin() != null && !props.getAllowedOrigin().isBlank())
                 ? java.util.Arrays.stream(props.getAllowedOrigin().split(","))
                         .map(String::trim)
                         .filter(s -> !s.isEmpty())
+                        .distinct()
                         .toList()
-                : List.of("http://localhost:3000", "https://*.vercel.app", "https://laundry-shop-management-system.vercel.app");
+                : List.of("http://localhost:3000");
         config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

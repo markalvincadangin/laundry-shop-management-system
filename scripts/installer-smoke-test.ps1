@@ -53,6 +53,7 @@ $managedPostgres = $false
 $dbPort = 0
 $tunnelEnabled = $false
 $tunnelPublicUrl = $null
+$remoteFrontendUrl = $null
 
 Check (Test-Path $regPath) 'Installer registry metadata exists'
 if (Test-Path $regPath) {
@@ -65,6 +66,7 @@ if (Test-Path $regPath) {
     $dbPort = [int]$reg.DbPort
     $tunnelEnabled = ($reg.TunnelEnabled -eq 'true')
     $tunnelPublicUrl = $reg.TunnelPublicUrl
+    $remoteFrontendUrl = $reg.RemoteFrontendUrl
     $secretNames = @($reg.PSObject.Properties.Name | Where-Object { $_ -match '(password|secret|jwt|authtoken)' })
     Check ($secretNames.Count -eq 0) 'Registry contains no secret/password/authtoken values'
 }
@@ -113,8 +115,15 @@ if (Test-Path $configPath) {
         $i = $_.IndexOf('='); $props[$_.Substring(0,$i).Trim()] = $_.Substring($i+1).Trim()
     }
     Check ($props['spring.datasource.username'] -eq 'laundryms_app') 'Runtime database role is laundryms_app'
-    Check (-not $props.ContainsKey('app.security.allowed-origin') -or $props['app.security.allowed-origin'] -ne 'http://localhost:3000') 'Development localhost:3000 CORS value is absent'
-    Check (-not ((Get-Content $configPath -Raw) -match '(?i)ngrok|authtoken')) 'Application production config contains no Ngrok authtoken/configuration'
+    Check ($props['server.forward-headers-strategy'] -eq 'framework') 'Production reverse-proxy forwarded headers use framework strategy'
+    Check ($props.ContainsKey('app.security.allowed-origin')) 'Production allowed-origin property exists'
+    $allowedOrigins = @()
+    if ($props.ContainsKey('app.security.allowed-origin')) {
+        $allowedOrigins = @($props['app.security.allowed-origin'].Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    }
+    Check ($allowedOrigins -contains 'http://localhost:8765') 'Production CORS permits local hostname origin'
+    Check ($allowedOrigins -contains 'http://127.0.0.1:8765') 'Production CORS permits local loopback origin'
+    Check (-not ((Get-Content $configPath -Raw) -match '(?i)authtoken')) 'Application production config contains no Ngrok authtoken'
 
     $acl = Get-Acl $configPath
     $unexpected = @($acl.Access | Where-Object {
@@ -122,6 +131,24 @@ if (Test-Path $configPath) {
         $id -notmatch 'SYSTEM$' -and $id -notmatch 'Administrators$'
     })
     Check ($unexpected.Count -eq 0) 'Production config ACL exposes no non-admin/non-SYSTEM principals'
+}
+
+function Test-CorsOrigin {
+    param([string]$Origin)
+    if (-not $Origin) { return }
+    try {
+        $headers = @{
+            Origin = $Origin
+            'Access-Control-Request-Method' = 'POST'
+            'Access-Control-Request-Headers' = 'content-type'
+        }
+        $cors = Invoke-WebRequest 'http://127.0.0.1:8765/api/v1/auth/login' `
+            -Method OPTIONS -Headers $headers -UseBasicParsing -TimeoutSec 5
+        $allowOrigin = $cors.Headers['Access-Control-Allow-Origin']
+        Check ($allowOrigin -eq $Origin) "CORS preflight allows $Origin"
+    } catch {
+        Check $false "CORS preflight allows ${Origin}: $($_.Exception.Message)"
+    }
 }
 
 if ($tunnelEnabled) {
@@ -144,6 +171,14 @@ if ($tunnelEnabled) {
     if ($tunnelSvc) { Check ($tunnelSvc.Status -eq 'Running') 'LaundryShopMSTunnel Windows service is running' }
 
     Check ($tunnelPublicUrl -and $tunnelPublicUrl -match '^https://[^/]+$') 'TunnelPublicUrl registry metadata is a bare HTTPS origin'
+    Check ($remoteFrontendUrl -and $remoteFrontendUrl -match '^https://[^/]+$') 'RemoteFrontendUrl registry metadata is a bare HTTPS origin'
+    if (Test-Path $configPath) {
+        Check ($allowedOrigins -contains $tunnelPublicUrl) 'Production CORS includes the configured Ngrok origin'
+        Check ($allowedOrigins -contains $remoteFrontendUrl) 'Production CORS includes the configured remote frontend origin'
+    }
+
+    Test-CorsOrigin -Origin $tunnelPublicUrl
+    Test-CorsOrigin -Origin $remoteFrontendUrl
 
     if (Test-Path $tunnelConfig) {
         $text = Get-Content $tunnelConfig -Raw
