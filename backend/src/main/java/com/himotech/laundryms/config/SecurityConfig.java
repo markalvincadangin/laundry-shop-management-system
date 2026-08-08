@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .map(String::trim)
                         .filter(s -> !s.isEmpty())
                         .toList()
-                : List.of("http://localhost:3000");
+                : List.of("http://localhost:3000", "https://*.vercel.app", "https://laundry-shop-management-system.vercel.app");
         config.setAllowedOriginPatterns(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
