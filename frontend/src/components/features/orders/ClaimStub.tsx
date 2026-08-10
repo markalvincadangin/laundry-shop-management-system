@@ -11,6 +11,7 @@ import { Modal, Button } from "@/components/ui";
 import { OrderResponse } from "@/lib/api/orders";
 import { UI_LABELS } from "@/constants/ui";
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
+import { usePortalUrl } from "@/hooks/usePortalUrl";
 
 interface ClaimStubProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
   const stubRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const portalUrl = usePortalUrl();
 
   useEffect(() => {
     setIsMounted(true);
@@ -63,8 +65,11 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
 
   // The Receipt Content (Shared between UI and Print)
   const ReceiptContent = ({ isPrint = false }: { isPrint?: boolean }) => {
-    const baseUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "https://laundry-shop-management-system.vercel.app";
-    const trackingUrl = `${baseUrl}/track?trackingNumber=${order.trackingNumber}`;
+    // The tracking URL uses the installer-configured customer portal URL
+    // (fetched at runtime from GET /api/v1/app-config) so that QR codes on
+    // printed receipts always resolve to the public-facing portal regardless
+    // of whether the shop is running locally, via Ngrok, or via Vercel.
+    const trackingUrl = `${portalUrl}/track?trackingNumber=${order.trackingNumber}`;
 
     const createdDate = order.createdAt ? new Date(order.createdAt) : new Date();
     const isRush = order.isRush || order.serviceName?.toLowerCase().includes("rush");
