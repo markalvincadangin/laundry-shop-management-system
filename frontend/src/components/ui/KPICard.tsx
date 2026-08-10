@@ -49,31 +49,31 @@ export function KPICard({
       {/* Glossy Overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/20 pointer-events-none" />
       
-      <div className="relative p-grid-8 sm:p-grid-10 space-y-grid-8">
+      <div className="relative p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
           {Icon && (
-            <div className={`flex h-14 w-14 items-center justify-center rounded-[20px] border-2 transition-all duration-500 group-hover:scale-110 shadow-sm ${variantStyles[variant]}`}>
-              <Icon className="h-7 w-7" strokeWidth={2.5} />
+            <div className={`flex h-11 w-11 sm:h-14 sm:w-14 items-center justify-center rounded-2xl border-2 transition-all duration-500 group-hover:scale-110 shadow-sm ${variantStyles[variant]}`}>
+              <Icon className="h-5 w-5 sm:h-7 sm:w-7" strokeWidth={2.5} />
             </div>
           )}
           {pulse && (
-            <div className="flex items-center gap-grid-2.5 px-grid-4 py-grid-2 rounded-full bg-brand-blue/8 border border-brand-blue/20 backdrop-blur-sm shadow-sm shadow-brand-blue/10">
-              <span className="relative flex h-2.5 w-2.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-blue/8 border border-brand-blue/20 backdrop-blur-sm shadow-sm shadow-brand-blue/10">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-blue opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-blue" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-blue" />
               </span>
-              <span className="text-[9px] font-black uppercase tracking-[0.25em] text-brand-blue">
+              <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.2em] text-brand-blue">
                 {UI_LABELS.shared.common.LIVE}
               </span>
             </div>
           )}
         </div>
 
-        <div className="space-y-grid-2">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-slate-500 transition-colors">
+        <div className="space-y-1 sm:space-y-2">
+          <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-500 transition-colors">
             {title}
           </p>
-          <div className="text-4xl sm:text-5xl font-sans font-black text-slate-900 tracking-tighter flex items-center gap-1 group-hover:scale-[1.02] transition-transform duration-500 origin-left">
+          <div className="text-2xl sm:text-4xl lg:text-5xl font-sans font-black text-slate-900 tracking-tighter flex items-center gap-1 group-hover:scale-[1.02] transition-transform duration-500 origin-left">
             {value}
           </div>
           {subtitle && (

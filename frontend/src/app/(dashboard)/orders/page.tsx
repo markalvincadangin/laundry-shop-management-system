@@ -350,6 +350,22 @@ export default function OrdersPage() {
             sortDir={sortDir}
             onSort={handleSort}
             onRowClick={(order) => router.push(`/orders/${order.id}`)}
+            mobileCardRender={(order) => (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-sm font-bold text-brand-blue">{order.trackingNumber}</span>
+                  <StatusBadge status={order.currentStatus as any} />
+                </div>
+                <div className="flex items-center justify-between text-sm text-slate-700 font-medium">
+                  <span>{order.customerName || "Walk-in Customer"}</span>
+                  <span className="font-black text-slate-900">₱{order.grandTotal?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                  <span>{order.totalLoads} Load(s)</span>
+                  <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">Tap to inspect →</span>
+                </div>
+              </div>
+            )}
             emptyState={
               <EmptyState
                 title={UI_LABELS.feedback.empty.ORDERS_TITLE}

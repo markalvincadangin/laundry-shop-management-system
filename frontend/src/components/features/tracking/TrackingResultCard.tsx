@@ -94,7 +94,7 @@ export function TrackingResultCard({ order }: TrackingResultCardProps) {
               </div>
             </div>
 
-            <div className="px-grid-4 py-grid-6 bg-slate-50 rounded-2xl border border-slate-100 overflow-x-auto">
+            <div className="px-4 py-4 sm:px-6 sm:py-6 bg-slate-50 rounded-2xl border border-slate-100/80">
               <ProcessStepper
                 currentStatus={order.currentStatus ?? ORDER_STATUS.RECEIVED}
                 size="md"

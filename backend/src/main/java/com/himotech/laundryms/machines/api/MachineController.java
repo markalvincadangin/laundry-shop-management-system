@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.himotech.laundryms.machines.dto.CreateMachineRequest;
 import com.himotech.laundryms.machines.dto.MachineResponse;
+import com.himotech.laundryms.machines.dto.UpdateMachineRequest;
 import com.himotech.laundryms.machines.dto.UpdateMachineStatusRequest;
 import com.himotech.laundryms.machines.entity.Machine;
 import com.himotech.laundryms.machines.mapper.MachineMapper;
@@ -42,6 +43,16 @@ public class MachineController {
     public ResponseEntity<MachineResponse> create(final @Valid @RequestBody CreateMachineRequest request) {
         Machine machine = machineService.createMachine(request.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(machineMapper.toResponse(machine));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Idempotent(actionType = "UPDATE_RESOURCE")
+    public ResponseEntity<MachineResponse> update(
+            final @PathVariable UUID id,
+            final @Valid @RequestBody UpdateMachineRequest request) {
+        Machine machine = machineService.updateMachine(id, request.getName(), request.getStatus());
+        return ResponseEntity.ok(machineMapper.toResponse(machine));
     }
 
     @PatchMapping("/{id}/status")

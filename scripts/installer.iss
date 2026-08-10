@@ -1977,6 +1977,9 @@ begin
       RaiseException('Could not update forwarded-header handling in production configuration.');
     if not UpsertPropertyInFile(ConfigFile, 'app.security.allowed-origin', AllowedOrigins) then
       RaiseException('Could not update production CORS origins.');
+    if (RemoteFrontendUrl <> '') then
+      if not UpsertPropertyInFile(ConfigFile, 'app.security.portal-url', RemoteFrontendUrl) then
+        RaiseException('Could not update portal URL in production configuration.');
     HardenFileForSystemAndAdmins(ConfigFile);
     Exit;
   end;
@@ -1993,7 +1996,8 @@ begin
     'server.port=8765' + #13#10 +
     'server.address=127.0.0.1' + #13#10 +
     'server.forward-headers-strategy=framework' + #13#10 +
-    'app.security.allowed-origin=' + AllowedOrigins + #13#10;
+    'app.security.allowed-origin=' + AllowedOrigins + #13#10 +
+    'app.security.portal-url=' + RemoteFrontendUrl + #13#10;
 
   if not SaveStringToFile(ConfigFile, ConfigText, False) then
     RaiseException('Could not write production configuration.');

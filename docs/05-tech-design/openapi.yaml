@@ -16,6 +16,7 @@ tags:
   - name: ServiceRates
   - name: Orders
   - name: Payments
+  - name: Machines
   - name: Reports
   - name: ClientAlerts
   - name: AuditLog
@@ -1290,6 +1291,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AddOnInput"
+        machineIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: "Optional list of machine UUIDs pre-assigned at intake."
       required: [weightKg]
 
     AddOnInput:
@@ -1628,3 +1635,43 @@ components:
         totalActiveStaff: { type: integer }
         totalUsers: { type: integer }
       required: [totalAdmins, totalActiveStaff, totalUsers]
+
+    # -------------------------
+    # MACHINES
+    # -------------------------
+    MachineStatus:
+      type: string
+      enum: [OPERATIONAL, MAINTENANCE, OUT_OF_ORDER]
+
+    MachineResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        status:
+          $ref: "#/components/schemas/MachineStatus"
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, name, status, isActive]
+
+    CreateMachineRequest:
+      type: object
+      properties:
+        name: { type: string }
+      required: [name]
+
+    UpdateMachineRequest:
+      type: object
+      properties:
+        name: { type: string }
+        status:
+          $ref: "#/components/schemas/MachineStatus"
+      required: [name, status]
+
+    UpdateMachineStatusRequest:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/MachineStatus"
+      required: [status]

@@ -63,10 +63,10 @@ export default function AuthLayout({
       </div>
 
       {/* ── Right Side: Auth Form Container ── */}
-      <div className="flex flex-1 flex-col items-center justify-center p-6 sm:p-12 bg-slate-50 relative overflow-y-auto">
+      <div className="flex flex-1 flex-col items-center justify-center p-4 sm:p-12 bg-slate-50 relative overflow-y-auto min-h-screen">
         {/* Mobile Logo (Shown only on small screens) */}
-        <div className="lg:hidden mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 h-16 w-16 bg-white rounded-2xl flex items-center justify-center p-3 shadow-xl ring-1 ring-slate-200">
+        <div className="lg:hidden mb-4 sm:mb-8 flex flex-col items-center text-center">
+          <div className="mb-2 sm:mb-4 h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-2xl flex items-center justify-center p-2.5 sm:p-3 shadow-xl ring-1 ring-slate-200">
             <Image
               src="/assets/app-icon/app-icon.svg"
               alt="Logo"
@@ -75,7 +75,7 @@ export default function AuthLayout({
               className="object-contain"
             />
           </div>
-          <h1 className="font-display text-2xl font-black tracking-tighter text-slate-900 uppercase">
+          <h1 className="font-display text-xl sm:text-2xl font-black tracking-tighter text-slate-900 uppercase">
             {UI_LABELS.meta.APP_NAME}
           </h1>
         </div>
@@ -85,11 +85,10 @@ export default function AuthLayout({
         </div>
 
         {/* Mobile Footer */}
-        <div className="lg:hidden mt-12 text-center text-[9px] font-black uppercase tracking-widest text-slate-400">
+        <div className="lg:hidden mt-6 sm:mt-12 text-center text-[9px] font-black uppercase tracking-widest text-slate-400">
           &copy; {new Date().getFullYear()} {UI_LABELS.meta.APP_NAME}
         </div>
       </div>
     </div>
   );
 }
-

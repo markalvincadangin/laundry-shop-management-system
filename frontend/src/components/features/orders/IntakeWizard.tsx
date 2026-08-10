@@ -33,8 +33,12 @@ import { paymentsService } from "@/lib/api/payments";
 import { PaymentMethod } from "@/constants/order-status";
 import { Card, CardContent, Input, Button, Select, CurrencyDisplay } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
+import { useQuery } from "@tanstack/react-query";
 import { usePriceCalculation } from "@/hooks/usePriceCalculation";
 import { useCustomerLookup } from "@/hooks/useCustomerLookup";
+import { useMachines } from "@/hooks/useMachines";
+import { useAddOnCatalog } from "@/hooks/useAddOnCatalog";
+import { useActiveMachineIds } from "@/hooks/useActiveMachineIds";
 import { SERVICE_TYPES, type ServiceDefinition, type ServiceType } from "@/constants/service-types";
 import {
   OrderIntakeSchema,
@@ -43,12 +47,10 @@ import {
   type OrderIntakeInput
 } from "@/lib/validation/order";
 import { OrderIntakeFormProps } from "@/types/components";
+import { OrderResponse } from "@/lib/api/orders";
 import { ClaimStub } from "./ClaimStub";
 import { OrderPreview } from "./OrderPreview";
-import { OrderResponse } from "@/lib/api/orders";
 import { ProcessStepper } from "@/components/features/shared/ProcessStepper";
-import { useMachines } from "@/hooks/useMachines";
-import { useAddOnCatalog } from "@/hooks/useAddOnCatalog";
 import { Tag } from "lucide-react";
 
 type IntakeStep = "CUSTOMER" | "SERVICE" | "ADDONS" | "CONFIRM";
@@ -99,6 +101,7 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
   });
 
   const { machines, loading: machinesLoading } = useMachines();
+  const busyMachineIds = useActiveMachineIds();
   const { data: catalogAddOns = [], isLoading: catalogLoading } = useAddOnCatalog(true);
 
   const activeCatalogItems = (catalogAddOns || []).filter(
@@ -857,40 +860,91 @@ export function IntakeWizard({ createdByUserId, onSuccess, isModal }: OrderIntak
                       />
                     </div>
                     
-                    <div className="pt-8 border-t border-slate-100/50">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Package className="h-4 w-4 text-slate-400" />
-                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{UI_LABELS.dynamic.ASSIGN_MACHINES}</label>
+                    <div className="pt-8 border-t border-slate-100/50 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-slate-400" />
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                            {UI_LABELS.dynamic.ASSIGN_MACHINES} <span className="text-slate-400 font-semibold">(OPTIONAL)</span>
+                          </label>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                          Leave empty to place in Queue, or pick a machine for immediate start
+                        </span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+
+                      <div className="flex flex-wrap gap-2.5 pt-1">
                         {machinesLoading ? (
-                          <span className="text-xs text-slate-400">{UI_LABELS.dynamic.LOADING_MACHINES}</span>
+                          <span className="text-xs text-slate-400 font-medium">{UI_LABELS.dynamic.LOADING_MACHINES}</span>
                         ) : machines.length === 0 ? (
-                          <span className="text-xs text-slate-400">{UI_LABELS.dynamic.NO_MACHINES_AVAILABLE}</span>
+                          <span className="text-xs text-slate-400 font-medium">{UI_LABELS.dynamic.NO_MACHINES_AVAILABLE}</span>
                         ) : (
-                          machines.map(m => (
-                            <Button
-                              key={m.id}
-                              type="button"
-                              variant={machineIds.includes(m.id) ? "primary" : "outline"}
-                              size="sm"
-                              className={`h-10 px-4 rounded-xl text-xs font-bold transition-all ${
-                                machineIds.includes(m.id) 
-                                  ? 'bg-brand-blue text-white border-transparent' 
-                                  : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                              }`}
-                              onClick={() => {
-                                const current = getValues("machineIds") || [];
-                                setValue(
-                                  "machineIds",
-                                  current.includes(m.id) ? current.filter((id: string) => id !== m.id) : [...current, m.id],
-                                  { shouldDirty: true }
-                                );
-                              }}
-                            >
-                              {m.name}
-                            </Button>
-                          ))
+                          machines.map((m) => {
+                            const isOperational = m.status === "OPERATIONAL";
+                            const isBusy = busyMachineIds.has(m.id);
+                            const isAvailable = isOperational && !isBusy;
+                            const isSelected = machineIds.includes(m.id);
+
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                disabled={!isAvailable}
+                                title={
+                                  !isOperational
+                                    ? `Machine is currently in ${m.status.replace("_", " ")} mode`
+                                    : isBusy
+                                    ? "Machine is currently in use for another active order"
+                                    : undefined
+                                }
+                                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 border ${
+                                  !isAvailable
+                                    ? "bg-slate-100/80 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed border-dashed"
+                                    : isSelected
+                                    ? "bg-brand-blue text-white border-transparent shadow-md shadow-brand-blue/20 scale-[1.02]"
+                                    : "bg-white border-slate-200 text-slate-700 hover:border-brand-blue/40 hover:bg-slate-50"
+                                }`}
+                                onClick={() => {
+                                  if (!isAvailable) return;
+                                  const current = getValues("machineIds") || [];
+                                  setValue(
+                                    "machineIds",
+                                    current.includes(m.id)
+                                      ? current.filter((id: string) => id !== m.id)
+                                      : [...current, m.id],
+                                    { shouldDirty: true }
+                                  );
+                                }}
+                              >
+                                {/* Status Indicator Dot */}
+                                <span
+                                  className={`h-2 w-2 rounded-full ${
+                                    !isOperational
+                                      ? "bg-amber-400"
+                                      : isBusy
+                                      ? "bg-slate-400"
+                                      : isSelected
+                                      ? "bg-white"
+                                      : "bg-emerald-500"
+                                  }`}
+                                />
+
+                                <span>{m.name}</span>
+
+                                {!isOperational && (
+                                  <span className="text-[9px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded bg-slate-200/80 text-slate-500">
+                                    {m.status === "MAINTENANCE" ? "MAINT" : "DOWN"}
+                                  </span>
+                                )}
+
+                                {isOperational && isBusy && (
+                                  <span className="text-[9px] font-black tracking-widest uppercase px-1.5 py-0.5 rounded bg-slate-200/80 text-slate-500">
+                                    IN USE
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })
                         )}
                       </div>
                     </div>
