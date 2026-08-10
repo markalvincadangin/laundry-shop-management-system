@@ -12,7 +12,21 @@ public record CreateOrderCommand(
         List<AddOnItem> addOns,
         String serviceType,
         String notes,
-        boolean isRush
+        boolean isRush,
+        List<UUID> machineIds
 ) {
+    public CreateOrderCommand(
+            UUID customerId,
+            UUID createdByUserId,
+            BigDecimal weightKg,
+            int extraMinutes,
+            List<AddOnItem> addOns,
+            String serviceType,
+            String notes,
+            boolean isRush
+    ) {
+        this(customerId, createdByUserId, weightKg, extraMinutes, addOns, serviceType, notes, isRush, null);
+    }
+
     public record AddOnItem(String name, BigDecimal price, int quantity) {}
 }

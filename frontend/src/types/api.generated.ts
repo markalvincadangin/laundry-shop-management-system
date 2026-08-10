@@ -2097,6 +2097,8 @@ export interface components {
             /** @default 0 */
             extraMinutes: number;
             initialAddOns?: components["schemas"]["AddOnInput"][];
+            /** @description Optional list of machine UUIDs pre-assigned at intake. */
+            machineIds?: string[];
         };
         AddOnInput: {
             name: string;
@@ -2376,6 +2378,29 @@ export interface components {
             totalAdmins: number;
             totalActiveStaff: number;
             totalUsers: number;
+        };
+        /** @enum {string} */
+        MachineStatus: "OPERATIONAL" | "MAINTENANCE" | "OUT_OF_ORDER";
+        MachineResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            status: components["schemas"]["MachineStatus"];
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        CreateMachineRequest: {
+            name: string;
+        };
+        UpdateMachineRequest: {
+            name: string;
+            status: components["schemas"]["MachineStatus"];
+        };
+        UpdateMachineStatusRequest: {
+            status: components["schemas"]["MachineStatus"];
         };
     };
     responses: never;

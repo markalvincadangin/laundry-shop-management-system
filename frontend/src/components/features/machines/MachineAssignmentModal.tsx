@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Check, Server, WashingMachine, AlertCircle } from "lucide-react";
+import { Check, Server, WashingMachine, AlertCircle, Zap, Clock } from "lucide-react";
 import { 
   Modal, 
   Button,
@@ -26,7 +26,7 @@ export function MachineAssignmentModal({
   onClose, 
   order, 
   nextStatus,
-  unavailableMachineIds,
+  unavailableMachineIds = [],
   onConfirm,
   isUpdating 
 }: MachineAssignmentModalProps) {
@@ -86,14 +86,21 @@ export function MachineAssignmentModal({
           </p>
 
           {order && order.totalLoads > 1 && selectedIds.length > 0 && (
-            <div className={`p-4 rounded-xl text-sm font-bold border ${
+            <div className={`p-4 rounded-xl text-sm font-bold border flex items-center gap-3 ${
               selectedIds.length === order.totalLoads 
                 ? 'bg-brand-cyan/10 text-brand-cyan-dark border-brand-cyan/30' 
                 : 'bg-brand-blue/10 text-brand-blue border-brand-blue/30'
             }`}>
-              {selectedIds.length === order.totalLoads 
-                ? `⚡ Parallel Execution: Assigning ${selectedIds.length} machines for ${order.totalLoads} loads. They will wash simultaneously.` 
-                : `⏱️ Sequential Execution: Assigning ${selectedIds.length} machines for ${order.totalLoads} loads. You will need to process loads sequentially.`}
+              {selectedIds.length === order.totalLoads ? (
+                <Zap className="h-5 w-5 shrink-0 text-brand-cyan-dark" />
+              ) : (
+                <Clock className="h-5 w-5 shrink-0 text-brand-blue" />
+              )}
+              <span>
+                {selectedIds.length === order.totalLoads 
+                  ? `Parallel Execution: Assigning ${selectedIds.length} ${selectedIds.length === 1 ? 'machine' : 'machines'} for ${order.totalLoads} loads. They will process simultaneously.` 
+                  : `Sequential Execution: Assigning ${selectedIds.length} ${selectedIds.length === 1 ? 'machine' : 'machines'} for ${order.totalLoads} loads. You will need to process loads sequentially.`}
+              </span>
             </div>
           )}
           

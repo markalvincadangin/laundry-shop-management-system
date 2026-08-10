@@ -39,6 +39,10 @@ vi.mock("@/hooks/useAddOnCatalog", () => ({
   useAddOnCatalog: vi.fn(),
 }));
 
+vi.mock("@/hooks/useActiveMachineIds", () => ({
+  useActiveMachineIds: vi.fn(() => new Set()),
+}));
+
 vi.mock("@/components/features/orders/OrderPreview", () => ({
   OrderPreview: () => <div data-testid="order-preview-mock">{UI_LABELS.dynamic.ORDERPREVIEW_MOCK}</div>,
 }));

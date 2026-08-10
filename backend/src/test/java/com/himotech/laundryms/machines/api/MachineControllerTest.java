@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.himotech.laundryms.machines.dto.CreateMachineRequest;
+import com.himotech.laundryms.machines.dto.UpdateMachineRequest;
 import com.himotech.laundryms.machines.dto.UpdateMachineStatusRequest;
 import com.himotech.laundryms.machines.entity.Machine;
 import com.himotech.laundryms.machines.entity.MachineStatus;
@@ -118,6 +119,39 @@ class MachineControllerTest {
         when(machineService.updateStatus(eq(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")), any())).thenReturn(machine);
 
         mockMvc.perform(patch("/api/v1/machines/123e4567-e89b-12d3-a456-426614174000/status")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "STAFF")
+    @DisplayName("STAFF cannot update machine name and status")
+    void staffCannotUpdateMachine() throws Exception {
+        UpdateMachineRequest request = new UpdateMachineRequest("Washer 01", MachineStatus.OPERATIONAL);
+
+        mockMvc.perform(put("/api/v1/machines/123e4567-e89b-12d3-a456-426614174000")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("ADMIN can update machine name and status")
+    void adminCanUpdateMachine() throws Exception {
+        UpdateMachineRequest request = new UpdateMachineRequest("Washer 01", MachineStatus.OPERATIONAL);
+
+        Machine machine = new Machine();
+        machine.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        machine.setName("Washer 01");
+        machine.setStatus(MachineStatus.OPERATIONAL);
+        
+        when(machineService.updateMachine(eq(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")), any(), any())).thenReturn(machine);
+
+        mockMvc.perform(put("/api/v1/machines/123e4567-e89b-12d3-a456-426614174000")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

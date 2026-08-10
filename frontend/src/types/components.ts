@@ -142,6 +142,7 @@ export interface DataTableProps<T> {
   sortBy?: string;
   sortDir?: "asc" | "desc";
   onSort?: (key: string) => void;
+  mobileCardRender?: (row: T) => React.ReactNode;
 }
 
 export interface PaginationProps {

@@ -50,18 +50,18 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full space-y-grid-10">
-      <div className="space-y-grid-2 mb-grid-10">
-        <h2 className="text-4xl font-display font-black text-slate-900 tracking-tighter leading-none">
+    <div className="w-full space-y-6 sm:space-y-10">
+      <div className="space-y-2 mb-4 sm:mb-10 text-center sm:text-left">
+        <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-900 tracking-tighter leading-none">
           {UI_LABELS.auth.LOGIN_TITLE}
         </h2>
-        <p className="text-sm font-medium text-slate-500 leading-relaxed opacity-80">
+        <p className="text-xs sm:text-sm font-medium text-slate-500 leading-relaxed opacity-80">
           {UI_LABELS.auth.LOGIN_SUBTITLE}
         </p>
       </div>
 
-      <Card className="border-slate-200/60 shadow-2xl shadow-slate-200/60 bg-white rounded-[2.5rem] overflow-hidden">
-        <CardContent className="p-grid-10 sm:p-grid-12">
+      <Card className="border-slate-200/60 shadow-2xl shadow-slate-200/60 bg-white rounded-2xl sm:rounded-[2.5rem] overflow-hidden">
+        <CardContent className="p-6 sm:p-12">
           <form onSubmit={handleSubmit} className="space-y-grid-8">
             
             {error && (

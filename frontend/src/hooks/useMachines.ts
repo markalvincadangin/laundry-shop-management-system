@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { machinesService, MachineResponse, MachineStatus, CreateMachineRequest, UpdateMachineStatusRequest } from "@/lib/api/machines";
+import { machinesService, MachineResponse, MachineStatus, CreateMachineRequest, UpdateMachineRequest, UpdateMachineStatusRequest } from "@/lib/api/machines";
 import { toast } from "sonner";
 import { UI_LABELS } from "@/constants/ui";
 
@@ -25,6 +25,19 @@ export function useMachines() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["machines"] });
       toast.success("Machine added successfully");
+    },
+    onError: (err: any) => {
+      const isServerError = err.status >= 500;
+      toast.error(isServerError ? UI_LABELS.feedback.error.GENERIC : (err.message || UI_LABELS.feedback.error.GENERIC));
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (variables: { id: string; data: UpdateMachineRequest }) =>
+      machinesService.update(variables.id, variables.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["machines"] });
+      toast.success("Machine updated successfully");
     },
     onError: (err: any) => {
       const isServerError = err.status >= 500;
@@ -61,6 +74,10 @@ export function useMachines() {
     return createMutation.mutateAsync(data);
   };
 
+  const updateMachine = async (id: string, data: UpdateMachineRequest) => {
+    return updateMutation.mutateAsync({ id, data });
+  };
+
   const updateStatus = async (id: string, status: MachineStatus) => {
     return updateStatusMutation.mutateAsync({ id, data: { status } });
   };
@@ -75,10 +92,11 @@ export function useMachines() {
     error: isError ? (error as any).message : null,
     refresh,
     addMachine,
+    updateMachine,
     updateStatus,
     removeMachine,
     isCreating: createMutation.isPending,
-    isUpdating: updateStatusMutation.isPending,
+    isUpdating: updateMutation.isPending || updateStatusMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 }

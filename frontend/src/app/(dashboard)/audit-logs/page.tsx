@@ -268,6 +268,18 @@ export default function AuditLogPage() {
             sortDir={sortDir}
             onSort={handleSort}
             onRowClick={(a) => setSelected(a)}
+            mobileCardRender={(a) => (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 text-sm">{a.operation}</span>
+                  <span className="text-[10px] font-mono uppercase bg-slate-100 px-2 py-0.5 rounded text-slate-600">{a.entityType || "SYSTEM"}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
+                  <span>Operator: {a.actor || "System"}</span>
+                  <span className="text-[11px] font-semibold text-slate-400">Tap to view details →</span>
+                </div>
+              </div>
+            )}
             emptyState={
               <EmptyState
                 title={UI_LABELS.feedback.empty.AUDIT_LOG_TITLE}

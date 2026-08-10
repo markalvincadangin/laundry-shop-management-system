@@ -243,6 +243,21 @@ export default function CustomersPage() {
             sortDir={sortDir}
             onSort={handleSort}
             onRowClick={handleRowClick}
+            mobileCardRender={(customer) => (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900">{customer.firstName} {customer.lastName}</span>
+                  <StatusBadge
+                    variant={customer.isActive ? "success" : "neutral"}
+                    label={customer.isActive ? UI_LABELS.shared.common.ACTIVE : UI_LABELS.shared.common.INACTIVE}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+                  <span>{customer.contactNumber || "No Phone"}</span>
+                  <span className="text-[11px] font-semibold text-slate-400">Tap to inspect →</span>
+                </div>
+              </div>
+            )}
             emptyState={
               <EmptyState
                 title={UI_LABELS.feedback.empty.CUSTOMERS_TITLE}

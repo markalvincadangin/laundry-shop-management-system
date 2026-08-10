@@ -26,7 +26,10 @@ import com.himotech.laundryms.rates.entity.AddOnCatalog;
 import com.himotech.laundryms.rates.repository.AddOnCatalogRepository;
 import com.himotech.laundryms.rates.service.ServiceRateService;
 import com.himotech.laundryms.users.entity.User;
+import com.himotech.laundryms.users.entity.User;
 import com.himotech.laundryms.users.repository.UserRepository;
+import com.himotech.laundryms.machines.entity.Machine;
+import com.himotech.laundryms.machines.repository.MachineRepository;
 import com.himotech.laundryms.payments.repository.PaymentRepository;
 import com.himotech.laundryms.orders.dto.OrderResponse;
 import com.himotech.laundryms.orders.mapper.OrderMapper;
@@ -62,6 +65,7 @@ public class OrderService {
     private final AuditLogService auditLogService;
     private final OrderMapper orderMapper;
     private final AddOnCatalogRepository addOnCatalogRepository;
+    private final MachineRepository machineRepository;
 
 
     private static final int MAX_REFERENCE_ATTEMPTS = 10;
@@ -103,7 +107,8 @@ public class OrderService {
                 addOns,
                 request.getServiceType(),
                 request.getNotes(),
-                request.getIsRush() != null ? request.getIsRush() : false
+                request.getIsRush() != null ? request.getIsRush() : false,
+                request.getMachineIds()
         );
         
         return create(command);
@@ -256,6 +261,11 @@ public class OrderService {
                     .ifPresent(addOn::setAddOnCatalog);
                     
             order.getAddOns().add(addOn);
+        }
+
+        if (command.machineIds() != null && !command.machineIds().isEmpty()) {
+            List<Machine> machines = machineRepository.findAllById(command.machineIds());
+            order.setAssignedMachines(new java.util.HashSet<>(machines));
         }
 
         order = orderRepository.save(order);

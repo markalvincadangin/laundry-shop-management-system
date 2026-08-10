@@ -42,6 +42,14 @@ public class MachineService {
     }
 
     @Transactional
+    public Machine updateMachine(final UUID id, final String name, final MachineStatus status) {
+        Machine machine = getMachineById(id);
+        machine.setName(name);
+        machine.setStatus(status);
+        return machineRepository.save(machine);
+    }
+
+    @Transactional
     public Machine updateStatus(final UUID id, MachineStatus status) {
         Machine machine = getMachineById(id);
         machine.setStatus(status);

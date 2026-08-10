@@ -36,13 +36,13 @@ export function ProcessStepper({
   const currentIndex = STEPS.findIndex((s) => s.status === currentStatus);
 
   return (
-    <div className="relative flex items-center justify-between w-full h-12">
+    <div className="relative flex items-center justify-between w-full h-16 sm:h-20 pb-6 sm:pb-8">
       {/* Background Line */}
-      <div data-testid="stepper-bg-line" className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 bg-slate-100" />
+      <div data-testid="stepper-bg-line" className="absolute left-0 top-1/3 sm:top-1/2 h-0.5 w-full -translate-y-1/2 bg-slate-200/60" />
       
       {/* Progress Line */}
       <motion.div 
-        className="absolute left-0 top-1/2 h-0.5 -translate-y-1/2 bg-brand-blue shadow-[0_0_12px_rgba(21,72,157,0.2)]"
+        className="absolute left-0 top-1/3 sm:top-1/2 h-0.5 -translate-y-1/2 bg-brand-blue shadow-[0_0_12px_rgba(21,72,157,0.2)]"
         initial={{ width: 0 }}
         animate={{ width: `${(currentIndex / (STEPS.length - 1)) * 100}%` }}
         transition={{ duration: 0.8, ease: "circOut" }}
@@ -94,8 +94,8 @@ export function ProcessStepper({
             </motion.button>
             
             {size === "md" && (
-               <span className={`absolute -bottom-8 text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
-                 isCurrent ? "text-brand-blue" : isNext && isInteractive ? "text-brand-blue/60" : "text-slate-400"
+               <span className={`absolute top-11 sm:top-12 text-[9px] sm:text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-colors ${
+                 isCurrent ? "text-brand-blue block" : "hidden sm:block text-slate-400"
                }`}>
                  {step.label}
                </span>

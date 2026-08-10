@@ -24,6 +24,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/reports": UI_LABELS.layout.nav.REPORTS,
   "/rates": UI_LABELS.layout.nav.RATES,
   "/users": UI_LABELS.layout.nav.USERS,
+  "/machines": UI_LABELS.layout.nav.MACHINES,
+  "/audit": UI_LABELS.layout.nav.AUDIT_LOG,
   "/messaging": UI_LABELS.modules.clientAlerts.TITLE,
 };
 

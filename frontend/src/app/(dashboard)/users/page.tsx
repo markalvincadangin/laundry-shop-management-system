@@ -275,6 +275,22 @@ export default function UsersPage() {
           sortBy={sortBy}
           sortDir={sortDir}
           onSort={handleSort}
+          mobileCardRender={(u) => (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900">{u.firstName} {u.lastName} ({u.username})</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                  u.role === "ADMIN" ? "bg-brand-blue/10 text-brand-blue" : "bg-slate-100 text-slate-600"
+                }`}>
+                  {u.role}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+                <span>Status: {u.isActive ? "Active" : "Inactive"}</span>
+                <span>Joined: {formatDate(u.createdAt)}</span>
+              </div>
+            </div>
+          )}
           emptyState={
             <EmptyState
               title={UI_LABELS.modules.users.EMPTY_TITLE}
