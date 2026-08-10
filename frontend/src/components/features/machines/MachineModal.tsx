@@ -46,7 +46,8 @@ export function MachineModal({ isOpen, onClose, machine, onSuccess }: MachineMod
     setLoading(true);
     try {
       if (machine) {
-        await machinesService.updateStatus(machine.id, {
+        await machinesService.update(machine.id, {
+          name: form.name,
           status: form.status,
         });
       } else {
@@ -80,9 +81,8 @@ export function MachineModal({ isOpen, onClose, machine, onSuccess }: MachineMod
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
-            disabled={!!machine}
             icon={<Server className="h-4 w-4 text-brand-blue" />}
-            className={`h-14 rounded-2xl border-slate-200 transition-all shadow-sm ${machine ? 'bg-slate-50 text-slate-400 cursor-not-allowed opacity-70' : 'bg-white/50 focus:bg-white'}`}
+            className="h-14 rounded-2xl border-slate-200 transition-all shadow-sm bg-white/50 focus:bg-white"
           />
           {machine && (
             <Select

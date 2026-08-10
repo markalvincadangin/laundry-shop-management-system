@@ -300,6 +300,22 @@ export const apiClient = {
     }), true);
   },
 
+  async put<T>(path: string, body?: unknown, options?: { operationIdentifier?: string }): Promise<T> {
+    requireRemoteWritesEnabled();
+    const base = getBaseUrl();
+    const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (body) headers["Content-Type"] = "application/json";
+    
+    headers["X-Operation-Identifier"] = options?.operationIdentifier || crypto.randomUUID();
+
+    return executeWithRetry<T>(url, fetchOptions({
+      method: "PUT",
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    }), true);
+  },
+
   async delete<T>(path: string, options?: { operationIdentifier?: string }): Promise<T> {
     requireRemoteWritesEnabled();
     const base = getBaseUrl();

@@ -10,6 +10,7 @@ import { UI_LABELS } from "@/constants/ui";
 
 interface OrderCardProps {
   order: OrderResponse;
+  machines?: Array<{ id: string; name: string }>;
   onAdvance: (orderId: string, nextStatus: OrderStatus) => void;
   isLoading?: boolean;
   /** When true, applies Urgent State left-border accent (§11.5 — Ready for Pickup column) */
@@ -22,7 +23,7 @@ interface OrderCardProps {
  * FRONT-001 §11.2, §11.5.
  * Reimagined with glassmorphism and premium micro-interactions.
  */
-export function OrderCard({ order, onAdvance, isLoading, isUrgent, isSystemPaused }: OrderCardProps) {
+export function OrderCard({ order, machines = [], onAdvance, isLoading, isUrgent, isSystemPaused }: OrderCardProps) {
   const transition = STATUS_TRANSITIONS[order.currentStatus as OrderStatus];
   const isRush = order.isRush;
 
@@ -36,6 +37,28 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent, isSystemPause
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
   }, [order.createdAt]);
+
+  const machineText = React.useMemo(() => {
+    if (order.assignedMachines && order.assignedMachines.length > 0) {
+      return order.assignedMachines.join(", ");
+    }
+    if (order.machineIds && order.machineIds.length > 0) {
+      const machinesMap = new Map(machines.map((m) => [m.id, m.name]));
+      return order.machineIds
+        .map((id) => {
+          if (machinesMap.has(id)) {
+            return machinesMap.get(id)!;
+          }
+          if (/^m?\d+$/i.test(id)) {
+            const num = id.replace(/\D/g, "");
+            return `A${num}`;
+          }
+          return id.replace(/[-_]/g, " ");
+        })
+        .join(", ");
+    }
+    return null;
+  }, [order.assignedMachines, order.machineIds, machines]);
 
   return (
     <motion.div
@@ -55,82 +78,67 @@ export function OrderCard({ order, onAdvance, isLoading, isUrgent, isSystemPause
         <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/10 pointer-events-none" />
 
       {/* Header: Identity & Status */}
-      <div className="flex flex-col gap-4 mb-4 relative z-10">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-1 rounded-md bg-slate-50 border border-slate-200/50 text-[9px] font-mono font-black text-slate-800 tracking-widest uppercase shadow-sm">
-              {order.trackingNumber}
-            </span>
+      <div className="flex flex-col gap-2 mb-3 relative z-10">
+        {/* Top Row: Tracking ID & Badges */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="px-2 py-0.5 rounded-md bg-slate-100/90 border border-slate-200/60 text-[9.5px] font-mono font-black text-slate-800 tracking-wider uppercase whitespace-nowrap shrink-0">
+            {order.trackingNumber}
+          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
             {isRush && (
-              <StatusBadge label="RUSH" variant="rush" className="px-2 py-1 text-[8px] h-auto" />
+              <StatusBadge label="RUSH" variant="rush" className="px-2 py-0.5 text-[8px] h-auto shrink-0" />
             )}
-          </div>
-          <div className="shrink-0 scale-90 origin-right">
-            <StatusBadge status={order.currentStatus as OrderStatus} />
+            {dropOffTime && (
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-50 border border-slate-100/80 shrink-0">
+                <Clock className="h-3 w-3 text-slate-400" />
+                <span className="text-slate-400 whitespace-nowrap font-black text-[8.5px] uppercase tracking-wider">{dropOffTime}</span>
+              </div>
+            )}
           </div>
         </div>
         
-        <h3 className="text-sm font-black text-slate-900 tracking-tight line-clamp-2 break-words leading-tight flex items-center gap-2">
-          {order.customerName || "Walk-in Customer"}
+        {/* Customer Name Row */}
+        <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight line-clamp-1 break-words leading-tight flex items-center gap-1.5 pt-0.5">
+          <span className="truncate">{order.customerName || "Walk-in Customer"}</span>
           {isRush && (
-            <Zap className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" aria-label="Rush Order" />
+            <Zap className="h-3.5 w-3.5 text-amber-500 fill-amber-500 animate-pulse shrink-0" aria-label="Rush Order" />
           )}
         </h3>
       </div>
 
       {/* Special Instructions */}
       {order.notes && (
-        <div className="mb-4 p-4 rounded-xl bg-amber-50/50 border border-amber-100/50 flex items-start gap-2 relative z-10">
-          <FileText className="h-4 w-4 text-amber-500 shrink-0" />
-          <p className="text-xs font-bold text-amber-800 leading-tight line-clamp-2 italic opacity-80 break-words whitespace-pre-wrap">
+        <div className="mb-3 p-2.5 rounded-xl bg-amber-50/60 border border-amber-100/60 flex items-start gap-2 relative z-10">
+          <FileText className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-[11px] font-bold text-amber-900 leading-tight line-clamp-2 italic opacity-90 break-words whitespace-pre-wrap">
             {order.notes}
           </p>
         </div>
       )}
 
       {/* Meta Row */}
-      <div className="flex flex-col gap-4 text-xs font-medium text-slate-500 mb-6 flex-1 relative z-10">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-4">
-            <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100">
-              <Scale className="h-4 w-4 text-slate-400" />
-            </div>
-            <span className="text-xs font-black text-slate-700">
-              {order.weightKg != null ? `${order.weightKg}kg` : "—"}{" "}
-              <span className="text-slate-200 mx-2">{UI_LABELS.dynamic.STR_6666cd}</span>{" "}
+      <div className="flex flex-col gap-2 text-xs font-medium text-slate-500 mb-4 flex-1 relative z-10">
+        <div className="flex items-center justify-between w-full bg-slate-50/80 px-2.5 py-2 rounded-xl border border-slate-100">
+          <div className="flex items-center gap-2">
+            <Scale className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+            <span className="text-[11px] font-black text-slate-700">
+              {order.weightKg != null ? `${order.weightKg} kg` : "—"}{" "}
+              <span className="text-slate-300 mx-1">•</span>{" "}
               {order.totalLoads ?? 0}{" "}
               {order.totalLoads === 1 ? UI_LABELS.units.LOAD : UI_LABELS.units.LOADS}
             </span>
           </div>
-          
-          {dropOffTime && (
-            <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100 shadow-sm">
-              <Clock className="h-4 w-4 text-brand-blue/60" />
-              <span className="text-slate-500 whitespace-nowrap font-black text-[9px] uppercase tracking-wider">{dropOffTime}</span>
-            </div>
-          )}
         </div>
         
-        {/* Assigned Machines Display */}
-        {order.assignedMachines && order.assignedMachines.length > 0 ? (
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
-              <WashingMachine className="h-3.5 w-3.5 text-brand-cyan" />
-              <span className="text-[9px] font-black uppercase tracking-wider text-brand-cyan-dark">
-                {order.assignedMachines.join(", ")}
-              </span>
-            </div>
+        {/* Assigned Machines Display (Only active during WASHING and DRYING stages) */}
+        {(order.currentStatus === "WASHING" || order.currentStatus === "DRYING") && machineText && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand-cyan/10 border border-brand-cyan/20 w-fit">
+            <WashingMachine className="h-3.5 w-3.5 text-brand-cyan shrink-0" />
+            <span className="text-[8.5px] font-black uppercase tracking-wider text-brand-cyan-dark truncate max-w-[180px]">
+              {machineText}
+            </span>
           </div>
-        ) : order.machineIds && order.machineIds.length > 0 ? (
-          <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-brand-cyan/10 border border-brand-cyan/20">
-              <WashingMachine className="h-3.5 w-3.5 text-brand-cyan" />
-              <span className="text-[9px] font-black uppercase tracking-wider text-brand-cyan-dark">
-                {order.machineIds.length} {order.machineIds.length === 1 ? UI_LABELS.modules.machines.MACHINE_SINGULAR : UI_LABELS.modules.machines.MACHINE_PLURAL}
-              </span>
-            </div>
-          </div>
-        ) : null}
+        )}
       </div>
 
       {/* Action Area */}

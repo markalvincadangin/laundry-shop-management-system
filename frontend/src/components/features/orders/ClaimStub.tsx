@@ -6,10 +6,12 @@ import { createPortal } from "react-dom";
 import { Printer, Download, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Barcode from "react-barcode";
+import { QRCodeSVG } from "qrcode.react";
 import { Modal, Button } from "@/components/ui";
 import { OrderResponse } from "@/lib/api/orders";
 import { UI_LABELS } from "@/constants/ui";
 import { formatCurrency, formatDate, formatTime } from "@/lib/utils";
+import { usePortalUrl } from "@/hooks/usePortalUrl";
 
 interface ClaimStubProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
   const stubRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const portalUrl = usePortalUrl();
 
   useEffect(() => {
     setIsMounted(true);
@@ -58,164 +61,181 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
     } finally {
       setDownloading(false);
     }
-  };  // The Receipt Content (Shared between UI and Print)
-  const ReceiptContent = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div
-      id={isPrint ? "printable-receipt-isolated" : "printable-receipt"}
-      className={`bg-white font-mono ${isPrint ? "p-0" : "p-8"} text-black w-full`}
-      style={{ width: isPrint ? "100%" : "auto" }}
-    >
-      {/* ── HEADER ── */}
-      <div className="text-center space-y-2 pb-6 border-b-2 border-black">
-        <h1 className="text-3xl font-black tracking-tight uppercase leading-none">
-          {UI_LABELS.meta.APP_NAME}
-        </h1>
-        <div className="text-[10px] font-bold uppercase leading-tight tracking-wide">
-          <p>{UI_LABELS.dynamic.SITIO_ILAYA__TABUC_SUBA__JARO}</p>
-          <p>{UI_LABELS.dynamic["63_929_155_4954"]}</p>
-        </div>
-      </div>
+  };
 
-      {/* ── REFERENCE BLOCK ── */}
-      <div className="py-8 text-center space-y-2 border-b-2 border-black bg-black text-white -mx-0">
-        <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-80">
-          CLAIM STUB
-        </div>
-        <div className="text-3xl font-black tracking-tight leading-none">
-          {order.trackingNumber}
-        </div>
-      </div>
+  // The Receipt Content (Shared between UI and Print)
+  const ReceiptContent = ({ isPrint = false }: { isPrint?: boolean }) => {
+    // The tracking URL uses the installer-configured customer portal URL
+    // (fetched at runtime from GET /api/v1/app-config) so that QR codes on
+    // printed receipts always resolve to the public-facing portal regardless
+    // of whether the shop is running locally, via Ngrok, or via Vercel.
+    const trackingUrl = `${portalUrl}/track?trackingNumber=${order.trackingNumber}`;
 
-      {/* ── CORE DETAILS (Monospace Alignment) ── */}
-      <div className="py-6 space-y-3 border-b border-black text-[11px] font-bold uppercase">
-        {[
-          { label: "CUSTOMER", value: order.customerName || "WALK-IN" },
-          { label: "RECEIVED", value: `${formatDate(order.createdAt!)} ${formatTime(order.createdAt!)}` },
-          { label: "READY BY", value: formatDate(new Date(new Date(order.createdAt!).getTime() + 24 * 60 * 60 * 1000).toISOString()) },
-          { label: "STAFF", value: order.createdByUsername || "ADMIN" },
-        ].map((row, i) => (
-          <div key={i} className="flex justify-between items-start gap-4">
-            <span className="whitespace-nowrap text-slate-900">{row.label}{UI_LABELS.dynamic.STR_853ae9}</span>
-            <span className="text-right flex-1">{row.value}</span>
+    const createdDate = order.createdAt ? new Date(order.createdAt) : new Date();
+    const isRush = order.isRush || order.serviceName?.toLowerCase().includes("rush");
+    const turnaroundHours = isRush ? 4 : 24;
+    const readyDate = new Date(createdDate.getTime() + turnaroundHours * 60 * 60 * 1000);
+
+    return (
+      <div
+        id={isPrint ? "printable-receipt-isolated" : "printable-receipt"}
+        className={`bg-white font-mono ${isPrint ? "p-0" : "p-8"} text-black w-full`}
+        style={{ width: isPrint ? "100%" : "auto" }}
+      >
+        {/* ── HEADER ── */}
+        <div className="text-center space-y-2 pb-6 border-b-2 border-black">
+          <h1 className="text-3xl font-black tracking-tight uppercase leading-none">
+            {UI_LABELS.meta.APP_NAME}
+          </h1>
+          <div className="text-[10px] font-bold uppercase leading-tight tracking-wide">
+            <p>{UI_LABELS.dynamic.SITIO_ILAYA__TABUC_SUBA__JARO}</p>
+            <p>{UI_LABELS.dynamic["63_929_155_4954"]}</p>
           </div>
-        ))}
-      </div>
-
-      {/* ── SERVICE BREAKDOWN ── */}
-      <div className="py-6 border-b border-black space-y-4">
-        <div className="flex justify-between text-[11px] font-black tracking-widest border-b border-black pb-1">
-          <span>{UI_LABELS.dynamic.ITEM___SERVICE}</span>
-          <span>{UI_LABELS.dynamic.PRICE}</span>
         </div>
 
-        <div className="space-y-2 text-[11px]">
-          <div className="flex justify-between leading-tight">
-            <span className="flex-1 pr-2">
-              <span className="font-black text-xs block mb-0.5">
-                {order.totalLoads} {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS} {UI_LABELS.dynamic.STR_518ed2} {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}{UI_LABELS.dynamic.KG}
+        {/* ── REFERENCE BLOCK ── */}
+        <div className="py-8 text-center space-y-2 border-b-2 border-black bg-black text-white -mx-0">
+          <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-80">
+            CLAIM STUB
+          </div>
+          <div className="text-3xl font-black tracking-tight leading-none">
+            {order.trackingNumber}
+          </div>
+        </div>
+
+        {/* ── CORE DETAILS (Monospace Alignment) ── */}
+        <div className="py-6 space-y-3 border-b border-black text-[11px] font-bold uppercase">
+          {[
+            { label: "CUSTOMER", value: order.customerName || "WALK-IN" },
+            { label: "RECEIVED", value: `${formatDate(createdDate.toISOString())} ${formatTime(createdDate.toISOString())}` },
+            { label: "READY BY", value: `${formatDate(readyDate.toISOString())} ${formatTime(readyDate.toISOString())}` },
+            { label: "STAFF", value: order.createdByUsername || "ADMIN" },
+          ].map((row, i) => (
+            <div key={i} className="flex justify-between items-start gap-4">
+              <span className="whitespace-nowrap text-slate-900">{row.label}{UI_LABELS.dynamic.STR_853ae9}</span>
+              <span className="text-right flex-1">{row.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* ── SERVICE BREAKDOWN ── */}
+        <div className="py-6 border-b border-black space-y-4">
+          <div className="flex justify-between text-[11px] font-black tracking-widest border-b border-black pb-1">
+            <span>{UI_LABELS.dynamic.ITEM___SERVICE}</span>
+            <span>{UI_LABELS.dynamic.PRICE}</span>
+          </div>
+
+          <div className="space-y-2 text-[11px]">
+            <div className="flex justify-between leading-tight">
+              <span className="flex-1 pr-2">
+                <span className="font-black text-xs block mb-0.5">
+                  {order.totalLoads} {order.totalLoads === 1 ? UI_LABELS.shared.units.LOAD : UI_LABELS.shared.units.LOADS} {UI_LABELS.dynamic.STR_518ed2} {order.weightKg?.toLocaleString(undefined, { maximumFractionDigits: 2 })}{UI_LABELS.dynamic.KG}
+                </span>
+                <span className="text-[10px] font-medium opacity-70">{order.serviceType?.replace(/_/g, " ")}</span>
               </span>
-              <span className="text-[10px] font-medium opacity-70">{order.serviceType?.replace(/_/g, " ")}</span>
-            </span>
-            <span className="whitespace-nowrap font-black">{formatCurrency(order.baseAmount)}</span>
-          </div>
-
-          {(order.extraMinutes ?? 0) > 0 && (
-            <div className="flex justify-between font-bold">
-              <span>{UI_LABELS.dynamic.EXTRA_MINUTES}{order.extraMinutes} {UI_LABELS.dynamic.MINS}</span>
-              <span>{formatCurrency(order.extraMinutesAmount)}</span>
+              <span className="whitespace-nowrap font-black">{formatCurrency(order.baseAmount)}</span>
             </div>
-          )}
 
-          {order.addOns && order.addOns.length > 0 ? (
-            <div className="pt-3 mt-2 border-t border-dashed border-black">
-              <span className="text-[10px] font-black uppercase block mb-1">{UI_LABELS.dynamic.ADD_ONS}</span>
-              {order.addOns.map((a, i) => (
-                <div key={i} className="flex justify-between italic text-[11px] font-medium">
-                  <span>{a.name} {UI_LABELS.dynamic.X_327d}{a.quantity}{UI_LABELS.dynamic.STR_9371d7}</span>
-                  <span>{formatCurrency((a.price || 0) * (a.quantity || 1))}</span>
-                </div>
-              ))}
-            </div>
-          ) : (order.addonsTotalAmount ?? 0) > 0 ? (
-            <div className="pt-3 mt-2 border-t border-dashed border-black flex justify-between text-[11px]">
-              <span className="font-black uppercase">{UI_LABELS.dynamic.ADD_ONS_TOTAL}</span>
-              <span className="font-bold">{formatCurrency(order.addonsTotalAmount)}</span>
-            </div>
-          ) : null}
-        </div>
-      </div>
+            {(order.extraMinutes ?? 0) > 0 && (
+              <div className="flex justify-between font-bold">
+                <span>{UI_LABELS.dynamic.EXTRA_MINUTES}{order.extraMinutes} {UI_LABELS.dynamic.MINS}</span>
+                <span>{formatCurrency(order.extraMinutesAmount)}</span>
+              </div>
+            )}
 
-      {/* ── TOTALS ── */}
-      <div className="py-6 space-y-3">
-        <div className="flex justify-between text-[11px] font-bold">
-          <span>{UI_LABELS.dynamic.SUBTOTAL}</span>
-          <span>{formatCurrency((order.baseAmount || 0) + (order.extraMinutesAmount || 0) + (order.addonsTotalAmount || 0))}</span>
-        </div>
-        <div className="flex justify-between text-xl font-black border-t-2 border-black pt-4">
-          <span className="tracking-tight uppercase">{UI_LABELS.dynamic.GRAND_TOTAL}</span>
-          <span className="text-2xl">{formatCurrency(order.grandTotal)}</span>
-        </div>
-
-        <div className="pt-4 space-y-2 text-[11px] font-bold uppercase tracking-tight">
-          <div className="flex justify-between">
-            <span>{UI_LABELS.dynamic.PAYMENT_STATUS}</span>
-            <span className="font-black">
-              {order.paymentStatus === "PAID" ? "FULLY PAID" : "UNPAID"}
-            </span>
-          </div>
-
-          <div className="flex justify-between border-t border-dashed border-black pt-2 font-black text-sm bg-slate-50 px-2 py-1 rounded mt-2">
-            <span>{UI_LABELS.dynamic.BALANCE_DUE}</span>
-            <span>{formatCurrency(order.paymentStatus === "PAID" ? 0 : order.grandTotal)}</span>
+            {order.addOns && order.addOns.length > 0 ? (
+              <div className="pt-3 mt-2 border-t border-dashed border-black">
+                <span className="text-[10px] font-black uppercase block mb-1">{UI_LABELS.dynamic.ADD_ONS}</span>
+                {order.addOns.map((a, i) => (
+                  <div key={i} className="flex justify-between italic text-[11px] font-medium">
+                    <span>{a.name} {UI_LABELS.dynamic.X_327d}{a.quantity}{UI_LABELS.dynamic.STR_9371d7}</span>
+                    <span>{formatCurrency((a.price || 0) * (a.quantity || 1))}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (order.addonsTotalAmount ?? 0) > 0 ? (
+              <div className="pt-3 mt-2 border-t border-dashed border-black flex justify-between text-[11px]">
+                <span className="font-black uppercase">{UI_LABELS.dynamic.ADD_ONS_TOTAL}</span>
+                <span className="font-bold">{formatCurrency(order.addonsTotalAmount)}</span>
+              </div>
+            ) : null}
           </div>
         </div>
-      </div>
 
-      {/* ── LEGAL & TERMS ── */}
-      <div className="pt-6 text-[9px] font-bold leading-relaxed text-justify uppercase space-y-4">
-        <div className="border-t-2 border-black pt-4">
-          <p className="font-black text-center text-xs mb-2">{UI_LABELS.dynamic.TERMS_AND_CONDITIONS}</p>
-          <ol className="list-decimal pl-5 space-y-2">
-            <li>{UI_LABELS.dynamic.PRESENT_THIS_STUB_TO_CLAIM_LAU}</li>
-            <li>{UI_LABELS.dynamic.NOT_RESPONSIBLE_FOR_COLOR_BLEE}</li>
-            <li>{UI_LABELS.dynamic.LIABILITY_FOR_LOST_ITEMS_IS_LI}</li>
-            <li>{UI_LABELS.dynamic.UNCLAIMED_ITEMS_AFTER_30_DAYS}</li>
-            <li>{UI_LABELS.dynamic.CHECK_ALL_ITEMS_UPON_CLAIMING}</li>
-            <li>{UI_LABELS.dynamic.UNPAID_ORDERS_MUST_BE_SETTLED}</li>
-          </ol>
+        {/* ── TOTALS ── */}
+        <div className="py-6 space-y-3">
+          <div className="flex justify-between text-[11px] font-bold">
+            <span>{UI_LABELS.dynamic.SUBTOTAL}</span>
+            <span>{formatCurrency((order.baseAmount || 0) + (order.extraMinutesAmount || 0) + (order.addonsTotalAmount || 0))}</span>
+          </div>
+          <div className="flex justify-between text-xl font-black border-t-2 border-black pt-4">
+            <span className="tracking-tight uppercase">{UI_LABELS.dynamic.GRAND_TOTAL}</span>
+            <span className="text-2xl">{formatCurrency(order.grandTotal)}</span>
+          </div>
+
+          <div className="pt-4 space-y-2 text-[11px] font-bold uppercase tracking-tight">
+            <div className="flex justify-between">
+              <span>{UI_LABELS.dynamic.PAYMENT_STATUS}</span>
+              <span className="font-black">
+                {order.paymentStatus === "PAID" ? "FULLY PAID" : "UNPAID"}
+              </span>
+            </div>
+
+            <div className="flex justify-between border-t border-dashed border-black pt-2 font-black text-sm bg-slate-50 px-2 py-1 rounded mt-2">
+              <span>{UI_LABELS.dynamic.BALANCE_DUE}</span>
+              <span>{formatCurrency(order.paymentStatus === "PAID" ? 0 : order.grandTotal)}</span>
+            </div>
+          </div>
         </div>
 
-        {/* ── CUSTOMER SIGNATURE ── */}
-        <div className="pt-14 space-y-3">
-          <div className="border-b-2 border-black w-full" />
-          <p className="text-center font-black text-[10px]">{UI_LABELS.dynamic.CUSTOMER_SIGNATURE}</p>
-        </div>
+        {/* ── LEGAL & TERMS ── */}
+        <div className="pt-6 text-[9px] font-bold leading-relaxed text-justify uppercase space-y-4">
+          <div className="border-t-2 border-black pt-4">
+            <p className="font-black text-center text-xs mb-2">{UI_LABELS.dynamic.TERMS_AND_CONDITIONS}</p>
+            <ol className="list-decimal pl-5 space-y-2">
+              <li>{UI_LABELS.dynamic.PRESENT_THIS_STUB_TO_CLAIM_LAU}</li>
+              <li>{UI_LABELS.dynamic.NOT_RESPONSIBLE_FOR_COLOR_BLEE}</li>
+              <li>{UI_LABELS.dynamic.LIABILITY_FOR_LOST_ITEMS_IS_LI}</li>
+              <li>{UI_LABELS.dynamic.UNCLAIMED_ITEMS_AFTER_30_DAYS}</li>
+              <li>{UI_LABELS.dynamic.CHECK_ALL_ITEMS_UPON_CLAIMING}</li>
+              <li>{UI_LABELS.dynamic.UNPAID_ORDERS_MUST_BE_SETTLED}</li>
+            </ol>
+          </div>
 
-        {/* ── FOOTER ── */}
-        <div className="pt-10 text-center space-y-6">
-          <div className="flex flex-col items-center justify-center">
-            <div className="bg-white p-2 border border-black rounded">
-              <Barcode
-                value={order.trackingNumber}
-                width={1.5}
-                height={50}
-                fontSize={12}
-                margin={0}
-                background="transparent"
-                format="CODE128"
+          {/* ── CUSTOMER SIGNATURE ── */}
+          <div className="pt-14 space-y-3">
+            <div className="border-b-2 border-black w-full" />
+            <p className="text-center font-black text-[10px]">{UI_LABELS.dynamic.CUSTOMER_SIGNATURE}</p>
+          </div>
+
+          {/* ── FOOTER: QR CODE & DIGITAL TRACKING ── */}
+          <div className="pt-8 text-center space-y-4">
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <QRCodeSVG
+                value={trackingUrl}
+                size={135}
+                level="M"
+                includeMargin={false}
               />
+              <div className="space-y-1">
+                <div className="text-xs font-black tracking-widest text-black">
+                  {order.trackingNumber}
+                </div>
+                <div className="text-[9px] font-black uppercase tracking-tight text-slate-700">
+                  SCAN TO TRACK LIVE STATUS
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="text-[11px] font-black tracking-tight pt-4 border-t border-black">
-            THANK YOU FOR TRUSTING<br />
-            FAITH LAUNDRY SHOP!
+            <div className="text-[11px] font-black tracking-tight pt-4 border-t border-black">
+              THANK YOU FOR TRUSTING<br />
+              FAITH LAUNDRY SHOP!
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-  ;
+    );
+  };
 
   return (
     <>

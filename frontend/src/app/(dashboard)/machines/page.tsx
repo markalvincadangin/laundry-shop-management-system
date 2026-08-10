@@ -125,7 +125,28 @@ export default function MachinesPage() {
         }
       />
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-grid-6">
-        <DataTable data={machines} columns={columns} loading={loading} />
+        <DataTable
+          data={machines}
+          columns={columns}
+          loading={loading}
+          mobileCardRender={(m) => (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-900">{m.name}</span>
+                <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                  m.status === "OPERATIONAL" ? "bg-emerald-50 text-emerald-700" :
+                  m.status === "MAINTENANCE" ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700"
+                }`}>
+                  {m.status}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+                <span>Created: {formatDate(m.createdAt)}</span>
+                <span className="text-[11px] font-semibold text-slate-400">Tap to edit →</span>
+              </div>
+            </div>
+          )}
+        />
       </motion.div>
 
       <MachineModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} machine={selectedMachine} onSuccess={() => refresh()} />

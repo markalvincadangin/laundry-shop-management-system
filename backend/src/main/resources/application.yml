@@ -68,6 +68,9 @@ app:
     # Development default only. Production origins are written by the Windows
     # installer into application-prod.properties. Multiple origins are comma-separated.
     allowed-origin: ${ALLOWED_ORIGIN:http://localhost:3000}
+    # The canonical public-facing customer portal URL used for receipt QR codes.
+    # The Windows installer writes this from the 'Remote Frontend URL' wizard input.
+    portal-url: ${PORTAL_URL:http://localhost:3000}
     jwt-secret: ${JWT_SECRET}
   sms:
     semaphore:

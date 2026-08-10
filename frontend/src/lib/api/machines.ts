@@ -15,6 +15,11 @@ export interface CreateMachineRequest {
   name: string;
 }
 
+export interface UpdateMachineRequest {
+  name: string;
+  status: MachineStatus;
+}
+
 export interface UpdateMachineStatusRequest {
   status: MachineStatus;
 }
@@ -22,6 +27,7 @@ export interface UpdateMachineStatusRequest {
 export const machinesService = {
   getAll: () => apiClient.get<MachineResponse[]>("/v1/machines"),
   create: (data: CreateMachineRequest, options?: { operationIdentifier?: string }) => apiClient.post<MachineResponse>("/v1/machines", data, options),
+  update: (id: string, data: UpdateMachineRequest, options?: { operationIdentifier?: string }) => apiClient.put<MachineResponse>(`/v1/machines/${id}`, data, options),
   updateStatus: (id: string, data: UpdateMachineStatusRequest, options?: { operationIdentifier?: string }) => apiClient.patch<MachineResponse>(`/v1/machines/${id}/status`, data, options),
   delete: (id: string, options?: { operationIdentifier?: string }) => apiClient.delete(`/v1/machines/${id}`, options),
 };

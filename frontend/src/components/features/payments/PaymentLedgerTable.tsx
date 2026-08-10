@@ -139,6 +139,22 @@ export function PaymentLedgerTable({
       sortDir={sortDir}
       onSort={onSort}
       onRowClick={onRowClick}
+      mobileCardRender={(p) => (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-sm font-bold text-brand-blue">{p.orderTrackingNumber ?? `#${p.orderId}`}</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">{p.paymentMethod}</span>
+          </div>
+          <div className="flex items-center justify-between text-sm text-slate-700 font-medium">
+            <span>{p.customerName ?? "Anonymous"}</span>
+            <span className="font-black text-emerald-700">₱{p.amountPaid?.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-100">
+            <span>{formatDate(p.paymentDate)}</span>
+            <span className="text-[11px] font-semibold text-slate-400">Tap to inspect →</span>
+          </div>
+        </div>
+      )}
       emptyState={
         <EmptyState
           title={UI_LABELS.feedback.empty.PAYMENTS_TITLE}

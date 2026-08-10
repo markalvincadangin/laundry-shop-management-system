@@ -17,6 +17,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useSystemSettings } from "@/hooks/useSystemSettings";
+import { useMachines } from "@/hooks/useMachines";
 
 interface OrderPipelineProps {
   orders: OrderResponse[];
@@ -105,6 +106,7 @@ const PIPELINE_COLUMNS: ColumnConfig[] = [
 
 interface PipelineColumnProps extends ColumnConfig {
   orders: OrderResponse[];
+  machines?: Array<{ id: string; name: string }>;
   onAdvance: (orderId: string, nextStatus: OrderStatus) => void;
   isLoading?: boolean;
   colRef?: React.RefObject<HTMLDivElement | null>;
@@ -115,6 +117,7 @@ function PipelineColumn({
   title,
   icon: Icon,
   orders,
+  machines = [],
   onAdvance,
   isLoading,
   urgent,
@@ -172,6 +175,7 @@ function PipelineColumn({
               <OrderCard
                 key={order.id}
                 order={order}
+                machines={machines}
                 onAdvance={onAdvance}
                 isLoading={isLoading}
                 isUrgent={urgent}
@@ -220,6 +224,7 @@ export function OrderPipelineSkeleton() {
  */
 export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: OrderPipelineProps) {
   const { data: systemSettings } = useSystemSettings();
+  const { machines = [] } = useMachines();
   const isSystemPaused = systemSettings?.isSystemPaused || false;
 
   const [modalState, setModalState] = React.useState<{
@@ -243,10 +248,9 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
     orders
       .filter((o) => o.currentStatus === status)
       .sort((a, b) => {
-        // Priority 1: Rush Orders first
-        // Logic aligned with Orders page: serviceName includes "Rush" or serviceRateId is 2
-        const aIsRush = a.serviceName?.includes("Rush") || (a as any).serviceRateId === 2;
-        const bIsRush = b.serviceName?.includes("Rush") || (b as any).serviceRateId === 2;
+        // Priority 1: Rush Orders first (check isRush boolean, serviceName, or serviceRateId)
+        const aIsRush = Boolean(a.isRush || a.serviceName?.toLowerCase().includes("rush") || (a as any).serviceRateId === 2);
+        const bIsRush = Boolean(b.isRush || b.serviceName?.toLowerCase().includes("rush") || (b as any).serviceRateId === 2);
         
         if (aIsRush && !bIsRush) return -1;
         if (!aIsRush && bIsRush) return 1;
@@ -285,6 +289,7 @@ export function OrderPipeline({ orders, onAdvance, loading, readyColumnRef }: Or
             <PipelineColumn
               {...col}
               orders={ordersByStatus(col.status)}
+              machines={machines}
               onAdvance={handleInterceptAdvance}
               isLoading={loading}
               isSystemPaused={isSystemPaused}
