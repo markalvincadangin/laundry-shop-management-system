@@ -63,8 +63,8 @@ export function ClaimStub({ isOpen, onClose, order }: ClaimStubProps) {
 
   // The Receipt Content (Shared between UI and Print)
   const ReceiptContent = ({ isPrint = false }: { isPrint?: boolean }) => {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== "undefined" ? window.location.origin : "");
-    const trackingUrl = baseUrl ? `${baseUrl}/track?trackingNumber=${order.trackingNumber}` : `/track?trackingNumber=${order.trackingNumber}`;
+    const baseUrl = process.env.NEXT_PUBLIC_PORTAL_URL || "https://laundry-shop-management-system.vercel.app";
+    const trackingUrl = `${baseUrl}/track?trackingNumber=${order.trackingNumber}`;
 
     const createdDate = order.createdAt ? new Date(order.createdAt) : new Date();
     const isRush = order.isRush || order.serviceName?.toLowerCase().includes("rush");
