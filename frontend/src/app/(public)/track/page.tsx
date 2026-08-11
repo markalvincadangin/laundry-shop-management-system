@@ -18,7 +18,7 @@ import {
 function TrackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialTracking = searchParams.get("ref") || "";
+  const initialTracking = searchParams.get("trackingNumber") || searchParams.get("ref") || "";
   const [trackingNumber, setTrackingNumber] = useState(initialTracking);
   const [order, setOrder] = useState<OrderTrackingResponse | null>(null);
   const [loading, setLoading] = useState(false);
