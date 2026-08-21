@@ -57,28 +57,27 @@ This project is a **production-deployed, end-to-end digitization** of that workf
 
 ## Screenshots
 
-> 📸 Screenshots are stored in [`.github/assets/`](.github/assets/) — drop your PNG files there and they will render here automatically.
-
-<!--
-To add screenshots, save them to .github/assets/ and uncomment the table below:
+<div align="center">
 
 | | |
 |:---:|:---:|
 | ![](.github/assets/login.png) | ![](.github/assets/landing.png) |
-| **Login** | **Landing** |
+| **Login** — JWT auth with rate limiting | **Landing** — Public-facing homepage |
 | ![](.github/assets/dashboard.png) | ![](.github/assets/orders.png) |
-| **Dashboard** — KPI cards & Kanban pipeline | **Orders** — Filterable order list |
+| **Dashboard** — KPI cards & Kanban order pipeline | **Orders** — Filterable, searchable order list |
 | ![](.github/assets/order-intake.png) | ![](.github/assets/payments.png) |
-| **Order Intake** — Wizard with machine availability | **Payments** — Payment ledger |
+| **Order Intake** — Wizard with real-time pricing & machine availability | **Payments** — Payment recording & ledger |
 | ![](.github/assets/customers.png) | ![](.github/assets/reports.png) |
-| **Customers** | **Reports** — Revenue analytics |
+| **Customers** — Customer registry with order history | **Reports** — Daily/monthly/yearly revenue analytics |
 | ![](.github/assets/rates.png) | ![](.github/assets/users.png) |
-| **Service Rates** | **Users** — RBAC |
-| ![](.github/assets/messaging.png) | ![](.github/assets/audit-logs.png) |
-| **Messaging** — SMS alert queue | **Audit Logs** — Forensic trail |
-| ![](.github/assets/track.png) | |
-| **Public Tracking Portal** — QR scan → live status | |
--->
+| **Service Rates** — Configurable pricing rules | **Users** — Role-based user management (Admin/Staff) |
+| ![](.github/assets/audit-logs.png) | ![](.github/assets/track.png) |
+| **Audit Logs** — Forensic activity trail | **Public Tracking Portal** — QR scan → live status, no login |
+
+</div>
+
+> 📸 To add a screenshot, save a PNG to [`.github/assets/`](.github/assets/) with the filename matching the table above.
+
 
 ---
 
@@ -138,7 +137,7 @@ To add screenshots, save them to .github/assets/ and uncomment the table below:
 | **Backend Testing** | JUnit 5 + Testcontainers | 151 tests against real PostgreSQL |
 | **Installer** | Inno Setup (compiled via PowerShell) | Offline Windows `.exe` |
 | **Customer Portal** | Vercel | Auto-deploys from `main` |
-| **SMS Notifications** | Semaphore API | Client alert queue |
+| **SMS Notifications** | Semaphore API | Backend ready · UI coming soon |
 | **UI** | Tailwind CSS, Framer Motion, Lucide Icons | — |
 
 ---
