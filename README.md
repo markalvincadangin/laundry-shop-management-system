@@ -12,7 +12,7 @@
 
 ---
 
-🌐 **[Live Customer Portal](https://laundry-shop-management-system.vercel.app)**  ·  🔨 **[OpenAPI Spec](docs/05-tech-design/openapi.yaml)**
+🌐 **[Live Customer Portal](https://laundry-shop-management-system.vercel.app)**  ·  📄 **[OpenAPI Spec](docs/05-tech-design/openapi.yaml)**
 
 ---
 
@@ -32,7 +32,7 @@
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Documentation](#documentation)
-- [Team](#team)
+- [Author](#author)
 - [License](#license)
 
 ---
@@ -322,7 +322,7 @@ laundry-shop-management-system/
 
 ## API Reference
 
-Interactive docs: **http://localhost:8080/swagger-ui.html**
+Interactive API docs are available at `http://localhost:8080/swagger-ui.html` when running the backend locally.
 Full spec: [`docs/05-tech-design/openapi.yaml`](docs/05-tech-design/openapi.yaml)
 
 ### Key Endpoints
