@@ -12,11 +12,9 @@
 
 ---
 
-🌐 **[Live Customer Portal](https://laundry-shop-management-system.vercel.app)** &nbsp;·&nbsp; 📖 **[API Docs (Swagger)](http://localhost:8080/swagger-ui.html)** &nbsp;·&nbsp; 🔧 **[OpenAPI Spec](docs/05-tech-design/openapi.yaml)**
+🌐 **[Live Customer Portal](https://laundry-shop-management-system.vercel.app)**  ·  🔨 **[OpenAPI Spec](docs/05-tech-design/openapi.yaml)**
 
 ---
-
-![Dashboard](academic-docs-deliverables/ui/DASHBOARD.png)
 
 </div>
 
@@ -53,32 +51,34 @@ This project is a **production-deployed, end-to-end digitization** of that workf
 - **Real-time machine availability tracking** at intake — staff see which washers/dryers are currently in use before assigning loads
 - **241 automated tests** (JUnit + Testcontainers + Vitest) running against a real containerized PostgreSQL instance
 
-> **Developer:** Mark Alvin Cadangin · HIMÓTECH · West Visayas State University
+> **Developer:** Mark Alvin Cadangin
 
 ---
 
 ## Screenshots
 
-<div align="center">
+> 📸 Screenshots are stored in [`.github/assets/`](.github/assets/) — drop your PNG files there and they will render here automatically.
+
+<!--
+To add screenshots, save them to .github/assets/ and uncomment the table below:
 
 | | |
 |:---:|:---:|
-| ![Login](academic-docs-deliverables/ui/LOGIN.png) | ![Landing](academic-docs-deliverables/ui/LANDING.png) |
-| **Login** — JWT authentication with rate limiting | **Landing** — Public-facing homepage |
-| ![Dashboard](academic-docs-deliverables/ui/DASHBOARD.png) | ![Orders](academic-docs-deliverables/ui/ORDERS.png) |
-| **Dashboard** — Live KPI cards & Kanban order pipeline | **Orders** — Filterable, searchable order list |
-| ![Order Intake](academic-docs-deliverables/ui/ORDER_INTAKE.png) | ![Payments](academic-docs-deliverables/ui/PAYMENTS.png) |
-| **Order Intake** — Multi-step wizard with real-time pricing & machine availability | **Payments** — Payment recording & ledger |
-| ![Customers](academic-docs-deliverables/ui/CUSTOMERS.png) | ![Reports](academic-docs-deliverables/ui/REPORTS.png) |
-| **Customers** — Customer registry with order history | **Reports** — Daily/monthly/yearly revenue analytics |
-| ![Rates](academic-docs-deliverables/ui/RATES.png) | ![Users](academic-docs-deliverables/ui/USERS.png) |
-| **Service Rates** — Configurable pricing rules | **Users** — Role-based user management (Admin/Staff) |
-| ![Messaging](academic-docs-deliverables/ui/MESSAGING.png) | ![Audit Logs](academic-docs-deliverables/ui/LOGS.png) |
-| **Messaging** — Client alert queue (SMS via Semaphore) | **Audit Logs** — Forensic activity trail |
-| ![Tracking](academic-docs-deliverables/ui/TRACK.png) | |
-| **Public Tracking Portal** — QR scan → live status, no login | |
-
-</div>
+| ![](.github/assets/login.png) | ![](.github/assets/landing.png) |
+| **Login** | **Landing** |
+| ![](.github/assets/dashboard.png) | ![](.github/assets/orders.png) |
+| **Dashboard** — KPI cards & Kanban pipeline | **Orders** — Filterable order list |
+| ![](.github/assets/order-intake.png) | ![](.github/assets/payments.png) |
+| **Order Intake** — Wizard with machine availability | **Payments** — Payment ledger |
+| ![](.github/assets/customers.png) | ![](.github/assets/reports.png) |
+| **Customers** | **Reports** — Revenue analytics |
+| ![](.github/assets/rates.png) | ![](.github/assets/users.png) |
+| **Service Rates** | **Users** — RBAC |
+| ![](.github/assets/messaging.png) | ![](.github/assets/audit-logs.png) |
+| **Messaging** — SMS alert queue | **Audit Logs** — Forensic trail |
+| ![](.github/assets/track.png) | |
+| **Public Tracking Portal** — QR scan → live status | |
+-->
 
 ---
 
@@ -439,18 +439,12 @@ Backend integration tests run against a real PostgreSQL container via Testcontai
 
 ---
 
-## Team
+## Author
 
-**HIMÓTECH** — West Visayas State University, La Paz, Iloilo City
+**Mark Alvin Cadangin** — Full-Stack Developer
 
-| Member | Role |
-|:---|:---|
-| Brillantes, Luisa Rose | Developer |
-| Cadangin, Mark Alvin | Developer |
-| Calisa, Eliza May | Developer |
-| De la Cruz, Christian Paul | Developer |
-| Serra, Alyanna Bianca | Developer |
-| Tacleon, Ellen Mae | Developer |
+- 🔗 [GitHub](https://github.com/markalvincadangin)
+- Built as a capstone project at West Visayas State University, deployed to a real client
 
 ---
 
@@ -462,6 +456,6 @@ Developed for academic purposes as part of the Systems Analysis and Design cours
 
 <div align="center">
 
-**Faith Laundry Shop Management System** · Built with ❤️ by Mark Alvin Cadangin · 2026
+**Faith Laundry Shop Management System** · Built by Mark Alvin Cadangin · 2026
 
 </div>
