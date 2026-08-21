@@ -2,9 +2,17 @@
 
 # Faith Laundry Shop Management System
 
-**A full-stack web application that replaces manual logbooks with digital order tracking, automated pricing, and real-time sales reporting.**
+**A production-grade, full-stack business management system that digitizes a real-world laundry shop — replacing handwritten logbooks with automated order pipelines, real-time analytics, and a customer-facing tracking portal.**
 
-Built with **Next.js** · **Spring Boot 3.5** · **PostgreSQL** · **Docker**
+[![Frontend](https://img.shields.io/badge/Next.js-15.5-black?logo=nextdotjs)](https://nextjs.org/)
+[![Backend](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21_LTS-orange?logo=openjdk)](https://openjdk.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)](https://postgresql.org/)
+[![Tests](https://img.shields.io/badge/Tests-151_backend_%2F_90_frontend-success)]()
+
+---
+
+🌐 **[Live Customer Portal](https://laundry-shop-management-system.vercel.app)** &nbsp;·&nbsp; 📖 **[API Docs (Swagger)](http://localhost:8080/swagger-ui.html)** &nbsp;·&nbsp; 🔧 **[OpenAPI Spec](docs/05-tech-design/openapi.yaml)**
 
 ---
 
@@ -18,23 +26,36 @@ Built with **Next.js** · **Spring Boot 3.5** · **PostgreSQL** · **Docker**
 - [Screenshots](#screenshots)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
-- [Architecture](#architecture)
 - [API Reference](#api-reference)
 - [Configuration](#configuration)
+- [Testing](#testing)
 - [Contributing](#contributing)
 - [Documentation](#documentation)
 - [Team](#team)
 - [License](#license)
 
+---
+
 ## Overview
 
-**Faith Laundry Shop** is a small-scale laundry service in Ilaya, Tabuc Suba, Jaro, Iloilo City, operating since 2022. The business relies on handwritten logbooks, physical tags, and paper receipts — leading to order mix-ups, slow record-keeping, and zero reporting capability.
+**Faith Laundry Shop** is a real, operating small-scale laundry business in Iloilo City, Philippines. Before this system, the owner tracked every order in handwritten logbooks, wrote tags by hand, and had no way to generate sales reports or recover lost order data.
 
-This system digitizes the entire workflow: from order intake with automatic pricing computation, through a 6-stage status pipeline, to payment collection and automated sales reports.
+This project is a **production-deployed, end-to-end digitization** of that workflow. It covers the full SDLC — from stakeholder interviews and requirements elicitation to deployment via a custom Windows installer — and is built to the standards expected in a professional software engineering role.
 
-> **Author & Developer:** **Mark Alvin Cadangin**
+**What makes it non-trivial:**
+- A **custom pricing engine** that computes loads from weight, applies configurable service rates, and snapshots prices at order creation for historical accuracy
+- **Database-level audit triggers** for tamper-resistant forensic traceability
+- A **custom Windows installer** (Inno Setup) that silently provisions PostgreSQL, configures a WinSW background service, writes production `application.properties`, and stores the public portal URL for QR code generation — all without requiring any developer tooling on the target machine
+- A **public customer tracking portal** (Vercel) where customers scan the QR code on their printed thermal receipt and see live order status — no login required
+- **Real-time machine availability tracking** at intake — staff see which washers/dryers are currently in use before assigning loads
+- **241 automated tests** (JUnit + Testcontainers + Vitest) running against a real containerized PostgreSQL instance
+
+> **Developer:** Mark Alvin Cadangin · HIMÓTECH · West Visayas State University
+
+---
 
 ## Screenshots
 
@@ -43,61 +64,140 @@ This system digitizes the entire workflow: from order intake with automatic pric
 | | |
 |:---:|:---:|
 | ![Login](academic-docs-deliverables/ui/LOGIN.png) | ![Landing](academic-docs-deliverables/ui/LANDING.png) |
-| **Login** — Secure JWT authentication | **Landing** — Public-facing homepage |
+| **Login** — JWT authentication with rate limiting | **Landing** — Public-facing homepage |
 | ![Dashboard](academic-docs-deliverables/ui/DASHBOARD.png) | ![Orders](academic-docs-deliverables/ui/ORDERS.png) |
-| **Dashboard** — KPI cards & order pipeline | **Orders** — Filterable order list |
+| **Dashboard** — Live KPI cards & Kanban order pipeline | **Orders** — Filterable, searchable order list |
 | ![Order Intake](academic-docs-deliverables/ui/ORDER_INTAKE.png) | ![Payments](academic-docs-deliverables/ui/PAYMENTS.png) |
-| **Order Intake** — Wizard with auto-pricing | **Payments** — Payment recording & history |
+| **Order Intake** — Multi-step wizard with real-time pricing & machine availability | **Payments** — Payment recording & ledger |
 | ![Customers](academic-docs-deliverables/ui/CUSTOMERS.png) | ![Reports](academic-docs-deliverables/ui/REPORTS.png) |
-| **Customers** — Customer registry | **Reports** — Daily/monthly/yearly analytics |
+| **Customers** — Customer registry with order history | **Reports** — Daily/monthly/yearly revenue analytics |
 | ![Rates](academic-docs-deliverables/ui/RATES.png) | ![Users](academic-docs-deliverables/ui/USERS.png) |
-| **Service Rates** — Configurable pricing | **Users** — Role-based user management |
+| **Service Rates** — Configurable pricing rules | **Users** — Role-based user management (Admin/Staff) |
 | ![Messaging](academic-docs-deliverables/ui/MESSAGING.png) | ![Audit Logs](academic-docs-deliverables/ui/LOGS.png) |
-| **Messaging** — Client alert queue | **Audit Logs** — Forensic activity trail |
+| **Messaging** — Client alert queue (SMS via Semaphore) | **Audit Logs** — Forensic activity trail |
 | ![Tracking](academic-docs-deliverables/ui/TRACK.png) | |
-| **Public Tracking** — No-login order status | |
+| **Public Tracking Portal** — QR scan → live status, no login | |
 
 </div>
 
+---
+
 ## Features
 
-### Order Management
-- Record laundry orders with customer details, weight, and service type
-- **Automatic pricing** — computes loads from weight (`ceil(weight / 8kg)`) and applies per-load rates
-- Unique reference numbers (`LDR-YYYYMMDD-XXXX`) for every order
-- Add-on charges (e.g., fabric conditioner) and extra-time billing
+### 🧺 Order Management
+- Multi-step intake wizard: customer lookup/creation, weight entry, service selection, machine assignment, add-on charges
+- **Automatic pricing engine** — computes loads from weight (`⌈weight ÷ 8kg⌉`), applies per-load rates, adds extra-time billing
+- Unique reference numbers (`LDR-YYYYMMDD-XXXX`) per order; prices snapshotted at creation for historical accuracy
+- Thermal receipt generation with barcode + QR code linking to the live public tracking portal
 
-### Order Pipeline
+### 🔄 Order Pipeline
 - 6-stage status tracking: **Received → Washing → Drying → Folding → Ready for Pickup → Released**
-- Drag-and-drop Kanban-style board on the dashboard
-- Business rule enforcement — orders cannot be released until paid
+- Business rule enforcement: orders cannot be released until fully paid
+- Real-time Kanban board on the dashboard
 
-### Payment & Reporting
-- One-to-one payment recording linked to orders (Cash, GCash, Bank Transfer)
-- **Automated sales reports** — daily, monthly, and yearly breakdowns
-- Admin-only revenue analytics with visual charts
+### 🖥️ Machine Availability
+- Staff see machine status (Available / In Use / Maintenance / Down) in real time at order intake
+- Prevents assigning loads to machines that are already occupied
+- Machine status managed by Admin through the Machines page
 
-### Security & Audit
-- JWT-based authentication with role-based access (Admin / Staff)
-- Database-level forensic audit triggers on all core tables
-- Complete audit trail — who changed what, when, with before/after snapshots
+### 📱 Customer Tracking Portal
+- Deployed to **[Vercel](https://laundry-shop-management-system.vercel.app)** — publicly accessible
+- Customers scan the QR code on their receipt → tracking number auto-loaded → live status shown instantly
+- Zero login required; exposes status and timeline only (no internal IDs or PII)
 
-### Public Order Tracking
-- Customers can check order status using their reference number — **no login required**
-- Minimal data exposure (status and dates only, no internal IDs)
+### 💳 Payment & Reporting
+- One-to-one payment recording per order (Cash, GCash, Bank Transfer)
+- Automated sales reports — daily, monthly, and yearly breakdowns with visual charts
+- Admin-only revenue analytics
+
+### 🔐 Security & Audit
+- JWT authentication with HttpOnly cookie refresh token rotation
+- Role-based access control (Admin / Staff) enforced at API and UI layers
+- Login attempt throttling (lockout after N failures)
+- **Database-level forensic audit triggers** on all core tables — tamper-resistant `INSERT/UPDATE/DELETE` logging with before/after JSON snapshots
+
+### 💻 Offline-First Windows Installer
+- Single `.exe` installer built with Inno Setup — no developer tools required on target machine
+- Silently provisions PostgreSQL, installs WinSW background service, writes production Spring Boot config
+- Captures the shop's public portal URL at install time and stores it for QR code generation
+- Creates Desktop & Start Menu shortcuts; registers in Add/Remove Programs
+
+---
 
 ## Tech Stack
 
-| Layer | Technology | Version |
+| Layer | Technology | Version / Notes |
 |:---|:---|:---|
-| **Frontend** | Next.js (React, TypeScript, Tailwind CSS) | 15.5.15 |
-| **Backend** | Spring Boot (Java) | 3.5 / Java 21 LTS |
+| **Frontend** | Next.js (React, TypeScript, Tailwind CSS) | 15.5 · App Router |
+| **Backend** | Spring Boot (Java) | 3.5 · Java 21 LTS |
 | **Database** | PostgreSQL | 16 |
-| **Migrations** | Flyway | Embedded |
-| **Build** | Maven (wrapper included) | 3.9+ |
-| **Containerization** | Docker & Docker Compose | Latest |
-| **Testing** | JUnit 5, Testcontainers | Latest |
-| **UI Framework** | Tailwind CSS, Framer Motion, Lucide Icons | Latest |
+| **Migrations** | Flyway | Embedded in Spring Boot |
+| **Build** | Maven (wrapper included) | 3.9+ — no install needed |
+| **Containerization** | Docker & Docker Compose | Dev + prod profiles |
+| **Frontend Testing** | Vitest + React Testing Library | 90 tests |
+| **Backend Testing** | JUnit 5 + Testcontainers | 151 tests against real PostgreSQL |
+| **Installer** | Inno Setup (compiled via PowerShell) | Offline Windows `.exe` |
+| **Customer Portal** | Vercel | Auto-deploys from `main` |
+| **SMS Notifications** | Semaphore API | Client alert queue |
+| **UI** | Tailwind CSS, Framer Motion, Lucide Icons | — |
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│          Next.js 15 (Frontend)          │
+│  React · TypeScript · Tailwind CSS      │
+│  App Router · Framer Motion animations  │
+│                                         │
+│  ┌─────────────────────────────────┐    │
+│  │  (public)/track  ←── QR Scan    │    │  Hosted on Vercel
+│  │  (auth)/login                   │    │  (publicly accessible)
+│  │  (dashboard)/*  (JWT-protected) │    │
+│  └─────────────────────────────────┘    │
+└──────────────────┬──────────────────────┘
+                   │ REST / JSON
+                   ▼
+┌─────────────────────────────────────────┐
+│         Spring Boot 3.5 (Backend)       │
+│  Java 21 · JWT Auth · RBAC             │
+│  Business rules & pricing engine        │
+│  Checkstyle · OpenAPI (Swagger)         │
+│                                         │
+│  Feature-First package structure:       │
+│  orders/ machines/ payments/ reports/   │
+│  customers/ auth/ users/ rates/         │
+│  auditlog/ clientalert/ config/         │
+└──────────────────┬──────────────────────┘
+                   │ JDBC / Flyway
+                   ▼
+┌─────────────────────────────────────────┐
+│          PostgreSQL 16 (Database)       │
+│  pgcrypto (UUID generation)             │
+│  Flyway schema versioning               │
+│  Audit triggers (fn_audit_log)          │
+│  Enum types for order/payment status    │
+└─────────────────────────────────────────┘
+```
+
+### Database Schema
+
+| Table | Purpose |
+|:---|:---|
+| `users` | System users with UUID PKs, BCrypt passwords, role-based access (Admin/Staff) |
+| `customers` | Customer registry with contact validation |
+| `service_rates` | Configurable pricing rules (base price, kg limit, extra-minute rate) |
+| `machines` | Washer/dryer registry with real-time availability status |
+| `orders` | Central transaction table with price snapshots, machine assignments, and status tracking |
+| `order_add_ons` | Flexible line-item charges per order |
+| `payments` | One-to-one payment records (Cash, GCash, Bank Transfer) |
+| `client_alerts` | Customer notification queue (SMS via Semaphore) |
+| `audit_logs` | Forensic audit trail via database triggers (INSERT/UPDATE/DELETE with JSON snapshots) |
+
+> **Key design decisions:** Prices are snapshotted at order creation for historical accuracy. Audit logging is at the database trigger level for tamper resistance. Machine status is queried at intake to prevent double-assignment.
+
+---
 
 ## Getting Started
 
@@ -107,16 +207,16 @@ This system digitizes the entire workflow: from order intake with automatic pric
 |:---|:---|:---|
 | [Docker Desktop](https://www.docker.com/products/docker-desktop) | Latest | `docker --version` |
 | [Java JDK](https://adoptium.net/) | 21 LTS | `java -version` |
-| [Node.js](https://nodejs.org/) | 18+ LTS | `node --version` |
+| [Node.js](https://nodejs.org/) | 20+ LTS | `node --version` |
 | [Git](https://git-scm.com/) | Latest | `git --version` |
 
-> **Note:** Maven is included via the project's wrapper (`mvnw` / `mvnw.cmd`) — no separate install needed.
+> Maven is included via the project wrapper (`mvnw` / `mvnw.cmd`) — no separate install needed.
+
+---
 
 ### 🚀 Option 1: Hybrid Dev Setup (Recommended for WSL/Linux)
 
-This is the fastest, most optimized setup. It isolates PostgreSQL in Docker but runs the frontend and backend natively to utilize local hardware and fast filesystem event watching (Turbopack).
-
-**Prerequisite:** Ensure Node.js v20+ and Java 21 are installed natively on your host machine.
+Fastest setup — PostgreSQL in Docker, frontend and backend run natively for hot reload.
 
 ```bash
 # 1. Clone & Configure
@@ -124,171 +224,131 @@ git clone <repository-url>
 cd laundry-shop-management-system
 cp .env.example .env
 
-# 2. Start Database in Docker
+# 2. Start Database
 docker compose up -d db
 
-# 3. Start Backend natively (Terminal 1)
-# Note: Linux users must export .env variables before running Maven
+# 3. Start Backend (Terminal 1)
 export $(grep -v '^#' .env | xargs) && cd backend && ./mvnw spring-boot:run
 
-# 4. Start Frontend natively (Terminal 2)
+# 4. Start Frontend (Terminal 2)
 cd frontend
 cp .env.local.example .env.local
-# Make sure .env.local has: NEXT_PUBLIC_API_URL=http://localhost:8080/api
-npm install
-npm run dev
+npm install && npm run dev
 ```
 
-### 📦 Option 2: Full Docker Setup (Containerized)
+---
 
-This setup is ideal if you do not have Java or Node.js installed natively, or if you want to verify production-like container builds. Everything runs inside Docker.
+### 📦 Option 2: Full Docker Setup
 
 ```bash
-# 1. Clone & Configure
 git clone <repository-url>
 cd laundry-shop-management-system
 cp .env.example .env
-
-# 2. Start Full Stack
 docker compose --profile full up -d
 ```
-> **Note on Permissions:** If switching from Full Docker back to Hybrid mode, you may encounter `Permission Denied` errors because Docker creates root-owned files in `node_modules/` and `target/`. Clean them up using a dockerized remove command:
-> `docker run --rm -v $(pwd)/frontend:/app -w /app postgres:16-alpine rm -rf node_modules .next`
 
-### 💻 Option 3: Offline-First Standalone Setup (Windows Desktop)
+> **Switching back to Hybrid mode?** Docker creates root-owned files. Clean them with:
+> `docker run --rm -v $(pwd)/frontend:/app -w /app node:20-alpine rm -rf node_modules .next`
 
-This setup provides a single double-clickable `.exe` Windows installer wizard (built via Inno Setup) with the statically exported Next.js frontend, Spring Boot backend, custom app icon, and automated WinSW background service configuration. This is intended for production deployment on Windows 10/11 machines without any developer tools installed.
+---
 
-1. **Build the Standalone Installer**:
-   Open PowerShell:
-   ```powershell
-   cd scripts
-   .\build-installer.ps1
-   ```
-2. **Install**:
-   Double-click the generated `LaundryShopMS-Setup-1.0.0.exe` installer wizard in `backend\target\`. The installer automatically provisions PostgreSQL silently, sets environment variables, installs the `LaundryShopMS` background Windows service, creates Desktop & Start Menu shortcuts, registers in Add/Remove Programs, and opens `http://localhost:8765` in Edge App Mode.
+### 💻 Option 3: Offline-First Standalone (Windows Desktop)
+
+A single `.exe` installer — no developer tools required on the target machine.
+
+**Build the installer (requires WSL + Windows + Inno Setup):**
+```bash
+# Phase 1 — Stage payload (WSL/Linux)
+bash scripts/build-deployment.sh 1.0.0
+
+# Phase 2 — Compile installer (Windows PowerShell)
+.\scripts\build-installer.ps1 -Version 1.0.0
+```
+
+The compiled `LaundryShopMS-Setup-1.0.0.exe` is placed in `backend/target/`.
+
+---
 
 ### Verify Everything is Running
 
-| Service | Mode | URL | Expected |
-|:---|:---|:---|:---|
-| **Frontend UI** | Both | http://localhost:3000 | Application loads |
-| **Backend API** | Hybrid | http://localhost:8080/api/v1/health | HTTP 200 OK |
-| **Backend API** | Full Docker | http://localhost:8081/api/v1/health | HTTP 200 OK |
-| **Database** | Both | `localhost:5433` | Connection successful |
+| Service | URL | Expected |
+|:---|:---|:---|
+| **Frontend UI** | http://localhost:3000 | App loads |
+| **Backend API** | http://localhost:8080/api/v1/health | `{"status":"UP"}` |
+| **Swagger UI** | http://localhost:8080/swagger-ui.html | Full API docs |
+| **Customer Portal** | https://laundry-shop-management-system.vercel.app | Tracking page |
 
-### Utility Scripts
-
-| Command | Description |
-|:---|:---|
-| `docker compose up db backend` | Start database + backend (recommended) |
-| `docker compose --profile full up -d` | Start full stack including frontend container |
-| `docker compose down` | Stop all services |
-| `./scripts/fresh.ps1` | Reset DB, re-migrate, and re-seed (keeps caches) |
-| `./scripts/share.ps1` | Share local environment via ngrok |
+---
 
 ## Project Structure
 
 ```
 laundry-shop-management-system/
-├── backend/                          # Spring Boot REST API (Java 21)
-│   ├── src/main/java/com/himotech/laundryms/
-│   │   ├── auth/                     # JWT authentication & login
-│   │   ├── orders/                   # Order CRUD & status pipeline
-│   │   ├── customers/                # Customer registry
-│   │   ├── payments/                 # Payment processing
-│   │   ├── rates/                    # Service rate configuration
-│   │   ├── reports/                  # Sales report generation
-│   │   ├── auditlog/                 # Forensic audit trail
-│   │   ├── clientalert/              # Customer notifications (SMS)
-│   │   ├── users/                    # User management (RBAC)
-│   │   ├── security/                 # JWT filter & Spring Security
-│   │   └── config/                   # App configuration
-│   └── src/main/resources/
-│       ├── db/migration/             # Flyway SQL migrations
-│       └── application.yml           # Spring Boot config
-├── frontend/                         # Next.js client (TypeScript)
+├── backend/                              # Spring Boot REST API (Java 21)
+│   └── src/main/java/com/himotech/laundryms/
+│       ├── auth/                         # JWT auth, refresh tokens, login lockout
+│       ├── orders/                       # Order CRUD, pricing engine, status pipeline
+│       ├── machines/                     # Machine registry & availability status
+│       ├── customers/                    # Customer registry
+│       ├── payments/                     # Payment processing & ledger
+│       ├── rates/                        # Configurable service rate management
+│       ├── reports/                      # Sales report generation
+│       ├── auditlog/                     # Forensic audit trail
+│       ├── clientalert/                  # SMS notification queue (Semaphore)
+│       ├── users/                        # User management (RBAC)
+│       └── config/                       # Security, CORS, app-config endpoint
+│
+├── frontend/                             # Next.js client (TypeScript)
 │   └── src/
-│       ├── app/                      # App Router pages
-│       │   ├── (auth)/               # Login page
-│       │   ├── (dashboard)/          # Protected dashboard routes
-│       │   └── (public)/             # Landing & public tracking
-│       ├── components/               # Shared UI components
-│       │   └── features/             # Feature-specific modules
-│       ├── contexts/                 # React context providers
-│       └── hooks/                    # Custom React hooks
-├── docs/                             # Project documentation (source of truth)
-├── academic-docs-deliverables/       # SDLC academic manuscript
-├── scripts/                          # Utility scripts (backup, reset, share)
-├── docker-compose.yml                # Dev stack
-├── docker-compose.prod.yml           # Production stack
-├── .env.example                      # Environment template
-└── README.md                         # ← You are here
+│       ├── app/
+│       │   ├── (auth)/                   # Login page
+│       │   ├── (dashboard)/              # Protected dashboard routes
+│       │   └── (public)/                 # Landing page & customer tracking portal
+│       ├── components/features/          # Feature-scoped React components
+│       ├── hooks/                        # Custom hooks (useActiveMachineIds, usePortalUrl, …)
+│       └── lib/api/                      # Typed API client layer
+│
+├── scripts/
+│   ├── installer.iss                     # Inno Setup installer script
+│   ├── build-deployment.sh              # Phase 1: stage build payload (WSL)
+│   ├── build-installer.ps1              # Phase 2: compile .exe (Windows)
+│   └── installer-static-check.py       # Validates installer.iss invariants
+│
+├── specs/                                # Spec-Kit feature specifications
+├── docs/                                 # Full project documentation
+├── docker-compose.yml                    # Dev stack
+├── docker-compose.prod.yml              # Production stack
+├── .env.example                          # Environment variable template
+└── README.md
 ```
 
-## Architecture
-
-```
-┌──────────────────────┐
-│     Next.js 15.5.15  │  React + TypeScript + Tailwind CSS
-│     (Frontend)       │  Glassmorphism UI with Framer Motion
-│                      │  App Router with Route Groups
-└──────────┬───────────┘
-           │ HTTP / REST
-           ▼
-┌──────────────────────┐
-│   Spring Boot 3.5    │  Java 21 LTS
-│     (Backend)        │  JWT Auth + RBAC
-│                      │  Business rules enforcement
-└──────────┬───────────┘  Pricing computation engine
-           │ JDBC
-           ▼
-┌──────────────────────┐
-│   PostgreSQL 16      │  pgcrypto (UUID generation)
-│    (Database)        │  Flyway schema migrations
-│                      │  Database-level audit triggers
-└──────────────────────┘
-```
-
-### Database Tables
-
-| Table | Purpose |
-|:---|:---|
-| `users` | System users with UUID PKs and role-based access (Admin/Staff) |
-| `customers` | Customer registry with contact validation |
-| `service_rates` | Configurable pricing rules (base price, kg limit, extra-minute rate) |
-| `orders` | Central transaction table with price snapshots and status tracking |
-| `order_add_ons` | Flexible line-item charges per order |
-| `payments` | One-to-one payment records (Cash, GCash, Bank Transfer) |
-| `client_alerts` | Customer notification queue (SMS via Semaphore) |
-| `audit_logs` | Forensic audit trail via database triggers (INSERT/UPDATE/DELETE) |
-
-> **Design decisions:** Orders snapshot pricing at creation time for historical accuracy. Audit logging is handled at the database level via triggers (`fn_audit_log`) for tamper-resistant traceability.
+---
 
 ## API Reference
 
-When the backend is running, full interactive documentation is available at:
-- **Swagger UI:** http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
+Interactive docs: **http://localhost:8080/swagger-ui.html**
+Full spec: [`docs/05-tech-design/openapi.yaml`](docs/05-tech-design/openapi.yaml)
 
 ### Key Endpoints
 
 | Method | Endpoint | Description | Auth |
 |:---|:---|:---|:---|
 | `POST` | `/api/v1/orders` | Create order (auto-computes pricing) | Staff/Admin |
-| `PATCH` | `/api/v1/orders/{id}/status` | Advance order status | Staff/Admin |
-| `GET` | `/api/v1/orders/reference/{ref}` | Public order tracking | None |
-| `POST` | `/api/v1/payments` | Record payment | Staff/Admin |
+| `PATCH` | `/api/v1/orders/{id}/status` | Advance order through pipeline | Staff/Admin |
+| `GET` | `/api/v1/orders/tracking/{trackingNumber}` | Public order tracking | None |
+| `GET` | `/api/v1/orders/reference/{ref}` | Public order lookup by reference | None |
+| `GET` | `/api/v1/machines` | List machines with live availability | Staff/Admin |
+| `PATCH` | `/api/v1/machines/{id}` | Update machine status | Admin |
+| `POST` | `/api/v1/payments` | Record payment for an order | Staff/Admin |
 | `GET` | `/api/v1/reports/sales/daily` | Daily sales report | Admin |
 | `GET` | `/api/v1/reports/sales/monthly` | Monthly income report | Admin |
 | `GET` | `/api/v1/reports/sales/yearly` | Yearly income report | Admin |
+| `GET` | `/api/v1/app-config` | Public app config (portal URL for QR codes) | None |
 | `GET` | `/api/v1/health` | Health check | None |
 
-For the complete API contract, see [`docs/05-tech-design/openapi.yaml`](docs/05-tech-design/openapi.yaml).
+---
 
 ## Configuration
-
-The project uses a **single unified `.env` file** at the project root. Copy from the template:
 
 ```bash
 cp .env.example .env
@@ -304,20 +364,32 @@ cp .env.example .env
 | `DB_USER` | Database user | `laundry_user` |
 | `DB_PASSWORD` | Database password | *(change this)* |
 | `JWT_SECRET` | JWT signing secret (min 32 chars) | *(change this)* |
-| `SPRING_PROFILES_ACTIVE` | Spring profile (`dev` / `prod`) | `dev` |
-| `ALLOWED_ORIGIN` | CORS allowed origin | `http://localhost:3001` |
+| `ALLOWED_ORIGIN` | CORS allowed origin | `http://localhost:3000` |
+| `PORTAL_URL` | Public customer portal URL (for QR codes) | `http://localhost:3000` |
+| `SEMAPHORE_API_KEY` | Semaphore SMS API key | *(optional)* |
 
-> ⚠️ **Security:** Never commit `.env` to Git. It is already in `.gitignore`.
+> ⚠️ Never commit `.env` to Git. It is already in `.gitignore`.
 
-### Production Deployment
+---
+
+## Testing
 
 ```bash
-# Configure .env for production (strong passwords, real JWT secret)
-# Then start the production stack:
-docker compose -f docker-compose.prod.yml up -d --build
+# Backend — JUnit 5 + Testcontainers (real PostgreSQL container)
+cd backend && ./mvnw test
+
+# Frontend — Vitest + React Testing Library
+cd frontend && npm test -- --run
 ```
 
-See [`docs/06-implementation/deployment-guide.md`](docs/06-implementation/deployment-guide.md) for full production deployment instructions including Render, Vercel, and Neon setup.
+| Suite | Count | Scope |
+|:---|:---|:---|
+| Backend (JUnit + Testcontainers) | **151 tests** | Order pipeline, pricing engine, auth, payments, machine status, security |
+| Frontend (Vitest) | **90 tests** | Components, API client, form validation, hooks |
+
+Backend integration tests run against a real PostgreSQL container via Testcontainers — no mocking the database.
+
+---
 
 ## Contributing
 
@@ -325,29 +397,32 @@ See [`docs/06-implementation/deployment-guide.md`](docs/06-implementation/deploy
 
 | Branch | Purpose |
 |:---|:---|
-| `main` | Production-ready. Protected — no direct commits. |
-| `develop` | Active development. All PRs target this branch. |
-| `feature/*` | New features (e.g., `feature/order-preview`) |
-| `fix/*` | Bug fixes (e.g., `fix/payment-validation`) |
+| `main` | Production-ready. Protected — PRs only, no direct commits. |
+| `develop` | Integration branch. All feature PRs target here. |
+| `feature/*` | New features (e.g., `feature/014-machine-availability`) |
+| `polish/*` | UI/UX refinements |
+| `chore/*` | Dependency updates, tooling, non-functional changes |
+| `docs/*` | Documentation updates |
+| `test/*` | Test additions or improvements |
 
 ### Workflow
 
-1. Sync: `git checkout develop && git pull --rebase origin develop`
-2. Branch: `git checkout -b feature/your-feature`
-3. Commit using [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
+1. `git checkout develop && git pull --rebase origin develop`
+2. `git checkout -b feature/your-feature-name`
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `chore:`, `docs:`)
 4. Push and open a PR **into `develop`**
-5. Request review — do not merge your own PR
+5. CI must pass; do not merge your own PR
 
 ### PR Checklist
 
 - [ ] Fill out the [PR template](.github/pull_request_template.md)
 - [ ] Link user stories (US-xx) or business rules (BR-xx) if applicable
-- [ ] Tests pass: `./mvnw test` (backend) / `npm run lint && npm run build` (frontend)
+- [ ] `./mvnw test` passes (backend) and `npm test -- --run` passes (frontend)
 - [ ] At least one reviewer approved
 
-## Documentation
+---
 
-All project documentation lives in the [`docs/`](docs/) directory:
+## Documentation
 
 | Topic | Document |
 |:---|:---|
@@ -361,7 +436,8 @@ All project documentation lives in the [`docs/`](docs/) directory:
 | 🏗️ Architecture | [`docs/05-tech-design/architecture.md`](docs/05-tech-design/architecture.md) |
 | 🚀 Deployment Guide | [`docs/06-implementation/deployment-guide.md`](docs/06-implementation/deployment-guide.md) |
 | 📘 User Manual | [`docs/06-implementation/user-manual.md`](docs/06-implementation/user-manual.md) |
-| 🔑 Dev Credentials | [`docs/development-credentials.md`](docs/development-credentials.md) |
+
+---
 
 ## Team
 
@@ -376,14 +452,16 @@ All project documentation lives in the [`docs/`](docs/) directory:
 | Serra, Alyanna Bianca | Developer |
 | Tacleon, Ellen Mae | Developer |
 
+---
+
 ## License
 
-This project is developed for academic purposes as part of the Systems Analysis and Design course at West Visayas State University. All rights reserved.
+Developed for academic purposes as part of the Systems Analysis and Design course at West Visayas State University. All rights reserved.
 
 ---
 
 <div align="center">
 
-**Laundry Shop Management System** · Built with ❤️ by Mark Alvin Cadangin · 2026
+**Faith Laundry Shop Management System** · Built with ❤️ by Mark Alvin Cadangin · 2026
 
 </div>
