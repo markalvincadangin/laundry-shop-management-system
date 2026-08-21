@@ -76,9 +76,6 @@ This project is a **production-deployed, end-to-end digitization** of that workf
 
 </div>
 
-> 📸 To add a screenshot, save a PNG to [`.github/assets/`](.github/assets/) with the filename matching the table above.
-
-
 ---
 
 ## Features
