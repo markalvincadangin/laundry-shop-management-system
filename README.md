@@ -1,20 +1,34 @@
 <div align="center">
 
-# Faith Laundry Shop Management System
+<p align="center">
+  <img src=".github/assets/faith-logo.png" alt="Faith Laundry Shop Management System" width="140" />
+</p>
 
-**Full-stack business management and order tracking system**, developed as a Systems Analysis and Design capstone project modeled on Faith Laundry Shop in Iloilo to replace paper logbooks with automated load pricing, receipt QR tracking, and an offline Windows installer for shop staff.
+### Full-Stack Order Management, Dynamic Load Pricing, & Receipt QR Tracking System
+**Systems Analysis & Design Capstone Project · Modeled on Faith Laundry Shop, Iloilo, Philippines**
 
-[![Frontend](https://img.shields.io/badge/Next.js-15.5-black?logo=nextdotjs)](https://nextjs.org/)
-[![Backend](https://img.shields.io/badge/Spring_Boot-3.5-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-21_LTS-orange?logo=openjdk)](https://openjdk.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)](https://postgresql.org/)
-[![Tests](https://img.shields.io/badge/Tests-199_backend_%2F_90_frontend-success)]()
+*Enterprise-grade management platform replacing manual paper logbooks with automated load pricing, thermal receipt QR verification, and role-based operational controls.*
 
----
+[![Frontend](https://img.shields.io/badge/Frontend-Next.js%2015.5%20%7C%20React%2019-000000?style=flat-square&logo=next.js&logoColor=white)](frontend/)
+[![Backend](https://img.shields.io/badge/Backend-Spring%20Boot%203.5%20%7C%20Java%2021-6DB33F?style=flat-square&logo=springboot&logoColor=white)](backend/)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL%2016-4169E1?style=flat-square&logo=postgresql&logoColor=white)](backend/src/main/resources/db/)
+[![Tests](https://img.shields.io/badge/Tests-289%20Passed%20(199%20BE%20%2F%2090%20FE)-059669?style=flat-square&logo=junit5&logoColor=white)](backend/)
+[![OpenAPI](https://img.shields.io/badge/API-OpenAPI%203.0%20Spec-85EA2D?style=flat-square&logo=openapiinitiative&logoColor=black)](docs/05-tech-design/openapi.yaml)
+[![License](https://img.shields.io/badge/License-Proprietary%20%2F%20Academic-6B7280?style=flat-square)](LICENSE)
+[![Case Study](https://img.shields.io/badge/Case_Study-markcadangin.me-0f172a?style=flat-square&logo=googlechrome&logoColor=white)](https://markcadangin.me/projects/laundry-shop)
+[![Live Demo](https://img.shields.io/badge/Demo-laundry--shop--management--system.vercel.app-2563eb?style=flat-square&logo=vercel&logoColor=white)](https://laundry-shop-management-system.vercel.app)
 
-🌐 **[Live Customer Portal](https://laundry-shop-management-system.vercel.app)**  ·  📄 **[OpenAPI Spec](docs/05-tech-design/openapi.yaml)**
+<br/>
 
----
+<a href="#overview">Overview</a> •
+<a href="#screenshots">Screenshots</a> •
+<a href="#features">Features</a> •
+<a href="#tech-stack">Tech Stack</a> •
+<a href="#architecture">Architecture</a> •
+<a href="#getting-started">Getting Started</a> •
+<a href="#testing">Testing</a> •
+<a href="#why-i-built-it-this-way">Design Rationale</a> •
+<a href="https://markcadangin.me/projects/laundry-shop">Live Case Study</a>
 
 </div>
 
@@ -77,29 +91,29 @@ I built this system as my course capstone for **Systems Analysis and Design (SAD
 
 ## Features
 
-### 🧺 Order Management & Intake
+### Order Management & Intake
 - Multi-step intake wizard: customer search or registration, weight entry, service selection, machine allocation, and add-on services (detergent, fabric softener).
 - **Price snapshotting**: Base rates and add-on unit prices are copied directly onto the order record at intake time, ensuring future price adjustments never alter historical financial reports.
 - Reference number generator (`LDR-YYYYMMDD-XXXX`) and printable receipt with barcode and tracking QR code.
 
-### 🔄 6-Stage Order Pipeline
+### 6-Stage Order Pipeline
 - Status progression: **Received → Washing → Drying → Folding → Ready for Pickup → Released**.
 - Release restriction: The system prevents staff from releasing laundry until the balance is fully paid.
 - Visual Kanban board on the dashboard for quick floor-status overview.
 
-### 🖥️ Machine Availability Tracking
+### Machine Availability Tracking
 - Real-time status for washers and dryers (Available, In Use, Maintenance, Down).
 - Intake wizard checks active assignments to prevent assigning loads to occupied machines.
 
-### 📱 Customer Tracking Portal
+### Customer Tracking Portal
 - Deployed on **[Vercel](https://laundry-shop-management-system.vercel.app)** for public mobile access.
 - Customers scan the QR code on their printed receipt to view real-time stage progress without login credentials or exposure of customer personal data.
 
-### 💳 Payment Processing & Sales Reports
+### Payment Processing & Sales Reports
 - Single and split payments (Cash, GCash, Bank Transfer).
 - Daily, monthly, and annual revenue breakdowns with visual charts.
 
-### 💻 Standalone Windows Installer
+### Standalone Windows Installer
 - Single `.exe` installer created via Inno Setup (`scripts/installer.iss`).
 - Silently provisions PostgreSQL as a local service, installs WinSW background wrapper, and configures production properties without requiring manual Node.js or Java installs on the counter machine.
 
@@ -278,14 +292,16 @@ Full capstone deliverables and design specifications are maintained in [`docs/`]
 
 ---
 
-## Author
+## Author & Attribution
 
-**Mark Alvin Cadangin**  
-Software Development Technologies — West Visayas State University  
-GitHub: [@markalvincadangin](https://github.com/markalvincadangin)
+Developed and architected by **[Mark Alvin Cadangin](https://markcadangin.me)**  
+3rd-Year BSIT Student majoring in Software Development Technologies at West Visayas State University  
+DOST-SEI Scholar (Batch 2024) · Western Visayas, Philippines  
+Portfolio: [markcadangin.me](https://markcadangin.me) · Email: [markcadangin@gmail.com](mailto:markcadangin@gmail.com)  
+Capstone Project: Systems Analysis & Design (SAD) · WVSU CICT
 
 ---
 
 ## License
 
-Developed as an academic capstone project for the Systems Analysis and Design course at West Visayas State University. All rights reserved.
+Developed as an academic capstone project for the Systems Analysis and Design course at West Visayas State University. All rights reserved. See [LICENSE](LICENSE) for details.
