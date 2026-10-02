@@ -21,3 +21,4 @@ export * from "./PaymentStatusBadge";
 export * from "./MeshBackground";
 export * from './SideSheet';
 export * from "./Tooltip";
+export { default as DemoModeBanner } from "./DemoModeBanner";
