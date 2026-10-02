@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui";
 import { Input, Button } from "@/components/ui";
 import { LoadingState } from "@/features/shared";
 import { UI_LABELS } from "@/constants/ui";
+import DemoRoleSelector, { type DemoRole } from "@/components/auth/DemoRoleSelector";
 
 /**
  * Faith Laundry Shop — Staff Authentication Portal
@@ -41,6 +42,21 @@ function LoginForm() {
     setSubmitting(true);
     try {
       await login(username, password);
+      router.replace(redirect);
+    } catch {
+      // error handled in context
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDemoSelect = async (role: DemoRole) => {
+    if (role.isExternalLink) return;
+    setUsername(role.username);
+    setPassword(role.password || "");
+    setSubmitting(true);
+    try {
+      await login(role.username, role.password || "");
       router.replace(redirect);
     } catch {
       // error handled in context
@@ -124,8 +140,17 @@ function LoginForm() {
               {UI_LABELS.auth.LOGIN_BUTTON}
             </Button>
           </form>
+
+          {/* Portfolio Demo Sandbox Quick Access */}
+          {process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE === "true" && (
+            <DemoRoleSelector
+              onSelectRole={handleDemoSelect}
+              isSubmitting={submitting || loading}
+            />
+          )}
         </CardContent>
       </Card>
+
 
       <div className="pt-grid-4 text-center">
         <div className="inline-flex flex-col sm:flex-row items-center gap-grid-4 p-grid-3 px-grid-6 rounded-[2rem] bg-white border border-slate-100 shadow-sm transition-all hover:shadow-md">

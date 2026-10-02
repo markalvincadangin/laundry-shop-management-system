@@ -3,26 +3,24 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const deploymentTarget = process.env.NEXT_DEPLOYMENT_TARGET ?? (process.env.VERCEL === "1" ? "vercel" : "development");
+const backendOrigin =
+  process.env.BACKEND_INTERNAL_URL ||
+  process.env.UPSTREAM_API_URL ||
+  "http://backend:8080";
+
+const deploymentTarget =
+  process.env.NEXT_DEPLOYMENT_TARGET ??
+  (process.env.VERCEL === "1" ? "vercel" : process.env.NODE_ENV === "production" ? "standalone" : "development");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  ...(deploymentTarget === "standalone" ? { output: "export" } : {}),
+  output: "standalone",
   images: {
     unoptimized: true,
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
-
-if (deploymentTarget === "development") {
-  nextConfig.rewrites = async () => [
-    {
-      source: "/api/:path*",
-      destination: "http://localhost:8080/api/:path*",
-    },
-  ];
-}
 
 if (deploymentTarget === "vercel") {
   const isPreview = process.env.VERCEL_ENV === "preview";
@@ -38,6 +36,21 @@ if (deploymentTarget === "vercel") {
     {
       source: "/api/:path*",
       destination: `${upstreamApiUrl.replace(/\/$/, "")}/api/:path*`,
+    },
+  ];
+} else if (deploymentTarget === "development") {
+  nextConfig.rewrites = async () => [
+    {
+      source: "/api/:path*",
+      destination: `${process.env.BACKEND_INTERNAL_URL || "http://localhost:8080"}/api/:path*`,
+    },
+  ];
+} else {
+  // Standalone / Docker container runner mode: proxy internal API requests to backend
+  nextConfig.rewrites = async () => [
+    {
+      source: "/api/:path*",
+      destination: `${backendOrigin}/api/:path*`,
     },
   ];
 }

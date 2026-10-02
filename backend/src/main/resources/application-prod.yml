@@ -2,18 +2,19 @@
 # Activate with: SPRING_PROFILES_ACTIVE=prod
 
 server:
-  address: 127.0.0.1
+  address: 0.0.0.0
 
 spring:
   datasource:
-    # PostgreSQL runs on the same shop-host laptop as the application.
+    # PostgreSQL runs in Docker container or on host
     url: jdbc:postgresql://${DB_HOST:127.0.0.1}:${DB_PORT:5432}/${DB_NAME}?stringtype=unspecified
 
-  # --- Flyway: production settings ---
+  # --- Flyway: production & demo settings ---
   flyway:
     enabled: true
     clean-disabled: true
     baseline-on-migrate: true
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration,classpath:db/dev-migration}
     group: true
     out-of-order: false
 

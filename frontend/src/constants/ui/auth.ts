@@ -9,4 +9,10 @@ export const auth = {
   OPENING_SYSTEM: "Opening system...",
   TRACK_PROMPT: "Looking for your laundry?",
   TRACK_LINK: "Track here",
+  DEMO_TITLE: "Demo Accounts",
+  DEMO_SUBTITLE: "Sign in with a preconfigured role to evaluate system workflows:",
+  DEMO_BADGE: "Demo Mode",
+  DEMO_BANNER_TITLE: "Demo Environment",
+  DEMO_BANNER_DESC: "Loaded with sample records for evaluation. Database state resets periodically.",
+  DEMO_SWITCH_IDENTITY: "Switch Account",
 } as const;

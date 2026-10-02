@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { Sidebar, MobileNav, AuthGuard, Topbar, InactivityOverlay } from "@/components/layout";
 import { LoadingState } from "@/features/shared";
-import { MeshBackground } from "@/components/ui";
+import { MeshBackground, DemoModeBanner } from "@/components/ui";
 import { UI_LABELS } from "@/constants/ui";
 import { useAuth, useRequireAuth } from "@/stores/auth-store";
 import { usePathname, useRouter } from "next/navigation";
@@ -47,7 +47,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { isSidebarCollapsed } = useLayout();
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const title = getPageTitle(pathname ?? "/");
 
   useRequireAuth(pathname ?? "/");
@@ -83,6 +83,7 @@ export default function DashboardLayout({
         <SystemPauseBanner />
 
         <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-5 lg:px-6 animate-in fade-in lg:slide-in-from-right duration-500">
+          <DemoModeBanner user={user} onSwitchRole={logout} />
           <Suspense fallback={<LoadingState />}>
             <AuthGuard>{children}</AuthGuard>
           </Suspense>

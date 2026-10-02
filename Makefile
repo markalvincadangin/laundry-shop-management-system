@@ -9,7 +9,15 @@ up-dev:
 	docker compose -f docker-compose.yml -f docker-compose.override.yml --profile full up -d
 
 up-prod:
-	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+	docker compose -f docker-compose.prod.yml up -d --build
+
+prod-up: up-prod
+
+prod-down:
+	docker compose -f docker-compose.prod.yml down
+
+prod-logs:
+	docker compose -f docker-compose.prod.yml logs -f
 
 up: up-dev
 

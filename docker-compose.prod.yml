@@ -1,34 +1,148 @@
+# ============================================================
+# Faith Laundry Shop LMS — Production Docker Compose Configuration
+# ============================================================
+# Standalone, isolated production cluster with:
+#   - Caddy reverse proxy with automated Let's Encrypt SSL
+#   - Next.js 15 standalone unprivileged runner
+#   - Spring Boot 3.3 Java 21 JRE runner
+#   - PostgreSQL 16 Alpine with pgcrypto & transactional audit triggers
+#
+# Launch production cluster:
+#   docker compose -f docker-compose.prod.yml up -d --build
+# Or via Makefile:
+#   make prod-up
+# ============================================================
+
+name: laundryms-prod
+
 services:
-  db:
+  # ── EDGE REVERSE PROXY (Caddy with Automated SSL) ──
+  caddy:
+    image: caddy:2-alpine
+    container_name: laundryms-prod-caddy
+    restart: always
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp"
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME:-:80}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@markcadangin.me}
     volumes:
-      - postgres_prod_data:/var/lib/postgresql/data
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - laundryms-prod-caddy-data:/data
+      - laundryms-prod-caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - laundryms-prod-network
+
+  # ── PRIMARY DATABASE (PostgreSQL 16) ──
+  db:
+    image: postgres:16-alpine
+    container_name: laundryms-prod-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-laundry_db}
+      POSTGRES_USER: ${DB_USER:-laundry_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-laundry_password}
+    ports:
+      - "127.0.0.1:${PROD_DB_PORT:-5432}:5432"
+    volumes:
+      - laundryms-prod-db-data:/var/lib/postgresql/data
       - ./backend/infrastructure/db-init/01-enable-pgcrypto.sql:/docker-entrypoint-initdb.d/01-enable-pgcrypto.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-laundry_user} -d ${DB_NAME:-laundry_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
           memory: 512M
+    networks:
+      - laundryms-prod-network
 
+  # ── BACKEND (Spring Boot 3.3 - Optimized JRE Runner) ──
   backend:
     build:
-      target: production
+      context: ./backend
+      target: runner
+    container_name: laundryms-prod-backend
+    restart: always
     ports:
-      - "${BACKEND_PORT:-8080}:8080"
+      - "127.0.0.1:${PROD_BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/api/v1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_FLYWAY_LOCATIONS=classpath:db/migration,classpath:db/dev-migration
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-laundry_db}
+      - DB_USER=${DB_USER:-laundry_user}
+      - DB_PASSWORD=${DB_PASSWORD:-laundry_password}
+      - JWT_SECRET=${JWT_SECRET:-strong-production-demo-jwt-secret-min-32-chars}
+      - ALLOWED_ORIGIN=${ALLOWED_ORIGIN:-http://localhost:3000}
+      - PORTAL_URL=${PORTAL_URL:-http://localhost:3000}
+      - FORWARD_HEADERS_STRATEGY=framework
+    depends_on:
+      db:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           memory: 1G
+    networks:
+      - laundryms-prod-network
 
+  # ── FRONTEND (Next.js 15 Standalone Runner) ──
   frontend:
     build:
-      target: production
+      context: ./frontend
+      target: runner
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    container_name: laundryms-prod-frontend
+    restart: always
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
+      - "127.0.0.1:${PROD_FRONTEND_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - BACKEND_INTERNAL_URL=http://backend:8080
+      - NEXT_PUBLIC_API_URL=/api
+      - NEXT_PUBLIC_ENABLE_DEMO_MODE=${NEXT_PUBLIC_ENABLE_DEMO_MODE:-true}
+    depends_on:
+      backend:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           memory: 512M
+    networks:
+      - laundryms-prod-network
 
 volumes:
-  postgres_prod_data:
+  laundryms-prod-db-data:
+  laundryms-prod-caddy-data:
+  laundryms-prod-caddy-config:
+
+networks:
+  laundryms-prod-network:
+    driver: bridge
